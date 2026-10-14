@@ -6,5 +6,7 @@ services:
     volumes:
       - ./backend:/app
       - staticfiles:/app/staticfiles
-    # T003 changes this to `python manage.py runserver 0.0.0.0:8000`.
-    command: ["gunicorn", "placeholder_wsgi:application", "--bind", "0.0.0.0:8000", "--reload"]
+    command:
+      - sh
+      - -c
+      - python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000

@@ -1,2 +1,11 @@
-# T002: only what the placeholder container needs. T003 replaces this with the pinned Django stack.
+# Pinned versions (CONVENTIONS A.4, newer minors approved for T003). Installed in the image (D-022).
+Django==5.2.18
+djangorestframework==3.18.3
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.30.0
+django-simple-history==3.13.0
+django-storages[s3]==1.14.6
+boto3==1.43.113
+psycopg[binary]==3.3.6
 gunicorn==26.2.0
+ruff==0.17.0

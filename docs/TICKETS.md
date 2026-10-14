@@ -38,7 +38,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 |---|---|---|---|---|---|---|---|
 | T001 | [#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) | Requirements baseline: protocol, mandatory fields, codelists, ER diagram | P1 | must | — | 2 d | done |
 | T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | done |
-| T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | todo |
+| T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | done |
 | T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | todo |
 | T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | todo |
 | T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | todo |
@@ -174,7 +174,9 @@ Depends on: —
 - [ ] `README.md` "Run locally" section works from a clean clone on CachyOS (Docker from the Arch repos, `docker compose` plugin).
 
 ### T003 · Django project bootstrap
-[#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) · E01 · P1 · must · labels: `backend`, `must` · implements F44, F46 · est. 1.5 d · **todo**
+[#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) · E01 · P1 · must · labels: `backend`, `must` · implements F44, F46 · est. 1.5 d · **done**
+
+Note: skipped the pytest and storage-test criterion (D-021). `accounts.User` and its initial migration were pulled forward from T011 so `AUTH_USER_MODEL` works from the first migration.
 
 Depends on: T002
 

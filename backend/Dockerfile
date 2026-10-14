@@ -16,5 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 EXPOSE 8000
-# T003 changes this to config.wsgi:application.
-CMD ["gunicorn", "placeholder_wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"]

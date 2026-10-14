@@ -34,18 +34,20 @@ Key directories (T002 created the layout; app code arrives with T003 and T006):
 
 ## Commands
 
-The code does not exist yet; T002, T003 and T006 create it. Commands below come from those tickets.
+The stack (T002) and the Django project (T003) exist; the Flutter app arrives with T006.
 Lines marked **TODO** are settled by that ticket: update this section in the same commit.
 No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, format and a manual run.
 
 ```bash
 # Stack (T002). Backend commands run inside the django container (D-022).
 DC="docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"
-$DC up -d                                          # dev: source mounted, runserver, DEBUG
+$DC up -d --build                                  # dev: source mounted, runserver, DEBUG
 $DC ps
 $DC logs -f django
 
-# Backend (T003): pip + backend/requirements.txt, installed in the image
+# Backend: pip + backend/requirements.txt, installed in the image (rebuild with --build after changes).
+# Run files-writing commands as yourself so files are not root-owned:
+#   $DC exec -u $(id -u) -e HOME=/tmp django ruff format .   (same for makemigrations)
 $DC exec django ruff format .
 $DC exec django ruff check .
 $DC exec django python manage.py makemigrations    # then review the generated migration

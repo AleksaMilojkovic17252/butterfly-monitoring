@@ -51,7 +51,7 @@ Never run `$DC down -v`: it deletes the database and the stored photos.
 | `http://localhost:9001` | MinIO console (this machine only) |
 | `localhost:5432` | PostgreSQL, for `psql` and QGIS (this machine only) |
 
-Until T003 the django service is a placeholder that answers `{"status": "placeholder"}` on every path.
+Check the stack with `curl localhost:8080/api/v1/health/` (`{"status":"ok","db":true,"storage":true}`). API docs: `http://localhost:8080/api/v1/docs/`.
 
 ### Data
 

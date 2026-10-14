@@ -146,3 +146,10 @@ the last-official-image pin in the T002 ticket is impossible. The stack uses
 `cgr.dev/chainguard/minio` (MinIO RELEASE.2026-09-22T19-25-18Z), pinned by digest because the free
 tier only offers `latest`. Django talks plain S3 through django-storages, so a later swap
 (Garage, SeaweedFS) is a settings change. The image has no `mc` or `curl`; its health check uses bash.
+
+## D-026 · accounts.User created in T003
+2026-10-14 · accepted · T003, T011
+`AUTH_USER_MODEL = "accounts.User"` must point at an existing model before the first migration, so T003
+creates the minimal User (code from T011) with `accounts/0001_initial`. T011 only adds the JWT endpoints,
+groups, throttling and `token_blacklist`. In development Django reaches MinIO with the MinIO root user
+until a service account exists (T049).
