@@ -8,7 +8,7 @@ Master's thesis, solo developer. **Phase 1** (thesis Part 1) is due February 202
 (SensorThings, EDR, Moving Features + MobilityDB) comes after.
 
 More: [docs/PROJECT_OUTLINE.md](docs/PROJECT_OUTLINE.md) · [docs/CONVENTIONS.md](docs/CONVENTIONS.md) ·
-[docs/TICKETS.md](docs/TICKETS.md) · [docs/DECISIONS.md](docs/DECISIONS.md) ·
+[docs/TICKETS.md](docs/TICKETS.md) (status) · [docs/TICKET_DETAILS.md](docs/TICKET_DETAILS.md) (full ticket text) · [docs/DECISIONS.md](docs/DECISIONS.md) ·
 full original spec: [docs/reference/development-plan.md](docs/reference/development-plan.md) (body mostly Serbian).
 
 ## Stack and architecture
@@ -28,38 +28,39 @@ Key directories (created by T002; most do not exist yet):
 | `mobile/` | Flutter app: `lib/core/` (config, http, db, location), `lib/features/<feature>/{data,domain,ui}`, `drift_schemas/` |
 | `pygeoapi/config/` | pygeoapi configuration |
 | `infrastructure/` | `compose.yaml`, `compose.dev.yaml`, `nginx/`, `db-init/` |
-| `scripts/` | backup/restore, `tickets_index.py` |
+| `scripts/` | backup/restore (T010) |
 | `simulator/` | Phase 2 sensor simulator (empty until then) |
 | `docs/` | requirements, architecture, setup, evaluation notes |
 
 ## Commands
 
-The code does not exist yet; T002, T003, T006 and T008 create it. Commands below come from those tickets.
-Lines marked **TODO** are unknown until that ticket lands: update this section in the same PR.
+The code does not exist yet; T002, T003 and T006 create it. Commands below come from those tickets.
+Lines marked **TODO** are settled by that ticket: update this section in the same commit.
+No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, format and a manual run.
 
 ```bash
-# Stack (T002)
-docker compose -f infrastructure/compose.yaml up -d          # TODO(T002): confirm file path / project name
-docker compose -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml up -d   # dev: source mounted, runserver, DEBUG
-docker compose -f infrastructure/compose.yaml ps | logs -f django
+# Stack (T002). Backend commands run inside the django container (D-022).
+DC="docker compose -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"   # TODO(T002): confirm paths
+$DC up -d                                          # dev: source mounted, runserver, DEBUG
+$DC ps
+$DC logs -f django
 
-# Backend (T003, T008). TODO(T003): run inside the django container or a host venv? Package manager (pip/uv/poetry)?
-pytest                                                       # TODO(T003): exact invocation
-ruff check .                                                 # TODO(T008): formatter? (ruff format not yet decided)
-python manage.py makemigrations --check
-python manage.py spectacular --validate --file /tmp/schema.yaml
+# Backend (T003): pip + backend/requirements.txt, installed in the image
+$DC exec django ruff format .
+$DC exec django ruff check .
+$DC exec django python manage.py makemigrations    # then review the generated migration
+$DC exec django python manage.py makemigrations --check
+$DC exec django python manage.py migrate
+$DC exec django python manage.py check
 
-# Mobile (T006, T008), run in mobile/
+# Mobile (T006), run in mobile/
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs    # Drift codegen (TODO(T006): confirm)
+dart run build_runner build --delete-conflicting-outputs   # Drift codegen
+dart format .
 flutter analyze
-flutter test
-dart run drift_dev make-migrations                           # after any Drift schema change
-dart run drift_dev schema verify                             # TODO(T008): exact migration-test command
+dart run drift_dev make-migrations                 # after any Drift schema change
+flutter run                                        # on the phone over USB
 flutter build apk --debug
-
-# Tickets
-python3 scripts/tickets_index.py                             # regenerate docs/TICKETS.md from GitHub Issues
 ```
 
 ## Code style and conventions
@@ -75,37 +76,38 @@ Full rules: [docs/CONVENTIONS.md](docs/CONVENTIONS.md). The ones most often miss
 - API under `/api/v1/`, JSON, error body `{"code", "detail", "fields"}`, JWT bearer auth. Business rules live in service functions, not views or serializers.
 - Drift: same column names as the server (camelCase in Dart), UUID text PKs, GeoJSON text geometry plus `lat`/`lon` for points, local `serverVersion`/`syncStatus`/`deletedAt`. UI never writes synced tables directly; go through the repository class.
 - Times: UTC `timestamptz` on the server, UTC on the phone, local time only in the UI.
-- Python: ruff. Dart: `flutter analyze` clean. TODO: line length and formatter settings once T003/T006 add the config.
+- Python: `ruff format` + `ruff check`, line length 100, configured in `backend/pyproject.toml` (T003). Dart: `dart format` defaults, `flutter_lints`, `flutter analyze` clean (T006).
+- Android package id: `rs.amilojkovic.butterfly`.
 
 ## How to work a ticket
 
 Use `/next-ticket` (or `/next-ticket T0xx`), then `/finish-ticket`. By hand:
 
-1. **Read** the issue (`gh issue view <n>`; `Tnnn` is issue #(nnn+17)), its dependencies, and the conventions it cites. Check every hard dependency is closed; if not, stop and say so.
-2. **Branch** `t0xx-short-slug` from the default branch and add the `in-progress` label to the issue.
-3. **Plan** in 5–10 lines: files to touch, migrations, tests, and how each acceptance criterion will be checked. Show it before writing code.
-4. **Implement** the smallest change that meets every acceptance criterion. Tests first where practical.
-5. **Check**: run the backend and/or mobile checks above for whatever you touched. All must pass.
-6. **Commit** with `T0xx: <imperative summary>` and `Refs #<issue>`. Open a PR using the template, with `Closes #<issue>`.
-7. **Record**: tick the issue's checkboxes, comment with what was done, anything deferred, and `Actual: x d` if known. Add an entry to `docs/DECISIONS.md` for any design choice a later session would need. Resolve any `VERIFY` items the ticket names and write the result down where it says.
-8. Regenerate `docs/TICKETS.md`.
+1. **Read** the ticket's section in [docs/TICKET_DETAILS.md](docs/TICKET_DETAILS.md) (search `### T0xx ·`), its row in [docs/TICKETS.md](docs/TICKETS.md), and the conventions it cites. Every ticket in "Depends on" must be `done` or `dropped`; if not, stop and say so.
+2. **Branch** `t0xx-short-slug` from `main`, and set the ticket's status to `in progress` in TICKETS.md.
+3. **Plan** in 5–10 lines: files to touch, migrations, and how each acceptance criterion will be shown working. Show it before writing code.
+4. **Implement** the smallest change that meets the acceptance criteria. **Skip criteria that only ask for automated tests or CI** (D-021); say which ones you skipped.
+5. **Check**: format and lint what you touched, `makemigrations --check`, and bring the stack or app up to confirm the feature works by hand. Give the user the steps to see it.
+6. **Commit** on the branch as `T0xx: <imperative summary>`. The final commit message includes `Closes #<issue>` (issue = nnn + 17), so GitHub closes the issue when it reaches `main`.
+7. **Record**: set the status to `done` in TICKETS.md, add a `docs/DECISIONS.md` entry for any design choice a later session would need, and write down `VERIFY` results where the ticket says.
+8. **Merge** into `main` with the user's OK (`git merge --ff-only` or a merge commit); pushing is the user's call.
 
 ## Definition of done
 
-- Every acceptance criterion is met and checked off, or explicitly deferred in an issue comment the user agreed to.
-- Tests cover the new behaviour; backend and/or mobile checks pass locally; `makemigrations --check` is clean.
-- Drift schema changes have a committed snapshot and migration; Django migrations are committed and reversible where the ticket says so.
-- OpenAPI still validates; new endpoints appear in it.
+- Every acceptance criterion is met, skipped as a test/CI item, or deferred with the user's agreement (noted in TICKETS.md under the ticket).
+- Code is formatted and lint-clean; `makemigrations --check` is clean; `flutter analyze` is clean.
+- The feature has been run once by hand (stack up, app on the phone or emulator) and the user has the steps to demo it.
+- Drift schema changes have a committed snapshot and migration; Django migrations are committed.
 - Docs the ticket asks for exist; this file's Commands section is updated if a command changed.
-- No TODO left in code without an issue reference.
+- TICKETS.md status is `done`. No TODO left in code without a ticket ID.
 
 ## Do not
 
+- Do not add tests, test frameworks or CI unless the user asks (D-021).
 - Do not add, upgrade or remove a dependency (pip, pub, Docker image tag) without asking. Pins come from CONVENTIONS.md A.4.
-- Do not work on a ticket whose hard dependencies are open, or on Phase 2 tickets before Phase 1 is done (study tickets T076/T082/T086 excepted).
-- Do not widen a ticket: work outside its acceptance criteria goes in a new issue or a question to the user.
+- Do not work on a ticket whose dependencies are not `done`/`dropped`, or on Phase 2 before Phase 1 is done (study tickets T076/T082/T086 excepted).
+- Do not widen a ticket: anything outside its acceptance criteria is a question to the user.
 - Do not use removed features (CONVENTIONS.md A.1), OGC write/transactions, presigned MinIO URLs, Celery/workers, iOS code, or a custom permission framework.
 - Do not set `security_invoker` on `geo` views or grant `pygeoapi_ro` anything on `public`.
-- Do not edit applied migrations; add a new one. Do not edit `docs/reference/` or generated files by hand.
-- Do not read, print or commit `.env` or secrets. Do not run `docker compose down -v` (deletes data) or force-push.
-- Do not push to the default branch or close issues by hand: the PR's `Closes #n` closes the issue on merge.
+- Do not edit applied migrations; add a new one. Do not edit `docs/reference/` or `docs/TICKET_DETAILS.md`.
+- Do not read, print or commit `.env` or secrets. Do not run `docker compose down -v` (deletes data), force-push or push without asking.

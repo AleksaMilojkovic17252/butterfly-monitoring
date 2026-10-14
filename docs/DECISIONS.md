@@ -115,7 +115,26 @@ Phase 1 evaluation runs on simulated field days plus one session with a biologis
 2026-10-14 · accepted · roadmap #2
 Part 2 has a later deadline. Measure pace after Stage 2a; above r = 0.56 apply cut line A.
 
-## D-020 · GitHub Issues are the ticket source of truth
+## D-020 · Ticket status lives in docs/TICKETS.md
 2026-10-14 · accepted · repo setup
-`docs/TICKETS.md` is generated from the issues by `scripts/tickets_index.py`. Status is the issue's
-state plus an `in-progress` label. Issues close when their PR merges.
+The GitHub CLI is not used, so Claude Code cannot read or edit issues. The full ticket text is in
+`docs/TICKET_DETAILS.md` (same as the issues) and the status is tracked in `docs/TICKETS.md`, which
+`/next-ticket` and `/finish-ticket` update. A ticket's final commit carries `Closes #<issue>`, so
+GitHub closes the issue when the commit is pushed to `main`.
+
+## D-021 · No automated tests and no CI for now
+2026-10-14 · accepted · all tickets, T008
+The goal is a development build demonstrated to the supervisor. Acceptance criteria that only ask
+for automated tests or CI are skipped, T008 (CI) is dropped, and each ticket is checked by running it
+by hand. Tests and CI can be added later on request.
+
+## D-022 · Backend commands run in the django container; pip + requirements.txt
+2026-10-14 · accepted · T002, T003
+The dev compose file mounts the source, so `manage.py` and ruff run through
+`docker compose exec django`, and the laptop needs no Python setup beyond Docker. Dependencies are
+pinned in `backend/requirements.txt` and installed in the image (no uv/poetry).
+
+## D-023 · Formatting
+2026-10-14 · accepted · T003, T006
+Python: `ruff format` + `ruff check`, line length 100, in `backend/pyproject.toml`. Dart: `dart format`
+defaults with `flutter_lints`. Android package id `rs.amilojkovic.butterfly`.
