@@ -3,7 +3,7 @@
 One line each. **To confirm** marks an answer that needs the biologist or the supervisor.
 
 1. **Exact field protocol?** Pollard walk on fixed transects with a 2.5 m / 5 m / 5 m recording box, configurable per project; see [protocol.md](protocol.md). *To confirm: season and time window.*
-2. **Mandatory fields?** Listed per entity in [fields.md](fields.md); for an observation: visit (if transect), time, taxon, count, point, confidence, recorder.
+2. **Mandatory fields?** Listed per entity in [fields.md](fields.md); for an observation: visit (if transect), time, taxon, count, point, confidence, recorder. Every observation also needs a photo (D-024).
 3. **Each individual or aggregate?** One record per taxon per sighting event with a `count`; no per-individual rows and no per-visit totals.
 4. **Group findings?** One record with `count > 1`; `sex = mixed` allowed when both sexes are in the group.
 5. **Allowed distance from the transect?** 20 m; beyond it the flag `far_from_transect` is set. Records are never rejected for it (`max_distance_from_transect_m`).

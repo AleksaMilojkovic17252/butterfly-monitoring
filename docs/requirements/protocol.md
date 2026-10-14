@@ -96,39 +96,72 @@ Coverage is shown in the app and computed in indicators (T061); it is not a reje
 
 ## 9. Simulated field day (paper walk-through)
 
-Outline §29. **This walk-through was drafted by the assistant from the outline and the ticket models;
-it has not yet been done with real data.** The friction points below are predictions. Re-do the walk
-with a real transect, and ideally the biologist, and amend this list. Nothing in T002–T007 depends
-on it.
+Outline §29. Walk-through agreed with the developer on 2026-10-14. The friction points marked
+*predicted* are the assistant's estimates; they should be confirmed or struck out after the first
+real or role-played walk with a transect and the biologist.
 
-Steps: pick a transect → start the visit → record ten sightings → record one host plant → add a photo
-→ finish the visit → put everything into one table.
+### Flow
 
-### Slow, unclear or ambiguous steps
+0. **Before the field (admin, office).** An admin draws the transect and its sections in Django
+   admin and adds the researcher to the project. Researchers never create transects in the field.
+1. **Pick the transect and start the visit.** The researcher opens the project, picks a transect
+   (already on the phone from the offline package) and starts a visit. Start form: observer count,
+   start temperature, wind (Beaufort), cloud cover, precipitation. GPS tracking starts.
+2. **Walk and record butterflies.** For each sighting inside the recording box:
+   1. choose *butterfly* (plants are not recorded during the walk, see step 4)
+   2. fill in the form: taxon, count, confidence; optional sex, life stage, behaviour, notes.
+      Position and time come from the GPS and the clock
+   3. take the photo (**mandatory, see §10**) and save
+3. **Repeat step 2** until the end of the transect. The observer can pause (netting, identifying,
+   resting); paused time is not counted in the duration.
+4. **Finish the visit.** End weather, notes; if no butterfly was recorded, the true-zero confirmation
+   (V06). The visit becomes `completed` and syncs when there is a connection.
+5. **Record plants after the walk.** Plants are not part of the standardised count, and the
+   researcher remembers which plants were passed. For each plant: type (host, nectar, ...), taxon,
+   abundance, phenology, a point or a patch polygon, and the photo. The records belong to the same
+   visit. A butterfly can be linked to a host or nectar plant here (W03, W04).
+6. **Review (admin, office).** Sync, validate pending records, lock the visit.
 
-1. **Weather at the start.** The observer must enter temperature, wind (Beaufort) and cloud cover
-   before walking. Estimating Beaufort and cloud percentage is subjective; a pick list (0–12 and
-   okta-style cloud buckets) may be quicker than numeric entry.
-2. **Pauses.** It is unclear when the clock stops (photographing, netting, identifying). The model
-   has `paused_seconds`, but the app needs an explicit Pause button, and the rule for "short
-   identification stop" must be agreed.
-3. **Ten sightings in a row.** Each needs taxon, count, confidence at minimum. Searching a species list
-   of a few hundred taxa with gloves, in sun, is the slowest step. Needs a recent/favourites list.
-4. **Groups.** When ten individuals of one species fly up together, is that one record with
-   `count = 10`, or do the individuals get counted as they leave? The protocol says one record per
-   sighting event; the observer needs a rule of thumb for "same event".
-5. **Same taxon seen again.** A second sighting of the same species 30 m later is a new event
-   (new record). Observers may be tempted to increase the count of the earlier record instead.
+### Slow, unclear or ambiguous steps (predicted)
+
+1. **Weather at the start.** Estimating Beaufort and cloud percentage is subjective; a pick list
+   may be quicker than numeric entry.
+2. **Pauses.** When the clock stops is not defined. The app needs an explicit Pause button, and the
+   rule for a short identification stop must be agreed.
+3. **A photo for every sighting.** This is the slowest step of the whole walk: stopping, aiming at a
+   butterfly that may fly off, and saving. It adds time to every record and may make observers skip
+   records. See §10 for what happens when no photo can be taken.
+4. **Taxon choice.** Searching a list of a few hundred taxa in sun is slow. A recent/favourites
+   list is needed.
+5. **Groups.** Ten individuals flying up together are one record with `count = 10`. The observer
+   needs a rule for what counts as the same event, so a second sighting of the same species 30 m
+   later is a new record and not a higher count on the first.
 6. **Unidentified butterflies.** The path from "not sure" to a saved record (`genus_only`,
-   `photo_required`, `unknown`) has to take few taps, or the observer will skip the record.
-7. **Section assignment.** Whether the observer picks the section or the app assigns it from GPS (T048)
-   changes the form. Manual pick adds a step per sighting.
-8. **Plant record linking.** Linking a butterfly to a host plant needs the plant to exist first.
-   Order of entry (plant first, or butterfly first with a link later) is unclear.
-9. **Plant geometry.** Point vs. polygon: drawing a patch polygon in the field is slow. A point plus an
-   area class would be faster; the model supports both.
-10. **Photo to record.** Taking the photo after saving the record vs. before; what happens to a photo
-    taken while GPS is poor.
+   `unknown`) has to take few taps.
+7. **Section assignment.** A manual section pick adds a step per sighting; assigning it from GPS
+   (T048) removes it.
+8. **Plants after the walk.** The position of a plant is no longer the observer's position, so it
+   must be placed on the map by hand. Linking a butterfly to a host plant needs the plant record to
+   exist first, so links are made in step 5, not in the field.
+9. **Plant geometry.** Drawing a patch polygon is slow; a point plus an abundance class is faster.
+10. **Photo to record.** Photo before or after saving; a photo taken while the GPS is poor.
 11. **Finishing with zero sightings.** The confirmation text must be unambiguous (T041).
-12. **Single table.** Flattening one visit into one table needs a join of visit, observation, taxon
-    and weather. Weather appears twice (start/end), so the flat table has to choose or repeat columns.
+12. **Flat table.** One visit needs a join of visit, observation, taxon and weather. Weather appears
+    twice (start, end), so the flat table has to repeat columns or choose one.
+
+## 10. Photos are mandatory
+
+Decision of the developer, 2026-10-14: **every butterfly observation and every plant record must
+have at least one photo.** This replaces the per-taxon `photo_required` flag as the rule (the flag
+stays in the model but becomes redundant). It conflicts with the current ticket text (T044, T049,
+T051, T055 W01) and needs those tickets to be adapted when they are worked.
+
+Open points to settle before T044/T055:
+
+- **Hard or soft rule?** A hard rule (cannot save without a photo) loses sightings of butterflies that
+  fly off before the shot. A soft rule (save, mark `validation_status = pending`, warn) keeps the
+  record but weakens the guarantee. Proposed: soft in the app, with a visible "no photo" warning,
+  and the admin queue shows these first. *To confirm.*
+- **Zero-count visits** have no records and so no photo.
+- **Photo storage on the phone:** a photo for every sighting increases phone storage and upload time;
+  compression is already planned (T050).
