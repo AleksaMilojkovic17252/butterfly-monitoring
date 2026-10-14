@@ -39,7 +39,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T001 | [#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) | Requirements baseline: protocol, mandatory fields, codelists, ER diagram | P1 | must | — | 2 d | done |
 | T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | done |
 | T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | done |
-| T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | todo |
+| T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | done |
 | T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | todo |
 | T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | todo |
 | T007 | [#24](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/24) | Walking skeleton: one observation from phone to QGIS | P1 | must | T002, T003, T004, T005, T006 | 3 d | todo |
@@ -188,7 +188,9 @@ Depends on: T002
 - [ ] pytest + pytest-django run against a test database. `python manage.py makemigrations --check` passes.
 
 ### T004 · Database schema strategy: `geo` schema and read-only role
-[#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) · E01 · P1 · must · labels: `database`, `must`, `p2-compat` · implements F45 · est. 1 d · **todo**
+[#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) · E01 · P1 · must · labels: `database`, `must`, `p2-compat` · implements F45 · est. 1 d · **done**
+
+Note: the "test connects as pygeoapi_ro" check was done by hand with `SET ROLE` (D-021).
 
 Depends on: T003
 
