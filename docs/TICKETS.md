@@ -36,7 +36,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 
 | ID | Issue | Title | Phase | Priority | Depends on | Est. | Status |
 |---|---|---|---|---|---|---|---|
-| T001 | [#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) | Requirements baseline: protocol, mandatory fields, codelists, ER diagram | P1 | must | — | 2 d | in progress |
+| T001 | [#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) | Requirements baseline: protocol, mandatory fields, codelists, ER diagram | P1 | must | — | 2 d | done |
 | T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | todo |
 | T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | todo |
 | T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | todo |
@@ -137,7 +137,9 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 ## Acceptance criteria
 
 ### T001 · Requirements baseline: protocol, mandatory fields, codelists, ER diagram
-[#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) · E01 · P1 · must · labels: `docs`, `must` · implements F77 · est. 2 d · **in progress**
+[#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) · E01 · P1 · must · labels: `docs`, `must` · implements F77 · est. 2 d · **done**
+
+Note: the Mermaid diagram was not rendered here (no Mermaid tooling); the paper field day was drafted with the developer, not run with real data.
 
 Depends on: —
 
