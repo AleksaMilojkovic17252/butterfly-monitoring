@@ -1,0 +1,51 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.keystore
+*.jks
+mobile/android/key.properties
+
+# Claude Code (personal settings stay local; .claude/settings.json is shared)
+.claude/settings.local.json
+
+# Python / Django
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+backend/staticfiles/
+backend/media/
+
+# Flutter / Dart / Android
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug/
+mobile/android/app/release/
+*.iml
+*.apk
+*.aab
+
+# Local data, backups, exports
+backups/
+*.sqlite
+*.sqlite3
+*.dump
+*.mbtiles
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
