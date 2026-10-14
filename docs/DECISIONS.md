@@ -138,10 +138,3 @@ pinned in `backend/requirements.txt` and installed in the image (no uv/poetry).
 2026-10-14 · accepted · T003, T006
 Python: `ruff format` + `ruff check`, line length 100, in `backend/pyproject.toml`. Dart: `dart format`
 defaults with `flutter_lints`. Android package id `rs.amilojkovic.butterfly`.
-
-## D-024 · Every observation needs a photo
-2026-10-14 · accepted · T001, T044, T049, T051, T055
-Every butterfly observation and plant record must have at least one photo (developer's decision during
-the T001 paper field day). Whether the app blocks the save or only warns is open (protocol.md §10).
-Tickets T044, T049, T051 and T055 (rule W01) assume a per-taxon `photo_required` and must be adapted
-when they are worked. Plants are recorded after the walk, not during it.

@@ -111,14 +111,15 @@ real or role-played walk with a transect and the biologist.
    1. choose *butterfly* (plants are not recorded during the walk, see step 4)
    2. fill in the form: taxon, count, confidence; optional sex, life stage, behaviour, notes.
       Position and time come from the GPS and the clock
-   3. take the photo (**mandatory, see §10**) and save
+   3. take a photo if the taxon requires one (`photo_required`, rule W01) or the observer is unsure;
+      otherwise the photo is optional. Save
 3. **Repeat step 2** until the end of the transect. The observer can pause (netting, identifying,
    resting); paused time is not counted in the duration.
 4. **Finish the visit.** End weather, notes; if no butterfly was recorded, the true-zero confirmation
    (V06). The visit becomes `completed` and syncs when there is a connection.
 5. **Record plants after the walk.** Plants are not part of the standardised count, and the
    researcher remembers which plants were passed. For each plant: type (host, nectar, ...), taxon,
-   abundance, phenology, a point or a patch polygon, and the photo. The records belong to the same
+   abundance, phenology, a point or a patch polygon, and an optional photo. The records belong to the same
    visit. A butterfly can be linked to a host or nectar plant here (W03, W04).
 6. **Review (admin, office).** Sync, validate pending records, lock the visit.
 
@@ -128,9 +129,9 @@ real or role-played walk with a transect and the biologist.
    may be quicker than numeric entry.
 2. **Pauses.** When the clock stops is not defined. The app needs an explicit Pause button, and the
    rule for a short identification stop must be agreed.
-3. **A photo for every sighting.** This is the slowest step of the whole walk: stopping, aiming at a
-   butterfly that may fly off, and saving. It adds time to every record and may make observers skip
-   records. See §10 for what happens when no photo can be taken.
+3. **Photos.** Stopping to photograph a butterfly that may fly off is slow. It applies only to
+   taxa flagged `photo_required` and to uncertain identifications, so the app must show that
+   requirement before the observer starts the form. A missing photo gives `validation_status = pending`.
 4. **Taxon choice.** Searching a list of a few hundred taxa in sun is slow. A recent/favourites
    list is needed.
 5. **Groups.** Ten individuals flying up together are one record with `count = 10`. The observer
@@ -148,20 +149,3 @@ real or role-played walk with a transect and the biologist.
 11. **Finishing with zero sightings.** The confirmation text must be unambiguous (T041).
 12. **Flat table.** One visit needs a join of visit, observation, taxon and weather. Weather appears
     twice (start, end), so the flat table has to repeat columns or choose one.
-
-## 10. Photos are mandatory
-
-Decision of the developer, 2026-10-14: **every butterfly observation and every plant record must
-have at least one photo.** This replaces the per-taxon `photo_required` flag as the rule (the flag
-stays in the model but becomes redundant). It conflicts with the current ticket text (T044, T049,
-T051, T055 W01) and needs those tickets to be adapted when they are worked.
-
-Open points to settle before T044/T055:
-
-- **Hard or soft rule?** A hard rule (cannot save without a photo) loses sightings of butterflies that
-  fly off before the shot. A soft rule (save, mark `validation_status = pending`, warn) keeps the
-  record but weakens the guarantee. Proposed: soft in the app, with a visible "no photo" warning,
-  and the admin queue shows these first. *To confirm.*
-- **Zero-count visits** have no records and so no photo.
-- **Photo storage on the phone:** a photo for every sighting increases phone storage and upload time;
-  compression is already planned (T050).
