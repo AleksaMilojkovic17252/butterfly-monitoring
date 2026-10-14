@@ -37,7 +37,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | ID | Issue | Title | Phase | Priority | Depends on | Est. | Status |
 |---|---|---|---|---|---|---|---|
 | T001 | [#18](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/18) | Requirements baseline: protocol, mandatory fields, codelists, ER diagram | P1 | must | — | 2 d | done |
-| T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | todo |
+| T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | done |
 | T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | todo |
 | T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | todo |
 | T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | todo |
@@ -157,7 +157,7 @@ Depends on: —
 - [ ] A paper "simulated field day" (outline §29) has been walked through once, and the slow or unclear steps are listed at the end of `protocol.md`.
 
 ### T002 · Monorepo layout and Docker Compose stack
-[#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) · E01 · P1 · must · labels: `infra`, `must` · implements F44 · est. 2 d · **todo**
+[#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) · E01 · P1 · must · labels: `infra`, `must` · implements F44 · est. 2 d · **done**
 
 Depends on: —
 

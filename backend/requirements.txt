@@ -1,0 +1,2 @@
+# T002: only what the placeholder container needs. T003 replaces this with the pinned Django stack.
+gunicorn==26.2.0

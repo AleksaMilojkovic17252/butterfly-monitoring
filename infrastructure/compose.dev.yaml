@@ -1,0 +1,10 @@
+# Development overrides: source mounted, auto-reload, DEBUG on.
+services:
+  django:
+    environment:
+      DJANGO_DEBUG: "true"
+    volumes:
+      - ./backend:/app
+      - staticfiles:/app/staticfiles
+    # T003 changes this to `python manage.py runserver 0.0.0.0:8000`.
+    command: ["gunicorn", "placeholder_wsgi:application", "--bind", "0.0.0.0:8000", "--reload"]

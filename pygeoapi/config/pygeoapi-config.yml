@@ -1,0 +1,41 @@
+# Minimal pygeoapi configuration (T002). Collections come with T067/T068.
+server:
+  bind:
+    host: 0.0.0.0
+    port: 5000
+  url: http://localhost:8080/ogc
+  mimetype: application/json; charset=UTF-8
+  encoding: utf-8
+  language: en-US
+  pretty_print: true
+  limits:
+    default_items: 100
+    max_items: 1000
+  map:
+    url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+    attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+
+logging:
+  level: WARNING
+
+metadata:
+  identification:
+    title: Butterfly monitoring
+    description: Butterfly transect survey data (OGC API - Features, read-only)
+    keywords:
+      - butterflies
+      - monitoring
+    keywords_type: theme
+    terms_of_service: https://creativecommons.org/licenses/by/4.0/
+    url: http://localhost:8080
+  license:
+    name: CC-BY 4.0
+    url: https://creativecommons.org/licenses/by/4.0/
+  provider:
+    name: Butterfly monitoring (master's thesis)
+    url: http://localhost:8080
+  contact:
+    name: Project maintainer
+    email: kolica@live.com
+
+resources: {}

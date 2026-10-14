@@ -20,7 +20,7 @@ full original spec: [docs/reference/development-plan.md](docs/reference/developm
 - **Runtime**: everything runs in Docker Compose on the developer's laptop behind nginx `:8080`; the phone reaches it over Tailscale (HTTPS) or USB (`adb reverse tcp:8080 tcp:8080`). Diagram: CONVENTIONS.md A.3.
 - **Writes** from the app go through `POST /api/v1/sync/push`; REST viewsets share the same service functions.
 
-Key directories (created by T002; most do not exist yet):
+Key directories (T002 created the layout; app code arrives with T003 and T006):
 
 | Path | What |
 |---|---|
@@ -40,7 +40,7 @@ No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, form
 
 ```bash
 # Stack (T002). Backend commands run inside the django container (D-022).
-DC="docker compose -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"   # TODO(T002): confirm paths
+DC="docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"
 $DC up -d                                          # dev: source mounted, runserver, DEBUG
 $DC ps
 $DC logs -f django
