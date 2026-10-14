@@ -153,3 +153,9 @@ tier only offers `latest`. Django talks plain S3 through django-storages, so a l
 creates the minimal User (code from T011) with `accounts/0001_initial`. T011 only adds the JWT endpoints,
 groups, throttling and `token_blacklist`. In development Django reaches MinIO with the MinIO root user
 until a service account exists (T049).
+
+## D-027 · Django apps live in backend/apps/
+2026-10-14 · accepted · T003
+The 13 apps are packages under `backend/apps/` (`INSTALLED_APPS` uses `apps.<name>`) instead of sitting in
+the root of `backend/`. App labels stay `<name>`, so `accounts.User`, table names and migration
+dependencies are unchanged. Models stay in each app (`models.py`, or `models/` once an app grows).

@@ -32,19 +32,19 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "storages",
     "simple_history",
-    "core",
-    "accounts",
-    "projects",
-    "catalogues",
-    "transects",
-    "surveys",
-    "observations",
-    "resources",
-    "sync",
-    "validation",
-    "exports",
-    "environment",
-    "reports",
+    "apps.core",
+    "apps.accounts",
+    "apps.projects",
+    "apps.catalogues",
+    "apps.transects",
+    "apps.surveys",
+    "apps.observations",
+    "apps.resources",
+    "apps.sync",
+    "apps.validation",
+    "apps.exports",
+    "apps.environment",
+    "apps.reports",
 ]
 
 MIDDLEWARE = [
@@ -126,7 +126,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
 }
 
 SIMPLE_JWT = {

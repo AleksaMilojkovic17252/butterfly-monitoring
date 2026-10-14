@@ -24,7 +24,7 @@ Key directories (T002 created the layout; app code arrives with T003 and T006):
 
 | Path | What |
 |---|---|
-| `backend/` | Django project; apps `core accounts projects catalogues transects surveys observations resources sync validation exports environment reports` |
+| `backend/` | Django project: `config/` (settings, urls, wsgi) and `apps/<name>/` for `core accounts projects catalogues transects surveys observations resources sync validation exports environment reports`. Import as `apps.<name>`; the app label stays `<name>` (so `accounts.User`, table names and migrations are unaffected) |
 | `mobile/` | Flutter app: `lib/core/` (config, http, db, location), `lib/features/<feature>/{data,domain,ui}`, `drift_schemas/` |
 | `pygeoapi/config/` | pygeoapi configuration |
 | `infrastructure/` | `compose.yaml`, `compose.dev.yaml`, `nginx/`, `db-init/` |

@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from core.health import check_db, check_storage
+from apps.core.health import check_db, check_storage
 
 
 @api_view(["GET"])

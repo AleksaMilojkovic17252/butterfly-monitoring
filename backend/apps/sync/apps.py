@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ExportsConfig(AppConfig):
+class SyncConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "exports"
+    name = "apps.sync"

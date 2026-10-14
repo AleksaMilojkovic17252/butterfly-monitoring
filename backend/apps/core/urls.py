@@ -2,7 +2,7 @@ from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.permissions import AllowAny
 
-from core import views
+from apps.core import views
 
 urlpatterns = [
     path("health/", views.health, name="health"),
