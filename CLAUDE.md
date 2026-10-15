@@ -45,6 +45,10 @@ $DC up -d --build                                  # dev: source mounted, runser
 $DC ps
 $DC logs -f django
 
+# Backup and restore (T010; restore deletes current data). See docs/setup/backup.md.
+scripts/backup.sh <target-dir>
+scripts/restore.sh <backup-dir>
+
 # Backend: pip + backend/requirements.txt, installed in the image (rebuild with --build after changes).
 # Run files-writing commands as yourself so files are not root-owned:
 #   $DC exec -u $(id -u) -e HOME=/tmp django ruff format .   (same for makemigrations)

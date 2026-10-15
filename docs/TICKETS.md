@@ -45,7 +45,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T007 | [#24](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/24) | Walking skeleton: one observation from phone to QGIS | P1 | must | T002, T003, T004, T005, T006 | 3 d | done |
 | T008 | [#25](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/25) | CI pipeline (GitHub Actions) | P1 | must | T003, T006 | 1 d | dropped |
 | T009 | [#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) | Phone-to-laptop connectivity: Tailscale and USB | P1 | must | T002, T006 | 1 d | done |
-| T010 | [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) | Backup and restore scripts | P1 | must | T002 | 1 d | todo |
+| T010 | [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) | Backup and restore scripts | P1 | must | T002 | 1 d | done |
 | T011 | [#28](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/28) | Custom user model and JWT auth endpoints | P1 | must | T003 | 1.5 d | todo |
 | T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | todo |
 | T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | todo |
@@ -273,7 +273,9 @@ Depends on: T002, T006
 - [ ] From the phone on mobile data (Wi-Fi off), "Test connection" succeeds via Tailscale.
 
 ### T010 · Backup and restore scripts
-[#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) · E01 · P1 · must · labels: `infra`, `must` · implements F46 · est. 1 d · **todo**
+[#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) · E01 · P1 · must · labels: `infra`, `must` · implements F46 · est. 1 d · **done**
+
+Note: the "photo opens in admin" check waits for T049 (no photo model yet); the object was checked in the MinIO bucket instead. The sandbox could not run the wipe, so the developer ran backup and restore by hand.
 
 Depends on: T002
 

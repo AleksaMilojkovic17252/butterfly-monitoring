@@ -192,3 +192,15 @@ Tailscale serve terminates HTTPS and sends the `ts.net` name; nginx passes `X-Fo
 `SECURE_PROXY_SSL_HEADER`. `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` come from `.env`. The cleartext
 exception for `localhost` lives only in the Android debug source set (`src/debug`), since the project
 has no product flavours. Setup steps: `docs/setup/tailscale.md`.
+
+## D-031 · Backup and restore scripts
+2026-10-15 · accepted · T010
+`scripts/backup.sh <dir>` writes `butterfly-<UTC>/` with `butterfly.dump` (`pg_dump -Fc`, plus
+`frost.dump` once that database exists), `photos/` and `manifest.json`, and keeps the newest 7
+`butterfly-*` folders. `scripts/restore.sh <dir>` runs `down -v`, starts `db` and `minio`, runs
+`pg_restore --create --clean` as the superuser (this recreates the database with its owner and grants;
+the roles already exist from `db-init`), mirrors the photos back and starts the stack. `mc` comes from
+`cgr.dev/chainguard/minio-client`, pinned by digest, because `minio/mc` can no longer be pulled (same
+reason as D-025). That image has no shell, so each `mc` command is its own `docker run`. Encryption uses
+`gpg` (not `age`): `BACKUP_ENCRYPTION_KEY` in `.env` is a gpg recipient; the dump becomes
+`*.dump.gpg` and the photos one `photos.tar.gpg`; restore decrypts with the private key in the keyring.
