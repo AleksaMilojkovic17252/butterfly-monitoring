@@ -38,4 +38,28 @@ metadata:
     name: Project maintainer
     email: kolica@live.com
 
-resources: {}
+resources:
+  # T007 walking skeleton, removed in T068/T044.
+  skeleton-pings:
+    type: collection
+    title: Skeleton pings
+    description: Throwaway walking-skeleton points (T007)
+    keywords: [skeleton]
+    extents:
+      spatial:
+        bbox: [-180, -90, 180, 90]
+        crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data:
+          host: db
+          port: 5432
+          dbname: ${POSTGRES_DB}
+          user: ${PYGEOAPI_DB_USER}
+          password: ${PYGEOAPI_DB_PASSWORD}
+          search_path: [geo]
+        id_field: id
+        table: skeleton_pings
+        geom_field: geometry
+        time_field: observed_at

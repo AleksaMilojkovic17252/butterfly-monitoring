@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
@@ -157,6 +159,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ? Colors.green
                           : Theme.of(context).colorScheme.error,
                     ),
+                  ),
+                ],
+                if (kDebugMode) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: () => context.push('/skeleton'),
+                    child: const Text('Skeleton pings (debug)'),
                   ),
                 ],
               ],

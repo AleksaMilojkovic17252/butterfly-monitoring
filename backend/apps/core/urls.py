@@ -6,6 +6,7 @@ from apps.core import views
 
 urlpatterns = [
     path("health/", views.health, name="health"),
+    path("skeleton/pings", views.skeleton_pings, name="skeleton-pings"),
     path(
         "schema/",
         SpectacularAPIView.as_view(permission_classes=[AllowAny], authentication_classes=[]),
