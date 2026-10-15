@@ -29,7 +29,11 @@ def api_exception_handler(exc, context):
             fields = {"non_field_errors": data}
     else:
         code = getattr(exc, "default_code", "error")
-        detail = str(getattr(exc, "detail", exc))
+        raw = getattr(exc, "detail", exc)
+        if isinstance(raw, dict) and "detail" in raw:  # simplejwt's InvalidToken
+            code = str(raw.get("code", code))
+            raw = raw["detail"]
+        detail = str(raw)
 
     return Response(
         {"code": code, "detail": detail, "fields": fields},

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "storages",
     "simple_history",
+    "rest_framework_simplejwt.token_blacklist",
     "apps.core",
     "apps.accounts",
     "apps.projects",
@@ -134,8 +135,14 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
     "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "USER_ID_FIELD": "id",
 }
+
+# Failed-login counter (apps.accounts.services). Per process: exact with one worker (D-032).
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+LOGIN_MAX_FAILURES = 5
+LOGIN_FAILURE_WINDOW = 15 * 60
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Butterfly monitoring API",

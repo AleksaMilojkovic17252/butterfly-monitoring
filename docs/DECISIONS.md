@@ -204,3 +204,19 @@ the roles already exist from `db-init`), mirrors the photos back and starts the 
 reason as D-025). That image has no shell, so each `mc` command is its own `docker run`. Encryption uses
 `gpg` (not `age`): `BACKUP_ENCRYPTION_KEY` in `.env` is a gpg recipient; the dump becomes
 `*.dump.gpg` and the photos one `photos.tar.gpg`; restore decrypts with the private key in the keyring.
+
+## D-032 · Login throttling uses a per-process cache
+Five failed logins per lowercased email within 15 minutes return 429 (`apps/accounts/services.py`). The
+counter lives in Django's cache, set explicitly to `LocMemCache`, so it is per process: exact with the
+single dev `runserver` worker, up to 5 × workers if the server ever runs several. A shared cache
+(database or Redis) is not worth a new table or service for a solo laptop deployment. A successful login
+clears the counter, and a locked email gets 429 even with the right password. `/auth/me` returns
+`project_ids: []` until Project exists (T015), and `groups` is empty until T013 creates the groups.
+
+## D-033 · Users are created by admins; no self-registration
+There is no sign-up endpoint. Admins create accounts (Django admin once T014/T015 exist; `createsuperuser`
+or the shell before that), choose the group and add the user to projects. Passwords are reset by an admin
+(no mail server). If registration is wanted later, add request-and-approve: a public endpoint creates a
+user with `is_active=False` and an unusable password, an admin activates it and sets the password. That
+needs no model or migration change (`is_active`, `name` and `organization` exist). Open sign-up is not
+planned: a new account would have no group or project anyway.
