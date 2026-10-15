@@ -40,7 +40,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T002 | [#19](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/19) | Monorepo layout and Docker Compose stack | P1 | must | — | 2 d | done |
 | T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | done |
 | T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | done |
-| T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | todo |
+| T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | done |
 | T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | done |
 | T007 | [#24](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/24) | Walking skeleton: one observation from phone to QGIS | P1 | must | T002, T003, T004, T005, T006 | 3 d | todo |
 | T008 | [#25](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/25) | CI pipeline (GitHub Actions) | P1 | must | T003, T006 | 1 d | dropped |
@@ -201,9 +201,11 @@ Depends on: T003
 - [ ] `docs/architecture/database.md` explains the layout (A.5 item 1) and why the outline's `app`/`audit`/`sensorthings`/`mobility` schemas are not used in Phase 1.
 
 ### T005 · Syncable base model and server-version trigger
-[#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) · E01 · P1 · must · labels: `backend`, `database`, `sync`, `must` · implements F25, F45 · est. 1.5 d · **todo**
+[#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) · E01 · P1 · must · labels: `backend`, `database`, `sync`, `must` · implements F25, F45 · est. 1.5 d · **done**
 
 Depends on: T004
+
+Note: the "(tested)" checks for version bumps and two-connection ordering were done by hand with a temporary table (D-021); see D-029.
 
 - [ ] `core.models.SyncableModel` (abstract) exists with the fields below. `SyncableQuerySet.alive()` excludes soft-deleted rows.
 - [ ] Migration `core/0002_sync_version` creates the sequence and trigger function. `AttachSyncTrigger(table)` is a reusable migration operation used by every model ticket.

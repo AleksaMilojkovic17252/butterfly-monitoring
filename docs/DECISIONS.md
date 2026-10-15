@@ -170,3 +170,16 @@ accepts only http(s) URLs with a host and rejects the `<laptop>` placeholder. `d
 `<typed url>/api/v1/health/` with a full URL, so it works before saving. `AppDatabase` is public
 (Dart privacy is per file); writes to synced tables go through repositories, not widgets.
 Codegen: `dart run build_runner build` (the `--delete-conflicting-outputs` flag was removed).
+
+## D-029 · Sync trigger, advisory lock and hard-delete guard
+2026-10-15 · accepted · T005
+`core/0002_sync_version` creates `sync_version_seq` and `bump_server_version()`; each synced table
+adds `AttachSyncTrigger(table)` (`apps.core.migration_ops`) after its `CreateModel`. The trigger takes
+`pg_advisory_xact_lock(727274)`, so all writes to synced tables are serialised until commit and
+versions commit in order (verified with two connections: the second writer blocks until the first
+commits). This does not scale to many concurrent writers; fine for a thesis-sized deployment.
+`server_version` on a Python instance is stale after `save()`: use
+`refresh_from_db(fields=["server_version"])`. `bulk_create()` fires the trigger but returned objects
+carry no version. Hard delete is blocked: `SyncableModel.delete()` and `SyncableQuerySet.delete()`
+raise `NotImplementedError`, and admin classes extend `core.admin.SyncableAdmin` (no delete
+permission, no bulk delete action). Use `soft_delete()`.
