@@ -183,3 +183,12 @@ commits). This does not scale to many concurrent writers; fine for a thesis-size
 carry no version. Hard delete is blocked: `SyncableModel.delete()` and `SyncableQuerySet.delete()`
 raise `NotImplementedError`, and admin classes extend `core.admin.SyncableAdmin` (no delete
 permission, no bulk delete action). Use `soft_delete()`.
+
+## D-030 · Forwarded host and scheme through nginx
+2026-10-15 · accepted · T009
+Tailscale serve terminates HTTPS and sends the `ts.net` name; nginx passes `X-Forwarded-Proto` and
+`X-Forwarded-Host` (each falling back to `$scheme` / `$http_host` when absent, so plain
+`localhost:8080` and USB still work), and Django sets `USE_X_FORWARDED_HOST = True` next to
+`SECURE_PROXY_SSL_HEADER`. `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` come from `.env`. The cleartext
+exception for `localhost` lives only in the Android debug source set (`src/debug`), since the project
+has no product flavours. Setup steps: `docs/setup/tailscale.md`.

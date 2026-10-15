@@ -44,7 +44,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | done |
 | T007 | [#24](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/24) | Walking skeleton: one observation from phone to QGIS | P1 | must | T002, T003, T004, T005, T006 | 3 d | todo |
 | T008 | [#25](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/25) | CI pipeline (GitHub Actions) | P1 | must | T003, T006 | 1 d | dropped |
-| T009 | [#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) | Phone-to-laptop connectivity: Tailscale and USB | P1 | must | T002, T006 | 1 d | todo |
+| T009 | [#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) | Phone-to-laptop connectivity: Tailscale and USB | P1 | must | T002, T006 | 1 d | done |
 | T010 | [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) | Backup and restore scripts | P1 | must | T002 | 1 d | todo |
 | T011 | [#28](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/28) | Custom user model and JWT auth endpoints | P1 | must | T003 | 1.5 d | todo |
 | T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | todo |
@@ -254,8 +254,10 @@ Depends on: T003, T006
 - [ ] A status badge is in the README.
 
 ### T009 · Phone-to-laptop connectivity: Tailscale and USB
-[#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) · E01 · P1 · must · labels: `infra`, `mobile`, `must` · implements F44 · est. 1 d · **todo**
+[#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) · E01 · P1 · must · labels: `infra`, `mobile`, `must` · implements F44 · est. 1 d · **done**
 
+
+Note: the criteria were checked by hand on the developer's laptop and phone (D-021, D-030). The Android cleartext config was written by the developer.
 Depends on: T002, T006
 
 - [ ] `docs/setup/tailscale.md` describes:
