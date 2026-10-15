@@ -159,3 +159,14 @@ until a service account exists (T049).
 The 13 apps are packages under `backend/apps/` (`INSTALLED_APPS` uses `apps.<name>`) instead of sitting in
 the root of `backend/`. App labels stay `<name>`, so `accounts.User`, table names and migration
 dependencies are unchanged. Models stay in each app (`models.py`, or `models/` once an app grows).
+
+## D-028 · App server URL in shared_preferences; Riverpod 3 and provider wiring
+2026-10-15 · accepted · T006
+The server URL is one string, so it lives in `shared_preferences` (key `server_url`), not in a Drift
+table. `main()` awaits `SharedPreferences.getInstance()` and overrides `sharedPreferencesProvider`, so
+reads are synchronous. `ServerUrlNotifier` (Riverpod 3 `Notifier`) trims, strips trailing slashes,
+accepts only http(s) URLs with a host and rejects the `<laptop>` placeholder. `dioProvider` watches
+`serverUrlProvider`, so saving a new URL rebuilds the client. "Test connection" calls
+`<typed url>/api/v1/health/` with a full URL, so it works before saving. `AppDatabase` is public
+(Dart privacy is per file); writes to synced tables go through repositories, not widgets.
+Codegen: `dart run build_runner build` (the `--delete-conflicting-outputs` flag was removed).

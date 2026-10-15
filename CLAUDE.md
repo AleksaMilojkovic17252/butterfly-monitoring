@@ -34,7 +34,7 @@ Key directories (T002 created the layout; app code arrives with T003 and T006):
 
 ## Commands
 
-The stack (T002) and the Django project (T003) exist; the Flutter app arrives with T006.
+The stack (T002), the Django project (T003) and the Flutter app foundation (T006) exist.
 Lines marked **TODO** are settled by that ticket: update this section in the same commit.
 No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, format and a manual run.
 
@@ -57,7 +57,8 @@ $DC exec django python manage.py check
 
 # Mobile (T006), run in mobile/
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # Drift codegen
+dart run build_runner build                        # Drift codegen (the old --delete-conflicting-outputs flag is gone)
+flutter test                                       # the one widget test (T006)
 dart format .
 flutter analyze
 dart run drift_dev make-migrations                 # after any Drift schema change

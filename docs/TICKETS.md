@@ -41,7 +41,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T003 | [#20](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/20) | Django project bootstrap | P1 | must | T002 | 1.5 d | done |
 | T004 | [#21](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/21) | Database schema strategy: `geo` schema and read-only role | P1 | must | T003 | 1 d | done |
 | T005 | [#22](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/22) | Syncable base model and server-version trigger | P1 | must | T004 | 1.5 d | todo |
-| T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | todo |
+| T006 | [#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) | Flutter app foundation | P1 | must | — | 2 d | done |
 | T007 | [#24](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/24) | Walking skeleton: one observation from phone to QGIS | P1 | must | T002, T003, T004, T005, T006 | 3 d | todo |
 | T008 | [#25](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/25) | CI pipeline (GitHub Actions) | P1 | must | T003, T006 | 1 d | dropped |
 | T009 | [#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) | Phone-to-laptop connectivity: Tailscale and USB | P1 | must | T002, T006 | 1 d | todo |
@@ -212,7 +212,9 @@ Depends on: T004
 - [ ] Hard delete is disabled for synced models in services and admin. `soft_delete()` sets `deleted_at` instead.
 
 ### T006 · Flutter app foundation
-[#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) · E01 · P1 · must · labels: `mobile`, `must` · implements F23, F72 · est. 2 d · **todo**
+[#23](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/23) · E01 · P1 · must · labels: `mobile`, `must` · implements F23, F72 · est. 2 d · **done**
+
+Deferred: confirm that `butterfly.sqlite` is created on the phone. Nothing opens `AppDatabase` yet, so check it when the first ticket reads or writes a table (T007).
 
 Depends on: —
 
