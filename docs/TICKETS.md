@@ -51,7 +51,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | done |
 | T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | done |
 | T015 | [#32](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/32) | Project and membership models, API and admin | P1 | must | T005, T013, T014 | 2 d | done |
-| T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | todo |
+| T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | done |
 | T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | todo |
 | T018 | [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) | Audit log with django-simple-history | P1 | must | T015 | 1.5 d | todo |
 | T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | todo |
@@ -336,7 +336,7 @@ Note: skipped the "(tested)" parts (D-021); checked by hand. Admin-as-researcher
 ### T014 · Django admin foundation
 [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) · E02 · P1 · must · labels: `admin`, `must` · implements F62 · est. 1 d · **done**
 
-Deferred (`SyncableAdmin` part checked in the browser in T015; `MapAdmin` still open): `MapAdmin` and `SyncableAdmin` were only checked from the shell (no model uses them yet). Open a
+Deferred (`SyncableAdmin` checked in T015, `MapAdmin` checked in T016; only the T022 transect editor is left to try): `MapAdmin` and `SyncableAdmin` were only checked from the shell (no model uses them yet). Open a
 change form in the browser when the first model with a map admin lands: T016 (`Project.area`, check that the
 map centres on the area) and T022 (transect editor). Also try "Soft delete selected" and the "Deleted" filter
 on the first `SyncableAdmin` model (T015).
@@ -369,7 +369,9 @@ Depends on: T005, T013, T014
 - [ ] Projects are synced (pull, T025) to members.
 
 ### T016 · Project protocol settings and study area
-[#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) · E02 · P1 · must · labels: `backend`, `admin`, `database`, `must` · implements F71, F73 · est. 1.5 d · **todo**
+[#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) · E02 · P1 · must · labels: `backend`, `admin`, `database`, `must` · implements F71, F73 · est. 1.5 d · **done**
+
+Deferred: the protocol summary on the app's transect detail screen (T033) and the "changing a threshold changes the next flag" check (T056); the pull (T025) reuses the project serializer that now carries `area` and `protocol`.
 
 Depends on: T001, T015
 

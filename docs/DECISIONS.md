@@ -260,3 +260,20 @@ and phones pull the row again) next to "Soft delete selected". `Project.clean()`
 same selectors as Django (`html[data-theme="light"], :root`, `html[data-theme="dark"]`, and a
 `prefers-color-scheme: dark` block for Auto), otherwise Django's blue wins. Admin forms for synced models list
 fields explicitly (see `ProjectAdmin`), because inherited sync fields otherwise come first.
+
+## D-038 · Protocol row created by signal, study area imported through GDAL
+2026-10 · accepted · T016
+Every `Project` gets a `ProjectProtocol` from a `post_save` receiver (`projects/signals.py`, calling
+`services.create_default_protocol`); the season has no model default, so it is 1 Apr – 30 Sep of the project's
+start year. Migration `projects/0002` creates protocols for projects that already existed. Because of the signal
+the protocol inline is hidden on the add form (the row does not exist yet) and shown when editing, without add or
+delete. `Project.area` is edited in the admin map widget (`ProjectAdmin` also extends `MapAdmin`, centred on the
+area) or replaced by the "Import study area" action, which reads GeoJSON or KML with GeoDjango's GDAL
+`DataSource` (no new dependency), reprojects to 4326, drops Z and merges all polygons. The projects API returns
+`area` (GeoJSON geometry) and a nested read-only `protocol`; the pull (T025) reuses that serializer. Deferred:
+the app's protocol summary (T033) and the "threshold change changes the flags" check (T056).
+Also in T016: field explanations are `help_texts` dicts in the admin (`HelpTextMixin`), not model `help_text`, so
+wording changes need no migration. `MapAdmin` opens on Serbia (lon 20.8, lat 44.0, zoom 7) and zooms to 13 when
+the object has an area. `SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"` is needed because Django's
+default (`same-origin`) sends no Referer and tile.openstreetmap.org then answers 403 "Access blocked" to the admin
+map. The projects routes have no trailing slash (`/api/v1/projects`).

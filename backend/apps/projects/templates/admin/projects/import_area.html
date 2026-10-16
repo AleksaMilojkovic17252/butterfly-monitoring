@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Replace the study area of <strong>{{ project }}</strong> with the polygons in a GeoJSON or KML file
+  (WGS 84 or any CRS the file declares). Existing area is overwritten.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="import_area">
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ project.pk }}">
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Import">
+  <a href="{% url 'admin:projects_project_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

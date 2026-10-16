@@ -79,7 +79,9 @@ class MapAdmin(GISModelAdmin):
     `obj.project.area` (MultiPolygon, T016) and uses its centroid.
     """
 
-    gis_widget_kwargs = {"attrs": {"default_zoom": 13}}
+    # Without a known area the map opens on Serbia; with one, get_form zooms in on it.
+    gis_widget_kwargs = {"attrs": {"default_lon": 20.8, "default_lat": 44.0, "default_zoom": 7}}
+    area_zoom = 13
 
     def get_map_center(self, request, obj):
         area = getattr(getattr(obj, "project", None), "area", None)
@@ -95,4 +97,5 @@ class MapAdmin(GISModelAdmin):
                 widget = field.widget
                 if hasattr(widget, "default_lon"):
                     widget.attrs["default_lon"], widget.attrs["default_lat"] = center
+                    widget.attrs["default_zoom"] = self.area_zoom
         return form

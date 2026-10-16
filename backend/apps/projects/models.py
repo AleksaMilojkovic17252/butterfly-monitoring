@@ -1,4 +1,8 @@
+from datetime import time
+from decimal import Decimal
+
 from django.conf import settings
+from django.contrib.gis.db import models as gis_models
 from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -16,7 +20,8 @@ class Project(SyncableModel):
     end_date = models.DateField(null=True, blank=True)
     default_crs = models.PositiveIntegerField(default=4326)  # EPSG code
     active = models.BooleanField(default=True)
-    # Added by later tickets: area (T016), taxon_list_version (T019).
+    area = gis_models.MultiPolygonField(srid=4326, null=True, blank=True)  # study area
+    # Added by a later ticket: taxon_list_version (T019).
     history = HistoricalRecords(table_name="historical_project")
 
     class Meta:
@@ -59,3 +64,93 @@ class ProjectMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.project}"
+
+
+class SurveyMethod(models.TextChoices):
+    POLLARD_WALK = "pollard_walk", "Pollard walk"
+    OTHER = "other", "Other"
+
+
+class ProjectProtocol(SyncableModel):
+    """Survey protocol of one project. Validation (T055) and flags (T056) read these values.
+
+    Defaults are the proposals in docs/requirements/protocol.md.
+    """
+
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="protocol")
+    protocol_version = models.CharField(max_length=20, default="1.0")
+    survey_method = models.CharField(
+        max_length=20, choices=SurveyMethod.choices, default=SurveyMethod.POLLARD_WALK
+    )
+    season_start = models.DateField()
+    season_end = models.DateField()
+    day_start_time = models.TimeField(default=time(10, 0))
+    day_end_time = models.TimeField(default=time(17, 0))
+    min_temperature_c = models.DecimalField(max_digits=4, decimal_places=1, default=Decimal("13.0"))
+    sunny_temperature_c = models.DecimalField(
+        max_digits=4, decimal_places=1, default=Decimal("17.0")
+    )
+    max_cloud_cover_pct_if_cool = models.PositiveSmallIntegerField(default=40)
+    max_wind_beaufort = models.PositiveSmallIntegerField(default=5)
+    allow_precipitation = models.BooleanField(default=False)
+    target_visits_per_season = models.PositiveSmallIntegerField(default=8)
+    max_distance_from_transect_m = models.DecimalField(
+        max_digits=6, decimal_places=1, default=Decimal("20.0")
+    )
+    observation_time_tolerance_min = models.PositiveSmallIntegerField(default=5)
+    gps_interval_s = models.PositiveSmallIntegerField(default=5)
+    gps_interval_battery_saver_s = models.PositiveSmallIntegerField(default=15)
+    gps_accuracy_warning_m = models.DecimalField(
+        max_digits=6, decimal_places=1, default=Decimal("25.0")
+    )
+    gps_gap_s = models.PositiveSmallIntegerField(default=60)
+    high_count_threshold = models.PositiveIntegerField(default=50)
+    min_coverage_pct = models.PositiveSmallIntegerField(default=80)
+    history = HistoricalRecords(table_name="historical_project_protocol")
+
+    class Meta:
+        db_table = "project_protocol"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(season_end__gte=models.F("season_start")),
+                name="protocol_season_ok",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(day_end_time__gt=models.F("day_start_time")),
+                name="protocol_day_window_ok",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(max_wind_beaufort__lte=12), name="protocol_wind_ok"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(max_cloud_cover_pct_if_cool__lte=100)
+                & models.Q(min_coverage_pct__lte=100),
+                name="protocol_pct_ok",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(gps_interval_s__gte=1)
+                & models.Q(gps_interval_battery_saver_s__gte=models.F("gps_interval_s")),
+                name="protocol_gps_interval_ok",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Protocol of {self.project}"
+
+    def clean(self):
+        # Same rules as the check constraints, raised on the fields so forms show them there.
+        errors = {}
+        if self.season_start and self.season_end and self.season_end < self.season_start:
+            errors["season_end"] = "Season end cannot be before the season start."
+        if self.day_start_time and self.day_end_time and self.day_end_time <= self.day_start_time:
+            errors["day_end_time"] = "Day window must end after it starts."
+        if (
+            self.gps_interval_s is not None
+            and self.gps_interval_battery_saver_s is not None
+            and self.gps_interval_battery_saver_s < self.gps_interval_s
+        ):
+            errors["gps_interval_battery_saver_s"] = (
+                "Battery-saver interval cannot be shorter than the normal interval."
+            )
+        if errors:
+            raise ValidationError(errors)

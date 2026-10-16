@@ -19,6 +19,9 @@ ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 # nginx (and Tailscale serve in front of it) terminate HTTPS, so trust the forwarded scheme.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# Django's default ("same-origin") sends no Referer to other sites, and tile.openstreetmap.org
+# answers 403 "Access blocked" to tile requests without one (admin map widget, T016).
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 USE_X_FORWARDED_HOST = True
 
 INSTALLED_APPS = [
