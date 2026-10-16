@@ -220,3 +220,13 @@ or the shell before that), choose the group and add the user to projects. Passwo
 user with `is_active=False` and an unusable password, an admin activates it and sets the password. That
 needs no model or migration change (`is_active`, `name` and `organization` exist). Open sign-up is not
 planned: a new account would have no group or project anyway.
+
+## D-034 · Role groups: created by migration, permissions granted in post_migrate
+2026-10 · accepted · T013
+Migration `accounts.0003_groups` creates `researcher` and `admin`. Django creates permission rows only
+after all migrations, so `sync_admin_group_permissions()` (accounts/services.py) runs from `post_migrate`
+and gives `admin` every permission of the `apps.*` models; new models are picked up on the next `migrate`.
+`is_staff` follows `admin` membership through `m2m_changed` (superusers keep `is_staff`). Admins may edit
+any record (`IsOwnerOrAdmin`). `IsProjectMember` admits only admins until `ProjectMembership` exists
+(T015, marked TODO there). `GET /api/v1/auth/admin-check` is a small admin-only endpoint that shows the
+403 for researchers until the export and pygeoapi endpoints exist.

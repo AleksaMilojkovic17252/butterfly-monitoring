@@ -48,7 +48,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T010 | [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) | Backup and restore scripts | P1 | must | T002 | 1 d | done |
 | T011 | [#28](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/28) | Custom user model and JWT auth endpoints | P1 | must | T003 | 1.5 d | done |
 | T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | done |
-| T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | todo |
+| T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | done |
 | T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | todo |
 | T015 | [#32](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/32) | Project and membership models, API and admin | P1 | must | T005, T013, T014 | 2 d | todo |
 | T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | todo |
@@ -318,9 +318,11 @@ Depends on: T006, T011
 - [ ] Widget tests cover the login form validation and the interceptor refresh.
 
 ### T013 · Two roles: groups, permissions and access rules
-[#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) · E02 · P1 · must · labels: `backend`, `admin`, `security`, `must` · implements F2, F62 · est. 1.5 d · **todo**
+[#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) · E02 · P1 · must · labels: `backend`, `admin`, `security`, `must` · implements F2, F62 · est. 1.5 d · **done**
 
 Depends on: T011
+
+Note: skipped the "(tested)" parts (D-021); checked by hand. Admin-as-researcher scoping (own records) is a queryset filter in later endpoint tickets. See D-034.
 
 - [ ] A data migration creates groups `researcher` (no model permissions; app only) and `admin` (all permissions of this project's apps). A later migration helper `sync_admin_group_permissions()` re-grants after new models are added. It runs in a `post_migrate` signal.
 - [ ] Adding a user to `admin` sets `is_staff=True`, and removing them sets it back to `False` (`m2m_changed` signal). Researchers cannot log into `/admin/` (tested).
