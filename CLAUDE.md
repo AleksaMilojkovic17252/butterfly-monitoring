@@ -99,15 +99,17 @@ Use `/next-ticket` (or `/next-ticket T0xx`), then `/finish-ticket`. By hand:
 7. **Record**: set the status to `done` in TICKETS.md, add a `docs/DECISIONS.md` entry for any design choice a later session would need, and write down `VERIFY` results where the ticket says.
 8. **Merge** into `main` with the user's OK (`git merge --ff-only` or a merge commit); pushing is the user's call.
 
-## Flutter work is the developer's own
+## Flutter work: Claude writes, the developer reviews
 
-The developer writes **all Flutter/Dart code in `mobile/` themselves**, to learn it. Do not implement
-mobile tickets (T006, T012, T017, T029–T033, T035, T037–T041, T045, T050, T052, T054, T059, T060, T062,
-T072–T074 and the other `mobile`-labelled tickets) and do not edit files under `mobile/` unless asked.
-Help only on request: explain concepts, review code the developer wrote, debug errors they paste, or
-sketch a small snippet when asked. `/next-ticket` skips mobile tickets and picks the next backend,
-infrastructure or docs ticket; the backend half of a mixed ticket is still ours to build. The developer
-marks mobile tickets `in progress` / `done` in TICKETS.md.
+The developer is learning Flutter. Claude may implement mobile tickets and edit files under `mobile/`,
+but the code is for the developer to read and change, so:
+
+- Write simple, readable Dart that matches the surrounding code. Comment the non-obvious parts.
+- Stop after implementing and hand over for review. Summarise what each file does and where to
+  start reading. Wait for the developer's edits before committing; the developer may rework the code.
+- Explain a Flutter/Riverpod/Dart concept when the developer asks.
+- Mobile tickets are picked and built like any other: `/next-ticket` never skips one for being
+  Flutter. Statuses follow the normal flow, but `done` and the commit wait for the developer's review.
 
 ## Definition of done
 
