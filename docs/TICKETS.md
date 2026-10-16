@@ -47,7 +47,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T009 | [#26](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/26) | Phone-to-laptop connectivity: Tailscale and USB | P1 | must | T002, T006 | 1 d | done |
 | T010 | [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) | Backup and restore scripts | P1 | must | T002 | 1 d | done |
 | T011 | [#28](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/28) | Custom user model and JWT auth endpoints | P1 | must | T003 | 1.5 d | done |
-| T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | todo |
+| T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | done |
 | T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | todo |
 | T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | todo |
 | T015 | [#32](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/32) | Project and membership models, API and admin | P1 | must | T005, T013, T014 | 2 d | todo |
@@ -304,7 +304,9 @@ Depends on: T003
 - [ ] Tests cover login, refresh rotation, logout blacklist, and an inactive user.
 
 ### T012 · App login, secure token storage, refresh and logout
-[#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) · E02 · P1 · must · labels: `mobile`, `security`, `must` · implements F1 · est. 2 d · **todo**
+[#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) · E02 · P1 · must · labels: `mobile`, `security`, `must` · implements F1 · est. 2 d · **done**
+
+Note: the two widget-test files (`mobile/test/auth_test.dart`, `widget_test.dart`) cover form validation and the interceptor refresh because the ticket asks for them. "N changes not yet synced" and "sync first" use placeholder providers in `core/sync/sync_status.dart` (count 0, sync-now false) until T030 supplies the real ones, so that dialog cannot appear yet.
 
 Depends on: T006, T011
 
