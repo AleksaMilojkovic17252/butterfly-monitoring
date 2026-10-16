@@ -48,7 +48,7 @@ class SyncableAdmin(admin.ModelAdmin):
         actions.pop("delete_selected", None)
         return actions
 
-    actions = ["soft_delete_selected"]
+    actions = ["soft_delete_selected", "restore_selected"]
 
     @admin.action(description=_("Soft delete selected"), permissions=["change"])
     def soft_delete_selected(self, request, queryset):
@@ -58,6 +58,18 @@ class SyncableAdmin(admin.ModelAdmin):
             obj.soft_delete(request.user)
             count += 1
         self.message_user(request, _("Soft deleted %(count)d row(s).") % {"count": count})
+
+    @admin.action(description=_("Restore selected (undo soft delete)"), permissions=["change"])
+    def restore_selected(self, request, queryset):
+        # Row by row for the same reason: the trigger gives a new server_version, so phones
+        # pull the restored row again.
+        count = 0
+        for obj in queryset.filter(deleted_at__isnull=False):
+            obj.deleted_at = None
+            obj.updated_by = request.user
+            obj.save(update_fields=["deleted_at", "updated_by", "updated_at"])
+            count += 1
+        self.message_user(request, _("Restored %(count)d row(s).") % {"count": count})
 
 
 class MapAdmin(GISModelAdmin):

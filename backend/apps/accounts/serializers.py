@@ -16,8 +16,9 @@ class UserSerializer(serializers.Serializer):
         return sorted(user.groups.values_list("name", flat=True))
 
     def get_project_ids(self, user) -> list[str]:
-        # TODO(T015): return the ids of the user's projects once Project exists.
-        return []
+        from apps.projects.services import projects_for
+
+        return [str(pk) for pk in projects_for(user).values_list("id", flat=True)]
 
 
 class LoginSerializer(TokenObtainPairSerializer):

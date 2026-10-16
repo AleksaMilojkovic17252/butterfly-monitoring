@@ -241,3 +241,22 @@ The VERIFY is settled: section order is a sort on `app["app_label"]` in `get_app
 `admin_site.py`; unlisted apps go last). Only the labels in that list are placed, so a new app needs adding there.
 `SyncableAdmin` and `MapAdmin` are plain bases: use `class XAdmin(SimpleHistoryAdmin, SyncableAdmin)` (T018).
 "Soft delete selected" saves row by row (no `QuerySet.update()`), so the trigger and history both fire.
+
+## D-036 · Project scope lives in `projects_for(user)`; membership removal keeps local data
+2026-10 · accepted · T015
+`apps/projects/services.py` has `projects_for(user)` (admins: all live projects; others: projects they are a
+member of) and `is_member()`. The projects API, `/auth/me` `project_ids` and `IsProjectMember` use them, and
+the pull (T025) must too. A non-member gets 404 on `/projects/{id}`. `ProjectMembership` is not synced (bigint
+PK, no trigger): removing one simply stops the project from appearing in the user's next pull. Nothing tells
+the phone to delete it, so rows already downloaded stay on the device (documented behaviour, not a bug).
+`transect_count` is annotated as a constant 0 until `Transect` exists (T021). `accounts.User` got a minimal
+admin (T015) because the membership inline uses user autocomplete; admins create accounts there (D-033).
+
+## D-037 · Admin restore action, field-level date error, theme CSS selectors
+2026-10 · accepted · T015
+`SyncableAdmin` has "Restore selected" (clears `deleted_at` row by row, so the trigger bumps `server_version`
+and phones pull the row again) next to "Soft delete selected". `Project.clean()` raises the date error on
+`end_date`; a bare `CheckConstraint` only gives a form-level message. Admin colours (`core/admin.css`) use the
+same selectors as Django (`html[data-theme="light"], :root`, `html[data-theme="dark"]`, and a
+`prefers-color-scheme: dark` block for Auto), otherwise Django's blue wins. Admin forms for synced models list
+fields explicitly (see `ProjectAdmin`), because inherited sync fields otherwise come first.

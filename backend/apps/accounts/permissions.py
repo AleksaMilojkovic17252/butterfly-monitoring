@@ -19,8 +19,9 @@ def _project_id(request, obj=None):
 
 
 def _is_member(user, project_id):
-    # TODO(T015): query ProjectMembership once it exists.
-    return False
+    from apps.projects.services import is_member
+
+    return project_id is not None and is_member(user, project_id)
 
 
 class IsProjectMember(BasePermission):

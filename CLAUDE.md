@@ -38,6 +38,11 @@ The stack (T002), the Django project (T003) and the Flutter app foundation (T006
 Lines marked **TODO** are settled by that ticket: update this section in the same commit.
 No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, format and a manual run.
 
+The developer's shell is **fish**, and Claude's own docker commands do not work on this machine: give the
+developer fish-syntax commands to run. The lines below are bash-style for readability; in fish write
+`set DC docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml`
+and use `(id -u)` instead of `$(id -u)`.
+
 ```bash
 # Stack (T002). Backend commands run inside the django container (D-022).
 DC="docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"

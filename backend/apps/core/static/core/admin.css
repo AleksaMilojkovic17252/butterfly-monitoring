@@ -1,4 +1,9 @@
-/* Butterfly Monitoring admin: colours only, layout stays Django's (T014). */
+/* Butterfly Monitoring admin: colours only, layout stays Django's (T014).
+   Django sets its blue palette on `html[data-theme="light"]`, `:root` (dark media query) and
+   `html[data-theme="dark"]`, so each brand block below uses the same selectors, or it loses. */
+
+/* Light (also the default before the theme is chosen) */
+html[data-theme="light"],
 :root {
   --primary: #1f6f43;
   --secondary: #2f8f5b;
@@ -6,9 +11,10 @@
   --primary-fg: #fff;
   --link-fg: #1f6f43;
   --link-hover-color: #14502f;
+  --link-selected-fg: #1f6f43;
   --header-bg: #1f6f43;
   --header-color: #eaf5ee;
-  --header-branding-color: #fff;
+  --header-branding-color: #f2b134;
   --header-link-color: #fff;
   --breadcrumbs-bg: #2f8f5b;
   --breadcrumbs-fg: #eaf5ee;
@@ -21,6 +27,50 @@
   --default-button-hover-bg: #14502f;
   --selected-row: #f3f9f5;
   --module-header-bg: #1f6f43;
+}
+
+/* Dark: chosen explicitly, or Auto with a dark OS. `html:not(...)` is more specific than
+   Django's `:root` inside the media query. */
+html[data-theme="dark"] {
+  --primary: #1f6f43;
+  --secondary: #2f8f5b;
+  --link-fg: #7fd1a0;
+  --link-hover-color: #a8e6c0;
+  --link-selected-fg: #7fd1a0;
+  --header-bg: #1f6f43;
+  --breadcrumbs-bg: #17402b;
+  --breadcrumbs-fg: #cfe8d9;
+  --breadcrumbs-link-fg: #e0e0e0;
+  --object-tools-bg: #1f6f43;
+  --object-tools-hover-bg: #2f8f5b;
+  --button-bg: #1f6f43;
+  --button-hover-bg: #2f8f5b;
+  --default-button-bg: #1f6f43;
+  --default-button-hover-bg: #2f8f5b;
+  --selected-row: #0f3a25;
+  --module-header-bg: #1f6f43;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) {
+    --primary: #1f6f43;
+    --secondary: #2f8f5b;
+    --link-fg: #7fd1a0;
+    --link-hover-color: #a8e6c0;
+    --link-selected-fg: #7fd1a0;
+    --header-bg: #1f6f43;
+    --breadcrumbs-bg: #17402b;
+    --breadcrumbs-fg: #cfe8d9;
+    --breadcrumbs-link-fg: #e0e0e0;
+    --object-tools-bg: #1f6f43;
+    --object-tools-hover-bg: #2f8f5b;
+    --button-bg: #1f6f43;
+    --button-hover-bg: #2f8f5b;
+    --default-button-bg: #1f6f43;
+    --default-button-hover-bg: #2f8f5b;
+    --selected-row: #0f3a25;
+    --module-header-bg: #1f6f43;
+  }
 }
 
 .bm-logo {
