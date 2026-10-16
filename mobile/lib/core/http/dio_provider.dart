@@ -3,13 +3,27 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
+import 'package:mobile/core/http/auth_interceptor.dart';
+import 'package:mobile/features/auth/data/auth_repository.dart';
+import 'package:mobile/features/auth/data/token_storage.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
 
-final dioProvider = Provider<Dio>((ref) {
+final Provider<Dio> dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: ref.watch(serverUrlProvider),
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 20),
+    ),
+  );
+
+  dio.interceptors.add(
+    AuthInterceptor(
+      dio: dio,
+      storage: ref.read(tokenStorageProvider),
+      refresh: () => ref.read(authRepositoryProvider).refresh(),
+      onSessionExpired: () =>
+          ref.read(authControllerProvider.notifier).sessionExpired(),
     ),
   );
 

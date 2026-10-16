@@ -6,6 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
+import 'package:mobile/core/sync/sync_status.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+
+enum _LogoutChoice { syncFirst, anyway }
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -92,8 +97,90 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
+  Future<void> _logout() async {
+    final pending = ref.read(pendingChangesProvider).value ?? 0;
+    if (pending > 0) {
+      final choice = await showDialog<_LogoutChoice>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.sync_problem_outlined),
+          title: const Text('Unsynced changes'),
+          content: Text(
+            '$pending changes not yet synced. They stay on this phone, but '
+            'sync first so they reach the server.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, _LogoutChoice.anyway),
+              child: const Text('Log out anyway'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, _LogoutChoice.syncFirst),
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+              child: const Text('Sync first'),
+            ),
+          ],
+        ),
+      );
+      if (choice == null || !mounted) return;
+      if (choice == _LogoutChoice.syncFirst) {
+        final ok = await ref.read(syncNowProvider)();
+        if (!mounted) return;
+        if (!ok) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sync did not finish. Still logged in.'),
+            ),
+          );
+          return;
+        }
+      }
+    }
+    await ref.read(authControllerProvider.notifier).logout();
+  }
+
+  Future<void> _removeLocalData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: Icon(
+          Icons.delete_forever_outlined,
+          color: Theme.of(context).colorScheme.error,
+        ),
+        title: const Text('Remove all local data?'),
+        content: const Text(
+          'Every visit, route and observation stored on this phone is deleted, '
+          'including changes that were never synced. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Delete everything'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(authControllerProvider.notifier).removeAllLocalData();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(authControllerProvider).profile;
+    final offline = ref.watch(authControllerProvider) is OfflineSession;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Padding(
@@ -103,6 +190,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             key: _formKey,
             child: Column(
               children: [
+                if (profile != null) ...[
+                  Card(
+                    child: ListTile(
+                      leading: const CircleAvatar(child: Icon(Icons.person)),
+                      title: Text(profile.displayName),
+                      subtitle: Text(
+                        offline ? '${profile.email} · offline' : profile.email,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _logout,
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Log out'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _removeLocalData,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .error,
+                          ),
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Remove data'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 32),
+                ],
                 TextFormField(
                   decoration: const InputDecoration(label: Text('URL')),
                   autocorrect: false,
