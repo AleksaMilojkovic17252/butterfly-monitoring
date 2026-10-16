@@ -102,7 +102,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Europe/Belgrade"
+# UTC everywhere on the server; the app converts to local time for display (D-039).
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 

@@ -277,3 +277,7 @@ wording changes need no migration. `MapAdmin` opens on Serbia (lon 20.8, lat 44.
 the object has an area. `SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"` is needed because Django's
 default (`same-origin`) sends no Referer and tile.openstreetmap.org then answers 403 "Access blocked" to the admin
 map. The projects routes have no trailing slash (`/api/v1/projects`).
+
+## D-039 · Server time zone is UTC
+2026-10 · accepted
+`TIME_ZONE = "UTC"` (it was Europe/Belgrade), so API timestamps end in `Z` and the admin shows UTC, as CONVENTIONS 8 says. Stored data is unchanged (`timestamptz` holds the instant). Follow-ups are notes under T026 (reject offset-less datetimes in push input) and T029 (the app sends UTC).

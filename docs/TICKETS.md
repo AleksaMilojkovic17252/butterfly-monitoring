@@ -496,6 +496,8 @@ Depends on: T005, T015, T019, T020, T021
 ### T026 · Push API with idempotent mutations
 [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F25, F13 · est. 2.5 d · **todo**
 
+Note: reject datetimes without a UTC offset in push input (DRF would read them in the server zone); API timestamps are UTC since D-039.
+
 Depends on: T025
 
 - [ ] Each mutation runs in its own savepoint, so one rejected mutation does not abort the batch. Results come back in input order.
@@ -540,6 +542,8 @@ Depends on: T014, T027
 
 ### T029 · App sync queue
 [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) · E04 · P1 · must · labels: `mobile`, `sync`, `database`, `must` · implements F24, F23 · est. 1.5 d · **todo**
+
+Note: send every timestamp as UTC with an offset (`DateTime.now().toUtc().toIso8601String()` ends in `Z`); convert to local time only for display.
 
 Depends on: T006
 
