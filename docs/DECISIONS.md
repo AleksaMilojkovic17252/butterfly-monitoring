@@ -230,3 +230,14 @@ and gives `admin` every permission of the `apps.*` models; new models are picked
 any record (`IsOwnerOrAdmin`). `IsProjectMember` admits only admins until `ProjectMembership` exists
 (T015, marked TODO there). `GET /api/v1/auth/admin-check` is a small admin-only endpoint that shows the
 403 for researchers until the export and pygeoapi endpoints exist.
+
+## D-035 · Branded AdminSite through an AdminConfig, ordered by app label
+2026-10 · accepted · T014
+`apps.core.admin_config.CoreAdminConfig` (a `django.contrib.admin` `AdminConfig` with `default_site`) replaces
+`django.contrib.admin` in `INSTALLED_APPS`, so `@admin.register` keeps working and the site is
+`ButterflyAdminSite`. It must live in its own module: importing `AdminConfig` into `core/apps.py` makes Django
+see two default configs. `apps.core` is listed first so its `admin/base_site.html` wins over the stock one.
+The VERIFY is settled: section order is a sort on `app["app_label"]` in `get_app_list` (`APP_ORDER` in
+`admin_site.py`; unlisted apps go last). Only the labels in that list are placed, so a new app needs adding there.
+`SyncableAdmin` and `MapAdmin` are plain bases: use `class XAdmin(SimpleHistoryAdmin, SyncableAdmin)` (T018).
+"Soft delete selected" saves row by row (no `QuerySet.update()`), so the trigger and history both fire.

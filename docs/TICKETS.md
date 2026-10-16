@@ -49,7 +49,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T011 | [#28](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/28) | Custom user model and JWT auth endpoints | P1 | must | T003 | 1.5 d | done |
 | T012 | [#29](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/29) | App login, secure token storage, refresh and logout | P1 | must | T006, T011 | 2 d | done |
 | T013 | [#30](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/30) | Two roles: groups, permissions and access rules | P1 | must | T011 | 1.5 d | done |
-| T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | todo |
+| T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | done |
 | T015 | [#32](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/32) | Project and membership models, API and admin | P1 | must | T005, T013, T014 | 2 d | todo |
 | T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | todo |
 | T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | todo |
@@ -334,7 +334,12 @@ Note: skipped the "(tested)" parts (D-021); checked by hand. Admin-as-researcher
 - [ ] An admin who uses the app behaves exactly like a researcher there (sees own records), plus can see all projects.
 
 ### T014 · Django admin foundation
-[#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) · E02 · P1 · must · labels: `admin`, `must` · implements F62 · est. 1 d · **todo**
+[#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) · E02 · P1 · must · labels: `admin`, `must` · implements F62 · est. 1 d · **done**
+
+Deferred: `MapAdmin` and `SyncableAdmin` were only checked from the shell (no model uses them yet). Open a
+change form in the browser when the first model with a map admin lands: T016 (`Project.area`, check that the
+map centres on the area) and T022 (transect editor). Also try "Soft delete selected" and the "Deleted" filter
+on the first `SyncableAdmin` model (T015).
 
 Depends on: T013
 

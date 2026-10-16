@@ -1,0 +1,33 @@
+/* Butterfly Monitoring admin: colours only, layout stays Django's (T014). */
+:root {
+  --primary: #1f6f43;
+  --secondary: #2f8f5b;
+  --accent: #f2b134;
+  --primary-fg: #fff;
+  --link-fg: #1f6f43;
+  --link-hover-color: #14502f;
+  --header-bg: #1f6f43;
+  --header-color: #eaf5ee;
+  --header-branding-color: #fff;
+  --header-link-color: #fff;
+  --breadcrumbs-bg: #2f8f5b;
+  --breadcrumbs-fg: #eaf5ee;
+  --breadcrumbs-link-fg: #fff;
+  --object-tools-bg: #1f6f43;
+  --object-tools-hover-bg: #14502f;
+  --button-bg: #1f6f43;
+  --button-hover-bg: #14502f;
+  --default-button-bg: #1f6f43;
+  --default-button-hover-bg: #14502f;
+  --selected-row: #f3f9f5;
+  --module-header-bg: #1f6f43;
+}
+
+.bm-logo {
+  margin-right: 0.4em;
+}
+
+#header #site-name a {
+  display: flex;
+  align-items: center;
+}

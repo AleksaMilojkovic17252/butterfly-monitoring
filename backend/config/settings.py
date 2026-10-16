@@ -22,7 +22,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # apps.core first so its admin/base_site.html beats the stock one (T014).
+    "apps.core",
+    "apps.core.admin_config.CoreAdminConfig",  # django.contrib.admin with our AdminSite
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -34,7 +36,6 @@ INSTALLED_APPS = [
     "storages",
     "simple_history",
     "rest_framework_simplejwt.token_blacklist",
-    "apps.core",
     "apps.accounts",
     "apps.projects",
     "apps.catalogues",
