@@ -421,3 +421,28 @@ dialog. The other sections keep their numbers (no renumbering). "Restore selecte
 Django's inline delete check (`DeleteProtectedModelForm`) refuses a removal when a protected foreign key points at the row: when
 a later ticket adds `on_delete=PROTECT` references to `TransectSection`, a section with records will not be removable here,
 although a soft delete would be safe; revisit then.
+
+## D-047 · Seed data: GBIF families instead of the superfamily, files in `database/seeds` mounted as `/seeds`
+2026-10-19 · accepted · T024
+`/v1/species/match?name=Papilionoidea&rank=superfamily` answers "no match": the GBIF backbone has no superfamily node. VERIFY
+result: `import_gbif_butterflies` resolves the six families (Hesperiidae, Lycaenidae, Nymphalidae, Papilionidae, Pieridae,
+Riodinidae; `/species/match` with `kingdom=Animalia`, `rank=family`), which together are Papilionoidea in the modern sense,
+and merges their `facet=speciesKey` counts. Run on 2026-10-19: 206 species keys with records in Serbia, 198 imported, 8 listed
+for manual review (fewer than 3 records). 4 of the imported ones have backbone status `DOUBTFUL` (for example *Lasiommata
+megera*): real species that the backbone's source checklists do not cover, so they are imported with a note in
+`identification_notes`; names with another status (synonyms) are listed, not imported. The expected 150–200 was right.
+Re-running creates nothing. Existing rows are never updated (admins may have edited them: `photo_required`, notes, names).
+`seed_plants` names are matched with `rank=species` or `rank=genus` (`spp.`) and `kingdom=Plantae`; only an `EXACT` match at that
+rank is accepted, and a miss is saved as `manual`. The backbone uses *Chamaenerion angustifolium*, so `plants.csv` does too.
+The commands live next to what they fill (`catalogues`, `projects`), `core/gbif.py` is the shared client (`requests`, approved for
+this ticket and pinned in `requirements.txt`; 3 requests per second; every response cached as JSON). The django container only
+mounts `./backend`, so `compose.dev.yaml` mounts `./database/seeds` as `/seeds` and `SEEDS_DIR` points there. `seed_demo` links
+the project to the `2026.1 (GBIF RS)` release when it exists, not to whichever release is current, because a development database
+can hold test releases. The demo transects are drawn illustrations near Fruška Gora (not surveyed); sections are cut with
+`transects.services.generate_sections` and then given habitat and management types. The demo emails (`admin@demo`) have no
+top-level domain: login, the admin and `/auth/me` all accept them (checked by hand).
+Review fixes (same ticket): `import_gbif_butterflies` writes the release and its taxa in one transaction, `seed_plants` asks GBIF
+first and writes in a short transaction afterwards, and cache files are written to a `.tmp` file and renamed. `seed_demo` only runs
+with `DEBUG` on, adds groups only to users it creates, re-links an existing demo project to the GBIF list, and skips a soft-deleted
+transect (its `(project, code)` constraint covers deleted rows). No retry or backoff on GBIF errors: the cache keeps what was
+fetched, so running the command again continues where it stopped.

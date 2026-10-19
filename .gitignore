@@ -45,6 +45,9 @@ backups/
 *.mbtiles
 tmp/
 
+# GBIF responses cached by the seed commands (T024); fetched again on a fresh clone
+database/seeds/cache/
+
 # Editors / OS
 .idea/
 .vscode/

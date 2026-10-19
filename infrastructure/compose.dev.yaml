@@ -5,6 +5,7 @@ services:
       DJANGO_DEBUG: "true"
     volumes:
       - ./backend:/app
+      - ./database/seeds:/seeds
       - staticfiles:/app/staticfiles
     command:
       - sh

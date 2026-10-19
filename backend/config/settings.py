@@ -109,6 +109,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Seed files and the cached GBIF responses (T024). Mounted from database/seeds in dev.
+SEEDS_DIR = Path(os.environ.get("SEEDS_DIR", "/seeds"))
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Photos live in MinIO and are reached only through Django (D-013).

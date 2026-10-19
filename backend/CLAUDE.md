@@ -18,6 +18,12 @@ $DC exec django python manage.py makemigrations --check
 $DC exec django python manage.py migrate
 $DC exec django python manage.py check
 $DC exec django python manage.py collectstatic --noinput   # after adding static files: nginx serves the collected copy
+
+# Seed data (T024; docs/setup/seed-data.md). Run as the developer: they write the GBIF cache.
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py import_gbif_butterflies --country RS
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_plants
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_codelists
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_demo
 ```
 
 Dependencies are pip + `requirements.txt`, installed in the image: after a change, rebuild with

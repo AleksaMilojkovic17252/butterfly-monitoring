@@ -59,7 +59,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | done |
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | done |
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | todo |
-| T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | todo |
+| T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | done |
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | todo |
 | T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | todo |
 | T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | todo |
@@ -474,7 +474,9 @@ Depends on: T019, T020
 - [ ] Action **Synonymise into…** (intermediate form): creates or links the accepted taxon and retires the selected one in the new version, following the T019 versioning rule.
 
 ### T024 · Seed data: butterflies of Serbia, plant list, codelists, demo project
-[#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) · E03 · P1 · must · labels: `backend`, `must` · implements F79 · est. 2 d · **todo**
+[#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) · E03 · P1 · must · labels: `backend`, `must` · implements F79 · est. 2 d · **done**
+
+Note: seeds are in `database/seeds/` and the client is `requests`, as the ticket says. The GBIF backbone has no node for *Papilionoidea*, so the importer uses its six families (D-047); backbone status `DOUBTFUL` names are imported and marked. The seed commands are dev-only (`compose.dev.yaml` mounts the seeds folder). The transect lines are illustrations, not surveyed routes.
 
 Depends on: T019, T020, T021
 
