@@ -1,0 +1,10 @@
+/* Section maps inside the transect form (T022) are small; the transect's own map keeps its size. */
+.inline-group .dj_map_wrapper .dj_map {
+    height: 240px;
+}
+
+/* A wider help popup is shorter, so it covers less of the form below the small map. */
+.inline-group .editable_map .map_help_text {
+    width: 32em;
+    max-width: calc(100vw - 4em);
+}

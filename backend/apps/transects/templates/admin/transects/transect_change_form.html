@@ -1,0 +1,13 @@
+{% extends "admin/core/history_change_form.html" %}
+{% load i18n %}
+
+{% comment %}
+Transect change form (T022): the history change form plus an "Import line" link beside History.
+{% endcomment %}
+
+{% block object-tools-items %}
+{% if change and not is_popup %}
+<li><a href="{% url 'admin:transects_transect_import_line' original.pk %}">{% translate "Import line" %}</a></li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

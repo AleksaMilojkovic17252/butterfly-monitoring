@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Cut the line of <strong>{{ transect }}</strong> into sections of equal length (measured in
+  metres). They are numbered from 1 in the direction the line was drawn. Habitat and management
+  are filled in afterwards on the transect page.</p>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="generate_equal_sections">
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ transect.pk }}">
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Generate">
+  <a href="{% url 'admin:transects_transect_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

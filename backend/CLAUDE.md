@@ -29,7 +29,7 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   but the app label stays `<name>` (`accounts.User`, table names, migration dependencies).
 - `apps/core/` has the shared pieces: `models.SyncableModel` (with `soft_delete()`),
   `migration_ops` (`CreateView`, `AttachSyncTrigger`), `history.save_with_reason`, the error
-  handler in `exceptions.py`, the admin site, and the admin map widgets in `widgets.py`
+  handler in `exceptions.py`, `geo_files.open_datasource` (reading uploaded GeoJSON/KML/GPX), the admin site, and the admin map widgets in `widgets.py`
   (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045).
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all
   call these service functions; they do not hold rules themselves. Visibility goes through

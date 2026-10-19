@@ -1,6 +1,7 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.gis.admin import GISModelAdmin
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -105,13 +106,28 @@ class SyncableAdmin(admin.ModelAdmin):
     def restore_selected(self, request, queryset):
         # Row by row for the same reason: the trigger gives a new server_version, so phones
         # pull the restored row again.
+        # A partial unique constraint (live rows only) can refuse a restore when a live row has
+        # taken the same code; that row is skipped and named in the message.
         count = 0
+        refused = []
         for obj in queryset.filter(deleted_at__isnull=False):
             obj.deleted_at = None
             obj.updated_by = request.user
-            obj.save(update_fields=["deleted_at", "updated_by", "updated_at"])
+            try:
+                with transaction.atomic():
+                    obj.save(update_fields=["deleted_at", "updated_by", "updated_at"])
+            except IntegrityError:
+                refused.append(str(obj))
+                continue
             count += 1
         self.message_user(request, _("Restored %(count)d row(s).") % {"count": count})
+        if refused:
+            self.message_user(
+                request,
+                _("Not restored, a live row already uses the same code or number: %(rows)s")
+                % {"rows": ", ".join(refused)},
+                messages.ERROR,
+            )
 
 
 class MapAdmin(GISModelAdmin):

@@ -54,11 +54,16 @@ class TransectSection(SyncableModel):
         db_table = "transect_section"
         ordering = ["transect", "sequence_number"]
         constraints = [
+            # Live rows only, so a soft-deleted section does not block its code or number.
             models.UniqueConstraint(
-                fields=["transect", "sequence_number"], name="section_seq_unique"
+                fields=["transect", "sequence_number"],
+                condition=models.Q(deleted_at__isnull=True),
+                name="section_seq_unique",
             ),
             models.UniqueConstraint(
-                fields=["transect", "section_code"], name="section_code_unique"
+                fields=["transect", "section_code"],
+                condition=models.Q(deleted_at__isnull=True),
+                name="section_code_unique",
             ),
             models.CheckConstraint(
                 condition=models.Q(sequence_number__gte=1), name="section_seq_positive"

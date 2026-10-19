@@ -39,6 +39,14 @@
   cursor: help;
 }
 
+/* Django's admin clips a form row with overflow: hidden, which cuts the popup when the map is
+   shorter than the text (the section maps in the transect form). flow-root still contains the
+   floated map, so the row keeps its height and the popup can reach past its bottom edge. */
+.form-row:has(.editable_map) {
+  overflow: visible;
+  display: flow-root;
+}
+
 /* Shown on hover, and on focus for keyboard and touch (a tap focuses the button). */
 .editable_map .map_help_text {
   display: none;

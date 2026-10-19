@@ -40,6 +40,7 @@ the delete_selected_label and help blocks (e.g. lines instead of polygons, T022)
             map_id: '{{ id }}_map',
             map_srid: {{ map_srid|unlocalize }},
             name: '{{ name }}',
+            feature_color: '{{ feature_color|default:""|escapejs }}',
             default_lon: {{ default_lon|unlocalize }},
             default_lat: {{ default_lat|unlocalize }},
             default_zoom: {{ default_zoom|unlocalize }}

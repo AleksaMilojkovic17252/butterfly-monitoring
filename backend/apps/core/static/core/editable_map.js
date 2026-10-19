@@ -46,6 +46,20 @@
                 this.ready = true;
             }
 
+            // A page can ask for a solid line in its own colour (attrs["feature_color"]), as wide
+            // as the reference line, so the features stand out on top of it.
+            if (this.options.feature_color) {
+                this.featureOverlay.setStyle(
+                    new ol.style.Style({
+                        stroke: new ol.style.Stroke({color: this.options.feature_color, width: 4}),
+                        image: new ol.style.Circle({
+                            radius: 6,
+                            fill: new ol.style.Fill({color: this.options.feature_color}),
+                        }),
+                    })
+                );
+            }
+
             // Django only saves on add and change; save on remove too (delete selected).
             this.featureCollection.on("remove", () => this.serializeFeatures());
 
@@ -121,8 +135,9 @@
 
         // Show a read-only geometry (GeoJSON in EPSG:4326, or null to remove it) under the
         // editable features, e.g. the transect a section is drawn along. It is not saved and
-        // cannot be selected; new and dragged points snap to it. The view zooms to fit it.
-        setReference(geojson) {
+        // cannot be selected; new and dragged points snap to it. The view zooms to fit it,
+        // unless `fit` is false (the reference changed while the admin is editing).
+        setReference(geojson, fit = true) {
             if (!this.reference) {
                 this.reference = new ol.source.Vector();
                 // A managed layer, so it renders under Django's feature overlay.
@@ -139,7 +154,25 @@
                 featureProjection: this.map.getView().getProjection(),
             });
             this.reference.addFeature(new ol.Feature(geometry));
-            const extent = geometry.getExtent().slice();
+            if (fit) {
+                this.fitReference();
+            }
+        }
+
+        // Zoom to the reference and the editable features together. Does nothing while the map
+        // has no size (inside a closed <details>): call it again once the map is shown.
+        fitReference() {
+            const size = this.map.getSize();
+            if (!this.reference || !size || !size[0] || !size[1]) {
+                return;
+            }
+            const extent = ol.extent.createEmpty();
+            for (const feature of this.reference.getFeatures()) {
+                ol.extent.extend(extent, feature.getGeometry().getExtent());
+            }
+            if (ol.extent.isEmpty(extent)) {
+                return;
+            }
             for (const feature of this.featureCollection.getArray()) {
                 ol.extent.extend(extent, feature.getGeometry().getExtent());
             }

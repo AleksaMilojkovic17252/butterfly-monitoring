@@ -57,7 +57,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | done |
 | T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | done |
 | T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | done |
-| T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | todo |
+| T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | done |
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | todo |
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | todo |
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | todo |
@@ -451,7 +451,9 @@ Depends on: T015, T020
 - [ ] Both models are synced to project members.
 
 ### T022 · Map-based transect and section editor in admin
-[#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) · E03 · P1 · must · labels: `admin`, `must` · implements F63 · est. 2 d · **todo**
+[#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) · E03 · P1 · must · labels: `admin`, `must` · implements F63 · est. 2 d · **done**
+
+Note: no test criteria to skip. Sections are cut in UTM, not planar degrees, and the section unique constraints became partial (live rows only, `transects/0002`), so replaced sections can be soft-deleted. Added at the user's request: the transect drawn dashed on every section map, solid crimson section lines, a fixed help popup, and a "Remove" box per inline section. The inline has no "Add another" (D-046).
 
 Depends on: T014, T021
 

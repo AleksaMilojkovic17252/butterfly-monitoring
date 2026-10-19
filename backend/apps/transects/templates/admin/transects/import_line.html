@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Replace the line of <strong>{{ transect }}</strong> with the first line or track in a GPX, KML or
+  GeoJSON file (WGS 84 or any CRS the file declares). Points are ignored; a file with several
+  lines uses the first. The existing line is overwritten, and its sections are not changed.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Import">
+  <a href="{% url 'admin:transects_transect_change' transect.pk %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

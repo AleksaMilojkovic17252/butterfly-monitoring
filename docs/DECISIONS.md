@@ -371,3 +371,46 @@ growing with every click; its "?" popup says a line ends with a double-click and
 the view to it, and adds an `ol.interaction.Snap` on it; the widget instance is on its wrapper element as `editableMap`.
 The section form uses it (`transects/section_map.js`): picking a transect fetches its line from the admin URL
 `transect-line/<id>/` (transect field's `data-line-url`) and shows it dashed. T022's section inline can reuse the same call.
+
+## D-046 · Transect editor: sections cut in UTM, partial unique constraints, shared GIS file reader
+2026-10-19 · accepted · T022
+`TransectAdmin` has a collapsed `TransectSectionInline` (small `LineMapWidget` per row and a "Remove" tick box per
+row), an **Import line** page (`<id>/import-line/`, button beside History) and the list action
+**Generate N equal sections…**. `transects.services.split_line` cuts the line into N pieces with `ST_LineSubstring` in the
+line's UTM zone (`utm_srid`: `32600/32700 + zone` from the centroid) and transforms each piece back to 4326, so the pieces
+are equal in metres. The ticket's planar version is off at 44 °N (a degree of longitude is about 72 % of a degree of
+latitude): an L-shaped line cut in two gave about 57 % / 43 %. Checked by hand: an L of 1 999 m gave 2 × 999.4 m and
+4 × 499.7 m, neighbours share their end point, and every piece passes the 5 m rule of D-045. Section codes are
+`<prefix><number>`, at most 200 sections. "Replace" soft-deletes the live sections first.
+`section_seq_unique` and `section_code_unique` are now **partial unique indexes** (`WHERE deleted_at IS NULL`, migration
+`transects/0002`), a change from T021's plain `UNIQUE`: a soft-deleted section no longer blocks its code or number, which
+"replace" and "soft delete, then add the same code" both need. `Transect (project, code)` is unchanged. Consequences: the
+phone may hold a soft-deleted and a live section with the same code, so T033 must ignore rows with `deleted_at` set (the
+Drift tables have no unique constraint on them), and `SyncableAdmin.restore_selected` now skips a row whose index slot a
+live row has taken and names it in an error message instead of failing.
+The line import takes GPX, KML or GeoJSON and uses the first LineString, or the first line of the first MultiLineString
+(a GPX track); points are ignored. GDAL names lines with elevation `LineString25D`, so the type check strips that suffix.
+`apps/core/geo_files.open_datasource(uploaded, suffixes, error)` holds the shared part (suffix check, temp file, GDAL
+errors) and `projects.services.multipolygon_from_file` uses it too. The "sections add up to the transect" warning
+(over 2 %, geodesic lengths) is a message on the GET of the change form. Imported lines and generated sections get a
+history reason (`save_with_reason`). The inline cannot add rows ("Add another" is off): the map widget starts from a script in the page, which a row
+added in the browser would not run, and I did not confirm otherwise. New sections come from the action or from the
+section's own page. Lift `has_add_permission` once someone has checked it works.
+Each section map in the inline shows the whole transect as the dashed reference line (`transects/transect_inline_maps.js`).
+The line is read from the transect's own map, so it follows edits made on the page before saving (add, remove and
+`modifyend` on that map redraw it without changing the views). The section lines are drawn solid, 4 px wide like the
+reference, in crimson `#c2255c` on top of it: `EditableMapWidget` styles its features with `attrs["feature_color"]`, which the
+transects admin sets on the section widgets (inline and section page) only.
+The "?" popup was cut off under the small inline maps because Django's `.form-row { overflow: hidden }` clips it at the row.
+`editable_map.css` sets `.form-row:has(.editable_map)` to `overflow: visible; display: flow-root` (flow-root still contains
+the floated map), and `section_inline.css` widens the popup to 32em there. Not checked in a browser. The Sections group is one closed `<details>`, so its maps are
+laid out at zero size: `EditableMapWidget.fitReference()` does nothing until the map has a size, and the script calls it
+when the group opens. `setReference(geojson, fit = true)` gained the `fit` flag for the live redraw.
+
+Removing a section from the inline: the "Remove" box is Django's formset delete box with a new label. `TransectAdmin.save_formset`
+calls `soft_delete` on `formset.deleted_objects` (saved with `commit=False`, so nothing is erased) before it saves the other rows,
+so a code or number freed by a removed row can be reused in the same save. The history row carries the change reason from the
+dialog. The other sections keep their numbers (no renumbering). "Restore selected" on the Transect sections list undoes it.
+Django's inline delete check (`DeleteProtectedModelForm`) refuses a removal when a protected foreign key points at the row: when
+a later ticket adds `on_delete=PROTECT` references to `TransectSection`, a section with records will not be removable here,
+although a soft delete would be safe; revisit then.
