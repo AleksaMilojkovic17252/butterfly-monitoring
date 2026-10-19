@@ -41,6 +41,32 @@ def line_widget_kwargs(note, feature_color=None):
 
 
 class SectionFormSet(BaseInlineFormSet):
+    def clean(self):
+        """Refuse a code or number that two kept rows share.
+
+        The unique constraints only cover live rows, which Django's form validation does not
+        check, so a clash would reach the database as an IntegrityError. Rows ticked "Remove"
+        are skipped: they are soft-deleted before the others are saved.
+        """
+        super().clean()
+        seen = {"section_code": {}, "sequence_number": {}}
+        for form in self.forms:
+            data = getattr(form, "cleaned_data", None)
+            if not data or self._should_delete_form(form):
+                continue
+            for field, used in seen.items():
+                value = data.get(field)
+                if value in (None, ""):
+                    continue
+                if value in used:
+                    form.add_error(
+                        field,
+                        _("Another section of this transect already uses “%(value)s”.")
+                        % {"value": value},
+                    )
+                else:
+                    used[value] = form
+
     def add_fields(self, form, index):
         super().add_fields(form, index)
         if DELETION_FIELD_NAME in form.fields:
@@ -49,9 +75,10 @@ class SectionFormSet(BaseInlineFormSet):
 
 
 class TransectSectionInline(admin.StackedInline):
-    """The transect's live sections, collapsed. Rows are added with the "Generate" action or on
-    the section's own page. Ticking "Remove" on a row soft-deletes it when the transect is saved;
-    "Restore selected" on the section list brings it back."""
+    """The transect's live sections, collapsed. Rows are added with "Add another" (the map of the
+    new row is started by transect_inline_maps.js) or the "Generate" action. Ticking "Remove" on
+    a row soft-deletes it when the transect is saved; "Restore selected" on the section list
+    brings it back."""
 
     model = TransectSection
     formset = SectionFormSet
@@ -71,11 +98,6 @@ class TransectSectionInline(admin.StackedInline):
 
     def get_queryset(self, request):
         return super().get_queryset(request).alive()
-
-    def has_add_permission(self, request, obj=None):
-        # The map widget starts its map from a script in the page, which a row added by
-        # "Add another" would not run; new sections come from the action or their own page.
-        return False
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         if isinstance(db_field, LineStringField):

@@ -4,8 +4,17 @@ EditableMapWidget (T098). A copy of Django's gis/openlayers.html + openlayers-os
 "Delete selected" button and a "?" help popup added. Django's MapWidget looks for
 .clear_features right after the map div, so keep that order. Subclass templates can override
 the delete_selected_label and help blocks (e.g. lines instead of polygons, T022).
+
+The options are repeated as data- attributes because a form added by the admin's "Add another"
+does not run the script below: EditableMapWidget.initIn() builds its widget from them. The
+empty form that Django clones for that (its id holds "__prefix__") must stay a plain
+<div>, so it gets no script.
 {% endcomment %}
-<div id="{{ id }}_div_map" class="dj_map_wrapper editable_map">
+<div id="{{ id }}_div_map" class="dj_map_wrapper editable_map"
+     data-geom-name="{{ geom_type }}" data-map-srid="{{ map_srid|unlocalize }}"
+     data-feature-color="{{ feature_color|default:"" }}"
+     data-default-lon="{{ default_lon|unlocalize }}" data-default-lat="{{ default_lat|unlocalize }}"
+     data-default-zoom="{{ default_zoom|unlocalize }}">
     <div id="{{ id }}_map" class="dj_map"></div>
     {% if not disabled %}
     <span class="clear_features">
@@ -32,6 +41,7 @@ the delete_selected_label and help blocks (e.g. lines instead of polygons, T022)
     {% if display_raw %}<p>{% translate "Debugging window (serialized value)" %}</p>{% endif %}
     <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}"
               {% if not display_raw %} hidden{% endif %}>{{ serialized }}</textarea>
+    {% if "__prefix__" not in id %}
     <script>
         var options = {
             base_layer: new ol.layer.Tile({source: new ol.source.OSM()}),
@@ -47,4 +57,5 @@ the delete_selected_label and help blocks (e.g. lines instead of polygons, T022)
         };
         var {{ module }} = new EditableMapWidget(options);
     </script>
+    {% endif %}
 </div>

@@ -393,9 +393,16 @@ The line import takes GPX, KML or GeoJSON and uses the first LineString, or the 
 `apps/core/geo_files.open_datasource(uploaded, suffixes, error)` holds the shared part (suffix check, temp file, GDAL
 errors) and `projects.services.multipolygon_from_file` uses it too. The "sections add up to the transect" warning
 (over 2 %, geodesic lengths) is a message on the GET of the change form. Imported lines and generated sections get a
-history reason (`save_with_reason`). The inline cannot add rows ("Add another" is off): the map widget starts from a script in the page, which a row
-added in the browser would not run, and I did not confirm otherwise. New sections come from the action or from the
-section's own page. Lift `has_add_permission` once someone has checked it works.
+history reason (`save_with_reason`). The inline has "Add another". Django's map widget does not support it: the widget template's `<script>` is cloned with the
+new row and never runs. So `editable_map.html` repeats the options as `data-` attributes and skips the script for the empty
+form (its id holds `__prefix__`, so `clone()` copies a plain `<div>`); `EditableMapWidget.initIn(root)` builds the widget for
+a row from them; `transect_inline_maps.js` calls it on Django's `formset:added` event and sets the dashed transect line on the
+new map. Checked in headless Chromium (chromedriver and the WebDriver API): on a saved transect and on the add page, a section
+added this way, with its line drawn on its map, was saved. Inline validation uses the edited, unsaved transect line also for new rows.
+`SectionFormSet.clean` rejects a section code or number used twice among the kept rows (rows ticked "Remove" are skipped): the
+partial unique indexes are not checked by Django's form validation, so a clash would have been an `IntegrityError` (500). The
+Delete key is one document-level listener for all maps, not one per widget, and `initIn` points the help button's
+`aria-describedby` at the renumbered id of the help text (Django's `inlines.js` renumbers only `id`, `name` and `for`).
 Each section map in the inline shows the whole transect as the dashed reference line (`transects/transect_inline_maps.js`).
 The line is read from the transect's own map, so it follows edits made on the page before saving (add, remove and
 `modifyend` on that map redraw it without changing the views). The section lines are drawn solid, 4 px wide like the

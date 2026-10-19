@@ -72,17 +72,6 @@
                 const update = () => (this.deleteButton.disabled = selected.getLength() === 0);
                 selected.on(["add", "remove"], update);
             }
-
-            // Delete key removes the selected part, unless the admin is typing in a field.
-            document.addEventListener("keydown", (event) => {
-                if (event.key !== "Delete" || event.target.closest("input, textarea, select")) {
-                    return;
-                }
-                if (this.interactions.select.getFeatures().getLength() > 0) {
-                    event.preventDefault();
-                    this.deleteSelected();
-                }
-            });
         }
 
         // Replaces Django's version: draw single parts, and add a Select interaction.
@@ -226,6 +215,52 @@
             return [geometry];
         }
     }
+
+    // Delete key removes the selected part of any map on the page, unless the admin is typing in
+    // a field. One listener for all maps: maps come and go with the admin's "Add another".
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Delete" || event.target.closest("input, textarea, select")) {
+            return;
+        }
+        for (const wrapper of document.querySelectorAll(".editable_map")) {
+            const widget = wrapper.editableMap;
+            if (widget && widget.interactions.select.getFeatures().getLength() > 0) {
+                event.preventDefault();
+                widget.deleteSelected();
+            }
+        }
+    });
+
+    // Build the widget for every map in `root` that has none yet, e.g. a form the admin just
+    // added with "Add another" (the page script of the widget template only runs at page load).
+    // The ids and names were already renumbered by Django; the rest comes from the data- attributes.
+    EditableMapWidget.initIn = function (root) {
+        for (const wrapper of root.querySelectorAll(".editable_map")) {
+            const textarea = wrapper.querySelector("textarea.vSerializedField");
+            if (wrapper.editableMap || !textarea || textarea.id.includes("__prefix__")) {
+                continue;
+            }
+            // Django renumbers ids, but not this reference to the help text's id.
+            const helpButton = wrapper.querySelector(".map_help_button");
+            const helpText = wrapper.querySelector(".map_help_text");
+            if (helpButton && helpText) {
+                helpButton.setAttribute("aria-describedby", helpText.id);
+            }
+            const data = wrapper.dataset;
+            new EditableMapWidget({
+                base_layer: new ol.layer.Tile({source: new ol.source.OSM()}),
+                geom_name: data.geomName,
+                id: textarea.id,
+                map_id: textarea.id + "_map",
+                map_srid: Number(data.mapSrid),
+                name: textarea.name,
+                feature_color: data.featureColor,
+                default_lon: Number(data.defaultLon),
+                default_lat: Number(data.defaultLat),
+                default_zoom: Number(data.defaultZoom),
+            });
+        }
+    };
 
     window.EditableMapWidget = EditableMapWidget;
 }

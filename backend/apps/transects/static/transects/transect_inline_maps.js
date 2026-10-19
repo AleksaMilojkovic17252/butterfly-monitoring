@@ -1,7 +1,7 @@
 // Transect form (T022): every section map in the sections inline shows the whole transect as
 // a dashed line, so it is clear which stretch the section covers. The line is read from the
 // transect's own map, so it follows edits made on this page before saving.
-/* global ol */
+/* global ol, EditableMapWidget */
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
     const main = document.getElementById("id_geometry_div_map");
@@ -47,6 +47,17 @@ document.addEventListener("DOMContentLoaded", () => {
             widget.fitReference();
         }
     };
+    // A section added with "Add another": start its map, show the transect on it and zoom there.
+    group.addEventListener("formset:added", (event) => {
+        EditableMapWidget.initIn(event.target);
+        const line = transectLine();
+        for (const wrapper of event.target.querySelectorAll(".editable_map")) {
+            if (wrapper.editableMap) {
+                wrapper.editableMap.setReference(line, true);
+            }
+        }
+    });
+
     const details = group.querySelector("details");
     if (details) {
         details.addEventListener("toggle", () => details.open && fitAll());
