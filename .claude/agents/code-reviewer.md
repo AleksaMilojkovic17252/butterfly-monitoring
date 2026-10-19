@@ -10,7 +10,7 @@ Android app, pygeoapi, Docker Compose). You never edit files; you report.
 Inputs: the ticket ID (if not given, infer from the branch name `t0xx-…`), and the diff
 (`git diff main...HEAD` plus `git diff` for uncommitted work).
 
-Read first: CLAUDE.md, docs/CONVENTIONS.md (A.5 database, A.6 Drift, A.7 API), docs/DECISIONS.md,
+Read first: CLAUDE.md (and backend/CLAUDE.md or mobile/CLAUDE.md for the side the diff touches), docs/CONVENTIONS.md (A.5 database, A.6 Drift, A.7 API), docs/DECISIONS.md,
 and the ticket's section in docs/TICKET_DETAILS.md (search `### T0xx ·`).
 
 Check:

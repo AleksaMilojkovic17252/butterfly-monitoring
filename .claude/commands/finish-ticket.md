@@ -6,7 +6,7 @@ argument-hint: "[T0xx]"
 Finish the current ticket. Ticket (if empty, infer it from the branch name `t0xx-…`): $ARGUMENTS
 
 1. **Checks.** Look at `git diff --stat main...HEAD` plus uncommitted changes, then run what applies
-   from the CLAUDE.md "Commands" section:
+   from the "Commands" sections of CLAUDE.md, backend/CLAUDE.md and mobile/CLAUDE.md:
    - `backend/` changed: `ruff format`, `ruff check`, `makemigrations --check`, `manage.py check`
    - `mobile/` changed: `dart format`, `flutter analyze`, Drift `make-migrations` if tables changed
    - infra changed: `docker compose … config`, then bring up the affected services

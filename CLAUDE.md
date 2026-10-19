@@ -32,11 +32,15 @@ Key directories (T002 created the layout; app code arrives with T003 and T006):
 | `simulator/` | Phase 2 sensor simulator (empty until then) |
 | `docs/` | requirements, architecture, setup, evaluation notes |
 
+**Per-folder guides:** [backend/CLAUDE.md](backend/CLAUDE.md) (Django commands, models, migrations,
+`geo` views) and [mobile/CLAUDE.md](mobile/CLAUDE.md) (Flutter commands, Riverpod, Drift, the review
+handoff). Read the one for the side a ticket touches before planning it.
+
 ## Commands
 
-The stack (T002), the Django project (T003) and the Flutter app foundation (T006) exist.
-Lines marked **TODO** are settled by that ticket: update this section in the same commit.
 No automated tests and no CI for now (DECISIONS.md D-021). Checks are lint, format and a manual run.
+Backend and mobile commands are in the per-folder guides; update them in the same commit when a
+command changes.
 
 The developer's shell is **fish**. Claude can run docker commands itself; any command Claude hands to the
 developer to run must be in fish syntax. The lines below are bash-style for readability; in fish write
@@ -53,43 +57,17 @@ $DC logs -f django
 # Backup and restore (T010; restore deletes current data). See docs/setup/backup.md.
 scripts/backup.sh <target-dir>
 scripts/restore.sh <backup-dir>
-
-# Backend: pip + backend/requirements.txt, installed in the image (rebuild with --build after changes).
-# Run files-writing commands as yourself so files are not root-owned:
-#   $DC exec -u $(id -u) -e HOME=/tmp django ruff format .   (same for makemigrations)
-$DC exec django ruff format .
-$DC exec django ruff check .
-$DC exec django python manage.py makemigrations    # then review the generated migration
-$DC exec django python manage.py makemigrations --check
-$DC exec django python manage.py migrate
-$DC exec django python manage.py check
-$DC exec django python manage.py collectstatic --noinput   # after adding static files: nginx serves the collected copy
-
-# Mobile (T006), run in mobile/
-flutter pub get
-dart run build_runner build                        # Drift codegen (the old --delete-conflicting-outputs flag is gone)
-flutter test                                       # the one widget test (T006)
-dart format .
-flutter analyze
-dart run drift_dev make-migrations                 # after any Drift schema change
-flutter run                                        # on the phone over USB
-flutter build apk --debug
 ```
 
 ## Code style and conventions
 
-Full rules: [docs/CONVENTIONS.md](docs/CONVENTIONS.md). The ones most often missed:
+Full rules: [docs/CONVENTIONS.md](docs/CONVENTIONS.md); the most-missed ones per side are in the
+per-folder guides. Across both:
 
-- Every model sets `db_table` (singular snake_case). UUID primary keys, client-generated; the server never re-keys.
-- Synced tables extend `core.models.SyncableModel` and get `AttachSyncTrigger(table)` in their migration. Soft delete only (`soft_delete()`); no hard deletes of synced rows.
-- Enums are `TextChoices` + `CheckConstraint`, never native PostgreSQL `ENUM`.
-- Geometry is `geometry(<Type>, 4326)` with a GiST index; metres via `::geography`.
-- Audited models use `HistoricalRecords(table_name="historical_<table>")`; no `QuerySet.update()` on audited models.
-- `geo` views are created in Django migrations with `CreateView`; renaming a column means dropping and recreating dependent views by hand.
-- API under `/api/v1/`, JSON, error body `{"code", "detail", "fields"}`, JWT bearer auth. Business rules live in service functions, not views or serializers.
-- Drift: same column names as the server (camelCase in Dart), UUID text PKs, GeoJSON text geometry plus `lat`/`lon` for points, local `serverVersion`/`syncStatus`/`deletedAt`. UI never writes synced tables directly; go through the repository class.
+- UUID primary keys, client-generated; the server never re-keys. Soft delete only for synced rows.
+- Column names match between server and phone (snake_case SQL, camelCase in Dart).
 - Times: UTC `timestamptz` on the server, UTC on the phone, local time only in the UI.
-- Python: `ruff format` + `ruff check`, line length 100, configured in `backend/pyproject.toml` (T003). Dart: `dart format` defaults, `flutter_lints`, `flutter analyze` clean (T006).
+- Python: `ruff format` + `ruff check`, line length 100 (`backend/pyproject.toml`). Dart: `dart format` defaults, `flutter_lints`, `flutter analyze` clean.
 - Android package id: `rs.amilojkovic.butterfly`.
 
 ## How to work a ticket
@@ -107,13 +85,10 @@ Use `/next-ticket` (or `/next-ticket T0xx`), then `/finish-ticket`. By hand:
 
 ## Flutter work: Claude writes, the developer reviews
 
-The developer is learning Flutter. Claude may implement mobile tickets and edit files under `mobile/`,
-but the code is for the developer to read and change, so:
+The developer is learning Flutter. Claude may implement mobile tickets, but after implementing it
+**stops and hands over for review**, and commits only after the developer's edits. How to write
+the code and the handoff: [mobile/CLAUDE.md](mobile/CLAUDE.md).
 
-- Write simple, readable Dart that matches the surrounding code. Comment the non-obvious parts.
-- Stop after implementing and hand over for review. Summarise what each file does and where to
-  start reading. Wait for the developer's edits before committing; the developer may rework the code.
-- Explain a Flutter/Riverpod/Dart concept when the developer asks.
 - Mobile tickets are picked and built like any other: `/next-ticket` never skips one for being
   Flutter. Statuses follow the normal flow, but `done` and the commit wait for the developer's review.
 
@@ -123,7 +98,7 @@ but the code is for the developer to read and change, so:
 - Code is formatted and lint-clean; `makemigrations --check` is clean; `flutter analyze` is clean.
 - The feature has been run once by hand (stack up, app on the phone or emulator) and the user has the steps to demo it.
 - Drift schema changes have a committed snapshot and migration; Django migrations are committed.
-- Docs the ticket asks for exist; this file's Commands section is updated if a command changed.
+- Docs the ticket asks for exist; the Commands sections (here, `backend/`, `mobile/`) are updated if a command changed.
 - TICKETS.md status is `done`. No TODO left in code without a ticket ID.
 
 ## Do not
