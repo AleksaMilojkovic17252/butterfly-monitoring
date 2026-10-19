@@ -13,6 +13,12 @@
         MultiPoint: {part: "Point", join: ol.geom.MultiPoint},
     };
 
+    // A reference line or shape under the editable features (see setReference).
+    const referenceStyle = new ol.style.Style({
+        fill: new ol.style.Fill({color: "rgba(65, 118, 144, 0.15)"}),
+        stroke: new ol.style.Stroke({color: "#417690", width: 4, lineDash: [10, 8]}),
+    });
+
     const selectedStyle = new ol.style.Style({
         fill: new ol.style.Fill({color: "rgba(242, 177, 52, 0.35)"}),
         stroke: new ol.style.Stroke({color: "#f2b134", width: 4}),
@@ -44,6 +50,7 @@
             this.featureCollection.on("remove", () => this.serializeFeatures());
 
             const wrapper = document.getElementById(this.options.map_id).parentElement;
+            wrapper.editableMap = this; // lets page scripts call setReference()
             this.deleteButton = wrapper.querySelector(".delete_selected");
             if (this.deleteButton) {
                 this.deleteButton.addEventListener("click", () => this.deleteSelected());
@@ -110,6 +117,33 @@
             this.map.addInteraction(this.interactions.select);
             this.map.addInteraction(this.interactions.draw);
             this.map.addInteraction(this.interactions.modify);
+        }
+
+        // Show a read-only geometry (GeoJSON in EPSG:4326, or null to remove it) under the
+        // editable features, e.g. the transect a section is drawn along. It is not saved and
+        // cannot be selected; new and dragged points snap to it. The view zooms to fit it.
+        setReference(geojson) {
+            if (!this.reference) {
+                this.reference = new ol.source.Vector();
+                // A managed layer, so it renders under Django's feature overlay.
+                this.map.addLayer(new ol.layer.Vector({source: this.reference, style: referenceStyle}));
+                // Added after Draw and Modify, as OpenLayers requires for snapping.
+                this.map.addInteraction(new ol.interaction.Snap({source: this.reference}));
+            }
+            this.reference.clear();
+            if (!geojson) {
+                return;
+            }
+            const geometry = new ol.format.GeoJSON().readGeometry(geojson, {
+                dataProjection: "EPSG:4326",
+                featureProjection: this.map.getView().getProjection(),
+            });
+            this.reference.addFeature(new ol.Feature(geometry));
+            const extent = geometry.getExtent().slice();
+            for (const feature of this.featureCollection.getArray()) {
+                ol.extent.extend(extent, feature.getGeometry().getExtent());
+            }
+            this.map.getView().fit(extent, {padding: [40, 40, 40, 40], maxZoom: 18});
         }
 
         deleteSelected() {

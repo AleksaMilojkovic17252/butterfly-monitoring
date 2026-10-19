@@ -14,7 +14,7 @@ class ProjectProtocolSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     period = serializers.SerializerMethodField()
-    # Annotated by the view. Counts live transects once Transect exists (T021).
+    # Annotated by the view: live transects, inactive ones included.
     transect_count = serializers.IntegerField(read_only=True)
     area = serializers.SerializerMethodField()
     protocol = ProjectProtocolSerializer(read_only=True)

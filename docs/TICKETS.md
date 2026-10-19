@@ -56,7 +56,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T018 | [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) | Audit log with django-simple-history | P1 | must | T015 | 1.5 d | done |
 | T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | done |
 | T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | done |
-| T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | todo |
+| T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | done |
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | todo |
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | todo |
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | todo |
@@ -436,7 +436,11 @@ Depends on: T005
 - [ ] Deactivating a value hides it from pickers but keeps it on existing records (tested in app and API).
 
 ### T021 · Transect and section models and API
-[#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) · E03 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F6 · est. 2 d · **todo**
+[#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) · E03 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F6 · est. 2 d · **done**
+
+Deferred: `GET /api/v1/transects/{id}/visits` moves to T034, since its body is the visit serializer; until then `visit_count` is 0 and `last_visit_at` is null (`TODO(T034)` in `transects.services.with_stats`). "Synced to project members" waits for the pull (T025): `transects.services.transects_for(user)` and `sections_for(user)` are the scopes to use. The Drift tables in the ticket text belong to the pull/app tickets (T025/T031/T033). The admin is plain forms; the map editor is T022. See D-045.
+
+Note: no test criteria to skip. The 5 m rule checks that the whole section lies in a 5 m buffer of the line, not `ST_DWithin` (closest point only). The API half of T020's "deactivating keeps existing records" was checked here: a section keeps its deactivated habitat type in `/transects/{id}`. VERIFY: Django 5.2 `Length()` on a 4326 geometry field already returns metres (same value as `ST_Length(geometry::geography)`); the code uses an explicit `GeodesicLength` func. Added at the user's request: transect and section geometry use `core.widgets.LineMapWidget`, with a "?" help popup on how to draw and finish a line. The section form also shows the chosen transect as a dashed line that new points snap to.
 
 Depends on: T015, T020
 
@@ -620,6 +624,8 @@ Depends on: T017, T021, T031
 
 ### T034 · SurveyVisit model, lifecycle and API
 [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) · E05 · P1 · must · labels: `backend`, `mobile`, `database`, `must`, `p2-compat` · implements F9 · est. 2.5 d · **todo**
+
+Picks up from T021: `GET /api/v1/transects/{id}/visits` (the caller's visits, admins all) and the real `visit_count` / `last_visit_at` in `transects.services.with_stats` (`TODO(T034)`).
 
 Depends on: T021, T026
 

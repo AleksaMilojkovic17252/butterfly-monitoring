@@ -1,4 +1,4 @@
-from django.db.models import Value
+from django.db.models import Count, Q
 from rest_framework import viewsets
 
 from apps.projects.models import Project
@@ -14,5 +14,9 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):  # schema generation has no user
             return Project.objects.none()
-        # TODO(T021): replace the constant with Count("transects", filter=alive).
-        return projects_for(self.request.user).annotate(transect_count=Value(0)).order_by("name")
+        live = Q(transects__deleted_at__isnull=True)
+        return (
+            projects_for(self.request.user)
+            .annotate(transect_count=Count("transects", filter=live))
+            .order_by("name")
+        )

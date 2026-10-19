@@ -351,3 +351,23 @@ filter on `active`. `catalogues.services.plant_taxa_for`, `habitat_types_for` an
 the pull (T025) must use. They return every live row, inactive ones included, which is wider than the ticket's
 "inactive rows referenced by the user's records": the lists are small and the narrowing would need the T021, T051 and
 T053 foreign keys. Revisit it only if the package size matters. `Codelist` is abstract, so each codelist is its own table.
+
+## D-045 · Transect sections must lie inside a 5 m buffer; geodesic length via `::geography`
+2026-10-19 · accepted · T021
+`TransectSection.clean()` calls `transects.services.section_lies_along`, which requires
+`ST_Covers(ST_Buffer(transect::geography, 5)::geometry, section)`. The ticket named `ST_DWithin`, but that only tests the
+closest point, so a section that touches the line once and then runs off would pass. The check uses the transect instance
+in memory, so T022's inline editor also checks against an edited, unsaved line. `clean()` also raises the
+`section_seq_positive` rule on `sequence_number` (as D-037 did for project dates). Lengths are
+`ST_Length(geometry::geography)` (`services.GeodesicLength`), in metres. Django 5.2's own `Length()` on a 4326 geometry gives
+the same value, but it returns a `Distance` object. `transects_for(user)` (live transects of `projects_for(user)`, inactive
+ones included) and `sections_for(user)` are the scopes the pull (T025) must use; `Project.transect_count` counts live
+transects. `visit_count` and `last_visit_at` are fixed placeholders and `/transects/{id}/visits` does not exist until T034.
+Geometry is returned as GeoJSON geometry objects, like `Project.area`.
+The admin draws both lines with `core.widgets.LineMapWidget`, the D-041 widget with line wording (template
+`core/widgets/line_map.html` overrides the `help` and `delete_selected_label` blocks). An admin found that a line keeps
+growing with every click; its "?" popup says a line ends with a double-click and that a field holds one line.
+`EditableMapWidget.setReference(geojson)` draws a read-only geometry (4326 GeoJSON) under the editable features, fits
+the view to it, and adds an `ol.interaction.Snap` on it; the widget instance is on its wrapper element as `editableMap`.
+The section form uses it (`transects/section_map.js`): picking a transect fetches its line from the admin URL
+`transect-line/<id>/` (transect field's `data-line-url`) and shows it dashed. T022's section inline can reuse the same call.

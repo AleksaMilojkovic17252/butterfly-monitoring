@@ -1,0 +1,11 @@
+{% extends "core/widgets/editable_map.html" %}
+{% load i18n %}
+{% block delete_selected_label %}{% translate "Delete selected line" %}{% endblock %}
+{% block help %}
+<strong>{% translate "Drawing the line" %}</strong>
+<span>{% translate "This field holds one line. Click each point in walking order, then double-click the last point to finish. Until you double-click, every click adds another point." %}</span>
+<span>{% translate "Draw freehand: hold Shift and drag." %}</span>
+<span>{% translate "Reshape: drag a point, or drag the line between points to add one there." %}</span>
+<span>{% translate "Remove a point: hold Shift and click it." %}</span>
+<span>{% translate "Redraw: click the line to select it, then “Delete selected line” or the Delete key (or “Delete all Features”). Drawing is possible again once the map is empty." %}</span>
+{% endblock %}
