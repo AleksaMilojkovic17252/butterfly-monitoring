@@ -1,0 +1,25 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% comment %}
+Change form for HistoryAdmin (T018). On edit, Save first opens a dialog asking for an optional
+change reason. The textarea is part of the form, so its text is posted as `_change_reason` and
+HistoryAdmin writes it to the history rows.
+{% endcomment %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'core/change_reason.css' %}">{% endblock %}
+
+{% block form_top %}{{ block.super }}
+{% if change and not is_popup %}
+<dialog id="change-reason-dialog" class="change-reason-dialog" aria-labelledby="change-reason-title">
+  <h2 id="change-reason-title">{% translate "Reason for this change" %}</h2>
+  <p class="help">{% translate "Optional. It is saved in the history of this record." %}</p>
+  <textarea name="_change_reason" rows="4" aria-labelledby="change-reason-title"></textarea>
+  <div class="change-reason-buttons">
+    <button type="button" class="button default" data-action="save">{% translate "Save" %}</button>
+    <button type="button" class="button" data-action="cancel">{% translate "Cancel" %}</button>
+  </div>
+</dialog>
+<script src="{% static 'core/change_reason.js' %}" defer></script>
+{% endif %}
+{% endblock %}

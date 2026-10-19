@@ -403,7 +403,7 @@ Depends on: T015
 - [ ] Admin classes inherit `SimpleHistoryAdmin`. **Revert is disabled** (`history_revert` off via `has_change_permission` on the history view, or by overriding `history_form_view`) because reverting would bypass sync versioning.
 - [ ] Test: changing an observation's taxon produces a history row with old and new taxon, user, timestamp and reason.
 
-Note: skipped the two test criteria (D-021: the taxon-change test and the `.update(` grep); the same history row (old/new value, user, time, reason) was shown by hand on a Project field. HistoricalRecords was already on Project, ProjectMembership and ProjectProtocol (T015/T016); later model tickets add their own. Admins extend `core.admin.HistoryAdmin` (revert refused), reasons go through `core.history.save_with_reason` (used by T043/T057), history rows carry the fresh `server_version` (D-040).
+Note: skipped the two test criteria (D-021: the taxon-change test and the `.update(` grep); the same history row (old/new value, user, time, reason) was shown by hand on a Project field. HistoricalRecords was already on Project, ProjectMembership and ProjectProtocol (T015/T016); later model tickets add their own. Admins extend `core.admin.HistoryAdmin` (revert refused), reasons go through `core.history.save_with_reason` (used by T043/T057), history rows carry the fresh `server_version` (D-040). Added at the user's request: an optional change-reason dialog when saving an edit in any `HistoryAdmin` (D-040).
 
 ### T019 · Taxon catalogue, versioned
 [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) · E03 · P1 · must · labels: `backend`, `database`, `must` · implements F18 · est. 2 d · **todo**

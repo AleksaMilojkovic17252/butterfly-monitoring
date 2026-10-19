@@ -11,7 +11,33 @@ class HistoryAdmin(SimpleHistoryAdmin):
     Reverting would write an old row state without going through sync versioning.
     SIMPLE_HISTORY_REVERT_DISABLED only hides the button; this also refuses the POST.
     Use it first in the bases: `class XAdmin(HistoryAdmin, SyncableAdmin)`.
+
+    Saving an edit opens a dialog asking for an optional change reason (template
+    `admin/core/history_change_form.html`). The reason goes on the history row of the object
+    and of the inline rows saved with it.
     """
+
+    change_form_template = "admin/core/history_change_form.html"
+
+    def get_change_reason(self, request):
+        return request.POST.get("_change_reason", "").strip()
+
+    def save_model(self, request, obj, form, change):
+        reason = self.get_change_reason(request)
+        if reason:
+            obj._change_reason = reason
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        # Set here rather than in save_formset, which subclasses may override without super().
+        # formset.save() saves (or deletes) each form's own instance, so the reason reaches the
+        # inline rows' history too.
+        reason = self.get_change_reason(request)
+        if reason:
+            for formset in formsets:
+                for inline_form in formset.forms:
+                    inline_form.instance._change_reason = reason
+        super().save_related(request, form, formsets, change)
 
     def history_form_view(self, request, object_id, version_id, extra_context=None):
         if request.method == "POST":

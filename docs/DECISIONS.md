@@ -298,3 +298,8 @@ VERIFY result (3.13.0): with JWT auth, `HistoryRequestMiddleware` keeps the Djan
 authenticated user back onto it (`Request.user` setter), so `history_user` is set for API writes. This was checked with a
 throwaway DRF view, since no project API writes yet. `diff_against` leaves out non-editable fields (`server_version`,
 `updated_at`). Not audited: `User`, whose `is_staff` sync uses `QuerySet.update()`.
+Admin change reason (added in T018 at the user's request): on edit, Save in a `HistoryAdmin` change form opens a
+dialog (`admin/core/history_change_form.html`, `core/change_reason.js`) asking for an **optional** reason, posted as
+`_change_reason`. `HistoryAdmin.save_model` puts it on the object, and `save_related` puts it on every inline instance
+(it uses `save_related`, not `save_formset`, because `ProjectAdmin.save_formset` does not call `super()`). Add forms and
+admin actions (soft delete, restore, area import) do not ask. Mandatory reasons stay with T043 and T057.
