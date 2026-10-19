@@ -52,7 +52,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T014 | [#31](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/31) | Django admin foundation | P1 | must | T013 | 1 d | done |
 | T015 | [#32](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/32) | Project and membership models, API and admin | P1 | must | T005, T013, T014 | 2 d | done |
 | T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | done |
-| T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | todo |
+| T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | done |
 | T018 | [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) | Audit log with django-simple-history | P1 | must | T015 | 1.5 d | done |
 | T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | todo |
 | T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | todo |
@@ -382,7 +382,7 @@ Depends on: T001, T015
 - [ ] Changing a threshold changes the next flag computation (tested with T056).
 
 ### T017 · App project list and project home
-[#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) · E02 · P1 · must · labels: `mobile`, `must` · implements F3, F72 · est. 1.5 d · **todo**
+[#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) · E02 · P1 · must · labels: `mobile`, `must` · implements F3, F72 · est. 1.5 d · **done**
 
 Depends on: T012, T015
 Notes: badges fill in once T029 and T031 land
@@ -391,6 +391,8 @@ Notes: badges fill in once T029 and T031 land
 - [ ] Project home tiles (outline §11.2 C, minus the validation tab): **Start visit**, **Transects**, **Free observation**, **Plants & habitat**, **Map**, **Unsynced data** (with badge), **Statistics**.
 - [ ] The last selected project is remembered.
 - [ ] Everything works offline once the package is downloaded.
+
+Deferred: the downloaded-transect count, the unsynced count and the offline package status are placeholder providers in `features/projects/domain/project_stats.dart` (0, 0, `not downloaded`). T030 fills the unsynced count and T031 the transect count and package status. Until the pull exists, the project list is refreshed from `GET /api/v1/projects` (D-042).
 
 ### T018 · Audit log with django-simple-history
 [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) · E02 · P1 · must · labels: `backend`, `admin`, `must` · implements F4 · est. 1.5 d · **done**

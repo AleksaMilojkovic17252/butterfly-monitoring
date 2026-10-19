@@ -4,6 +4,7 @@ import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/auth/data/auth_repository.dart';
 import 'package:mobile/features/auth/data/token_storage.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
+import 'package:mobile/features/projects/domain/last_project.dart';
 
 /// Holds `loading | unauthenticated | authenticated | offline`; go_router
 /// redirects on it.
@@ -65,6 +66,7 @@ class AuthController extends Notifier<AuthState> {
   Future<void> removeAllLocalData() async {
     await ref.read(localDataRepositoryProvider).clearAll();
     await ref.read(lastSyncProvider.notifier).clear();
+    await ref.read(lastProjectProvider.notifier).clear();
     await logout();
   }
 }

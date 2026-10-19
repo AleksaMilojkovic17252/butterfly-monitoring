@@ -318,3 +318,15 @@ VERIFY result (OpenLayers 7.2.2): Django's Shift + click vertex delete added a v
 pointer-down on an edge (`insertVertexCondition` defaults to `always`) and then ignores the next click. Setting
 `insertVertexCondition` to "not Shift" makes Shift + click remove a vertex; checked by hand in the browser. Shift + drag
 is still freehand drawing.
+
+## D-042 · App projects live in a Drift table, refreshed from the projects API until the pull exists
+2026-10-19 · accepted · T017
+The app keeps projects in a Drift `project` table (schema v3), so the project list and project home work offline. It is a
+read-only reference table: the columns match the server (`area` is GeoJSON text), with `serverVersion` and `deletedAt`
+but no `syncStatus`. Until the pull (T025/T030) exists, `ProjectRepository.refreshFromServer()` upserts the rows from
+`GET /api/v1/projects`; it runs quietly when the list opens and on pull-to-refresh. T030/T031 replace it with the pull and
+can drop the method. Projects the server stops returning stay on the phone (D-036). The protocol is not stored yet (T033).
+The last opened project id is in `shared_preferences` (`last_project_id`). After login or app start the router goes to
+`/projects/<id>` (nested under `/`, so back leads to the list); "Remove data" clears it. The per-project numbers are
+placeholder `FutureProvider.family`s in `project_stats.dart` for T030/T031 to fill in. `dart run drift_dev
+make-migrations` also generates `test/drift/.../migration_test.dart`; it is deleted (D-021).
