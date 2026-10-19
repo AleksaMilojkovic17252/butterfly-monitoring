@@ -330,3 +330,15 @@ The last opened project id is in `shared_preferences` (`last_project_id`). After
 `/projects/<id>` (nested under `/`, so back leads to the list); "Remove data" clears it. The per-project numbers are
 placeholder `FutureProvider.family`s in `project_stats.dart` for T030/T031 to fill in. `dart run drift_dev
 make-migrations` also generates `test/drift/.../migration_test.dart`; it is deleted (D-021).
+
+## D-043 · Taxon renames add a row; new projects default to the current list release
+2026-10-19 · accepted · T019
+A taxon's `scientific_name` is read-only in the admin after creation. A rename or synonymisation goes through
+`catalogues.services.retire_and_replace_taxon` (admin action "Rename / synonymise…" on the taxon list): it adds a new
+`Taxon` row introduced in the chosen `TaxonListVersion`, copies the other fields, and sets `retired_in` and
+`accepted_name` on the old row (saved with a history reason). Observations keep pointing at the old row.
+`make_current` / `clear_other_current` move `is_current` between releases (the admin does the same when a release is saved
+as current), because the partial unique index allows only one current row at a time. `Project.taxon_list_version` is
+nullable and filled by a `pre_save` signal on create (like the protocol signal, D-038) with the current release, or left
+empty when there is none; existing projects are not backfilled. `taxa_for(user)` is the scope the pull (T025) must use: for
+now every live taxon with `retired_in IS NULL`; T044 adds the retired taxa the user's own observations reference.

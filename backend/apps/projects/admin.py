@@ -119,7 +119,7 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "default_crs",
         "active",
         "area",
-        "deleted_at",
+        "taxon_list_version",
         "server_version",
         "created_at",
         "created_by",
@@ -145,6 +145,9 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "end_date": "Last day of the project. Leave empty while it is ongoing.",
         "default_crs": "EPSG code of the coordinate system used for exports. 4326 = GPS (WGS 84).",
         "active": "Untick to hide the project from new work without deleting it.",
+        "taxon_list_version": (
+            "Butterfly list release used for this project. New projects get the current one."
+        ),
         "area": (
             "Study area outline. Draw it on the map, or use the 'Import study area' action on the "
             "project list. Optional; observations outside it are flagged."

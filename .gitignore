@@ -43,6 +43,7 @@ backups/
 *.sqlite3
 *.dump
 *.mbtiles
+tmp/
 
 # Editors / OS
 .idea/

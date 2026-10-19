@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Rename or synonymise <strong>{{ taxon }}</strong>. A new taxon row is added with the new name;
+  <em>{{ taxon }}</em> stays as it is, is marked retired in the chosen release and points to the new
+  row. Existing observations keep the old row.</p>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="replace_taxon">
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ taxon.pk }}">
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Rename">
+  <a href="{% url 'admin:catalogues_taxon_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

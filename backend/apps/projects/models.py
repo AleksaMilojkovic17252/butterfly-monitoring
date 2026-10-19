@@ -21,7 +21,14 @@ class Project(SyncableModel):
     default_crs = models.PositiveIntegerField(default=4326)  # EPSG code
     active = models.BooleanField(default=True)
     area = gis_models.MultiPolygonField(srid=4326, null=True, blank=True)  # study area
-    # Added by a later ticket: taxon_list_version (T019).
+    # Which butterfly list release this project uses. New projects get the current one (signal).
+    taxon_list_version = models.ForeignKey(
+        "catalogues.TaxonListVersion",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="projects",
+    )
     history = HistoricalRecords(table_name="historical_project")
 
     class Meta:

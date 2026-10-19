@@ -54,7 +54,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T016 | [#33](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/33) | Project protocol settings and study area | P1 | must | T001, T015 | 1.5 d | done |
 | T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | done |
 | T018 | [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) | Audit log with django-simple-history | P1 | must | T015 | 1.5 d | done |
-| T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | todo |
+| T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | done |
 | T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | todo |
 | T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | todo |
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | todo |
@@ -408,7 +408,9 @@ Depends on: T015
 Note: skipped the two test criteria (D-021: the taxon-change test and the `.update(` grep); the same history row (old/new value, user, time, reason) was shown by hand on a Project field. HistoricalRecords was already on Project, ProjectMembership and ProjectProtocol (T015/T016); later model tickets add their own. Admins extend `core.admin.HistoryAdmin` (revert refused), reasons go through `core.history.save_with_reason` (used by T043/T057), history rows carry the fresh `server_version` (D-040). Added at the user's request: an optional change-reason dialog when saving an edit in any `HistoryAdmin` (D-040).
 
 ### T019 · Taxon catalogue, versioned
-[#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) · E03 · P1 · must · labels: `backend`, `database`, `must` · implements F18 · est. 2 d · **todo**
+[#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) · E03 · P1 · must · labels: `backend`, `database`, `must` · implements F18 · est. 2 d · **done**
+
+Deferred: "Taxa reach the phone by pull" waits for T025 (`catalogues.services.taxa_for(user)` is the scope to use) and its "or referenced by the user's own observations" part waits for T044. The "(tested)" part of the read-only name was checked by hand (D-021). See D-043.
 
 Depends on: T005, T015
 

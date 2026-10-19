@@ -32,6 +32,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "active",
             "transect_count",
             "area",
+            "taxon_list_version",
             "protocol",
             "server_version",
             "deleted_at",
