@@ -1,5 +1,6 @@
 """Error body for the whole API: {"code", "detail", "fields"} (CONVENTIONS A.7)."""
 
+from django.http import Http404
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
@@ -28,7 +29,8 @@ def api_exception_handler(exc, context):
         else:
             fields = {"non_field_errors": data}
     else:
-        code = getattr(exc, "default_code", "error")
+        # Django's Http404 has no default_code (DRF only converts it for the response).
+        code = "not_found" if isinstance(exc, Http404) else getattr(exc, "default_code", "error")
         raw = getattr(exc, "detail", exc)
         if isinstance(raw, dict) and "detail" in raw:  # simplejwt's InvalidToken
             code = str(raw.get("code", code))

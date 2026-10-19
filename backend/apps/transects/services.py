@@ -1,4 +1,4 @@
-"""Transect rules and scopes. API, admin and pull (T025) call these, not the models."""
+"""Transect rules and scopes. API and admin call these, not the models. Pull scopes: `pull_*`."""
 
 from django.contrib.gis.gdal import OGRGeometry
 from django.contrib.gis.geos import GEOSGeometry
@@ -56,8 +56,27 @@ def transects_for(user):
 
 
 def sections_for(user):
-    """Live sections of `transects_for(user)`. The pull (T025) sends these to the phone."""
+    """Live sections of `transects_for(user)`, for the REST API. The pull uses `pull_sections`."""
     return TransectSection.objects.alive().filter(transect__in=transects_for(user))
+
+
+def geodesic_length_m(transect):
+    """Geodesic length of one transect line in metres, for instances without `length_m`."""
+    return (
+        Transect.objects.filter(pk=transect.pk)
+        .values_list(GeodesicLength("geometry"), flat=True)
+        .get()
+    )
+
+
+def pull_transects(_user, project):
+    """The project's transects, deleted rows included, so tombstones reach the phone."""
+    return Transect.objects.filter(project=project).annotate(length_m=GeodesicLength("geometry"))
+
+
+def pull_sections(_user, project):
+    """Sections of the project's transects, deleted rows included, so tombstones reach the phone."""
+    return TransectSection.objects.filter(transect__project=project)
 
 
 def with_stats(transects, user):

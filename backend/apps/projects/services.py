@@ -1,4 +1,4 @@
-"""Who can see which project. Pull (T025) and the API both scope through here."""
+"""Who can see which project. The API and the pull's project check (T025) scope through here."""
 
 from datetime import date
 
@@ -20,6 +20,16 @@ def projects_for(user):
     if is_admin(user):
         return projects
     return projects.filter(memberships__user=user)
+
+
+def pull_projects(_user, project):
+    """The project itself, deleted rows included, so tombstones reach the phone."""
+    return Project.objects.filter(pk=project.pk)
+
+
+def pull_protocols(_user, project):
+    """The project's protocol, deleted rows included, so tombstones reach the phone."""
+    return ProjectProtocol.objects.filter(project=project)
 
 
 def is_member(user, project_id):

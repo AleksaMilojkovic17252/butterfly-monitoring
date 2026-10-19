@@ -1,21 +1,8 @@
-import json
-
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from apps.core.serializers import GeoJSONField
 from apps.transects.models import Transect, TransectSection
-
-
-@extend_schema_field(OpenApiTypes.OBJECT)
-class GeoJSONField(serializers.Field):
-    """A GEOS geometry as a GeoJSON geometry object (read-only)."""
-
-    def __init__(self, **kwargs):
-        super().__init__(read_only=True, **kwargs)
-
-    def to_representation(self, value) -> dict:
-        return json.loads(value.geojson)
+from apps.transects.services import geodesic_length_m
 
 
 class TransectSectionSerializer(serializers.ModelSerializer):
@@ -78,3 +65,32 @@ class TransectDetailSerializer(TransectSerializer):
     class Meta(TransectSerializer.Meta):
         fields = [*TransectSerializer.Meta.fields, "sections"]
         read_only_fields = fields
+
+
+class TransectSectionSyncSerializer(serializers.ModelSerializer):
+    """A section row as pulled to the phone (T025). Push (T026) uses the same class."""
+
+    geometry = GeoJSONField()
+
+    class Meta:
+        model = TransectSection
+        exclude = ["created_by", "updated_by"]
+
+
+class TransectSyncSerializer(serializers.ModelSerializer):
+    """A transect row as pulled to the phone (T025). Push (T026) uses the same class."""
+
+    geometry = GeoJSONField()
+    # Annotated by transects.services.pull_transects; computed for other instances (push, T026).
+    length_m = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transect
+        exclude = ["created_by", "updated_by"]
+
+    def get_length_m(self, transect) -> float:
+        """Geodesic length of the line in metres, to 0.1 m."""
+        length = getattr(transect, "length_m", None)
+        if length is None:
+            length = geodesic_length_m(transect)
+        return round(length, 1)

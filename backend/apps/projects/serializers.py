@@ -2,6 +2,7 @@ import json
 
 from rest_framework import serializers
 
+from apps.core.serializers import GeoJSONField
 from apps.projects.models import Project, ProjectProtocol
 
 
@@ -45,3 +46,21 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_area(self, project) -> dict | None:
         """The study area as a GeoJSON geometry, or null."""
         return json.loads(project.area.geojson) if project.area else None
+
+
+class ProjectProtocolSyncSerializer(serializers.ModelSerializer):
+    """A protocol row as pulled to the phone (T025). Push (T026) uses the same class."""
+
+    class Meta:
+        model = ProjectProtocol
+        exclude = ["created_by", "updated_by"]
+
+
+class ProjectSyncSerializer(serializers.ModelSerializer):
+    """A project row as pulled to the phone (T025). Push (T026) uses the same class."""
+
+    area = GeoJSONField()
+
+    class Meta:
+        model = Project
+        exclude = ["created_by", "updated_by", "owner"]

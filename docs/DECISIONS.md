@@ -473,3 +473,40 @@ retiring them in the chosen release (default: the current one); all selected tax
 saves nothing. A taxon that is still the accepted name of other live taxa cannot be synonymised, so chains A → B → C never
 form; change those taxa's accepted name first.
 `list_editable` is on for the four admins, but soft-deleted rows are shown read-only in the changelist form.
+
+## D-049 · Pull: one snapshot per page, scopes with tombstones, sync registry
+2026-10 · accepted · T025
+`POST /api/v1/sync/pull {project_id, cursor, limit}` (limit default 1000, max 5000) returns
+`{changes: {<entity_type>: [...]}, next_cursor, has_more, server_time}`. Every entity type has a key, with an empty list when
+nothing changed. `sync.services.pull` runs in one transaction that starts with
+`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`: the page is built from one query per entity, and under READ
+COMMITTED each would see its own snapshot, so a row committed in between could appear while an earlier type missed a lower
+version that committed at the same time, and `next_cursor` would jump past it. With one snapshot and versions committing in
+order (T005 advisory lock, D-029) every page is a prefix of the commit order. The boundary comes from a first pass over the
+versions alone (`limit + 1` per entity, pooled and sorted; versions are unique because they come from one sequence), then the
+rows up to `next_cursor` are fetched per entity. Checked by hand with a smoke script (paging, tombstones, interleaved
+writes) and an uncommitted write on a second database connection while pulling: the row stayed out of the page and
+`next_cursor` stayed below its version until it committed (D-021, no automated test). `pull` uses
+`transaction.atomic(durable=True)`, so calling it inside an outer transaction fails loudly.
+`apps/sync/registry.ENTITIES` is the one list of synced entity types: `(entity_type, serializer, pull_scope)`. T026 adds the
+push handlers to it, and T027, T034, T036, T044 and T049 add the user-data types (scoped to `created_by = user`).
+The `*SyncSerializer` classes (`projects`, `catalogues`, `transects`) describe the row as stored, with the column names of
+the phone, minus `created_by`, `updated_by` and the project `owner`. Pull and push share them, and the OpenAPI schema shows
+each type as `oneOf` record or tombstone. They are not the REST serializers, which nest and annotate for the screens.
+Geometry goes out as GeoJSON through `core.serializers.GeoJSONField` (read-only, moved from `transects`); there is no
+djangorestframework-gis.
+The `pull_*` scopes (`projects`, `catalogues`, `transects` services) take `(user, project)` and return every row in scope,
+**soft-deleted ones included**; the `*_for(user)` scopes stay live-only for the REST API. Deleted rows go out as
+`{id, deleted_at, server_version}` tombstones, also at cursor 0 (the phone may hold the row from an earlier package).
+**All taxa are pulled, retired ones included. This amends D-043**: retiring a taxon bumps its version, and under the
+`retired_in IS NULL` rule it would leave the scope at that moment, so a phone would never learn it was retired. The app filters
+retired and inactive rows in its pickers; T044 has nothing to add for taxa. All taxon list versions are pulled too, because
+taxa point at them through `introduced_in` and `retired_in`. Plants and codelists keep D-044, plus tombstones.
+A project the caller cannot see (non-member, unknown id, or soft-deleted) is a 404 (D-036). A deleted project therefore has no
+tombstone in the pull; the phone drops projects that are no longer in the projects list. Sections of a soft-deleted
+transect are still sent as live records, since deleting a transect does not delete its sections; the sync runner (T030) must
+not treat them as orphans.
+`cursor` is capped at 2^63 - 1 (the bigint range), so a larger value is a 400. `TransectSyncSerializer.length_m` uses the pull
+annotation when it is there and otherwise asks the database (`transects.services.geodesic_length_m`), so push (T026) can
+serialize a plain `Transect`. A 404 now has the body code `not_found` (it was `error`, because Django's `Http404` has no
+`default_code`); this also applies to `/projects/{id}`.

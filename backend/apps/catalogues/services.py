@@ -122,27 +122,60 @@ def synonymise_taxon(old, accepted, version, user=None, reason=""):
 
 
 def taxa_for(user):
-    """Live taxa the pull (T025) sends to the phone.
-
-    Now: every taxon that is not retired. T044 adds the retired taxa that the user's own
-    observations point at, since the phone needs them to show those observations.
-    """
+    """Live taxa that are not retired, for the REST API and pickers. The pull uses `pull_taxa`."""
     return Taxon.objects.alive().filter(retired_in__isnull=True)
 
 
 def plant_taxa_for(user):
-    """Live plants the pull (T025) sends to the phone.
+    """Live plants for the REST API, inactive ones included (the pull uses `pull_plant_taxa`).
 
-    Inactive plants are included: pickers hide them, but records that use one must still show it.
+    Pickers hide inactive plants, but records that use one must still show it.
     """
     return PlantTaxon.objects.alive()
 
 
 def habitat_types_for(user):
-    """Live habitat types for the pull (T025), inactive ones included (see `plant_taxa_for`)."""
+    """Live habitat types for the REST API, inactive ones included (see `plant_taxa_for`)."""
     return HabitatType.objects.alive()
 
 
 def management_types_for(user):
-    """Live management types for the pull (T025), inactive ones included."""
+    """Live management types for the REST API, inactive ones included."""
     return ManagementType.objects.alive()
+
+
+# Pull scopes (T025). Catalogues are global, so the user and project are unused; the signature
+# is the one every scope in apps.sync.registry has.
+
+
+def pull_taxon_list_versions(_user, _project):
+    """Every release, deleted rows included, so tombstones reach the phone.
+
+    Taxa point at releases through `introduced_in` and `retired_in`, and there are few rows.
+    """
+    return TaxonListVersion.objects.all()
+
+
+def pull_taxa(_user, _project):
+    """Every taxon, retired ones and deleted rows included, so tombstones reach the phone.
+
+    Retiring a taxon bumps its version; if retired taxa were out of scope, the phone would never
+    learn it was retired (amends D-043). The app hides retired taxa in its pickers. T044 has
+    nothing to add: retired taxa that observations point at are already in.
+    """
+    return Taxon.objects.all()
+
+
+def pull_plant_taxa(_user, _project):
+    """Every plant, deleted rows included, so tombstones reach the phone."""
+    return PlantTaxon.objects.all()
+
+
+def pull_habitat_types(_user, _project):
+    """Every habitat type, deleted rows included, so tombstones reach the phone."""
+    return HabitatType.objects.all()
+
+
+def pull_management_types(_user, _project):
+    """Every management type, deleted rows included, so tombstones reach the phone."""
+    return ManagementType.objects.all()

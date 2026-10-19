@@ -60,7 +60,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | done |
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | done |
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | done |
-| T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | todo |
+| T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | done |
 | T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | todo |
 | T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | todo |
 | T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | todo |
@@ -498,7 +498,11 @@ Depends on: T019, T020, T021
 - [ ] All commands are idempotent (re-running creates no duplicates), and the raw GBIF responses are saved under `database/seeds/cache/` so re-runs work offline.
 
 ### T025 · Pull API with server-version cursor
-[#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) · E04 · P1 · must · labels: `backend`, `sync`, `must` · implements F25, F7 · est. 2 d · **todo**
+[#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) · E04 · P1 · must · labels: `backend`, `sync`, `must` · implements F25, F7 · est. 2 d · **done**
+
+Note: the interleaved-writes "Test" was checked by hand (a smoke script, plus an uncommitted write on a second database connection while pulling), not as an automated test (D-021).
+
+Deferred: the "user data" and `sync_conflict` scope bullets wait for their tables. Own records (`created_by = user`) are added to `apps/sync/registry.py` by T027, T034, T036, T044 and T049, and the caller's own conflicts by T049. The automated interleaved-writes test is skipped (D-021).
 
 Depends on: T005, T015, T019, T020, T021
 
