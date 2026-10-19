@@ -20,7 +20,7 @@ A ticket is **ready** when it is `todo` and every ticket in its "Depends on" col
 Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the first ready ticket in this list. Phase 1 is the February target; Phase 2 comes after.
 
 - **1 · Foundations:** T001, T002, T003, T006, T004, T005, T009, T007, T008, T010
-- **2a · Accounts and projects:** T011, T013, T014, T012, T015, T016, T018, T017
+- **2a · Accounts and projects:** T011, T013, T014, T012, T015, T016, T018, T098, T017
 - **2b · Catalogues and transects:** T019, T020, T021, T022, T024
 - **3 · Sync core:** T025, T026, T029, T030, T027, T028, T031, T032
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
@@ -133,6 +133,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T095 | [#112](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/112) | Interoperability and conformance evaluation of SensorThings, EDR and Moving Features | P2 | must | T083, T094 | 2 d | todo |
 | T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | should | T087, T088, T091 | 1.5 d | todo |
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
+| T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | todo |
 
 ## Acceptance criteria
 
@@ -1550,3 +1551,22 @@ Notes: + T096 if done
 
 - [ ] `docs/standards/comparison.md` has a table per standard: purpose in this system, implementation used, effort (days from these tickets), maturity of tools, client support found, limitations, and recommendation.
 - [ ] It states plainly that sensor data is simulated, along with the GPS-accuracy caveat for Moving Features.
+
+### T098 · Study area editor: edit and remove single polygons, with in-map help
+[#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) · E02 · added 2026-10-19 as a follow-up to T016 · P1 · must · labels: `admin`, `must` · est. 0.5 d · **todo**
+
+Depends on: T016
+
+Why: in the T016 admin map, a saved `Project.area` loads as one MultiPolygon feature, so a single polygon cannot be
+selected or removed; the only choices are "Delete all Features" and redrawing, or editing in QGIS and re-importing.
+Shift + click, which Django's widget documents as vertex delete, added a vertex when tried by hand (2026-10-19).
+
+- [ ] The area map in `ProjectAdmin` loads each polygon of the MultiPolygon as its own feature and saves them back as one MultiPolygon (empty map saves `area = NULL`).
+- [ ] Clicking a polygon selects it (highlighted); a **Delete selected polygon** control (and the Delete key) removes only that polygon.
+- [ ] Reshaping works: drag vertices and edges, add a vertex on an edge, and **remove a single vertex** with a gesture that actually works (VERIFY Django's shift + click; rebind if needed).
+- [ ] Drawing an extra polygon and "Delete all" still work.
+- [ ] A **?** icon next to the map shows a short help popup on hover (and on click/focus for keyboard and touch) explaining: draw a polygon (click vertices, double-click to finish), draw freehand (hold Shift and drag), reshape, add and remove a vertex, select and delete one polygon, delete all, and the "Import study area" action for file uploads. Text is translatable (`gettext`).
+- [ ] The widget is a reusable class in `apps/core` (subclass of Django's map widget plus a small JS file), so T022 can use it for transect and section geometry.
+- [ ] No new dependency: uses the OpenLayers build Django already ships.
+
+Out of scope: merging or splitting polygons, snapping, topology checks. Complex edits stay in QGIS plus re-import.
