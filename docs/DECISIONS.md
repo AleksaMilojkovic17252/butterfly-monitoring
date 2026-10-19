@@ -281,3 +281,20 @@ map. The projects routes have no trailing slash (`/api/v1/projects`).
 ## D-039 · Server time zone is UTC
 2026-10 · accepted
 `TIME_ZONE = "UTC"` (it was Europe/Belgrade), so API timestamps end in `Z` and the admin shows UTC, as CONVENTIONS 8 says. Stored data is unchanged (`timestamptz` holds the instant). Follow-ups are notes under T026 (reject offset-less datetimes in push input) and T029 (the app sends UTC).
+
+## D-040 · Audit log details: no revert, fresh `server_version`, reasons through a helper
+2026-10 · accepted · T018
+Admin classes for audited models extend `core.admin.HistoryAdmin` (a `SimpleHistoryAdmin`) first:
+`class XAdmin(HistoryAdmin, SyncableAdmin)`. `SIMPLE_HISTORY_REVERT_DISABLED = True` only hides the Revert button and
+makes the version page read-only, so `HistoryAdmin.history_form_view` also refuses POST with 403. A
+`pre_create_historical_record` receiver (`core/history.py`) reads `server_version` from the database before the
+history row is saved: simple-history writes history in `post_save`, after the BEFORE trigger (T005) has set the new
+version, so the history row matches the live row while the instance still holds the old value (T027 looks up past
+states by `(id, server_version)`). History rows from before T018 keep their stale versions. Changes that need a
+reason go through `core.history.save_with_reason(obj, user, reason)`, which sets `_change_reason`, `_history_user`
+(so it works outside a request) and `updated_by`. `SIMPLE_HISTORY_HISTORY_CHANGE_REASON_USE_TEXT_FIELD = True` makes
+`history_change_reason` a text column (migration `projects/0003`; later model tickets get it automatically).
+VERIFY result (3.13.0): with JWT auth, `HistoryRequestMiddleware` keeps the Django request, and DRF writes the
+authenticated user back onto it (`Request.user` setter), so `history_user` is set for API writes. This was checked with a
+throwaway DRF view, since no project API writes yet. `diff_against` leaves out non-editable fields (`server_version`,
+`updated_at`). Not audited: `User`, whose `is_staff` sync uses `QuerySet.update()`.

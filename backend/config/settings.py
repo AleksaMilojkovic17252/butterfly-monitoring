@@ -149,6 +149,10 @@ CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"
 LOGIN_MAX_FAILURES = 5
 LOGIN_FAILURE_WINDOW = 15 * 60
 
+# Audit log (T018, D-009). Revert is off: it would bypass sync versioning (see core.HistoryAdmin).
+SIMPLE_HISTORY_HISTORY_CHANGE_REASON_USE_TEXT_FIELD = True
+SIMPLE_HISTORY_REVERT_DISABLED = True
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Butterfly monitoring API",
     "DESCRIPTION": "Offline-first sync API for butterfly transect surveys.",

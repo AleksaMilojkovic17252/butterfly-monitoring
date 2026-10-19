@@ -2,9 +2,8 @@ from django import forms
 from django.contrib import admin, messages
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
-from simple_history.admin import SimpleHistoryAdmin
 
-from apps.core.admin import MapAdmin, SyncableAdmin
+from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 from apps.projects.services import AreaFileError, multipolygon_from_file
 
@@ -104,7 +103,7 @@ class ProjectMembershipInline(admin.TabularInline):
 
 
 @admin.register(Project)
-class ProjectAdmin(HelpTextMixin, SimpleHistoryAdmin, SyncableAdmin, MapAdmin):
+class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
     list_display = ["name", "owner", "start_date", "end_date", "active"]
     list_filter = ["active"]
     search_fields = ["name"]

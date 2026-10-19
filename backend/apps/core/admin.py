@@ -1,6 +1,22 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
+from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext_lazy as _
+from simple_history.admin import SimpleHistoryAdmin
+
+
+class HistoryAdmin(SimpleHistoryAdmin):
+    """SimpleHistoryAdmin with revert turned off (T018, D-009).
+
+    Reverting would write an old row state without going through sync versioning.
+    SIMPLE_HISTORY_REVERT_DISABLED only hides the button; this also refuses the POST.
+    Use it first in the bases: `class XAdmin(HistoryAdmin, SyncableAdmin)`.
+    """
+
+    def history_form_view(self, request, object_id, version_id, extra_context=None):
+        if request.method == "POST":
+            raise PermissionDenied
+        return super().history_form_view(request, object_id, version_id, extra_context)
 
 
 class DeletedFilter(admin.SimpleListFilter):
@@ -21,7 +37,7 @@ class DeletedFilter(admin.SimpleListFilter):
 class SyncableAdmin(admin.ModelAdmin):
     """Admin base for synced models: no hard delete, soft delete as a bulk action.
 
-    Combine with history by putting it second: `class XAdmin(SimpleHistoryAdmin, SyncableAdmin)`
+    Combine with history by putting it second: `class XAdmin(HistoryAdmin, SyncableAdmin)`
     (T018). The sync bookkeeping fields are read-only.
     """
 
