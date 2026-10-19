@@ -1,0 +1,7 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+  {% if can_publish %}
+  <li><a class="addlink" href="{% url 'admin:catalogues_taxonlistversion_publish' %}">Publish new release</a></li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

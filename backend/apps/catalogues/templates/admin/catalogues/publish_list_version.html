@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+{{ form.media }}
+{% endblock %}
+{% block content %}
+<p>Publish a new taxon list release. It becomes the current release. Ticked projects switch to it;
+  unticked projects stay on the release they use now.</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Publish">
+  <a href="{% url 'admin:catalogues_taxonlistversion_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

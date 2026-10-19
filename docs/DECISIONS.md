@@ -446,3 +446,30 @@ first and writes in a short transaction afterwards, and cache files are written 
 with `DEBUG` on, adds groups only to users it creates, re-links an existing demo project to the GBIF list, and skips a soft-deleted
 transect (its `(project, code)` constraint covers deleted rows). No retry or backoff on GBIF errors: the cache keeps what was
 fetched, so running the command again continues where it stopped.
+
+## D-048 · Catalogue CSV import/export and release publishing
+2026-10 · accepted · T023
+`django-import-export` 4.4.1 (approved for this ticket; pulls `tablib` and `diff-match-patch`, which are not pinned). VERIFY
+result: it works with Django 5.2.18, and the admin passes `user=request.user` to `import_data`, so `before_save_instance` gets
+it in `kwargs["user"]` and sets `created_by`, `updated_by`, the history user and the reason "CSV import". CSV is the only
+format. Import needs both the `add` and the `change` permission (`CatalogueAdminMixin.has_import_permission`, since import
+creates and updates rows and the library's setting takes one code only); export needs `view`
+(`IMPORT_EXPORT_EXPORT_PERMISSION_CODE`).
+Rows match on natural keys, so the CSV has no UUIDs and no sync columns: taxa on `(scientific_name, rank, introduced_in)`
+(the `taxon_unique_name` constraint), plants on `scientific_name`, codelists on `code`; `introduced_in` is a release label. Rows
+are saved one by one (`use_bulk = False`) so the sync trigger and history fire, and `clean_model_instances` turns a bad `rank`,
+`taxon_source` or slug into a row error. Boolean columns use `StrictBooleanWidget` (1/0/true/false/empty): the library default
+reads any other value, such as `yes`, as `False` without an error. `retired_in` and `accepted_name` are exported but read-only on import: retiring and
+renaming go only through the admin actions, so a CSV can never rename or retire a taxon (T019 rule: a changed key is a new row).
+Known limit: the natural keys are unique across soft-deleted rows too, so importing a row whose key matches a soft-deleted row
+updates it but leaves it deleted. An unknown `introduced_in` label shows as a "matching query does not exist" row error.
+Publishing a release is a button on the taxon list version changelist (`publish/` view), not a list action, because it creates
+the release. `services.publish_list_version` creates it, makes it current and switches only the ticked projects (each saved with
+the reason "Switched to taxon list …"); unticked projects stay where they are. The label is checked on the form because it is
+unique including deleted rows.
+"Synonymise into existing…" is a second action beside T019's "Rename / synonymise…", which is unchanged and still creates the
+accepted name. The new one (`services.synonymise_taxon`) only links one or more selected taxa to an existing accepted taxon,
+retiring them in the chosen release (default: the current one); all selected taxa are saved in one transaction, so one error
+saves nothing. A taxon that is still the accepted name of other live taxa cannot be synonymised, so chains A → B → C never
+form; change those taxa's accepted name first.
+`list_editable` is on for the four admins, but soft-deleted rows are shown read-only in the changelist form.

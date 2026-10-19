@@ -37,6 +37,24 @@ def make_current(version, user=None):
 
 
 @transaction.atomic
+def publish_list_version(version_label, source, published_at, notes, projects, user=None):
+    """Create a release, make it current and switch `projects` to it (each saved with a reason)."""
+    version = TaxonListVersion.objects.create(
+        version_label=version_label,
+        source=source,
+        published_at=published_at,
+        notes=notes,
+        created_by=user,
+        updated_by=user,
+    )
+    make_current(version, user)
+    for project in projects:
+        project.taxon_list_version = version
+        save_with_reason(project, user, f"Switched to taxon list {version}")
+    return version
+
+
+@transaction.atomic
 def retire_and_replace_taxon(old, new_scientific_name, new_version, user=None, reason=""):
     """Rename or synonymise `old`: add a new Taxon row and retire the old one in `new_version`.
 
@@ -75,6 +93,32 @@ def retire_and_replace_taxon(old, new_scientific_name, new_version, user=None, r
     old.accepted_name = new
     save_with_reason(old, user, reason or f"Replaced by {new_scientific_name} in {new_version}")
     return new
+
+
+@transaction.atomic
+def synonymise_taxon(old, accepted, version, user=None, reason=""):
+    """Retire `old` in `version` as a synonym of the existing `accepted` taxon (T019 rule).
+
+    No new row: `old` keeps its name and gets `retired_in` and `accepted_name`.
+    """
+    if old.deleted_at is not None or old.retired_in_id is not None:
+        raise TaxonError(f"{old} is already retired or deleted.")
+    if accepted.deleted_at is not None or accepted.retired_in_id is not None:
+        raise TaxonError(f"{accepted} is retired or deleted, so it cannot be the accepted name.")
+    if accepted.pk == old.pk:
+        raise TaxonError(f"{old} cannot be a synonym of itself.")
+    # A synonym pointing at a retired taxon would make a chain (A -> B -> C).
+    dependent = old.synonyms.filter(deleted_at__isnull=True).first()
+    if dependent is not None:
+        raise TaxonError(
+            f"{old} is the accepted name of {dependent}. Change that taxon's accepted name first."
+        )
+    if version.deleted_at is not None:
+        raise TaxonError(f"{version} is deleted.")
+    old.retired_in = version
+    old.accepted_name = accepted
+    save_with_reason(old, user, reason or f"Synonym of {accepted} in {version}")
+    return old
 
 
 def taxa_for(user):

@@ -58,7 +58,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | done |
 | T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | done |
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | done |
-| T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | todo |
+| T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | done |
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | done |
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | todo |
 | T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | todo |
@@ -464,7 +464,9 @@ Depends on: T014, T021
 - [ ] The list shows code, name, project, active, length and section count, filtered by project.
 
 ### T023 · Catalogue admin tools
-[#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) · E03 · P1 · should · labels: `admin`, `should` · implements F64 · est. 1.5 d · **todo**
+[#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) · E03 · P1 · should · labels: `admin`, `should` · implements F64 · est. 1.5 d · **done**
+
+Note: no test criteria to skip. "Publish new taxon list version" is a button on the release changelist, not an action on a selected row, because it creates the release. There are two synonymise actions: T019's "Rename / synonymise…" (creates the accepted taxon) and the new "Synonymise into existing…" (links to an existing one). See D-048.
 
 Depends on: T019, T020
 

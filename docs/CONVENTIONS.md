@@ -47,6 +47,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | djangorestframework-simplejwt | 5.5.x | uses the `token_blacklist` app for logout |
 | drf-spectacular | 0.28.x | VERIFY |
 | django-simple-history | 3.8+ | VERIFY Django 5.2 support |
+| django-import-export | 4.4.1 | CSV import/export of catalogues (T023); approved for T023 |
 | django-storages[s3] + boto3 | 1.14.x | |
 | psycopg | 3.2.x | |
 | requests | 2.34.x | GBIF calls of the seed commands (T024); approved for T024 |

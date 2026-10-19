@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Synonymise into an existing taxon. Each selected taxon stays as it is, is marked retired in the
+  chosen release and points to the accepted taxon. Existing observations keep the old rows.</p>
+<ul>
+  {% for taxon in taxa %}<li>{{ taxon }}</li>{% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="synonymise_into_existing">
+  {% for taxon in taxa %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ taxon.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Synonymise">
+  <a href="{% url 'admin:catalogues_taxon_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

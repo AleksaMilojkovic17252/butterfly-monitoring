@@ -4,6 +4,7 @@ djangorestframework==3.18.3
 djangorestframework-simplejwt==5.5.1
 drf-spectacular==0.30.0
 django-simple-history==3.13.0
+django-import-export==4.4.1
 django-storages[s3]==1.14.6
 boto3==1.43.113
 psycopg[binary]==3.3.6
