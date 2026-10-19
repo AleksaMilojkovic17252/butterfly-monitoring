@@ -1,0 +1,49 @@
+{% load i18n l10n %}
+{% comment %}
+EditableMapWidget (T098). A copy of Django's gis/openlayers.html + openlayers-osm.html with a
+"Delete selected" button and a "?" help popup added. Django's MapWidget looks for
+.clear_features right after the map div, so keep that order. Subclass templates can override
+the delete_selected_label and help blocks (e.g. lines instead of polygons, T022).
+{% endcomment %}
+<div id="{{ id }}_div_map" class="dj_map_wrapper editable_map">
+    <div id="{{ id }}_map" class="dj_map"></div>
+    {% if not disabled %}
+    <span class="clear_features">
+        <a href="">{% translate "Delete all Features" %}</a>
+        <button type="button" class="delete_selected" disabled>{% block delete_selected_label %}{% translate "Delete selected polygon" %}{% endblock %}</button>
+    </span>
+    <span class="map_help">
+        <button type="button" class="map_help_button" aria-describedby="{{ id }}_help"
+                aria-label="{% translate 'How to edit the map' %}">?</button>
+        <span id="{{ id }}_help" class="map_help_text" role="tooltip">
+            {% block help %}
+            <strong>{% translate "Editing the map" %}</strong>
+            <span>{% translate "Draw a polygon: click each corner, then double-click (or click the first corner) to finish." %}</span>
+            <span>{% translate "Draw freehand: hold Shift and drag." %}</span>
+            <span>{% translate "Reshape: drag a corner, or drag an edge to add a corner there." %}</span>
+            <span>{% translate "Remove a corner: hold Shift and click it." %}</span>
+            <span>{% translate "Select a polygon: click inside it. Remove it with “Delete selected polygon” or the Delete key." %}</span>
+            <span>{% translate "“Delete all Features” removes every polygon." %}</span>
+            {% endblock %}
+            {% if help_note %}<span>{{ help_note }}</span>{% endif %}
+        </span>
+    </span>
+    {% endif %}
+    {% if display_raw %}<p>{% translate "Debugging window (serialized value)" %}</p>{% endif %}
+    <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}"
+              {% if not display_raw %} hidden{% endif %}>{{ serialized }}</textarea>
+    <script>
+        var options = {
+            base_layer: new ol.layer.Tile({source: new ol.source.OSM()}),
+            geom_name: '{{ geom_type }}',
+            id: '{{ id }}',
+            map_id: '{{ id }}_map',
+            map_srid: {{ map_srid|unlocalize }},
+            name: '{{ name }}',
+            default_lon: {{ default_lon|unlocalize }},
+            default_lat: {{ default_lat|unlocalize }},
+            default_zoom: {{ default_zoom|unlocalize }}
+        };
+        var {{ module }} = new EditableMapWidget(options);
+    </script>
+</div>

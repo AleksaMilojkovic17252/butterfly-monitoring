@@ -133,7 +133,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T095 | [#112](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/112) | Interoperability and conformance evaluation of SensorThings, EDR and Moving Features | P2 | must | T083, T094 | 2 d | todo |
 | T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | should | T087, T088, T091 | 1.5 d | todo |
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
-| T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | todo |
+| T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
 
 ## Acceptance criteria
 
@@ -1555,7 +1555,7 @@ Notes: + T096 if done
 - [ ] It states plainly that sensor data is simulated, along with the GPS-accuracy caveat for Moving Features.
 
 ### T098 · Study area editor: edit and remove single polygons, with in-map help
-[#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) · E02 · added 2026-10-19 as a follow-up to T016 · P1 · must · labels: `admin`, `must` · est. 0.5 d · **todo**
+[#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) · E02 · added 2026-10-19 as a follow-up to T016 · P1 · must · labels: `admin`, `must` · est. 0.5 d · **done**
 
 Depends on: T016
 

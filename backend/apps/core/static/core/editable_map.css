@@ -1,0 +1,67 @@
+/* EditableMapWidget (T098): "Delete selected" button and the "?" help popup. */
+
+.editable_map .delete_selected {
+  margin-left: 1em;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.editable_map .delete_selected:hover:not(:disabled) {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+.editable_map .delete_selected:disabled {
+  color: var(--body-quiet-color);
+  cursor: default;
+}
+
+/* "?" in the map's top-right corner (OpenLayers keeps that corner free). */
+.editable_map .map_help {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  z-index: 2;
+}
+
+.editable_map .map_help_button {
+  width: 1.8em;
+  height: 1.8em;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--body-bg);
+  color: var(--primary);
+  font-weight: bold;
+  cursor: help;
+}
+
+/* Shown on hover, and on focus for keyboard and touch (a tap focuses the button). */
+.editable_map .map_help_text {
+  display: none;
+  position: absolute;
+  top: 2.2em;
+  right: 0;
+  width: 22em;
+  padding: 0.6em 0.8em;
+  border: 1px solid var(--hairline-color);
+  border-radius: 4px;
+  background: var(--body-bg);
+  color: var(--body-fg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.editable_map .map_help:hover .map_help_text,
+.editable_map .map_help:focus-within .map_help_text {
+  display: block;
+}
+
+.editable_map .map_help_text > * {
+  display: block;
+  margin-bottom: 0.3em;
+}

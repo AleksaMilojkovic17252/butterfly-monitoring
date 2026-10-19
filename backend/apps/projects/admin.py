@@ -4,6 +4,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
+from apps.core.widgets import EditableMapWidget
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 from apps.projects.services import AreaFileError, multipolygon_from_file
 
@@ -126,6 +127,16 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "updated_by",
     ]
     inlines = [ProjectProtocolInline, ProjectMembershipInline]
+    gis_widget = EditableMapWidget
+    gis_widget_kwargs = {
+        "attrs": {
+            **MapAdmin.gis_widget_kwargs["attrs"],
+            "help_note": _(
+                "To load a GeoJSON or KML file, select the project on the project list and run "
+                "the “Import study area from GeoJSON/KML” action."
+            ),
+        }
+    }
     help_texts = {
         "name": "Short name shown in the app's project list.",
         "description": "Optional notes about the project: aim, site, partners.",

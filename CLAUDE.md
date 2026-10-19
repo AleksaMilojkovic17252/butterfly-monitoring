@@ -63,6 +63,7 @@ $DC exec django python manage.py makemigrations    # then review the generated m
 $DC exec django python manage.py makemigrations --check
 $DC exec django python manage.py migrate
 $DC exec django python manage.py check
+$DC exec django python manage.py collectstatic --noinput   # after adding static files: nginx serves the collected copy
 
 # Mobile (T006), run in mobile/
 flutter pub get

@@ -303,3 +303,18 @@ dialog (`admin/core/history_change_form.html`, `core/change_reason.js`) asking f
 `_change_reason`. `HistoryAdmin.save_model` puts it on the object, and `save_related` puts it on every inline instance
 (it uses `save_related`, not `save_formset`, because `ProjectAdmin.save_formset` does not call `super()`). Add forms and
 admin actions (soft delete, restore, area import) do not ask. Mandatory reasons stay with T043 and T057.
+
+## D-041 · Editable map widget: one feature per part, Shift + click removes a vertex
+2026-10 · accepted · T098
+`apps.core.widgets.EditableMapWidget` (subclass of Django's `OSMWidget`; template `core/widgets/editable_map.html`, a
+copy of Django's map template; `core/editable_map.js` extends Django's `MapWidget`) splits a Multi* value into one
+feature per part and joins them back on save; an empty map saves NULL. It is set on `ProjectAdmin` only
+(`gis_widget`); T022 can use it for transects and sections (template blocks `delete_selected_label` and `help` reword it,
+`attrs["help_note"]` adds a line to the help). No mode switch: a click on empty map starts a part, a click on an existing
+part selects it (so a part cannot start inside another), and Modify works on all parts without selecting first. The
+Delete key removes the selected part unless focus is in a form field. The widget's `Media` lists `gis/js/OLMapWidget.js`
+before its own script, or Django's media merge loads ours first.
+VERIFY result (OpenLayers 7.2.2): Django's Shift + click vertex delete added a vertex, because Modify inserts a vertex on
+pointer-down on an edge (`insertVertexCondition` defaults to `always`) and then ignores the next click. Setting
+`insertVertexCondition` to "not Shift" makes Shift + click remove a vertex; checked by hand in the browser. Shift + drag
+is still freehand drawing.
