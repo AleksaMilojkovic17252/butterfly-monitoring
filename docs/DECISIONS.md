@@ -342,3 +342,12 @@ as current), because the partial unique index allows only one current row at a t
 nullable and filled by a `pre_save` signal on create (like the protocol signal, D-038) with the current release, or left
 empty when there is none; existing projects are not backfilled. `taxa_for(user)` is the scope the pull (T025) must use: for
 now every live taxon with `retired_in IS NULL`; T044 adds the retired taxa the user's own observations reference.
+
+## D-044 · Plant taxa and codelists are pulled with their inactive rows
+2026-10-19 · accepted · T020
+`PlantTaxon`, `HabitatType` and `ManagementType` are synced, audited models. `active = false` is the only way to
+retire a value: the row stays, keeps its history and is still pulled, so records that use it keep showing it; pickers
+filter on `active`. `catalogues.services.plant_taxa_for`, `habitat_types_for` and `management_types_for` are the scopes
+the pull (T025) must use. They return every live row, inactive ones included, which is wider than the ticket's
+"inactive rows referenced by the user's records": the lists are small and the narrowing would need the T021, T051 and
+T053 foreign keys. Revisit it only if the package size matters. `Codelist` is abstract, so each codelist is its own table.

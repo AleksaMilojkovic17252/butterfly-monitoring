@@ -105,3 +105,63 @@ class Taxon(SyncableModel):
 
     def __str__(self):
         return self.scientific_name
+
+
+class PlantTaxon(SyncableModel):
+    """A plant for host and nectar records (T051). Deactivated plants stay on old records."""
+
+    scientific_name = models.CharField(max_length=200, unique=True)
+    family = models.CharField(max_length=100, blank=True)
+    vernacular_name = models.CharField(max_length=200, blank=True)  # Serbian
+    vernacular_name_en = models.CharField(max_length=200, blank=True)
+    taxon_source = models.CharField(
+        max_length=10, choices=TaxonSource.choices, default=TaxonSource.GBIF
+    )
+    taxon_source_id = models.CharField(max_length=50, blank=True)
+    active = models.BooleanField(default=True)
+    history = HistoricalRecords(table_name="historical_plant_taxon")
+
+    class Meta:
+        db_table = "plant_taxon"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(taxon_source__in=TaxonSource.values),
+                name="plant_taxon_source_valid",
+            ),
+        ]
+
+    def __str__(self):
+        return self.scientific_name
+
+
+class Codelist(SyncableModel):
+    """An admin-editable value list. Deactivating a value hides it from pickers only."""
+
+    code = models.SlugField(max_length=30, unique=True)
+    name_en = models.CharField(max_length=150)
+    name_sr = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    sort_order = models.PositiveSmallIntegerField(default=100)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["sort_order", "name_en"]
+
+    def __str__(self):
+        return self.name_en
+
+
+class HabitatType(Codelist):
+    eunis_code = models.CharField(max_length=20, blank=True)
+    history = HistoricalRecords(table_name="historical_habitat_type")
+
+    class Meta(Codelist.Meta):
+        db_table = "habitat_type"
+
+
+class ManagementType(Codelist):
+    history = HistoricalRecords(table_name="historical_management_type")
+
+    class Meta(Codelist.Meta):
+        db_table = "management_type"

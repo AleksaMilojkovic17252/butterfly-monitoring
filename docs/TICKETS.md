@@ -55,7 +55,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T017 | [#34](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/34) | App project list and project home | P1 | must | T012, T015 | 1.5 d | done |
 | T018 | [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) | Audit log with django-simple-history | P1 | must | T015 | 1.5 d | done |
 | T019 | [#36](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/36) | Taxon catalogue, versioned | P1 | must | T005, T015 | 2 d | done |
-| T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | todo |
+| T020 | [#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) | Plant taxa and editable codelists | P1 | must | T005 | 1.5 d | done |
 | T021 | [#38](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/38) | Transect and section models and API | P1 | must | T015, T020 | 2 d | todo |
 | T022 | [#39](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/39) | Map-based transect and section editor in admin | P1 | must | T014, T021 | 2 d | todo |
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | todo |
@@ -425,7 +425,9 @@ Depends on: T005, T015
 - [ ] `photo_required` flag per taxon, used by rule W01 in T055.
 
 ### T020 · Plant taxa and editable codelists
-[#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) · E03 · P1 · must · labels: `backend`, `database`, `must` · implements F22, F64 · est. 1.5 d · **todo**
+[#37](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/37) · E03 · P1 · must · labels: `backend`, `database`, `must` · implements F22, F64 · est. 1.5 d · **done**
+
+Deferred: the pull of all three (T025, scopes are `catalogues.services.*_for`) and the picker filtering in the app wait for T025/T031. The 'deactivating keeps existing records' check in the API and app waits for the first referencing models (T021, T051, T053); the admin keeps the row and its history (checked by hand, D-021). See D-044.
 
 Depends on: T005
 

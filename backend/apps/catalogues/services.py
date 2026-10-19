@@ -2,7 +2,7 @@
 
 from django.db import transaction
 
-from apps.catalogues.models import Taxon, TaxonListVersion
+from apps.catalogues.models import HabitatType, ManagementType, PlantTaxon, Taxon, TaxonListVersion
 from apps.core.history import save_with_reason
 
 
@@ -84,3 +84,21 @@ def taxa_for(user):
     observations point at, since the phone needs them to show those observations.
     """
     return Taxon.objects.alive().filter(retired_in__isnull=True)
+
+
+def plant_taxa_for(user):
+    """Live plants the pull (T025) sends to the phone.
+
+    Inactive plants are included: pickers hide them, but records that use one must still show it.
+    """
+    return PlantTaxon.objects.alive()
+
+
+def habitat_types_for(user):
+    """Live habitat types for the pull (T025), inactive ones included (see `plant_taxa_for`)."""
+    return HabitatType.objects.alive()
+
+
+def management_types_for(user):
+    """Live management types for the pull (T025), inactive ones included."""
+    return ManagementType.objects.alive()

@@ -4,7 +4,13 @@ from django.db import transaction
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 
-from apps.catalogues.models import Taxon, TaxonListVersion
+from apps.catalogues.models import (
+    HabitatType,
+    ManagementType,
+    PlantTaxon,
+    Taxon,
+    TaxonListVersion,
+)
 from apps.catalogues.services import (
     TaxonError,
     clear_other_current,
@@ -135,3 +141,41 @@ class TaxonAdmin(HistoryAdmin, SyncableAdmin):
             "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
         }
         return TemplateResponse(request, "admin/catalogues/replace_taxon.html", context)
+
+
+@admin.register(PlantTaxon)
+class PlantTaxonAdmin(HistoryAdmin, SyncableAdmin):
+    list_display = ["scientific_name", "vernacular_name", "vernacular_name_en", "family", "active"]
+    list_filter = ["active", "family", "taxon_source"]
+    search_fields = ["scientific_name", "vernacular_name", "vernacular_name_en"]
+    # Soft delete and restore are list actions, so the field is not edited on the form.
+    exclude = ["deleted_at"]
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class CodelistAdmin(HistoryAdmin, SyncableAdmin):
+    list_display = ["name_en", "name_sr", "code", "sort_order", "active"]
+    list_filter = ["active"]
+    search_fields = ["code", "name_en", "name_sr"]
+    exclude = ["deleted_at"]
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(HabitatType)
+class HabitatTypeAdmin(CodelistAdmin):
+    list_display = [*CodelistAdmin.list_display, "eunis_code"]
+
+
+@admin.register(ManagementType)
+class ManagementTypeAdmin(CodelistAdmin):
+    pass
