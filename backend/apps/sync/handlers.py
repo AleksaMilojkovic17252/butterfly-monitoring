@@ -5,6 +5,8 @@ it without a cycle (`registry` imports the app services).
 """
 
 from collections.abc import Callable
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,6 +15,17 @@ from django.core.exceptions import ImproperlyConfigured
 from apps.core.history import save_with_reason
 
 PUSH_REASON = "sync push"  # history_change_reason of every pushed change
+_reason = ContextVar("push_reason", default=PUSH_REASON)
+
+
+@contextmanager
+def push_reason(reason):
+    """Change the history reason of save_pushed / soft_delete_pushed inside the block (T028)."""
+    token = _reason.set(reason)
+    try:
+        yield
+    finally:
+        _reason.reset(token)
 
 
 @dataclass(frozen=True)
@@ -26,7 +39,8 @@ class PushHandlers:
     record (the visit), and the handler must check that the user may add rows to it. Handlers
     call the entity's service function, which owns everything
     entity-specific: payload validation (T055), project membership, the visit lock (T042),
-    section assignment (T048) and quality flags (T056). They save with PUSH_REASON. Raise DRF or
+    section assignment (T048) and quality flags (T056). They save through save_pushed /
+    soft_delete_pushed (reason PUSH_REASON, or the one set by push_reason). Raise DRF or
     Django exceptions to reject; the framework turns them into {code, detail, fields}.
     `project_of` is required when `create`, `update` or `delete` is set: a SyncConflict (T027)
     belongs to the project of the row, and a resent `create` of an existing row is merged like an
@@ -47,11 +61,11 @@ class PushHandlers:
 
 
 def save_pushed(obj, user):
-    save_with_reason(obj, user, PUSH_REASON)
+    save_with_reason(obj, user, _reason.get())
 
 
 def soft_delete_pushed(obj, user):
-    obj._change_reason = PUSH_REASON
+    obj._change_reason = _reason.get()
     obj._history_user = user
     obj.soft_delete(user)
 

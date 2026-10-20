@@ -63,7 +63,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | done |
 | T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | done |
 | T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | done |
-| T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | todo |
+| T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | done |
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | done |
 | T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | todo |
 | T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | todo |
@@ -562,7 +562,9 @@ Depends on: T018, T026
   - delete after a server change: `conflict`
 
 ### T028 · Django admin conflict resolution screen
-[#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) · E04 · P1 · must · labels: `admin`, `sync`, `must` · implements F26 · est. 1.5 d · **todo**
+[#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) · E04 · P1 · must · labels: `admin`, `sync`, `must` · implements F26 · est. 1.5 d · **done**
+
+Note: shown by hand with `tmp/t028/smoke.py` (resolution logic, with temporary `transect` push handlers) and `tmp/t028/seed_demo.py` (two open conflicts for the browser demo), since no type the phone writes exists yet (D-021, D-053). Accept client therefore only shows the "cannot be changed by the app" error in the browser until a pushable type exists (T044). Nothing skipped: the ticket has no test or CI criteria. The locked-visit refusal keys on T042's `visit_locked` error code (the ticket's "T043" is the unlock action); it is shown with a temporary handler that raises it.
 
 Depends on: T014, T027
 

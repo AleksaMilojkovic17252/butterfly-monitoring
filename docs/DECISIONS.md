@@ -648,3 +648,35 @@ exists yet; the ticket's `count` is `name`, "admin validated the taxon" is an ad
   read-only values (`length_m` of a transect) are computed from the current row, so they can show the current value in a base snapshot;
   the stored geometry in the same snapshot is the historical one. The "whole record" field list therefore also contains derived fields.
 - **Deferred:** the Drift `SyncConflicts` mirror (ticket section c) to T030, whose criteria already consume `sync_conflict` rows.
+
+## D-053 · Conflict resolution: read-only admin screen, accept client applies only the client's changes
+2026-10 · accepted · T028
+`SyncConflictAdmin` (`apps/sync/admin.py`) lists conflicts, shows a read-only change view with a diff table (field | base | server |
+client; conflicting rows highlighted; the three JSON fields are not shown as form fields) and two buttons, **Accept server** and
+**Accept client**. Each opens a form with a required note and calls `sync.services.resolve_conflict(conflict_id, side, user, note)` in one
+transaction. Shown by hand with `tmp/t028/smoke.py` and temporary `transect` handlers (no type the phone writes exists yet, so Accept
+client in the browser only shows the "cannot be changed by the app" error; D-021, D-052).
+- **Accept client applies only the client-changed fields**: the payload keys that differ from `base_snapshot` (`_client_changed`, the
+  same rule as the merge). Without a base snapshot the whole payload is applied. A `delete` conflict runs the handler's `delete`. The
+  handler is called directly, so `_merge` and the `base_version` check are bypassed. Sending the whole payload would revert admin
+  changes to fields the client never touched, as in D-052.
+- **History reason:** handlers save through `save_pushed` / `soft_delete_pushed`, which read the reason from a `ContextVar`
+  (`handlers.push_reason(reason)`, default `PUSH_REASON`). Accept client wraps the handler call in
+  `push_reason("conflict resolved: client")`. A handler that saves another way keeps its own reason, so every pushable type must use the two helpers.
+- **The handler runs as the resolving admin**, so the entity's history shows who applied it; admins pass the ownership and membership checks.
+- **Locked visit:** T042's services raise code `visit_locked`; Accept client shows "unlock it first" and any other handler error shows
+  its detail and fields. The conflict stays open and everything rolls back. T028 adds no lock check of its own.
+- **Accept server touches the entity**: `save_with_reason(row, admin, "conflict resolved: server")` on the row loaded with
+  `select_for_update` through `_base_manager`. The trigger bumps `server_version` even with no field change, so the phone pulls the server
+  state (a tombstone if the row is deleted).
+- **Refusals** (`ResolutionError`, shown as a form error, nothing saved): blank note, conflict not open, unknown entity type, missing
+  row, `push=None` type or an operation the handler lacks, Accept client `update` on a soft-deleted row ("restore it first"). Accept
+  client `delete` on an already deleted row resolves without calling the handler. A handler `ValueError` is also a refusal here (in a push it stays a bug, D-050).
+- **The note** is stored in `resolution_note`; the conflict is saved with reason `"conflict resolved: <side>"`, so its history holds the
+  note, the status change and the reason. The entity's history reason is exactly the ticket's string.
+- **Read-only:** `has_add_permission` and `has_change_permission` are False, so there is no edit form and the soft delete / restore actions
+  disappear. Resolving needs `sync.change_syncconflict` (the admin group has it) and `status = open`; a researcher has no admin access.
+- **Changed since the conflict:** while a conflict is open and the row's `server_version` differs from `server_version_at_conflict`, the
+  change view and the form warn (not after resolving, which touches the row itself). The diff always shows the stored snapshots.
+- **Limits:** buttons on the change view only, no bulk actions; no per-field mixed resolution (ticket); the diff compares top-level
+  fields as JSON text.

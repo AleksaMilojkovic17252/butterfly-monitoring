@@ -1,0 +1,51 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% comment %}
+Read-only conflict view (T028): Accept server / Accept client buttons and the diff table
+(field | base | server | client). Rows of the conflicting fields are highlighted.
+{% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .conflict-diff { width: 100%; table-layout: fixed; }
+  .conflict-diff td { font-family: var(--font-family-monospace); overflow-wrap: anywhere; vertical-align: top; }
+  .conflict-diff tr.conflict td { background: var(--message-warning-bg); }
+</style>
+{% endblock %}
+
+{% block object-tools-items %}
+  {% if can_resolve %}
+  <li><a href="{{ resolve_urls.server }}">{% translate "Accept server" %}</a></li>
+  <li><a href="{{ resolve_urls.client }}">{% translate "Accept client" %}</a></li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block after_field_sets %}{{ block.super }}
+{% if stale %}
+<p class="errornote">{% translate "The record has changed since this conflict was recorded. The table shows the stored snapshots, not its current state." %}</p>
+{% endif %}
+<h2>{% translate "Changes" %}</h2>
+{% if entity_url %}<p><a href="{{ entity_url }}">{% translate "Open the record" %}</a></p>{% endif %}
+<table class="conflict-diff">
+  <thead>
+    <tr>
+      <th>{% translate "Field" %}</th>
+      <th>{% translate "Base" %}</th>
+      <th>{% translate "Server" %}</th>
+      <th>{% translate "Client" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in diff_rows %}
+    <tr{% if row.conflict %} class="conflict"{% endif %}>
+      <th scope="row">{{ row.field }}</th>
+      <td>{{ row.base }}</td>
+      <td>{{ row.server }}</td>
+      <td>{{ row.client }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

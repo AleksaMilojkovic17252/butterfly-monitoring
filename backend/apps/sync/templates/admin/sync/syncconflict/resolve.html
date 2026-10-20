@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block content %}
+{% if stale %}
+<p class="errornote">{% translate "The record has changed since this conflict was recorded." %}</p>
+{% endif %}
+{% if side == "server" %}
+<p>{% blocktranslate trimmed %}
+  Keep the record as the server has it and drop the client's change. The record is saved again so it
+  gets a new version and the phone pulls it.
+{% endblocktranslate %}</p>
+{% else %}
+<p>{% blocktranslate trimmed %}
+  Apply the client's change to the record, only the fields the client changed. The change goes through
+  the same rules as a push; it is refused if the visit is locked or the data is not valid.
+{% endblocktranslate %}</p>
+{% endif %}
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" class="default" value="{% translate 'Resolve' %}">
+  <a href="{{ change_url }}" class="button cancel-link">{% translate "Cancel" %}</a>
+</form>
+{% endblock %}

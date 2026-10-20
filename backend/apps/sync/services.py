@@ -1,6 +1,7 @@
 """Sync rules. The views call `pull` (T025) and `push` (T026).
 
 Push merges a stale update/delete against the history (T027, D-052) or records a SyncConflict.
+The admin settles a SyncConflict with `resolve_conflict` (T028, D-053).
 """
 
 import json
@@ -18,9 +19,10 @@ from rest_framework.renderers import JSONRenderer
 
 from apps.accounts.services import is_admin
 from apps.core.exceptions import error_body
+from apps.core.history import save_with_reason
 from apps.projects.services import projects_for
-from apps.sync.handlers import save_pushed
-from apps.sync.models import MutationStatus, SyncConflict, SyncMutation
+from apps.sync.handlers import push_reason, save_pushed
+from apps.sync.models import ConflictStatus, MutationStatus, SyncConflict, SyncMutation
 from apps.sync.registry import ENTITIES, entity_for
 from apps.sync.serializers import MAX_BATCH_ROWS, MutationSerializer, TombstoneSerializer
 
@@ -113,6 +115,17 @@ class PushError(exceptions.APIException):
         self.default_code = code  # error_body reads the code from here
 
 
+# Exceptions that reject one change (push mutations, T028 resolutions). Anything else is a bug.
+HANDLER_ERRORS = (
+    exceptions.APIException,
+    Http404,
+    DjangoPermissionDenied,
+    DjangoValidationError,
+    IntegrityError,
+    DataError,
+)
+
+
 def push(user, device_id, raw_mutations):
     """Apply a batch of mutations from the phone. Returns {"results": [...]} in input order.
 
@@ -188,14 +201,7 @@ def _push_one(user, device_id, raw):
         # out), so the handlers below sit outside the `with`.
         with transaction.atomic():
             outcome = _apply(user, mutation)
-    except (
-        exceptions.APIException,
-        Http404,
-        DjangoPermissionDenied,
-        DjangoValidationError,
-        IntegrityError,
-        DataError,
-    ) as exc:
+    except HANDLER_ERRORS as exc:
         # Anything else is a bug: it propagates, the whole batch rolls back and returns 500, and
         # the phone retries later. Storing it as a rejection would hide it.
         result = _result(mutation_id, "rejected", errors=[error_body(_as_api_error(exc))])
@@ -407,6 +413,11 @@ def _client_changed(entity, data, base):
     }
 
 
+def _client_changed_values(entity, data, base):
+    """The part of `data` the client changed: what a handler's `update` gets."""
+    return {key: data[key] for key in _client_changed(entity, data, base)}
+
+
 def _merge(user, entity, instance, operation, base_version, data):
     """Three-way merge of a stale update/delete: snapshot at `base_version`, current row, payload.
 
@@ -426,14 +437,15 @@ def _merge(user, entity, instance, operation, base_version, data):
         if operation == "delete":
             fields = sorted(server_changed)  # always a conflict, even with no field changed
         else:
-            client_changed = _client_changed(entity, data, base)
+            client_changes = _client_changed_values(entity, data, base)
+            client_changed = client_changes.keys()
             fields = sorted(server_changed & client_changed)
             if not fields:
                 if not client_changed:
                     return Outcome(MutationStatus.MERGED, instance.server_version)
                 _require(entity, "update")
                 # Only what the client changed: it may send unchanged fields with old values.
-                entity.push.update(user, instance, {key: data[key] for key in client_changed})
+                entity.push.update(user, instance, client_changes)
                 return Outcome(MutationStatus.MERGED, _current_version(model, instance.pk))
 
     return Outcome(
@@ -452,3 +464,96 @@ def _merge(user, entity, instance, operation, base_version, data):
             "conflicting_fields": fields,
         },
     )
+
+
+CONFLICT_RESOLVED_SERVER = "conflict resolved: server"
+CONFLICT_RESOLVED_CLIENT = "conflict resolved: client"
+
+
+class ResolutionError(Exception):
+    """A conflict cannot be resolved this way. `message` is shown to the admin."""
+
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+def _handler_message(exc):
+    body = error_body(_as_api_error(exc))
+    if body["code"] == "visit_locked":  # raised by the visit services from T042
+        return "The visit is locked. Unlock it first (Unlock action), then accept the client again."
+    message = body["detail"]
+    for field, problem in body["fields"].items():
+        message += f" {field}: {problem}"
+    return message
+
+
+def resolve_conflict(conflict_id, side, user, note):
+    """Settle an open SyncConflict for `side` ("server" or "client"). Raises ResolutionError.
+
+    server: keep the row as it is and touch it (a save with a reason), so it gets a new
+    server_version and the phone pulls it. client: run the stored change through the entity's
+    push handler as `user`, with only the fields the client changed, and no conflict check.
+    Either way the conflict is closed with the note; any failure rolls everything back.
+    """
+    note = (note or "").strip()
+    if not note:
+        raise ResolutionError("A note is required.")
+    with transaction.atomic():
+        conflict = SyncConflict._base_manager.select_for_update().filter(pk=conflict_id).first()
+        if conflict is None:
+            raise ResolutionError("This conflict no longer exists.")
+        if conflict.status != ConflictStatus.OPEN:
+            raise ResolutionError("This conflict is already resolved.")
+        entity = entity_for(conflict.entity_type)
+        if entity is None:
+            raise ResolutionError(f"Unknown entity type {conflict.entity_type!r}.")
+        model = entity.serializer.Meta.model
+        # Base manager: a soft-deleted row still counts as existing.
+        instance = model._base_manager.select_for_update().filter(pk=conflict.entity_id).first()
+        if instance is None:
+            raise ResolutionError(f"{entity.entity_type} {conflict.entity_id} does not exist.")
+
+        if side == "server":
+            reason, status = CONFLICT_RESOLVED_SERVER, ConflictStatus.RESOLVED_SERVER
+            save_with_reason(instance, user, reason)
+        else:
+            reason, status = CONFLICT_RESOLVED_CLIENT, ConflictStatus.RESOLVED_CLIENT
+            _apply_client(entity, instance, conflict, user, reason)
+
+        conflict.status = status
+        conflict.resolved_by = user
+        conflict.resolved_at = timezone.now()
+        conflict.resolution_note = note
+        save_with_reason(conflict, user, reason)
+
+
+def _apply_client(entity, instance, conflict, user, reason):
+    operation = conflict.operation
+    if entity.push is None:
+        raise ResolutionError(
+            f"{entity.entity_type} cannot be changed by the app, so the client change cannot "
+            "be applied. Accept the server instead."
+        )
+    if getattr(entity.push, operation) is None:
+        raise ResolutionError(f"{entity.entity_type} does not accept {operation}.")
+    if instance.deleted_at is not None:
+        if operation == "delete":
+            return  # already what the client wanted
+        raise ResolutionError(
+            f"The {entity.entity_type} was deleted since. Restore it first, then accept the client."
+        )
+    try:
+        with transaction.atomic(), push_reason(reason):
+            if operation == "delete":
+                entity.push.delete(user, instance)
+            else:
+                payload = conflict.client_payload
+                base = conflict.base_snapshot
+                # No snapshot: nothing to compare with, so the whole payload applies.
+                fields = payload if base is None else _client_changed_values(entity, payload, base)
+                entity.push.update(user, instance, fields)
+    except (*HANDLER_ERRORS, ValueError) as exc:
+        # ValueError (an unstorable value) is rejected here like `_as_api_error` maps it; in a
+        # push it stays a bug that rolls the batch back (D-050).
+        raise ResolutionError(_handler_message(exc)) from exc
