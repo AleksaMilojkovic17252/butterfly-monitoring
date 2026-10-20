@@ -1,8 +1,10 @@
 """Sync rules. The views call `pull` (T025) and `push` (T026)."""
 
+from uuid import UUID
+
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import IntegrityError, connection, transaction
+from django.db import DataError, IntegrityError, connection, transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -108,13 +110,14 @@ def push(user, device_id, raw_mutations):
     """Apply a batch of mutations from the phone. Returns {"results": [...]} in input order.
 
     Each mutation runs in its own savepoint, so a rejected one does not abort the others. A
-    `mutation_id` seen before returns its stored result as `duplicate` and changes nothing.
+    `mutation_id` seen before changes nothing: an applied one returns its stored result as
+    `duplicate`, a rejected one returns the stored rejection again.
     """
     results = []
     with transaction.atomic(durable=True):
         # A retry of a batch that is still running would otherwise pass the duplicate check
         # before the first one commits and apply everything twice. With the lock it waits, then
-        # sees `duplicate`.
+        # sees the stored result.
         with connection.cursor() as db:
             db.execute(
                 "SELECT pg_advisory_xact_lock(%s, hashtext(%s))", [PUSH_LOCK_KEY, str(user.pk)]
@@ -133,14 +136,28 @@ def _result(mutation_id, status, server_version=None, errors=()):
     }
 
 
+def _echo_id(raw):
+    """The mutation_id of an invalid item, only when it is a real UUID."""
+    try:
+        return UUID(str(raw["mutation_id"])) if isinstance(raw, dict) else None
+    except (KeyError, ValueError):
+        return None
+
+
 def _push_one(user, device_id, raw):
     serializer = MutationSerializer(data=raw)
-    if not serializer.is_valid():
+    if not isinstance(raw, dict):
+        errors = {"non_field_errors": ["Each mutation must be an object."]}
+    elif not serializer.is_valid():
+        errors = serializer.errors
+    else:
+        errors = None
+    if errors:
         # No trustworthy mutation_id, so nothing is stored.
         return _result(
-            raw.get("mutation_id"),
+            _echo_id(raw),
             "rejected",
-            errors=[error_body(exceptions.ValidationError(serializer.errors))],
+            errors=[error_body(exceptions.ValidationError(errors))],
         )
     mutation = serializer.validated_data
     mutation_id = mutation["mutation_id"]
@@ -148,6 +165,10 @@ def _push_one(user, device_id, raw):
     stored = SyncMutation.objects.filter(pk=mutation_id).first()
     if stored is not None:
         if stored.user_id == user.pk:
+            # A rejection stays a rejection: `duplicate` reads as "already applied". To retry
+            # a rejected change the phone sends it again under a new mutation_id.
+            if stored.status == MutationStatus.REJECTED:
+                return stored.result
             return {**stored.result, "status": "duplicate"}
         # Never leak another user's result.
         error = PushError("mutation_id_taken", "This mutation_id belongs to another user.")
@@ -165,6 +186,7 @@ def _push_one(user, device_id, raw):
         DjangoPermissionDenied,
         DjangoValidationError,
         IntegrityError,
+        DataError,
     ) as exc:
         # Anything else is a bug: it propagates, the whole batch rolls back and returns 500, and
         # the phone retries later. Storing it as a rejection would hide it.
@@ -197,6 +219,8 @@ def _as_api_error(exc):
         return exceptions.ValidationError(serializers.as_serializer_error(exc))
     if isinstance(exc, IntegrityError):
         return PushError("integrity_error", "The change conflicts with existing data.")
+    if isinstance(exc, DataError):  # value too long or out of range for its column
+        return PushError("invalid_data", "A value is too long or out of range for its field.")
     return exc
 
 

@@ -70,7 +70,8 @@ class PushRequestSerializer(serializers.Serializer):
     """The envelope. Each mutation is validated on its own, so one bad item is only rejected."""
 
     device_id = serializers.CharField(max_length=64)
-    mutations = serializers.ListField(child=serializers.DictField(), max_length=MAX_PUSH_MUTATIONS)
+    # Any item type: a non-object item is rejected on its own in the service, not with a 400.
+    mutations = serializers.ListField(child=serializers.JSONField(), max_length=MAX_PUSH_MUTATIONS)
 
 
 # For OpenAPI only: the view validates with PushRequestSerializer.

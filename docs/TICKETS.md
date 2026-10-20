@@ -539,6 +539,8 @@ Depends on: T025
 ### T027 · Conflict detection and SyncConflict model
 [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F26 · est. 2 d · **todo**
 
+Note (from T026, D-050): a `create` of an existing id is rejected `stale_version` today, even when it is the phone's own resend (stored mutation pruned or re-queued under a new `mutation_id`). Handle a create of the user's own existing row as an update against the current version, or a no-op.
+
 Depends on: T018, T026
 
 - [ ] For `update` and `delete` with `base_version` ≠ the current `server_version`:

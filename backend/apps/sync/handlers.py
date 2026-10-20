@@ -20,7 +20,9 @@ class PushHandlers:
     The framework (sync.services.push) has already: checked the mutation shape, deduplicated by
     mutation_id, removed server-owned fields from `data`, turned a create of an existing id into
     an update, loaded the row with SELECT ... FOR UPDATE, checked ownership (created_by or admin)
-    and the base_version. Handlers call the entity's service function, which owns everything
+    and the base_version. `create_batch` gets none of the row checks: `entity_id` is the parent
+    record (the visit), and the handler must check that the user may add rows to it. Handlers
+    call the entity's service function, which owns everything
     entity-specific: payload validation (T055), project membership, the visit lock (T042),
     section assignment (T048) and quality flags (T056). They save with PUSH_REASON. Raise DRF or
     Django exceptions to reject; the framework turns them into {code, detail, fields}.

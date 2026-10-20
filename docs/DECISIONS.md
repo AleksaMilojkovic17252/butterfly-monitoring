@@ -518,21 +518,24 @@ client_created_at}]}` returns `{results: [{mutation_id, status, server_version, 
 unless the mutation is `rejected`, then one `{code, detail, fields}` item (`core.exceptions.error_body`, shared with the REST
 handler). `server_version` is the row's new version after create/update/delete, the current one for a no-op, and null for
 `create_batch` and for rejections. The response is **200 with a status per item**; a 400 is only for a bad envelope (no
-`device_id`, `mutations` not a list, more than 1000). Items are validated one by one, so a malformed item is rejected, not a
-reason to fail the batch. `client_created_at` needs a UTC offset (`core.serializers.UTCDateTimeField`); handlers must do the
+`device_id`, `mutations` not a list, more than 1000). Items are validated one by one, so a malformed item (also a non-object) is rejected, not a
+reason to fail the batch; its `mutation_id` is echoed only when it is a UUID. `client_created_at` needs a UTC offset (`core.serializers.UTCDateTimeField`); handlers must do the
 same for datetimes in their payloads.
 `services.push` is one `transaction.atomic(durable=True)` with a savepoint per mutation. Errors are caught outside the inner
 `atomic()` (Django needs that to keep the outer transaction usable): DRF `APIException`, `Http404`, Django
-`PermissionDenied` and `ValidationError`, `IntegrityError` (`integrity_error`). **Any other exception propagates**, so the
+`PermissionDenied` and `ValidationError`, `IntegrityError` (`integrity_error`) and `DataError` (`invalid_data`: a value too long
+or out of range), so one bad value cannot poison the batch. **Any other exception propagates**, so the
 whole batch rolls back with a 500 and the phone retries later; a bug shows in the logs and is not stored as a rejection.
 A per-user advisory lock (`pg_advisory_xact_lock(727275, hashtext(user id))`, two-key form so it never meets the global lock
 727274 of D-029) makes a retry of a still-running batch wait and then see `duplicate`, instead of applying everything twice.
-`sync_mutation` stores `applied` and `rejected` (also `merged`/`conflict` for T027); `duplicate` exists only in responses
-(the stored result with the status replaced). Malformed items and a `mutation_id` that belongs to another user
+`sync_mutation` stores `applied` and `rejected` (also `merged`/`conflict` for T027); `duplicate` exists only in responses.
+A stored **applied** result comes back as `duplicate`; a stored **rejection comes back as `rejected`**, unchanged, because
+`duplicate` reads as "already applied" (this narrows the ticket text). A rejected change is retried under a new `mutation_id`. Malformed items and a `mutation_id` that belongs to another user
 (`mutation_id_taken`, never leaks the other result) are not stored. `prune_sync_mutations --older-than 180d` deletes old rows.
 **Handler slot:** `SyncEntity.push: PushHandlers | None` (`apps/sync/handlers.py`, a leaf module that imports only `core`, so
 app services can import it). The framework has checked the shape, deduplicated, removed server-owned fields, turned a create
 of an existing id into an update, loaded the row `FOR UPDATE`, checked ownership (`created_by` or admin) and `base_version`.
+`create_batch` gets none of the row checks (`entity_id` is the parent): the handler checks that the user may add rows to it.
 The handler calls the entity's service function, which owns validation (T055), project membership, the visit lock (T042),
 section assignment (T048) and quality flags (T056), and saves with `PUSH_REASON = "sync push"` (`save_pushed`,
 `soft_delete_pushed`). **Every type registered today has `push=None`** and answers `read_only_entity`; T034, T036, T044 and
@@ -547,6 +550,9 @@ and returns no `server_version` (right for track points, CONVENTIONS A.5.7).
 `server_version`, and a `create` of an existing id (null `base_version`), is rejected with `stale_version`. T027 replaces
 it with merge or a `SyncConflict`. A `delete` of an already deleted row is `applied` and changes nothing; an `update` of a
 deleted row is rejected `deleted`.
+**Known gap for T027:** a `create` of an existing id is `stale_version` even when it is the phone's own resend, for example
+after the stored mutation row was pruned (180 days) or when the phone re-queued the create under a new `mutation_id`. T027
+should treat a create of the user's own existing row as an update against the current version, or a no-op.
 Shown by hand with `tmp/t026/smoke.py` and temporary handlers (no type the phone writes exists yet; D-021): savepoints and
 order, resending a batch, concurrent retry from two threads, 1000-row batches, ownership, history reason, server-owned
 fields. 500 updates took about 3.3 s on the laptop; the real measurement is T074.
