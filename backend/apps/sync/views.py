@@ -3,7 +3,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from apps.sync import services
-from apps.sync.serializers import PullRequestSerializer, PullResponseSerializer
+from apps.sync.serializers import (
+    PullRequestSerializer,
+    PullResponseSerializer,
+    PushMutationsSerializer,
+    PushRequestSerializer,
+    PushResponseSerializer,
+)
 
 
 @extend_schema(
@@ -25,4 +31,33 @@ def pull(request):
     params.is_valid(raise_exception=True)
     data = params.validated_data
     result = services.pull(request.user, data["project_id"], data["cursor"], data["limit"])
+    return Response(result)
+
+
+@extend_schema(
+    request=PushMutationsSerializer,
+    responses=PushResponseSerializer,
+    description=(
+        "Applies a batch of mutations (at most 1000) from the phone. The response is always 200 "
+        "when the envelope is valid, with one result per mutation in input order: `applied`, "
+        "`duplicate`, `rejected` (`errors` holds `{code, detail, fields}`), later also `merged` "
+        "and `conflict`. A `mutation_id` seen before returns its stored result as `duplicate` "
+        "and changes nothing, so a batch can be resent. `server_version` is the row's new "
+        "version, null for `create_batch` and for rejections. `base_version` is the version the "
+        "phone last pulled; a mismatch on `update` or `delete` is rejected as `stale_version` "
+        "until conflict handling (T027). `create` of an existing id acts as `update`. "
+        "`create_batch` sends `entity_id` = the parent record and `payload.rows` = 1 to 1000 "
+        "rows with their own `id`; rows that already exist are skipped. Server-owned fields "
+        "(`id`, `server_version`, `created_by`, `updated_by`, `updated_at`, `deleted_at`, "
+        "`quality_flags`, `validation_*`, `locked_*`) in a payload are ignored. Datetimes need "
+        "a UTC offset. No entity type accepts pushes yet (first: T034); until then every "
+        "mutation is rejected with `read_only_entity`."
+    ),
+)
+@api_view(["POST"])
+def push(request):
+    envelope = PushRequestSerializer(data=request.data)
+    envelope.is_valid(raise_exception=True)
+    data = envelope.validated_data
+    result = services.push(request.user, data["device_id"], data["mutations"])
     return Response(result)

@@ -14,11 +14,8 @@ def _flatten(value):
     return str(value)
 
 
-def api_exception_handler(exc, context):
-    response = exception_handler(exc, context)
-    if response is None:
-        return None
-
+def error_body(exc):
+    """The {"code", "detail", "fields"} body for an exception raised by DRF or a service."""
     fields = {}
     if isinstance(exc, exceptions.ValidationError):
         code = "validation_error"
@@ -36,9 +33,16 @@ def api_exception_handler(exc, context):
             code = str(raw.get("code", code))
             raw = raw["detail"]
         detail = str(raw)
+    return {"code": code, "detail": detail, "fields": fields}
+
+
+def api_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+    if response is None:
+        return None
 
     return Response(
-        {"code": code, "detail": detail, "fields": fields},
+        error_body(exc),
         status=response.status_code,
         headers=dict(response.items()),
     )

@@ -2,6 +2,7 @@
 
 import json
 
+from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -16,3 +17,14 @@ class GeoJSONField(serializers.Field):
 
     def to_representation(self, value) -> dict:
         return json.loads(value.geojson)
+
+
+class UTCDateTimeField(serializers.DateTimeField):
+    """A datetime that must carry an offset; DRF would read a bare one in the server zone."""
+
+    def enforce_timezone(self, value):
+        if timezone.is_naive(value):
+            raise serializers.ValidationError(
+                "Datetime needs a UTC offset, e.g. 2026-05-01T08:00:00Z."
+            )
+        return value

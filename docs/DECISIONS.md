@@ -510,3 +510,43 @@ not treat them as orphans.
 annotation when it is there and otherwise asks the database (`transects.services.geodesic_length_m`), so push (T026) can
 serialize a plain `Transect`. A 404 now has the body code `not_found` (it was `error`, because Django's `Http404` has no
 `default_code`); this also applies to `/projects/{id}`.
+
+## D-050 · Push: savepoints, idempotency, handler slot, stale-version stand-in
+2026-10 · accepted · T026
+`POST /api/v1/sync/push {device_id, mutations: [{mutation_id, entity_type, entity_id, operation, base_version, payload,
+client_created_at}]}` returns `{results: [{mutation_id, status, server_version, errors}]}` in input order. `errors` is `[]`
+unless the mutation is `rejected`, then one `{code, detail, fields}` item (`core.exceptions.error_body`, shared with the REST
+handler). `server_version` is the row's new version after create/update/delete, the current one for a no-op, and null for
+`create_batch` and for rejections. The response is **200 with a status per item**; a 400 is only for a bad envelope (no
+`device_id`, `mutations` not a list, more than 1000). Items are validated one by one, so a malformed item is rejected, not a
+reason to fail the batch. `client_created_at` needs a UTC offset (`core.serializers.UTCDateTimeField`); handlers must do the
+same for datetimes in their payloads.
+`services.push` is one `transaction.atomic(durable=True)` with a savepoint per mutation. Errors are caught outside the inner
+`atomic()` (Django needs that to keep the outer transaction usable): DRF `APIException`, `Http404`, Django
+`PermissionDenied` and `ValidationError`, `IntegrityError` (`integrity_error`). **Any other exception propagates**, so the
+whole batch rolls back with a 500 and the phone retries later; a bug shows in the logs and is not stored as a rejection.
+A per-user advisory lock (`pg_advisory_xact_lock(727275, hashtext(user id))`, two-key form so it never meets the global lock
+727274 of D-029) makes a retry of a still-running batch wait and then see `duplicate`, instead of applying everything twice.
+`sync_mutation` stores `applied` and `rejected` (also `merged`/`conflict` for T027); `duplicate` exists only in responses
+(the stored result with the status replaced). Malformed items and a `mutation_id` that belongs to another user
+(`mutation_id_taken`, never leaks the other result) are not stored. `prune_sync_mutations --older-than 180d` deletes old rows.
+**Handler slot:** `SyncEntity.push: PushHandlers | None` (`apps/sync/handlers.py`, a leaf module that imports only `core`, so
+app services can import it). The framework has checked the shape, deduplicated, removed server-owned fields, turned a create
+of an existing id into an update, loaded the row `FOR UPDATE`, checked ownership (`created_by` or admin) and `base_version`.
+The handler calls the entity's service function, which owns validation (T055), project membership, the visit lock (T042),
+section assignment (T048) and quality flags (T056), and saves with `PUSH_REASON = "sync push"` (`save_pushed`,
+`soft_delete_pushed`). **Every type registered today has `push=None`** and answers `read_only_entity`; T034, T036, T044 and
+T049 register theirs. A missing callable is `operation_not_allowed`.
+**Server-owned fields** dropped from every payload: `id server_version created_by updated_by updated_at deleted_at
+quality_flags`, any `validation_*` or `locked_*`, and `SyncEntity.server_owned` (e.g. `distance_walked_m` for T036).
+`created_at` is kept: the phone sets it for records created offline. In `create_batch` rows `id` is kept.
+**`create_batch`:** `entity_id` is the parent record (the visit), `payload.rows` holds 1 to 1000 rows that carry their own
+`id`; the handler uses `insert_batch` (`bulk_create(ignore_conflicts=True)`, `ON CONFLICT DO NOTHING`), which writes no history
+and returns no `server_version` (right for track points, CONVENTIONS A.5.7).
+**`stale_version` is the stand-in until T027:** an `update`/`delete` whose `base_version` differs from the row's
+`server_version`, and a `create` of an existing id (null `base_version`), is rejected with `stale_version`. T027 replaces
+it with merge or a `SyncConflict`. A `delete` of an already deleted row is `applied` and changes nothing; an `update` of a
+deleted row is rejected `deleted`.
+Shown by hand with `tmp/t026/smoke.py` and temporary handlers (no type the phone writes exists yet; D-021): savepoints and
+order, resending a batch, concurrent retry from two threads, 1000-row batches, ownership, history reason, server-owned
+fields. 500 updates took about 3.3 s on the laptop; the real measurement is T074.

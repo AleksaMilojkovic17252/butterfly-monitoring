@@ -24,6 +24,9 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py import_gbif_butterflie
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_plants
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_codelists
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_demo
+
+# Sync (T026): drop stored push mutations older than the retry window
+$DC exec django python manage.py prune_sync_mutations --older-than 180d
 ```
 
 Dependencies are pip + `requirements.txt`, installed in the image: after a change, rebuild with

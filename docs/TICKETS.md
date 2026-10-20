@@ -61,7 +61,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T023 | [#40](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/40) | Catalogue admin tools | P1 | should | T019, T020 | 1.5 d | done |
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | done |
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | done |
-| T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | todo |
+| T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | done |
 | T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | todo |
 | T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | todo |
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | todo |
@@ -517,9 +517,13 @@ Depends on: T005, T015, T019, T020, T021
 - [ ] Test: interleaved writes during paging never lose a record. The T005 advisory lock guarantees in-order commits.
 
 ### T026 · Push API with idempotent mutations
-[#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F25, F13 · est. 2.5 d · **todo**
+[#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F25, F13 · est. 2.5 d · **done**
 
 Note: reject datetimes without a UTC offset in push input (DRF would read them in the server zone); API timestamps are UTC since D-039.
+
+Note: shown by hand with tmp/t026/smoke.py and temporary handlers, since no type the phone writes exists yet (D-050). The 5 s / 500-mutation target is measured in T074.
+
+Deferred: the 500-mutation < 5 s measurement to T074 (about 3 s in the smoke run). Conflict merge replaces the `stale_version` rejection in T027 (D-050).
 
 Depends on: T025
 
