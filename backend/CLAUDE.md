@@ -37,7 +37,7 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - `config/` holds settings, urls, wsgi. Apps live in `apps/<name>/`; import them as `apps.<name>`,
   but the app label stays `<name>` (`accounts.User`, table names, migration dependencies).
 - `apps/core/` has the shared pieces: `models.SyncableModel` (with `soft_delete()`),
-  `migration_ops` (`CreateView`, `AttachSyncTrigger`), `history.save_with_reason`, the error
+  `migration_ops` (`CreateView`, `AttachSyncTrigger`, `HistoryVersionIndex`), `history.save_with_reason`, the error
   handler in `exceptions.py`, `geo_files.open_datasource` (reading uploaded GeoJSON/KML/GPX), the admin site, and the admin map widgets in `widgets.py`
   (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045).
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all
@@ -52,6 +52,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - Geometry is `geometry(<Type>, 4326)` with a GiST index; metres via `::geography`.
 - **Synced table:** extend `SyncableModel`, and put `AttachSyncTrigger("<table>")` in the migration
   right after its `CreateModel`. Soft delete only, no hard deletes of synced rows.
+  An audited synced table also gets `HistoryVersionIndex("historical_<table>")` in its migration
+  (T027 reads past states by `(id, server_version)`). `PushHandlers` with `create`, `update` or
+  `delete` must set `project_of` (checked at import).
 - **Audited model:** `HistoricalRecords(table_name="historical_<table>")`. No `QuerySet.update()`
   on audited models (it skips history); save instances, with `save_with_reason` when a reason is
   required.

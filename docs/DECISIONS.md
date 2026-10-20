@@ -598,3 +598,53 @@ items leave the queue only when the server accepted them; T030 feeds it into the
 - **T036:** `writeBatch` rewrites the whole unsent batch JSON on each call, so the track recorder should buffer GPS fixes and
   call it every few seconds, not per fix.
 - **Remove data:** `clearAll` also wipes unsent changes. The Remove-data screen should warn when `unsyncedCount()` is above 0.
+
+## D-052 · Conflicts: three-way merge on the sync serializer, create resend against the creation version
+2026-10 · accepted · T027, *amends D-050*
+A stale `update`/`delete` (`base_version` ≠ the row's `server_version`) is no longer rejected `stale_version`. `sync.services._merge`
+compares three states: the **base** (the history row at `(id, server_version = base_version)`, D-040), the **current** row, and the
+client **payload**. Non-overlapping changes merge (status `merged`); an overlap creates a `SyncConflict` and applies nothing
+(`conflict`). `SyncConflict` (`sync_conflict`, audited, pulled to its owner as entity type `sync_conflict`) is the ticket's model; an
+admin resolves it in T028. Shown by hand with `tmp/t027/smoke.py` and temporary `transect` handlers (no type the phone writes
+exists yet; the ticket's `count` is `name`, "admin validated the taxon" is an admin change of `description`; D-021).
+- **Merge applies only the client-changed fields**, never the whole payload: the phone may send unchanged fields with their old
+  values, and applying them would revert the admin's change. The handler's `update` gets `{k: payload[k] for k in client_changed}`.
+- **Comparison is on the sync serializer's JSON form** (`entity.serializer`, the one schema of D-049). `_json(v)` =
+  `json.loads(JSONRenderer().render(v))`. Base and current snapshots are `_json(serializer(instance).data)` (for the base,
+  `historical_row.instance`). *Server-changed* = keys of the current snapshot, after the T026 server-owned/bookkeeping exclusions
+  (`SERVER_OWNED_FIELDS`, `validation_*`, `locked_*`, `entity.server_owned`), whose value differs from the base. *Client-changed* =
+  payload keys that are **writable** fields of the sync serializer and whose normalised value differs from the base; a value is
+  normalised with `_json(field.to_representation(field.to_internal_value(v)))`, and one that fails that is compared raw (so it
+  counts as changed and the handler rejects it if it is applied). Read-only and unknown keys are not compared. **Later tickets:** a
+  field the phone writes (geometry in T036/T044) must be writable in its sync serializer, or it is never conflict-checked.
+- **Missing snapshot** (no history row at `base_version`, or the model is not audited): conflict with `base_snapshot = null` and
+  `conflicting_fields` = every key of the current snapshot ("whole record").
+- **Stale delete is always a conflict**, even when only server-owned fields changed; `conflicting_fields` are the server-changed
+  fields and may be empty.
+- **`update`/`delete` with a null `base_version`** is a validation error (`{"base_version": ["Required for update and delete."]}`),
+  not a conflict.
+- **No client changes at all** on a stale update (an identical resend): `merged`, nothing saved, `server_version` = the current one.
+- **Create of an existing row (the D-050 gap):** treated as an `update` whose base is the row's *creation* version (`server_version`
+  of its first `history_type="+"` row), then merged. It always goes through the merge, even when the row is untouched since the
+  create, so an exact resend changes nothing and does not bump the version. Admin edits since the create are kept; a real overlap is a
+  conflict; no creation history row means the snapshot is missing, so a conflict.
+- **`SyncConflict.operation`** is what the server would apply: `update` or `delete` (a create resend is stored as `update`), so
+  T028's "accept client" can run it through the handler. `base_version` is the effective base (0 when no creation row was found).
+- **Project of a conflict:** new `PushHandlers.project_of(instance) -> Project`, required for every type that registers `create`,
+  `update` or `delete` (a resent `create` is merged like an update). `PushHandlers.__post_init__` raises `ImproperlyConfigured`
+  without it, so a type that forgets it fails when the registry is imported, not on the first conflict.
+- **Unstorable conflict payload:** the conflict row is saved in its own savepoint together with its mutation. If the database refuses
+  it (`DataError` for a `\u0000` in a string, which jsonb cannot hold; `IntegrityError`; `ValueError`), the mutation is stored as
+  `rejected` (`invalid_data`) and the rest of the batch goes on, instead of a 500 that rolls the batch back and is retried forever.
+- **Duplicates:** a stored `conflict` comes back unchanged as `conflict` (like `rejected`), with no second `SyncConflict`; `merged`
+  comes back as `duplicate`. The conflict row is saved with the stored mutation (`mutation` is a one-to-one `PROTECT`), so
+  `prune_sync_mutations` skips mutations that have a conflict.
+- **History index:** `HistoryVersionIndex("historical_<table>")` (`core.migration_ops`) creates `historical_<table>_version_idx ON
+  historical_<table> (id, server_version)`. It is applied to every audited synced table (catalogues `0003`, projects `0005`, transects
+  `0003`, `sync_conflict`) and must be added with the migration of every later audited synced table. `project_membership` is audited
+  but not a synced entity, so it has none.
+- **Limits:** field-level merge is top-level only (a geometry is one field). History rows from before T018 keep their stale versions
+  (D-040), so a base looked up for an old reference row may be wrong; none of those types is pushable. A historical instance's derived,
+  read-only values (`length_m` of a transect) are computed from the current row, so they can show the current value in a base snapshot;
+  the stored geometry in the same snapshot is the historical one. The "whole record" field list therefore also contains derived fields.
+- **Deferred:** the Drift `SyncConflicts` mirror (ticket section c) to T030, whose criteria already consume `sync_conflict` rows.

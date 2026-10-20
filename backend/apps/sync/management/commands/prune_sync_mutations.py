@@ -10,7 +10,8 @@ from apps.sync.models import SyncMutation
 class Command(BaseCommand):
     help = (
         "Delete stored push mutations older than N days (--older-than <N>d, default 180d). "
-        "Rows older than any retry window are no longer needed for duplicate detection."
+        "Rows older than any retry window are no longer needed for duplicate detection. "
+        "Mutations that have a SyncConflict are kept: the conflict points at them."
     )
 
     def add_arguments(self, parser):
@@ -21,5 +22,7 @@ class Command(BaseCommand):
         if not match:
             raise CommandError("--older-than must look like 180d (1 to 5 digits).")
         cutoff = timezone.now() - timedelta(days=int(match[1]))
-        deleted, _ = SyncMutation.objects.filter(received_at__lt=cutoff).delete()
+        deleted, _ = SyncMutation.objects.filter(
+            received_at__lt=cutoff, conflict__isnull=True
+        ).delete()
         self.stdout.write(f"Deleted {deleted} sync mutations older than {match[1]} days.")

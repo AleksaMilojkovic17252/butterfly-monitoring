@@ -1,5 +1,10 @@
-"""Sync rules. The views call `pull` (T025) and `push` (T026)."""
+"""Sync rules. The views call `pull` (T025) and `push` (T026).
 
+Push merges a stale update/delete against the history (T027, D-052) or records a SyncConflict.
+"""
+
+import json
+from dataclasses import dataclass
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
@@ -9,11 +14,13 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions, serializers
+from rest_framework.renderers import JSONRenderer
 
 from apps.accounts.services import is_admin
 from apps.core.exceptions import error_body
 from apps.projects.services import projects_for
-from apps.sync.models import MutationStatus, SyncMutation
+from apps.sync.handlers import save_pushed
+from apps.sync.models import MutationStatus, SyncConflict, SyncMutation
 from apps.sync.registry import ENTITIES, entity_for
 from apps.sync.serializers import MAX_BATCH_ROWS, MutationSerializer, TombstoneSerializer
 
@@ -110,8 +117,8 @@ def push(user, device_id, raw_mutations):
     """Apply a batch of mutations from the phone. Returns {"results": [...]} in input order.
 
     Each mutation runs in its own savepoint, so a rejected one does not abort the others. A
-    `mutation_id` seen before changes nothing: an applied one returns its stored result as
-    `duplicate`, a rejected one returns the stored rejection again.
+    `mutation_id` seen before changes nothing: an applied or merged one returns its stored result
+    as `duplicate`, a rejected or conflicting one returns the stored result again.
     """
     results = []
     with transaction.atomic(durable=True):
@@ -165,9 +172,10 @@ def _push_one(user, device_id, raw):
     stored = SyncMutation.objects.filter(pk=mutation_id).first()
     if stored is not None:
         if stored.user_id == user.pk:
-            # A rejection stays a rejection: `duplicate` reads as "already applied". To retry
-            # a rejected change the phone sends it again under a new mutation_id.
-            if stored.status == MutationStatus.REJECTED:
+            # A rejection or conflict stays what it was: `duplicate` reads as "already applied".
+            # To retry a rejected change the phone sends it again under a new mutation_id; a
+            # conflict is settled by an admin (T028).
+            if stored.status in (MutationStatus.REJECTED, MutationStatus.CONFLICT):
                 return stored.result
             return {**stored.result, "status": "duplicate"}
         # Never leak another user's result.
@@ -179,7 +187,7 @@ def _push_one(user, device_id, raw):
         # error is caught outside this block (the block rolls back to the savepoint on the way
         # out), so the handlers below sit outside the `with`.
         with transaction.atomic():
-            server_version = _apply(user, mutation)
+            outcome = _apply(user, mutation)
     except (
         exceptions.APIException,
         Http404,
@@ -193,12 +201,31 @@ def _push_one(user, device_id, raw):
         result = _result(mutation_id, "rejected", errors=[error_body(_as_api_error(exc))])
         status = MutationStatus.REJECTED
     else:
-        result = _result(mutation_id, "applied", server_version)
-        status = MutationStatus.APPLIED
+        result = _result(mutation_id, outcome.status, outcome.server_version)
+        status = outcome.status
 
     # Outside the savepoint, so rejections are stored too.
-    SyncMutation.objects.create(
-        mutation_id=mutation_id,
+    if status == MutationStatus.CONFLICT:
+        try:
+            # Own savepoint: the payload goes into a jsonb column, which can refuse it (a \u0000
+            # in a string). That must reject this mutation, not abort the batch.
+            with transaction.atomic():
+                stored_mutation = _store_mutation(user, device_id, mutation, status, result)
+                conflict = SyncConflict(
+                    owner=user, mutation=stored_mutation, created_by=user, **outcome.conflict
+                )
+                save_pushed(conflict, user)
+            return result
+        except (IntegrityError, DataError, ValueError) as exc:
+            result = _result(mutation_id, "rejected", errors=[error_body(_as_api_error(exc))])
+            status = MutationStatus.REJECTED
+    _store_mutation(user, device_id, mutation, status, result)
+    return result
+
+
+def _store_mutation(user, device_id, mutation, status, result):
+    return SyncMutation.objects.create(
+        mutation_id=mutation["mutation_id"],
         user=user,
         device_id=device_id,
         entity_type=mutation["entity_type"],
@@ -209,7 +236,6 @@ def _push_one(user, device_id, raw):
         result=result,
         client_created_at=mutation["client_created_at"],
     )
-    return result
 
 
 def _as_api_error(exc):
@@ -219,7 +245,7 @@ def _as_api_error(exc):
         return exceptions.ValidationError(serializers.as_serializer_error(exc))
     if isinstance(exc, IntegrityError):
         return PushError("integrity_error", "The change conflicts with existing data.")
-    if isinstance(exc, DataError):  # value too long or out of range for its column
+    if isinstance(exc, (DataError, ValueError)):  # too long, out of range or unstorable
         return PushError("invalid_data", "A value is too long or out of range for its field.")
     return exc
 
@@ -235,8 +261,17 @@ def _strip(data, entity, keep=()):
     }
 
 
+@dataclass
+class Outcome:
+    """What `_apply` did. `conflict` holds SyncConflict field values (all but owner, mutation)."""
+
+    status: str
+    server_version: int | None
+    conflict: dict | None = None
+
+
 def _apply(user, mutation):
-    """Run one mutation through its entity's handler. Returns the new server_version or None."""
+    """Run one mutation through its entity's handler. Returns an `Outcome`."""
     entity = entity_for(mutation["entity_type"])
     if entity is None:
         raise PushError("unknown_entity_type", f"Unknown entity type {mutation['entity_type']!r}.")
@@ -260,7 +295,7 @@ def _apply(user, mutation):
         # entity_id is the parent record (the visit for track points); rows carry their own id.
         cleaned = [_strip(row, entity, keep=("id",)) for row in rows]
         entity.push.create_batch(user, entity_id, cleaned)
-        return None
+        return Outcome(MutationStatus.APPLIED, None)
 
     _require(entity, operation)
     model = entity.serializer.Meta.model
@@ -269,7 +304,7 @@ def _apply(user, mutation):
 
     if operation == "create" and instance is None:
         entity.push.create(user, entity_id, data)
-        return _current_version(model, entity_id)
+        return Outcome(MutationStatus.APPLIED, _current_version(model, entity_id))
 
     if instance is None:
         raise exceptions.NotFound(f"{entity.entity_type} {entity_id} does not exist.")
@@ -278,25 +313,27 @@ def _apply(user, mutation):
 
     if instance.deleted_at is not None:
         if operation == "delete":
-            return instance.server_version
+            return Outcome(MutationStatus.APPLIED, instance.server_version)
         raise PushError("deleted", f"{entity.entity_type} {entity_id} was deleted.")
 
-    # A create of an existing id is an update (its base_version is null, so it is stale unless
-    # the phone sends the current version).
-    if mutation["base_version"] != instance.server_version:
-        # TODO(T027): merge or record a SyncConflict instead of rejecting.
-        raise PushError(
-            "stale_version",
-            f"base_version {mutation['base_version']} does not match the server version "
-            f"{instance.server_version}.",
-        )
+    base_version = mutation["base_version"]
+    resend = operation == "create"
+    if resend:
+        # The phone resent a create the server already has (D-050 gap). Merge it as an update
+        # against the row as it was created, so admin edits since then are kept (D-052). Always
+        # merged, even when nothing changed since: an exact resend must not bump the version.
+        operation, base_version = "update", _creation_version(model, entity_id)
+    elif base_version is None:
+        raise exceptions.ValidationError({"base_version": ["Required for update and delete."]})
+    if resend or base_version != instance.server_version:
+        return _merge(user, entity, instance, operation, base_version, data)
 
     if operation == "delete":
         entity.push.delete(user, instance)
     else:
         _require(entity, "update")
         entity.push.update(user, instance, data)
-    return _current_version(model, entity_id)
+    return Outcome(MutationStatus.APPLIED, _current_version(model, entity_id))
 
 
 def _require(entity, operation):
@@ -309,3 +346,109 @@ def _require(entity, operation):
 def _current_version(model, entity_id):
     # Instances are stale after save (D-029), so read the version the trigger wrote.
     return model._base_manager.filter(pk=entity_id).values_list("server_version", flat=True).get()
+
+
+def _creation_version(model, pk):
+    """server_version of the row's first history row, or None (no history)."""
+    history = getattr(model, "history", None)
+    if history is None:
+        return None
+    return (
+        history.filter(id=pk, history_type="+")
+        .order_by("history_id")
+        .values_list("server_version", flat=True)
+        .first()
+    )
+
+
+def _history_at(model, pk, version):
+    """The history row the row had at `version` (D-040), or None."""
+    history = getattr(model, "history", None)
+    if history is None or version is None:
+        return None
+    return history.filter(id=pk, server_version=version).order_by("-history_id").first()
+
+
+def _json(value):
+    """A serializer value in plain JSON types (UUID -> str, Decimal -> str, ...)."""
+    return json.loads(JSONRenderer().render(value))
+
+
+def _snapshot(entity, instance):
+    # Always the sync serializer (D-049), so snapshots, the row and the payload share one form.
+    return _json(entity.serializer(instance).data)
+
+
+def _normalise(field, value):
+    """A payload value the way the serializer would show it, to compare it with a snapshot."""
+    if value is None:
+        return None
+    try:
+        return _json(field.to_representation(field.to_internal_value(value)))
+    except (
+        exceptions.ValidationError,
+        DjangoValidationError,
+        TypeError,
+        ValueError,
+    ):
+        # Counts as changed; the handler rejects it if it is applied.
+        return value
+
+
+def _client_changed(entity, data, base):
+    """Payload keys that are writable fields of the sync serializer and differ from `base`."""
+    fields = entity.serializer().fields
+    return {
+        key
+        for key, value in data.items()
+        if key in fields
+        and not fields[key].read_only
+        and _normalise(fields[key], value) != base.get(key)
+    }
+
+
+def _merge(user, entity, instance, operation, base_version, data):
+    """Three-way merge of a stale update/delete: snapshot at `base_version`, current row, payload.
+
+    Changes that do not overlap are applied (merged); an overlap, a stale delete or a missing
+    snapshot becomes a SyncConflict and nothing is applied.
+    """
+    model = type(instance)
+    current = _snapshot(entity, instance)
+    stripped = _strip(current, entity)
+    row = _history_at(model, instance.pk, base_version)
+    base = _snapshot(entity, row.instance) if row is not None else None
+
+    if base is None:
+        fields = sorted(stripped)  # no snapshot: the whole record conflicts
+    else:
+        server_changed = {key for key, value in stripped.items() if value != base.get(key)}
+        if operation == "delete":
+            fields = sorted(server_changed)  # always a conflict, even with no field changed
+        else:
+            client_changed = _client_changed(entity, data, base)
+            fields = sorted(server_changed & client_changed)
+            if not fields:
+                if not client_changed:
+                    return Outcome(MutationStatus.MERGED, instance.server_version)
+                _require(entity, "update")
+                # Only what the client changed: it may send unchanged fields with old values.
+                entity.push.update(user, instance, {key: data[key] for key in client_changed})
+                return Outcome(MutationStatus.MERGED, _current_version(model, instance.pk))
+
+    return Outcome(
+        MutationStatus.CONFLICT,
+        instance.server_version,
+        conflict={
+            "project": entity.push.project_of(instance),
+            "entity_type": entity.entity_type,
+            "entity_id": instance.pk,
+            "operation": operation,
+            "base_version": base_version or 0,
+            "server_version_at_conflict": instance.server_version,
+            "client_payload": data,
+            "server_snapshot": current,
+            "base_snapshot": base,
+            "conflicting_fields": fields,
+        },
+    )

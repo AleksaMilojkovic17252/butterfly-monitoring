@@ -62,7 +62,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T024 | [#41](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/41) | Seed data: butterflies of Serbia, plant list, codelists, demo project | P1 | must | T019, T020, T021 | 2 d | done |
 | T025 | [#42](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/42) | Pull API with server-version cursor | P1 | must | T005, T015, T019, T020, T021 | 2 d | done |
 | T026 | [#43](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/43) | Push API with idempotent mutations | P1 | must | T025 | 2.5 d | done |
-| T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | todo |
+| T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | done |
 | T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | todo |
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | done |
 | T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | todo |
@@ -502,7 +502,7 @@ Depends on: T019, T020, T021
 
 Note: the interleaved-writes "Test" was checked by hand (a smoke script, plus an uncommitted write on a second database connection while pulling), not as an automated test (D-021).
 
-Deferred: the "user data" and `sync_conflict` scope bullets wait for their tables. Own records (`created_by = user`) are added to `apps/sync/registry.py` by T027, T034, T036, T044 and T049, and the caller's own conflicts by T049. The automated interleaved-writes test is skipped (D-021).
+Deferred: the "user data" and `sync_conflict` scope bullets wait for their tables. Own records (`created_by = user`) are added to `apps/sync/registry.py` by T034, T036, T044 and T049; the caller's own conflicts (`sync_conflict` scope) were delivered by T027. The automated interleaved-writes test is skipped (D-021).
 
 Depends on: T005, T015, T019, T020, T021
 
@@ -537,9 +537,13 @@ Depends on: T025
 - [ ] A 500-mutation batch completes in under 5 s on the laptop (measured in T074).
 
 ### T027 · Conflict detection and SyncConflict model
-[#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F26 · est. 2 d · **todo**
+[#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) · E04 · P1 · must · labels: `backend`, `sync`, `database`, `must` · implements F26 · est. 2 d · **done**
 
-Note (from T026, D-050): a `create` of an existing id is rejected `stale_version` today, even when it is the phone's own resend (stored mutation pruned or re-queued under a new `mutation_id`). Handle a create of the user's own existing row as an update against the current version, or a no-op.
+Note (from T026, D-050): a `create` of an existing id is rejected `stale_version` today, even when it is the phone's own resend (stored mutation pruned or re-queued under a new `mutation_id`). Handle a create of the user's own existing row as an update against the current version, or a no-op. Done: a create resend is merged against the row's creation version (D-052).
+
+Note: the "Tests cover" cases are shown by hand with `tmp/t027/smoke.py` and temporary `transect` handlers, since no type the phone writes exists yet (D-021, D-052). The ticket's `count` case maps to `name`, and "admin validated the taxon" to an admin change of `description`.
+
+Deferred: the Drift `SyncConflicts` mirror (ticket section c) to T030, whose criteria already read `sync_conflict` rows from the pull.
 
 Depends on: T018, T026
 

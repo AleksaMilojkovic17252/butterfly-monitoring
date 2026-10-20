@@ -8,6 +8,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from django.core.exceptions import ImproperlyConfigured
+
 from apps.core.history import save_with_reason
 
 PUSH_REASON = "sync push"  # history_change_reason of every pushed change
@@ -26,12 +28,22 @@ class PushHandlers:
     entity-specific: payload validation (T055), project membership, the visit lock (T042),
     section assignment (T048) and quality flags (T056). They save with PUSH_REASON. Raise DRF or
     Django exceptions to reject; the framework turns them into {code, detail, fields}.
+    `project_of` is required when `create`, `update` or `delete` is set: a SyncConflict (T027)
+    belongs to the project of the row, and a resent `create` of an existing row is merged like an
+    update. A missing one fails at import, not on the first conflict.
     """
 
     create: Callable[..., Any] | None = None  # (user, entity_id, data) -> instance
     update: Callable[..., Any] | None = None  # (user, instance, data) -> instance
     delete: Callable[..., Any] | None = None  # (user, instance) -> None
     create_batch: Callable[..., Any] | None = None  # (user, entity_id, rows) -> None
+    project_of: Callable[..., Any] | None = None  # (instance) -> Project
+
+    def __post_init__(self):
+        if (self.create or self.update or self.delete) and self.project_of is None:
+            raise ImproperlyConfigured(
+                "PushHandlers with create, update or delete needs project_of (T027)."
+            )
 
 
 def save_pushed(obj, user):

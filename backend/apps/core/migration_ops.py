@@ -57,3 +57,25 @@ class AttachSyncTrigger(migrations.RunSQL):
     def deconstruct(self):
         name, _, kwargs = super().deconstruct()
         return name.replace("RunSQL", "AttachSyncTrigger"), [self.table], {}
+
+
+class HistoryVersionIndex(migrations.RunSQL):
+    """Index a history table by (id, server_version), for T027's "row as of version N" lookup.
+
+        HistoryVersionIndex("historical_transect")
+
+    Put it after the CreateModel for the historical model of every audited synced table.
+    """
+
+    def __init__(self, table):
+        if not re.match(r"^[a-z_][a-z0-9_]*$", table):
+            raise ValueError(f"Invalid table name: {table!r}")
+        self.table = table
+        super().__init__(
+            sql=f"CREATE INDEX {table}_version_idx ON {table} (id, server_version)",
+            reverse_sql=f"DROP INDEX IF EXISTS {table}_version_idx",
+        )
+
+    def deconstruct(self):
+        name, _, kwargs = super().deconstruct()
+        return name.replace("RunSQL", "HistoryVersionIndex"), [self.table], {}

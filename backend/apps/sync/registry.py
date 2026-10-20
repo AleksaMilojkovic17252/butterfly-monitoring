@@ -20,6 +20,7 @@ from apps.catalogues.serializers import (
 )
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
+from apps.sync import conflicts
 from apps.sync.handlers import PushHandlers
 from apps.transects import services as transects
 from apps.transects.serializers import TransectSectionSyncSerializer, TransectSyncSerializer
@@ -51,9 +52,11 @@ ENTITIES = [
     SyncEntity("management_type", ManagementTypeSyncSerializer, catalogues.pull_management_types),
     SyncEntity("transect", TransectSyncSerializer, transects.pull_transects),
     SyncEntity("transect_section", TransectSectionSyncSerializer, transects.pull_sections),
+    # The phone never writes it, so there is no push.
+    SyncEntity("sync_conflict", conflicts.SyncConflictSyncSerializer, conflicts.pull_conflicts),
 ]
-# User data scoped to created_by = user (survey_visit, ..., sync_conflict) arrives with T027, T034,
-# T036, T044 and T049, and registers `push=PushHandlers(...)` there.
+# User data scoped to created_by = user (survey_visit, ...) arrives with T034, T036, T044 and
+# T049, and registers `push=PushHandlers(...)` there.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 
