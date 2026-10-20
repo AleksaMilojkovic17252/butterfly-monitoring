@@ -4,15 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.steps.dart';
 import 'package:mobile/core/db/projects.dart';
 import 'package:mobile/core/db/skeleton_pings.dart';
+import 'package:mobile/core/db/sync_queue.dart';
+import 'package:mobile/core/db/sync_state_entries.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [SkeletonPings, Projects])
+@DriftDatabase(tables: [SkeletonPings, Projects, SyncQueue, SyncStateEntries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -26,6 +28,11 @@ class AppDatabase extends _$AppDatabase {
       },
       from2To3: (m, schema) async {
         await m.createTable(schema.project);
+      },
+      from3To4: (m, schema) async {
+        await m.createTable(schema.syncQueue);
+        await m.createTable(schema.syncState);
+        await m.create(schema.syncQueueEntity);
       },
     ),
   );

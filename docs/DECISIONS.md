@@ -556,3 +556,45 @@ should treat a create of the user's own existing row as an update against the cu
 Shown by hand with `tmp/t026/smoke.py` and temporary handlers (no type the phone writes exists yet; D-021): savepoints and
 order, resending a batch, concurrent retry from two threads, 1000-row batches, ownership, history reason, server-owned
 fields. 500 updates took about 3.3 s on the laptop; the real measurement is T074.
+
+## D-051 · App sync queue: write helper, coalescing only unsent items, sync_state keys
+2026-10 · accepted · T029
+`SyncRepository.write` (`lib/core/sync/sync_repository.dart`) is the only code that changes a synced row. `entityType` is both
+the server's entity type and the local Drift table name (`survey_visit`, ...), so the helper can mark a row with plain SQL
+(`UPDATE "<entityType>" SET sync_status = ? WHERE id = ?`) without knowing the table class. The helper sets `sync_status =
+pending` itself; the caller's `writeRow` only upserts the data. One Drift transaction, **queue item first**, then the row, so an
+exception anywhere rolls back both. `SyncColumns` (mixin: `serverVersion`, `syncStatus`, `deletedAt`) exists but no table uses
+it yet; T034 and later add it.
+**Coalescing only into an unsent item**: the latest queue item of the entity (highest `seq`) is merged into only when it is
+`queued` with `retryCount == 0`. Once an item has been sent, the server may already have applied its `mutation_id`; merging new
+changes into it would make the server answer `duplicate` and the changes would be lost. Rules: update + update gives one update
+(payload merged, first `baseVersion`, `mutationId` and `seq` kept); create + update gives one create; create + delete removes
+the item and hard-deletes the local row, because the server never saw it (soft delete is for synced rows only). Anything else
+inserts a new item. The old `seq` is kept so a visit's create still goes before the observations queued after it.
+**T030 obligation:** the runner must raise `retryCount` or set `inFlight` before it sends an item.
+**Track points** go through `writeBatch` as `create_batch` items with `entity_id` = the visit (D-050), at most 500 rows per item.
+An unsent batch of the same parent is filled up to 500 first; the rest goes into new items.
+**`sync_state` keys** (`SyncStateRepository`, table `sync_state`): `deviceId` (UUID v4), `cursor:<projectId>` (int as text; missing
+means never pulled, cursor 0), `lastSuccessfulSyncAt` (UTC ISO-8601), `lastSyncBytes` (int as text). `deviceId` is created
+lazily on the first read (in practice the first launch that syncs), inside a transaction so two callers cannot make two ids.
+"Remove data" (`LocalDataRepository.clearAll`) deletes every table, so it also wipes the queue and `deviceId`; a new id is made
+on the next read. `LastSyncNotifier` stays on shared_preferences for the login screen; T030 decides how it joins
+`lastSuccessfulSyncAt`.
+Schema is now v4 (`from3To4` creates `sync_queue`, `sync_state` and the index `sync_queue_entity` on `entity_type, entity_id, seq`,
+which `_latestItem` uses on every write). Shown by a temporary smoke test (in-memory database,
+throwaway tables, nine cases for coalescing, atomicity, batching and `sync_state`) and a v3 to v4 upgrade check with Drift's `SchemaVerifier`
+(`tmp/t029/`); nothing committed (D-021).
+`SyncRepository.unsyncedCount()` counts every item still in the queue (`queued`, `inFlight`, `conflict`, `rejected`), because
+items leave the queue only when the server accepted them; T030 feeds it into the pending-changes badge.
+**Open points found in review, for later tickets:**
+- **T034/T035:** deleting a visit whose create was never sent drops only the visit's own queue item. Queued children
+  (observations, `create_batch` track points) stay and would be pushed without a parent. Their repositories must cancel or
+  delete them in the same transaction.
+- **T034:** `write()` uses `customUpdate` without `updates:`, so Drift streams on feature tables do not refresh from it. Fix it
+  where the table classes exist (pass `updates:` or call `markTablesUpdated`).
+- **T030/T027:** `write()` sets `pending` on any edit, which clears `conflict` or `rejected` on a row. Decide how a local edit
+  of such a row behaves; the stale `baseVersion` will conflict again.
+- **T030:** `syncStatus` defaults to `pending`, so pull must set `synced` explicitly when it inserts or updates rows.
+- **T036:** `writeBatch` rewrites the whole unsent batch JSON on each call, so the track recorder should buffer GPS fixes and
+  call it every few seconds, not per fix.
+- **Remove data:** `clearAll` also wipes unsent changes. The Remove-data screen should warn when `unsyncedCount()` is above 0.
