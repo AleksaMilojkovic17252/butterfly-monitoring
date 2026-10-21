@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/sync/sync_repository.dart';
 
 /// State of a project's offline package on this phone.
 enum OfflinePackageStatus {
@@ -21,9 +22,10 @@ final downloadedTransectCountProvider = FutureProvider.family<int, String>(
 );
 
 /// Local changes in the project not yet pushed.
-// TODO(T030): count rows whose syncStatus is pending for this project.
-final projectPendingChangesProvider = FutureProvider.family<int, String>(
-  (ref, projectId) async => 0,
+final projectPendingChangesProvider = StreamProvider.family<int, String>(
+  (ref, projectId) => ref
+      .watch(syncRepositoryProvider)
+      .watchUnsyncedCount(projectId: projectId),
 );
 
 /// Whether the project's offline package is downloaded and current.

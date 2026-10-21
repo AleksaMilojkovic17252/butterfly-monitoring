@@ -59,6 +59,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | flutter_map | 7.x/8.x | VERIFY |
 | geolocator | latest | Android foreground service via `foregroundNotificationConfig` (VERIFY API) |
 | flutter_riverpod, go_router, dio, uuid, flutter_secure_storage, image_picker, flutter_image_compress, crypto | latest | |
+| connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |
 
 ## A.5 Database conventions (apply to every table ticket)
 

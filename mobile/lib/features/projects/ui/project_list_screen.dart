@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/sync/sync_runner.dart';
+import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
@@ -20,20 +22,28 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
   void initState() {
     super.initState();
     // Quiet refresh on open: offline, the saved list is shown as it is.
-    _refresh(showErrors: false);
+    _refreshQuietly();
   }
 
-  Future<void> _refresh({bool showErrors = true}) async {
+  /// Downloads the project list without telling the user if it fails.
+  Future<void> _refreshQuietly() async {
     try {
       await ref.read(projectRepositoryProvider).refreshFromServer();
     } on DioException catch (_) {
-      if (!showErrors || !mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Can't reach the server. Showing saved projects."),
-        ),
-      );
+      // Offline: the saved list stays on screen.
     }
+  }
+
+  /// Pull-to-refresh: a full sync, not only the project list. The snackbar
+  /// appears when the sync did not finish.
+  Future<void> _pullToRefresh() async {
+    final ok = await ref.read(syncNowProvider)();
+    if (ok || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sync did not finish. Changes stay on this phone.'),
+      ),
+    );
   }
 
   Future<void> _open(Project project) async {
@@ -45,6 +55,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
   @override
   Widget build(BuildContext context) {
     final projects = ref.watch(projectListProvider);
+    final running = ref.watch(syncRunnerProvider).running;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
@@ -55,9 +66,21 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
             onPressed: () => context.push('/settings'),
           ),
         ],
+        // The bar always takes its 3 px, so the list does not jump when a sync
+        // starts or ends.
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: running
+              ? LinearProgressIndicator(
+                  minHeight: 3,
+                  backgroundColor: Colors.transparent,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                )
+              : const SizedBox(height: 3),
+        ),
       ),
       body: RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: _pullToRefresh,
         child: switch (projects) {
           AsyncData(value: final list) when list.isEmpty => ListView(
             // A scrollable child, so pull-to-refresh works on an empty list.

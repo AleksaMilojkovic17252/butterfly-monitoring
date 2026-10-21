@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
+import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
@@ -97,8 +98,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
+  /// Runs a sync on request and tells the result in a snackbar. The details of
+  /// a failure are for the sync status screen (T032).
+  Future<void> _syncNow() async {
+    final ok = await ref.read(syncNowProvider)();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Sync finished'
+              : 'Sync did not finish. Changes stay on this phone.',
+        ),
+      ),
+    );
+  }
+
   Future<void> _logout() async {
-    final pending = ref.read(pendingChangesProvider).value ?? 0;
+    // `.future` waits for the first count, so a count still loading is not
+    // mistaken for "nothing to sync".
+    final pending = await ref.read(pendingChangesProvider.future);
+    if (!mounted) return;
     if (pending > 0) {
       final choice = await showDialog<_LogoutChoice>(
         context: context,
@@ -181,6 +201,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final profile = ref.watch(authControllerProvider).profile;
     final offline = ref.watch(authControllerProvider) is OfflineSession;
+    final running = ref.watch(syncRunnerProvider).running;
+    final lastSync = ref.watch(lastSyncProvider);
+    final pending = ref.watch(pendingChangesProvider).value ?? 0;
+    final localizations = MaterialLocalizations.of(context);
+    final lastSyncText = lastSync == null
+        ? 'Never synced'
+        : 'Last sync: ${localizations.formatShortDate(lastSync)}, '
+              '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(lastSync))}';
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Padding(
@@ -197,6 +225,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       title: Text(profile.displayName),
                       subtitle: Text(
                         offline ? '${profile.email} · offline' : profile.email,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.sync),
+                      title: const Text('Sync'),
+                      subtitle: Text(
+                        pending > 0
+                            ? '$lastSyncText · $pending pending'
+                            : lastSyncText,
+                      ),
+                      // The button keeps its size while syncing (a spinner
+                      // replaces the label), so the tile does not jump.
+                      trailing: FilledButton.tonal(
+                        onPressed: running ? null : _syncNow,
+                        style: FilledButton.styleFrom(
+                          fixedSize: const Size(120, 40),
+                        ),
+                        child: running
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Sync now'),
                       ),
                     ),
                   ),

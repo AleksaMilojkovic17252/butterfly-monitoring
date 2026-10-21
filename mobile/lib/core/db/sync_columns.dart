@@ -1,7 +1,5 @@
 import 'package:drift/drift.dart';
-
-/// Sync state of a local row (CONVENTIONS A.6).
-enum SyncStatus { synced, pending, conflict, rejected }
+import 'package:mobile/core/db/sync_status.dart';
 
 /// Local sync columns every synced table carries (CONVENTIONS A.6).
 mixin SyncColumns on Table {

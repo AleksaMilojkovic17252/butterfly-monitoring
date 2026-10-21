@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/config/shared_preferences_provider.dart';
+import 'package:mobile/core/sync/sync_repository.dart';
+import 'package:mobile/core/sync/sync_runner.dart';
 
 /// Time of the last successful sync, shown on the login screen. The sync
 /// runner (T030) calls [markSynced] after a successful run.
@@ -30,13 +32,14 @@ final lastSyncProvider = NotifierProvider<LastSyncNotifier, DateTime?>(
   LastSyncNotifier.new,
 );
 
-/// Number of local changes not yet pushed. No synced tables exist yet, so this
-/// is 0 until T030 counts rows whose syncStatus is pending.
-final pendingChangesProvider = FutureProvider<int>((ref) async => 0);
+/// Number of local changes not yet pushed.
+final pendingChangesProvider = StreamProvider<int>(
+  (ref) => ref.watch(syncRepositoryProvider).watchUnsyncedCount(),
+);
 
-/// Runs a sync now; returns true when everything was pushed. Replaced by the
-/// real runner in T030.
+/// Runs a sync now; returns true when everything was pushed.
 final syncNowProvider = Provider<Future<bool> Function()>(
   (ref) =>
-      () async => false,
+      () async =>
+          (await ref.read(syncRunnerProvider.notifier).run(manual: true)).ok,
 );

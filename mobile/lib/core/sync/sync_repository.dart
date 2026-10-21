@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/db/sync_columns.dart';
 import 'package:mobile/core/db/sync_queue.dart';
+import 'package:mobile/core/db/sync_status.dart';
+import 'package:mobile/core/sync/sync_api.dart';
 import 'package:uuid/uuid.dart';
 
 /// What a queue item asks the server to do. [wireName] is the server's name
@@ -168,6 +171,18 @@ class SyncRepository {
   /// leave the queue only when the server accepted them.
   Future<int> unsyncedCount() => _db.syncQueue.count().getSingle();
 
+  /// Live version of [unsyncedCount]: emits again whenever the queue changes.
+  /// With [projectId] it counts only that project's items.
+  Stream<int> watchUnsyncedCount({String? projectId}) {
+    return _db.syncQueue
+        .count(
+          where: projectId == null
+              ? null
+              : (t) => t.projectId.equals(projectId),
+        )
+        .watchSingle();
+  }
+
   /// Queues the change, merging into the entity's last item when allowed.
   /// Returns true when a delete cancelled a queued create.
   Future<bool> _enqueue({
@@ -254,10 +269,259 @@ class SyncRepository {
         .getSingleOrNull();
   }
 
+  /// Puts items left `inFlight` by an interrupted run back to `queued`, with
+  /// `retryCount` raised so they no longer count as unsent (see [_isUnsent]).
+  /// They keep their `mutationId`: if the server did apply them, the resend
+  /// comes back as `duplicate`. Call it at the start of every run.
+  Future<void> recoverInFlight() {
+    return _db.transaction(() async {
+      await (_db.update(
+        _db.syncQueue,
+      )..where((t) => t.status.equalsValue(QueueStatus.inFlight))).write(
+        SyncQueueCompanion.custom(
+          status: Constant(QueueStatus.queued.name),
+          retryCount: _db.syncQueue.retryCount + const Constant(1),
+          nextAttemptAt: const Constant<DateTime>(null),
+        ),
+      );
+    });
+  }
+
+  /// The next items to push: `queued` ones in `seq` order, at most [max]. Items
+  /// of an entity with a `conflict` item are held back (skipped). The batch
+  /// stops, rather than skips, at the first item that is not due yet (unless
+  /// [ignoreBackoff]) and before an `update` or `delete` of an entity that is
+  /// already in the batch, so later items never overtake earlier ones.
+  Future<List<SyncQueueItem>> nextBatch({
+    required bool ignoreBackoff,
+    int max = 100,
+  }) {
+    return _db.transaction(() async {
+      final queued =
+          await (_db.select(_db.syncQueue)
+                ..where((t) => t.status.equalsValue(QueueStatus.queued))
+                ..orderBy([(t) => OrderingTerm.asc(t.seq)]))
+              .get();
+      final conflicts = await (_db.select(
+        _db.syncQueue,
+      )..where((t) => t.status.equalsValue(QueueStatus.conflict))).get();
+
+      final held = {for (final item in conflicts) _entityKey(item)};
+      final batchKeys = <String>{};
+      final batch = <SyncQueueItem>[];
+      final now = DateTime.now();
+
+      for (final item in queued) {
+        final key = _entityKey(item);
+        if (held.contains(key)) continue;
+
+        final due = item.nextAttemptAt;
+        if (!ignoreBackoff && due != null && due.isAfter(now)) break;
+
+        final changesExisting =
+            item.operation == SyncOperation.update.wireName ||
+            item.operation == SyncOperation.delete.wireName;
+        if (changesExisting && batchKeys.contains(key)) break;
+
+        batch.add(item);
+        batchKeys.add(key);
+        if (batch.length == max) break;
+      }
+      return batch;
+    });
+  }
+
+  /// Identifies the entity a queue item belongs to.
+  String _entityKey(SyncQueueItem item) =>
+      '${item.entityType}/${item.entityId}';
+
+  /// Marks [items] as being sent (`inFlight`) and returns them as they are in
+  /// the queue now. Only `status` changes, so an edit merged into an item's
+  /// payload in the meantime is never overwritten. An edit can still have been
+  /// merged between [nextBatch] and this call, so send the returned items, not
+  /// [items]. An item that was cancelled in that gap is not returned.
+  Future<List<SyncQueueItem>> markSending(List<SyncQueueItem> items) {
+    return _db.transaction(() async {
+      final seqs = items.map((element) => element.seq).toList();
+      await (_db.update(_db.syncQueue)..where((t) => t.seq.isIn(seqs))).write(
+        SyncQueueCompanion(status: Value(QueueStatus.inFlight)),
+      );
+      return (_db.select(_db.syncQueue)
+            ..where((t) => t.seq.isIn(seqs))
+            ..orderBy([(t) => OrderingTerm.asc(t.seq)]))
+          .get();
+    });
+  }
+
+  /// Puts [items] back to `queued` after a failed push: `retryCount` goes up,
+  /// `nextAttemptAt` is set by [backoffDelay], and [error] is kept in
+  /// `lastError`. The payload and `mutationId` stay as they are, so the resend
+  /// is recognised by the server if the first attempt got through.
+  Future<void> markNetworkFailure(List<SyncQueueItem> items, Object error) {
+    return _db.transaction(() async {
+      for (final item in items) {
+        final retries = item.retryCount + 1;
+        await (_db.update(
+          _db.syncQueue,
+        )..where((t) => t.seq.equals(item.seq))).write(
+          SyncQueueCompanion(
+            status: Value(QueueStatus.queued),
+            retryCount: Value(retries),
+            nextAttemptAt: Value(
+              DateTime.now().toUtc().add(backoffDelay(retries)),
+            ),
+            lastError: Value(error.toString()),
+          ),
+        );
+      }
+    });
+  }
+
+  /// Applies the server's answers to a pushed batch, matching them to [items]
+  /// by `mutationId`. Accepted items leave the queue; `conflict` and `rejected`
+  /// ones stay in it with that status (and so does their row). An item with no
+  /// answer is treated as a network failure. All of it is one transaction.
+  Future<void> applyPushResults(
+    List<SyncQueueItem> items,
+    List<PushResult> results,
+  ) {
+    return _db.transaction(() async {
+      final byId = {for (final result in results) result.mutationId: result};
+      final unanswered = <SyncQueueItem>[];
+
+      for (final item in items) {
+        final result = byId[item.mutationId];
+        if (result == null) {
+          unanswered.add(item);
+          continue;
+        }
+        switch (result.status) {
+          case PushResultStatus.applied:
+          case PushResultStatus.merged:
+          case PushResultStatus.duplicate:
+            await _applyAccepted(item, result.serverVersion);
+          case PushResultStatus.conflict:
+            await _holdItem(item, QueueStatus.conflict, SyncStatus.conflict);
+          case PushResultStatus.rejected:
+            await _holdItem(
+              item,
+              QueueStatus.rejected,
+              SyncStatus.rejected,
+              error: result.errors,
+            );
+        }
+      }
+
+      await markNetworkFailure(unanswered, 'no result from the server');
+    });
+  }
+
+  /// The server has this change: drop the item, record the row's new version,
+  /// and rebase the entity's later items onto it. The row is `synced` only when
+  /// nothing else is queued for it. A `create_batch` has no version and its
+  /// `entityId` is the parent, so it marks the child rows listed in its payload.
+  Future<void> _applyAccepted(SyncQueueItem item, int? serverVersion) async {
+    await (_db.delete(
+      _db.syncQueue,
+    )..where((t) => t.seq.equals(item.seq))).go();
+
+    if (item.operation == SyncOperation.createBatch.wireName) {
+      final payload = jsonDecode(item.payload) as Map<String, dynamic>;
+      final ids = [
+        for (final row in payload['rows'] as List)
+          (row as Map<String, dynamic>)['id'] as String,
+      ];
+      if (ids.isEmpty) return;
+      final marks = List.filled(ids.length, '?').join(', ');
+      await _db.customUpdate(
+        'UPDATE "${item.entityType}" SET sync_status = ? WHERE id IN ($marks)',
+        variables: [
+          Variable.withString(SyncStatus.synced.name),
+          for (final id in ids) Variable.withString(id),
+        ],
+      );
+      return;
+    }
+
+    if (serverVersion != null) {
+      await _db.customUpdate(
+        'UPDATE "${item.entityType}" SET server_version = ? WHERE id = ?',
+        variables: [
+          Variable.withInt(serverVersion),
+          Variable.withString(item.entityId),
+        ],
+      );
+      // A later update or delete was queued before the version was known.
+      await (_db.update(_db.syncQueue)..where(
+            (t) =>
+                t.entityType.equals(item.entityType) &
+                t.entityId.equals(item.entityId) &
+                t.operation.isIn([
+                  SyncOperation.update.wireName,
+                  SyncOperation.delete.wireName,
+                ]),
+          ))
+          .write(SyncQueueCompanion(baseVersion: Value(serverVersion)));
+    }
+
+    final left =
+        await (_db.select(_db.syncQueue)..where(
+              (t) =>
+                  t.entityType.equals(item.entityType) &
+                  t.entityId.equals(item.entityId),
+            ))
+            .get();
+    if (left.isEmpty) {
+      await _setRowStatus(item, SyncStatus.synced);
+    }
+  }
+
+  /// Keeps [item] in the queue with [queueStatus] (`conflict` or `rejected`),
+  /// stores [error] as its `lastError` when given, and gives its row
+  /// [rowStatus]. For a `create_batch` the row update matches nothing.
+  Future<void> _holdItem(
+    SyncQueueItem item,
+    QueueStatus queueStatus,
+    SyncStatus rowStatus, {
+    String? error,
+  }) async {
+    await (_db.update(
+      _db.syncQueue,
+    )..where((t) => t.seq.equals(item.seq))).write(
+      SyncQueueCompanion(
+        status: Value(queueStatus),
+        lastError: Value.absentIfNull(error),
+      ),
+    );
+    await _setRowStatus(item, rowStatus);
+  }
+
+  /// Sets `sync_status` on the item's entity row.
+  Future<void> _setRowStatus(SyncQueueItem item, SyncStatus status) {
+    return _db.customUpdate(
+      'UPDATE "${item.entityType}" SET sync_status = ? WHERE id = ?',
+      variables: [
+        Variable.withString(status.name),
+        Variable.withString(item.entityId),
+      ],
+    );
+  }
+
   /// True while an item has not been sent. T030 must raise `retryCount` or set
   /// `inFlight` before sending, or this goes wrong.
   bool _isUnsent(SyncQueueItem item) =>
       item.status == QueueStatus.queued && item.retryCount == 0;
+}
+
+/// How long to wait before the next attempt: `min(2^retryCount s, 900 s)`
+/// times a random factor between 0.8 and 1.2, so clients do not retry in step.
+/// The exponent is capped first so a large [retryCount] cannot overflow. Pass
+/// [random] to get a repeatable result.
+Duration backoffDelay(int retryCount, [Random? random]) {
+  final n = min(retryCount, 10);
+  final base = min(1 << n, 900);
+  final jitter = 0.8 + 0.4 * (random ?? Random()).nextDouble();
+  return Duration(milliseconds: (base * jitter * 1000).round());
 }
 
 final syncRepositoryProvider = Provider<SyncRepository>(

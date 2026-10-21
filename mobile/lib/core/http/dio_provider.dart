@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/auth_interceptor.dart';
+import 'package:mobile/core/http/transfer_counter.dart';
 import 'package:mobile/features/auth/data/auth_repository.dart';
 import 'package:mobile/features/auth/data/token_storage.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
@@ -26,6 +27,8 @@ final Provider<Dio> dioProvider = Provider<Dio>((ref) {
           ref.read(authControllerProvider.notifier).sessionExpired(),
     ),
   );
+
+  dio.interceptors.add(ref.read(transferCounterProvider));
 
   if (kDebugMode) {
     final logger = Logger();

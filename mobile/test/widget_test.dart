@@ -9,6 +9,7 @@ import 'package:mobile/app.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/shared_preferences_provider.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/sync/sync_triggers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -37,6 +38,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          // No background sync in this test.
+          syncTriggersProvider.overrideWith((ref) {}),
           appDatabaseProvider.overrideWith((ref) {
             final db = AppDatabase(NativeDatabase.memory());
             ref.onDispose(db.close);

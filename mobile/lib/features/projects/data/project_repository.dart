@@ -7,7 +7,8 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/http/dio_provider.dart';
 
 /// Projects on this phone. Screens read the local Drift table, so the list
-/// works offline; [refreshFromServer] updates that table when online.
+/// works offline. The table is filled by [refreshFromServer] (which finds the
+/// projects) and kept up to date by the sync pull.
 class ProjectRepository {
   ProjectRepository(this._db, this._dio);
   final AppDatabase _db;
@@ -21,6 +22,15 @@ class ProjectRepository {
     return query.watch();
   }
 
+  /// The projects on this phone right now, sorted by name. The sync runner
+  /// pulls each of them.
+  Future<List<Project>> localProjects() {
+    final query = _db.select(_db.projects)
+      ..where((p) => p.deletedAt.isNull())
+      ..orderBy([(p) => OrderingTerm.asc(p.name)]);
+    return query.get();
+  }
+
   /// One project, or null when it is not on this phone.
   Stream<Project?> watchProject(String id) {
     final query = _db.select(_db.projects)
@@ -31,8 +41,9 @@ class ProjectRepository {
   /// Downloads the caller's projects and stores them locally. Throws
   /// [DioException] when the server cannot be reached.
   ///
-  /// Interim: the pull (T030/T031) replaces this. Projects the server no
-  /// longer returns are kept on the phone (D-036).
+  /// The sync run calls this first: it is how a project that is new to this
+  /// user gets a local row, so that the pull then asks for it. Projects the
+  /// server no longer returns are kept on the phone (D-036).
   Future<void> refreshFromServer() async {
     final response = await _dio.get<List<dynamic>>('/api/v1/projects');
     final rows = response.data!
@@ -44,7 +55,8 @@ class ProjectRepository {
     });
   }
 
-  /// Maps one item of the projects API to a Drift row.
+  /// Maps one item of the projects API to a Drift row. The pull applier has its
+  /// own mapper for the project rows that the pull sends.
   ProjectsCompanion _fromJson(Map<String, dynamic> json) {
     final area = json['area'];
     return ProjectsCompanion.insert(

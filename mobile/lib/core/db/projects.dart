@@ -11,6 +11,7 @@ class Projects extends Table {
   DateTimeColumn get endDate => dateTime().nullable()();
   IntColumn get defaultCrs => integer().withDefault(const Constant(4326))();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
+  TextColumn get taxonListVersionId => text().nullable()();
 
   /// Study area as a GeoJSON MultiPolygon, or null.
   TextColumn get area => text().nullable()();

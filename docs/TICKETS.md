@@ -65,7 +65,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T027 | [#44](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/44) | Conflict detection and SyncConflict model | P1 | must | T018, T026 | 2 d | done |
 | T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | done |
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | done |
-| T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | todo |
+| T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | done |
 | T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | todo |
 | T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | todo |
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | todo |
@@ -592,7 +592,11 @@ Depends on: T006
 - [ ] Unit tests cover coalescing and atomicity (simulate an exception mid-write: neither row nor queue item persists).
 
 ### T030 · App sync runner: push, pull, retry and backoff
-[#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F24, F25 · est. 2.5 d · **todo**
+[#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F24, F25 · est. 2.5 d · **done**
+
+Note: the integration-test criterion is shown by a temporary smoke test (`tmp/t030/`, 14 cases, in-memory database and a fake server), not a committed test (D-021, D-054). The conflict release is shown there too, because no type the phone writes exists before T034.
+
+Deferred: photo upload between push and pull (T050); the visit-finished trigger (T040); pulling only downloaded projects, today every local project is pulled (T031); a permanent 4xx on push is retried for ever, for a later ticket (D-054).
 
 Depends on: T025, T026, T029
 

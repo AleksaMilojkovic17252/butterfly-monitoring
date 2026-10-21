@@ -680,3 +680,72 @@ client in the browser only shows the "cannot be changed by the app" error; D-021
   change view and the form warn (not after resolving, which touches the row itself). The diff always shows the stored snapshots.
 - **Limits:** buttons on the change view only, no bulk actions; no per-field mixed resolution (ticket); the diff compares top-level
   fields as JSON text.
+
+## D-054 · App sync runner: batch rules, rebase after push, pull apply, triggers
+2026-10 · accepted · T030
+`SyncRunner.run` (`lib/core/sync/sync_runner.dart`) is one run at a time (a second call joins the running Future). It does:
+`recoverInFlight`, the push loop, the photo placeholder, `ProjectRepository.refreshFromServer`, the pull per project, then the
+bookkeeping. It never throws: a failure comes back as a `SyncResult` with `ok` false. A manual run (button, pull-to-refresh)
+ignores the back-off delays; automatic runs do not. A manual call that finds an automatic run going waits for it and then runs
+again, so the request is not lost.
+- **Reference tables** (schema v5): `project_protocol`, `taxon_list_version`, `taxon`, `plant_taxon`, `habitat_type`,
+  `management_type`, `transect`, `transect_section`, and the `sync_conflict` mirror. Written only by pull, so they have `serverVersion`
+  and `deletedAt` but no `syncStatus`; `sync_conflict` is the exception (it needs `pending` for the rule below). Foreign keys are
+  `<name>Id` text columns; `created_at`/`updated_at` are not stored (except `sync_conflict.createdAt`); decimals are `real`,
+  geometry and lists are JSON text. `rank` and `status` are plain text, not `textEnum`: the server values (`species_group`,
+  `resolved_server`) are not Dart enum names. SQLite foreign keys are off, so a page may hold a child before its parent.
+- **All local projects are pulled** until T031 narrows it to downloaded ones. `refreshFromServer` is now the project-discovery step
+  of every run; its failure ends the run with an error.
+- **Batch rules** (`nextBatch`): `queued` items in `seq` order, at most 100. An entity with a `conflict` item is held (its items are
+  skipped). The batch stops, not skips, at the first item that is not due yet (unless manual) and before an `update`/`delete` of an
+  entity already in the batch, so later items never overtake earlier ones. A `rejected` item does not hold later items.
+- **Rebase:** an `update` queued after a create has `baseVersion` null (the row has no version yet) and the server rejects that
+  (D-052). So `applyPushResults` sets the returned `server_version` on the row and gives the entity's remaining `update`/`delete`
+  items that version as `baseVersion`. **Guidance for T034+:** update payloads carry only the changed fields, so a rebase after
+  `merged` cannot revert server changes. The row becomes `synced` only when no other item of the entity is left.
+- **Sending:** `markSending` flips the batch to `inFlight` and returns the rows as the queue holds them at that moment; the run
+  sends those, not the rows `nextBatch` read, because an edit can be merged into a still-queued item in between. Any exception from
+  `push` (a reply the app cannot read, not only a network error) goes through `markNetworkFailure` and ends the run, so the batch
+  backs off and does not stay `inFlight`.
+- **`recoverInFlight`** runs at the start of each run: items left `inFlight` go back to `queued` with `retryCount + 1`, so they no longer
+  count as unsent (D-051) and keep their `mutationId`. A missing result for an item is treated as a network failure.
+- **Pull apply** (`PullApplier`): one transaction per page, with the cursor `cursor:<projectId>`. `sync_conflict` is applied first.
+  Live rows are upserted and reset `deleted_at`; a tombstone only sets `deleted_at` and `server_version` (D-049). Types without a
+  local table are ignored. For tables with `sync_status` (today `sync_conflict`) an incoming row is dropped when the local row is
+  not `synced` (`pending`, `conflict` or `rejected`), so a local change the server has not accepted is never overwritten. Pulled
+  rows are written `synced`. A page that says `has_more` but does not advance the cursor ends the run with an error.
+- **Conflict release:** acts only when the queue still holds a `conflict` item for the entity, so a re-pull does nothing.
+  `resolved_server` deletes that item and every later item of the entity and sets the row `synced`. `resolved_client` deletes the
+  conflict item and sets the row `synced`, or `pending` when other items are still queued (the plan said only `synced`; leaving
+  `conflict` would mark the row for ever). The row is touched only if its table is in `_db.allTables`.
+  **Known limits:** a local edit made while a conflict was open, with the row on an earlier page than the resolution, keeps
+  stale data. After `resolved_client` the released update keeps its old `baseVersion`; check in the manual run (step 11) that the
+  server does not conflict it again.
+- **`ok`** means no error and nothing sendable left (`nextBatch(ignoreBackoff: true, max: 1)` is empty). Held, `conflict` and
+  `rejected` items do not count, so an open conflict does not make every run fail. The run saves `lastSyncBytes` always and
+  `lastSuccessfulSyncAt` plus `lastSyncProvider` only when `ok` (this joins the two stores, D-051).
+- **Byte counter:** `TransferCounter`, a dio interceptor after the auth interceptor. It counts request bodies as encoded JSON,
+  responses by `content-length` or encoded body, and error responses; headers, URLs and bodies that are not text or JSON (a `FormData`
+  upload, T050) are not counted. It is reset at the start of a
+  run, so the figure covers the whole run, project refresh included.
+- **Triggers** (`syncTriggersProvider`, watched in `App`): login or app start (profile null to non-null, `fireImmediately`), app
+  resume plus a 15-minute timer while in the foreground, and connectivity going from none to some (the starting state is read once).
+  All need a profile (an offline session counts). `connectivity_plus` is the one new dependency.
+  `TODO(T040)`: the finish-visit flow calls `run()`. `TODO(T050)`: photo upload goes between push and pull.
+- **UI:** `pendingChangesProvider` and `projectPendingChangesProvider` are streams of `watchUnsyncedCount`; a "Sync" tile in Settings
+  and pull-to-refresh on the project list call `syncNowProvider`; a progress bar shows under the project list's app bar while a run goes.
+- **Shown by** a temporary smoke test (`tmp/t030/`, ten cases: batches, results, back-off, drop after apply, rebase, recovery, pull,
+  release, mutex, bookkeeping; in-memory database, fake server); nothing committed (D-021). The release case cannot check the
+  entity row's `sync_status`, because its throwaway table is not in `_db.allTables`; the first real synced table (T034) does.
+- **Open, for a later ticket (found in review):** every `DioException` from a push, including a permanent 4xx (400, 413), goes
+  through `markNetworkFailure`, so such a batch is retried for ever with growing back-off and, because `nextBatch` stops at an item
+  that is not due, blocks the items behind it. The plan chose "retry" (a 500 rolled the batch back). A later ticket should treat
+  non-retryable statuses (4xx except 401, 408, 429) differently, for example by marking the items `rejected`. Also open: a pull
+  downloads the global catalogues once per project until T031 narrows the pull to downloaded projects.
+- **Closes from D-051:** the runner raises `retryCount`/sets `inFlight` before sending; pull sets `synced` explicitly; `LastSyncNotifier`
+  and `lastSuccessfulSyncAt` are written together. **Still open:** a local edit of a `conflict`/`rejected` row sets it `pending`
+  again (`write()`); T034 must make `write()` refresh Drift streams (`updates:`).
+- **Who wrote what:** the developer wrote the tables, the transfer counter, `SyncApi`, the queue methods (`recoverInFlight`,
+  `nextBatch`, `markSending`, `markNetworkFailure`, `backoffDelay`), the runner and the triggers. Claude wrote, at the developer's
+  request: `PullApplier` and its mappers, `applyPushResults` with its helpers, `watchUnsyncedCount`, tidy-ups of `nextBatch` and
+  `recoverInFlight`, the connectivity start check, the Settings tile, the project-list changes, the doc comments, and the smoke test.
