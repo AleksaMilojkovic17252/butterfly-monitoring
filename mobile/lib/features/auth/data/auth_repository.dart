@@ -28,11 +28,12 @@ final _plainDioProvider = Provider<Dio>((ref) {
 });
 
 class AuthRepository {
-  AuthRepository(this._dio, this._authedDio, this._storage);
+  AuthRepository(this._dio, this._getAuthedDio, this._storage);
   final Dio _dio;
 
   /// Dio with the auth interceptor, for calls made with the access token.
-  final Dio _authedDio;
+  final Dio Function() _getAuthedDio;
+  Dio get _authedDio => _getAuthedDio();
   final TokenStorage _storage;
 
   Future<UserProfile> login(String email, String password) async {
@@ -134,7 +135,9 @@ class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(
     ref.watch(_plainDioProvider),
-    ref.watch(dioProvider),
+    // Read only when needed: the dio's refresh callback reads this provider,
+    // so watching the dio here would be a circular dependency.
+    () => ref.read(dioProvider),
     ref.watch(tokenStorageProvider),
   ),
 );

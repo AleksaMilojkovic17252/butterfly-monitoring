@@ -1,4 +1,5 @@
-"""Request, tombstone and response shapes of the pull (T025) and push (T026) endpoints."""
+"""Request, tombstone and response shapes of the pull (T025), push (T026) and offline package
+(T031) endpoints."""
 
 from drf_spectacular.utils import PolymorphicProxySerializer
 from rest_framework import serializers
@@ -50,6 +51,16 @@ class PullResponseSerializer(serializers.Serializer):
     next_cursor = serializers.IntegerField()
     has_more = serializers.BooleanField()
     server_time = serializers.DateTimeField()
+
+
+# For OpenAPI only: the view returns the dict built by services.offline_package.
+class OfflinePackageResponseSerializer(PullResponseSerializer):
+    reference_version = serializers.IntegerField()
+
+
+# For OpenAPI only: the view returns the dict built by services.offline_package_status.
+class OfflinePackageStatusSerializer(serializers.Serializer):
+    reference_version = serializers.IntegerField()
 
 
 class MutationSerializer(serializers.Serializer):

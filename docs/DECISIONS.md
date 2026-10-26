@@ -749,3 +749,43 @@ again, so the request is not lost.
   `nextBatch`, `markSending`, `markNetworkFailure`, `backoffDelay`), the runner and the triggers. Claude wrote, at the developer's
   request: `PullApplier` and its mappers, `applyPushResults` with its helpers, `watchUnsyncedCount`, tidy-ups of `nextBatch` and
   `recoverInFlight`, the connectivity start check, the Settings tile, the project-list changes, the doc comments, and the smoke test.
+
+## D-055 · Offline package: reference version, downloaded flag, download through the runner
+2026-10 · accepted · T031
+**Reference tables** are every pull entity except `sync_conflict`: `project`, `project_protocol`, `taxon_list_version`, `taxon`,
+`plant_taxon`, `habitat_type`, `management_type`, `transect`, `transect_section`. They carry `reference=True` on `SyncEntity`
+(`sync/registry.py`); the user data of T034+ leaves it False. `reference_version` is the max `server_version` over the pull scopes of
+those entities, deleted rows included (a deletion counts as an update), 0 when empty.
+**Endpoints:** `GET /api/v1/projects/{id}/offline-package` (the first pull page from cursor 0 plus `reference_version`, one snapshot) and
+`.../offline-package/status` (`{reference_version}`); a non-member gets a 404 (D-036). `sync.services.pull` was split into
+`_pull_snapshot` (the transaction and its isolation level, D-049), `_pull_page` and `_reference_version`; `pull` itself behaves as before.
+**The app does not call the `offline-package` alias.** It downloads with `POST /sync/pull`, page by page, so `PullApplier.applyPage` saves
+the cursor after every page; that is what makes cancel and resume work. The alias is there for the outline §14 API. The app calls only
+`.../offline-package/status`.
+**Local state** (`sync_state`, no schema change): `downloaded:<projectId>` = `1`, set when a download reaches `has_more = false`. The
+existing `cursor:<projectId>` is the local version.
+**Status** (`ProjectRepository.offlinePackageStatus`, wrapped by `offlinePackageStatusProvider`): no flag is `notDownloaded` (a cancelled, half-done download too; Download continues from
+the saved cursor). With the flag, the server's `reference_version` greater than the local cursor is `updateAvailable`, else `ready`. If the
+status request fails (offline) the answer is `ready`. The provider watches `syncRunnerProvider.select((s) => s.last)`, so it is
+recomputed after every run and download.
+**Only downloaded projects are pulled** by the sync runner. This closes the open point of D-054 ("all local projects are pulled until T031").
+A project pulled before T031 has a cursor but no flag; pressing Download once resumes from the cursor and sets the flag.
+**One pull at a time:** `SyncRunner.download(projectId)` waits for any run in progress (`_current`), then runs and sets `_current` with
+no `await` in between. While a download runs, a manual `run()` waits and then runs (the download is not manual), and an automatic
+`run()` joins the download's Future and is skipped until the next trigger. `cancelDownload()` cancels a dio `CancelToken`; the cursor of
+the last applied page stays.
+**A download is not a sync run:** it does not push and does not touch `lastSuccessfulSyncAt`, `lastSyncBytes` or `lastSyncProvider`. It does
+replace `SyncRunState.last`, which only the status provider watches.
+**Catalogues are still downloaded once per project**, because cursors are per project: the first download of a second project pulls the
+global catalogues again. So the D-054 point is closed only in part: projects that were never downloaded are no longer pulled.
+**Checklist:** `docs/testing/offline-checklist.md` is written in full; steps 1-4 are run in T031, the rest by the tickets that add the screens
+(list under T031 in TICKETS.md). T060 (MBTiles) is `todo`, so that criterion does not apply yet.
+**Found in the manual run: circular provider dependency on token refresh.** `authRepositoryProvider` watched `dioProvider`, and the dio's
+`AuthInterceptor` refresh callback reads `authRepositoryProvider`, so every 401 (an expired access token) ended in a
+`CircularDependencyError` and no sync could run until the next login. `AuthRepository` now takes a `Dio Function()` and reads the
+authed dio only in `fetchProfile`. Checked with a throwaway test (local server answering 401, then the refresh, then 200;
+`tmp/t031/auth_refresh_repro_test.dart`, not committed, D-021). Dates from T012/T030.
+**Open points from the review (not fixed, for later):** the status call maps every `DioException` (a 404 or 500 too) to `ready`; only a missing
+response (offline) should. A project pulled before T031 has a cursor but no `downloaded` flag, so it is not synced until Download is
+pressed once. Every run re-asks the status of each downloaded project (one GET each). A cancel during the last page is ignored: the download
+completes. `GET .../offline-package` returns only the first page, so it is not a complete package by itself.

@@ -66,7 +66,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T028 | [#45](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/45) | Django admin conflict resolution screen | P1 | must | T014, T027 | 1.5 d | done |
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | done |
 | T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | done |
-| T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | todo |
+| T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | done |
 | T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | todo |
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | todo |
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | todo |
@@ -394,6 +394,8 @@ Notes: badges fill in once T029 and T031 land
 
 Deferred: the downloaded-transect count, the unsynced count and the offline package status are placeholder providers in `features/projects/domain/project_stats.dart` (0, 0, `not downloaded`). T030 fills the unsynced count and T031 the transect count and package status. Until the pull exists, the project list is refreshed from `GET /api/v1/projects` (D-042).
 
+Update (T031): the transect count and the offline package status are now real (`project_stats.dart`); the unsynced count already was (T030). The card has the Download / Update button (D-055).
+
 ### T018 · Audit log with django-simple-history
 [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) · E02 · P1 · must · labels: `backend`, `admin`, `must` · implements F4 · est. 1.5 d · **done**
 
@@ -617,7 +619,7 @@ Depends on: T025, T026, T029
 - [ ] Integration test against a fake server that drops the connection after the server applies a batch: re-running leaves no duplicates (MVP criterion 9).
 
 ### T031 · App offline package download and status
-[#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) · E04 · P1 · must · labels: `mobile`, `backend`, `must` · implements F7 · est. 1.5 d · **todo**
+[#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) · E04 · P1 · must · labels: `mobile`, `backend`, `must` · implements F7 · est. 1.5 d · **done**
 
 Depends on: T030
 
@@ -626,6 +628,12 @@ Depends on: T030
 - [ ] Project list status: `not downloaded` / `ready` / `update available` (when the server `reference_version` is newer than the local one).
 - [ ] After download in airplane mode, every screen needed for a visit works (manual test script in `docs/testing/offline-checklist.md`).
 - [ ] If T060 is done, the package also downloads the project's MBTiles basemap.
+
+Note: the offline checklist (`docs/testing/offline-checklist.md`) is written in full. Steps 1-4 (offline start, project list, project home, Settings) are run in T031. The other steps run when their screen lands, and that ticket fills in the result: step 5 (transect list and detail) T033, step 6 (start-visit form, taxon list) T035, step 7 (active visit, GPS track) T037/T039, step 8 (quick butterfly entry) T045, step 9 (finish visit, true-zero and cancel reasons) T040/T041, step 10 (airplane mode off, sync pushes everything) T034+. T060 is `todo`, so the MBTiles criterion does not apply yet; T060 adds it to the download.
+
+Manual run (2026-10-26, phone over USB): Download with progress and the right transect count; Cancel then Download continued from the saved cursor; after a server edit the card showed `Outdated` and Update brought it back to `Ready` (the automatic pull was switched off for that check, then restored); checklist steps 1-4 passed in airplane mode; a second project the user belongs to was not pulled by Sync now and stayed `Not loaded` with 0 transects. Backend checked with curl (`tmp/t031/curl.md`). Labels on the card: `Not loaded`, `Ready`, `Outdated`.
+
+Deferred: checklist steps 5-10 run in T033, T035, T037/T039, T045, T040/T041 and T034+ (see the note above); the MBTiles criterion waits for T060; review points on the status error mapping and on projects pulled before T031 are in D-055.
 
 ### T032 · App sync status screen
 [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F28 · est. 1.5 d · **todo**

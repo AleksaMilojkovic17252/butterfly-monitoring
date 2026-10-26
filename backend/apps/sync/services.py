@@ -1,16 +1,18 @@
-"""Sync rules. The views call `pull` (T025) and `push` (T026).
+"""Sync rules. The views call `pull` (T025), `push` (T026) and the offline package (T031).
 
 Push merges a stale update/delete against the history (T027, D-052) or records a SyncConflict.
 The admin settles a SyncConflict with `resolve_conflict` (T028, D-053).
 """
 
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import DataError, IntegrityError, connection, transaction
+from django.db.models import Max
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -24,7 +26,12 @@ from apps.projects.services import projects_for
 from apps.sync.handlers import push_reason, save_pushed
 from apps.sync.models import ConflictStatus, MutationStatus, SyncConflict, SyncMutation
 from apps.sync.registry import ENTITIES, entity_for
-from apps.sync.serializers import MAX_BATCH_ROWS, MutationSerializer, TombstoneSerializer
+from apps.sync.serializers import (
+    DEFAULT_PULL_LIMIT,
+    MAX_BATCH_ROWS,
+    MutationSerializer,
+    TombstoneSerializer,
+)
 
 # Per-user advisory lock key (two-key form, so it never collides with the single-key global
 # lock 727274 of D-029).
@@ -47,11 +54,9 @@ SERVER_OWNED_FIELDS = frozenset(
 SERVER_OWNED_PREFIXES = ("validation_", "locked_")
 
 
-def pull(user, project_id, cursor, limit):
-    """One page of changes after `cursor` for `project_id`, ordered by `server_version`.
-
-    Raises Http404 when the user cannot see the project (D-036).
-    """
+@contextmanager
+def _pull_snapshot():
+    """The transaction of a pull: everything read inside it sees one snapshot."""
     # durable: inside an outer transaction the SET below would fail with an unclear error.
     with transaction.atomic(durable=True):
         # One snapshot for the whole page. The page is built from one query per entity; under
@@ -62,40 +67,43 @@ def pull(user, project_id, cursor, limit):
         # order and nothing is skipped. Must be the first statement of the transaction.
         with connection.cursor() as db:
             db.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        yield
 
-        project = get_object_or_404(projects_for(user), pk=project_id)
-        scopes = [(e, e.pull_scope(user, project)) for e in ENTITIES]
 
-        # Phase 1: find the page boundary from the versions alone. Versions come from one global
-        # sequence, so they are unique and there are no ties.
-        versions = []
-        for _, scope in scopes:
-            versions.extend(
-                scope.filter(server_version__gt=cursor)
-                .order_by("server_version")
-                .values_list("server_version", flat=True)[: limit + 1]
-            )
-        versions.sort()
-        has_more = len(versions) > limit
-        if has_more:
-            next_cursor = versions[limit - 1]
-        else:
-            next_cursor = versions[-1] if versions else cursor
+def _pull_page(user, project, cursor, limit):
+    """One page of changes after `cursor`. `project` is authorised; call inside _pull_snapshot."""
+    scopes = [(e, e.pull_scope(user, project)) for e in ENTITIES]
 
-        # Phase 2: fetch the rows up to the boundary.
-        changes = {}
-        for entity, scope in scopes:
-            rows = []
-            if versions:
-                rows = scope.filter(
-                    server_version__gt=cursor, server_version__lte=next_cursor
-                ).order_by("server_version")
-            changes[entity.entity_type] = [
-                TombstoneSerializer(row).data
-                if row.deleted_at is not None
-                else entity.serializer(row).data
-                for row in rows
-            ]
+    # Phase 1: find the page boundary from the versions alone. Versions come from one global
+    # sequence, so they are unique and there are no ties.
+    versions = []
+    for _, scope in scopes:
+        versions.extend(
+            scope.filter(server_version__gt=cursor)
+            .order_by("server_version")
+            .values_list("server_version", flat=True)[: limit + 1]
+        )
+    versions.sort()
+    has_more = len(versions) > limit
+    if has_more:
+        next_cursor = versions[limit - 1]
+    else:
+        next_cursor = versions[-1] if versions else cursor
+
+    # Phase 2: fetch the rows up to the boundary.
+    changes = {}
+    for entity, scope in scopes:
+        rows = []
+        if versions:
+            rows = scope.filter(
+                server_version__gt=cursor, server_version__lte=next_cursor
+            ).order_by("server_version")
+        changes[entity.entity_type] = [
+            TombstoneSerializer(row).data
+            if row.deleted_at is not None
+            else entity.serializer(row).data
+            for row in rows
+        ]
 
     return {
         "changes": changes,
@@ -103,6 +111,52 @@ def pull(user, project_id, cursor, limit):
         "has_more": has_more,
         "server_time": timezone.now(),
     }
+
+
+def _reference_version(user, project):
+    """Max `server_version` over the reference tables in the pull scope, 0 when empty.
+
+    Soft-deleted rows count, so a deletion is an update too. Call inside _pull_snapshot.
+    """
+    return max(
+        (
+            entity.pull_scope(user, project).aggregate(m=Max("server_version"))["m"] or 0
+            for entity in ENTITIES
+            if entity.reference
+        ),
+        default=0,
+    )
+
+
+def pull(user, project_id, cursor, limit):
+    """One page of changes after `cursor` for `project_id`, ordered by `server_version`.
+
+    Raises Http404 when the user cannot see the project (D-036).
+    """
+    with _pull_snapshot():
+        project = get_object_or_404(projects_for(user), pk=project_id)
+        return _pull_page(user, project, cursor, limit)
+
+
+def offline_package(user, project_id, limit=DEFAULT_PULL_LIMIT):
+    """The first pull page (cursor 0) plus `reference_version`, from one snapshot (T031).
+
+    Raises Http404 when the user cannot see the project (D-036).
+    """
+    with _pull_snapshot():
+        project = get_object_or_404(projects_for(user), pk=project_id)
+        page = _pull_page(user, project, 0, limit)
+        return {**page, "reference_version": _reference_version(user, project)}
+
+
+def offline_package_status(user, project_id):
+    """`{"reference_version": n}`: the app compares n with its pull cursor (T031).
+
+    Raises Http404 when the user cannot see the project (D-036).
+    """
+    with _pull_snapshot():
+        project = get_object_or_404(projects_for(user), pk=project_id)
+        return {"reference_version": _reference_version(user, project)}
 
 
 class PushError(exceptions.APIException):

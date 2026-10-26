@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:uuid/uuid.dart';
 
-/// The `sync_state` store: device id, pull cursor per project, last sync info.
+/// The `sync_state` store: device id, pull cursor and downloaded flag per
+/// project, last sync info.
 class SyncStateRepository {
   SyncStateRepository(this._db);
   final AppDatabase _db;
@@ -12,6 +13,7 @@ class SyncStateRepository {
   static const _lastSyncBytesKey = 'lastSyncBytes';
 
   static String _cursorKey(String projectId) => 'cursor:$projectId';
+  static String _downloadedKey(String projectId) => 'downloaded:$projectId';
 
   /// This install's id, sent with every push. Created on first read (in
   /// practice the first launch that syncs). One transaction, so no two ids.
@@ -31,6 +33,15 @@ class SyncStateRepository {
 
   Future<void> setLastPullCursor(String projectId, int cursor) =>
       _set(_cursorKey(projectId), cursor.toString());
+
+  /// True once a download of the project reached its last page (T031). A
+  /// cancelled download has a cursor but no flag.
+  Future<bool> isDownloaded(String projectId) async =>
+      await _get(_downloadedKey(projectId)) != null;
+
+  /// Marks the project as downloaded.
+  Future<void> setDownloaded(String projectId) =>
+      _set(_downloadedKey(projectId), '1');
 
   /// End of the last error-free sync run, in UTC; null if never.
   Future<DateTime?> lastSuccessfulSyncAt() async {

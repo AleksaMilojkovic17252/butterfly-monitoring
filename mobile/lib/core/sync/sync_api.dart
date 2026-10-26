@@ -72,8 +72,8 @@ class PullPage {
   }
 }
 
-/// The two sync endpoints (`/api/v1/sync/push` and `/pull`). It only builds
-/// requests and maps replies; the runner decides what a failure means, so a
+/// The sync endpoints (`/api/v1/sync/push` and `/pull`, and the offline package
+/// status). It only builds requests and maps replies; the runner decides what a failure means, so a
 /// [DioException] is not caught here.
 class SyncApi {
   final Dio _dio;
@@ -112,18 +112,31 @@ class SyncApi {
   }
 
   /// Fetches one page of changes for [projectId] after [cursor] (0 is the full
-  /// initial package). Throws [DioException]; a project the caller cannot see
-  /// is a 404.
+  /// initial package). Pass a [cancelToken] to be able to stop the request.
+  /// Throws [DioException]; a project the caller cannot see is a 404, and a
+  /// cancelled request is a [DioException] too (`CancelToken.isCancel`).
   Future<PullPage> pull(
     String projectId,
     int cursor, {
     int limit = 1000,
+    CancelToken? cancelToken,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       "/api/v1/sync/pull",
       data: {'project_id': projectId, 'cursor': cursor, 'limit': limit},
+      cancelToken: cancelToken,
     );
     return PullPage.fromJson(response.data!);
+  }
+
+  /// The highest `server_version` of the project's reference tables on the
+  /// server (`GET .../offline-package/status`). The app compares it with its
+  /// pull cursor to see if a download is out of date. Throws [DioException].
+  Future<int> offlinePackageStatus(String projectId) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      "/api/v1/projects/$projectId/offline-package/status",
+    );
+    return response.data!['reference_version'] as int;
   }
 }
 

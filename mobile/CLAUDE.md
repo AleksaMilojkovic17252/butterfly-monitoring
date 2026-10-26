@@ -43,7 +43,7 @@ server URL is chosen in Settings.
 | `lib/core/http/` | dio instance and the JWT auth interceptor |
 | `lib/core/db/` | `AppDatabase`, one file per Drift table, `app_database.steps.dart` (generated) |
 | `lib/core/location/` | geolocator providers |
-| `lib/core/sync/` | Sync API (`SyncApi`), queue rules and push results (`SyncRepository`), pull applier, runner (`SyncRunner`) and triggers (T030); `sync_state` store and status providers (T029) |
+| `lib/core/sync/` | Sync API (`SyncApi`), queue rules and push results (`SyncRepository`), pull applier, runner (`SyncRunner`), project download (T031) and triggers (T030); `sync_state` store and status providers (T029) |
 | `lib/features/<feature>/data` | Repositories: the only code that reads/writes Drift and calls the API |
 | `lib/features/<feature>/domain` | Plain models and notifiers/controllers |
 | `lib/features/<feature>/ui` | Screens and widgets |

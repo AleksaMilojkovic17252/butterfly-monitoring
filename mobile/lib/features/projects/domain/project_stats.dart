@@ -1,24 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
+import 'package:mobile/core/sync/sync_runner.dart';
+import 'package:mobile/features/projects/data/project_repository.dart';
+import 'package:mobile/features/projects/domain/offline_package_status.dart';
 
-/// State of a project's offline package on this phone.
-enum OfflinePackageStatus {
-  notDownloaded('Not downloaded'),
-  ready('Ready'),
-  updateAvailable('Update available');
-
-  const OfflinePackageStatus(this.label);
-  final String label;
-}
-
-// The numbers below are placeholders: the tables they count do not exist yet.
-// Screens already watch these providers, so filling them in later needs no UI
-// change.
-
-/// Transects of the project stored on this phone.
-// TODO(T031): count local transect rows once pull stores them.
-final downloadedTransectCountProvider = FutureProvider.family<int, String>(
-  (ref, projectId) async => 0,
+/// Transects of the project stored on this phone. Live: it changes while a
+/// download or sync stores rows.
+final downloadedTransectCountProvider = StreamProvider.family<int, String>(
+  (ref, projectId) =>
+      ref.watch(projectRepositoryProvider).watchTransectCount(projectId),
 );
 
 /// Local changes in the project not yet pushed.
@@ -28,9 +18,13 @@ final projectPendingChangesProvider = StreamProvider.family<int, String>(
       .watchUnsyncedCount(projectId: projectId),
 );
 
-/// Whether the project's offline package is downloaded and current.
-// TODO(T031): compare the local and server reference_version.
+/// Whether the project's offline package is downloaded and current (the rule
+/// is in [ProjectRepository.offlinePackageStatus]).
 final offlinePackageStatusProvider =
-    FutureProvider.family<OfflinePackageStatus, String>(
-      (ref, projectId) async => OfflinePackageStatus.notDownloaded,
-    );
+    FutureProvider.family<OfflinePackageStatus, String>((ref, projectId) {
+      // Recompute after every sync run and every download.
+      ref.watch(syncRunnerProvider.select((s) => s.last));
+      return ref
+          .read(projectRepositoryProvider)
+          .offlinePackageStatus(projectId);
+    });

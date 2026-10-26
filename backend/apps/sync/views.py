@@ -4,6 +4,8 @@ from rest_framework.response import Response
 
 from apps.sync import services
 from apps.sync.serializers import (
+    OfflinePackageResponseSerializer,
+    OfflinePackageStatusSerializer,
     PullRequestSerializer,
     PullResponseSerializer,
     PushMutationsSerializer,
@@ -32,6 +34,34 @@ def pull(request):
     data = params.validated_data
     result = services.pull(request.user, data["project_id"], data["cursor"], data["limit"])
     return Response(result)
+
+
+@extend_schema(
+    responses=OfflinePackageResponseSerializer,
+    description=(
+        "Alias of the first pull page from cursor 0 (same body as `POST /sync/pull`), plus "
+        "`reference_version`: the max `server_version` over the reference tables in the pull "
+        "scope (project, protocol, catalogues, taxon list releases, transects and sections; "
+        "deleted rows included), 0 when there are none. The app compares it with its pull "
+        "cursor. A project the caller cannot see is a 404."
+    ),
+)
+@api_view(["GET"])
+def offline_package(request, project_id):
+    return Response(services.offline_package(request.user, project_id))
+
+
+@extend_schema(
+    responses=OfflinePackageStatusSerializer,
+    description=(
+        "`reference_version`: the max `server_version` over the reference tables in the pull "
+        "scope, deleted rows included, 0 when there are none. The app compares it with its pull "
+        "cursor to show `update available`. A project the caller cannot see is a 404."
+    ),
+)
+@api_view(["GET"])
+def offline_package_status(request, project_id):
+    return Response(services.offline_package_status(request.user, project_id))
 
 
 @extend_schema(

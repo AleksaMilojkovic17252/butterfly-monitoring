@@ -7,6 +7,7 @@ import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
+import 'package:mobile/features/projects/domain/offline_package_status.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/projects/ui/project_period.dart';
 
@@ -119,6 +120,8 @@ class _ProjectCard extends ConsumerWidget {
     final pending =
         ref.watch(projectPendingChangesProvider(project.id)).value ?? 0;
     final status = ref.watch(offlinePackageStatusProvider(project.id)).value;
+    final runState = ref.watch(syncRunnerProvider);
+    final downloading = runState.downloadingProjectId == project.id;
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
@@ -135,7 +138,7 @@ class _ProjectCard extends ConsumerWidget {
               Text(project.periodLabel, style: textTheme.bodySmall),
               const SizedBox(height: 12),
               Wrap(
-                spacing: 16,
+                spacing: 8,
                 runSpacing: 8,
                 children: [
                   _Stat(
@@ -152,11 +155,64 @@ class _ProjectCard extends ConsumerWidget {
                     ),
                 ],
               ),
+              if (downloading) ...[
+                const SizedBox(height: 6),
+                const LinearProgressIndicator(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text('${runState.received} records received'),
+                    ),
+                    TextButton(
+                      onPressed: () => ref
+                          .read(syncRunnerProvider.notifier)
+                          .cancelDownload(),
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+              ] else if (status == OfflinePackageStatus.notDownloaded ||
+                  status == OfflinePackageStatus.updateAvailable) ...[
+                const SizedBox(height: 6),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FilledButton.tonalIcon(
+                      // One download at a time.
+                      onPressed: runState.downloadingProjectId != null
+                          ? null
+                          : () => _download(context, ref),
+                      icon: const Icon(Icons.cloud_download_outlined),
+                      label: Text(
+                        status == OfflinePackageStatus.notDownloaded
+                            ? 'Download'
+                            : 'Update',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// Runs the download and tells the user how it ended.
+  Future<void> _download(BuildContext context, WidgetRef ref) async {
+    final result = await ref
+        .read(syncRunnerProvider.notifier)
+        .download(project.id);
+    if (!context.mounted) return;
+    final message = result.ok
+        ? 'Project downloaded.'
+        : result.cancelled
+        ? 'Download paused. Tap Download to continue.'
+        : 'Download did not finish: ${result.error}';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

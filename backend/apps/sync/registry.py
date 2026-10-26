@@ -36,27 +36,50 @@ class SyncEntity:
     push: PushHandlers | None = None
     # Fields of this type that clients may not set, on top of the common ones (sync.services).
     server_owned: frozenset[str] = frozenset()
+    # True for reference data (read-only for the phone); the offline package status (T031) is
+    # the max `server_version` over these.
+    reference: bool = False
 
 
 ENTITIES = [
-    SyncEntity("project", ProjectSyncSerializer, projects.pull_projects),
-    SyncEntity("project_protocol", ProjectProtocolSyncSerializer, projects.pull_protocols),
+    SyncEntity("project", ProjectSyncSerializer, projects.pull_projects, reference=True),
+    SyncEntity(
+        "project_protocol",
+        ProjectProtocolSyncSerializer,
+        projects.pull_protocols,
+        reference=True,
+    ),
     SyncEntity(
         "taxon_list_version",
         TaxonListVersionSyncSerializer,
         catalogues.pull_taxon_list_versions,
+        reference=True,
     ),
-    SyncEntity("taxon", TaxonSyncSerializer, catalogues.pull_taxa),
-    SyncEntity("plant_taxon", PlantTaxonSyncSerializer, catalogues.pull_plant_taxa),
-    SyncEntity("habitat_type", HabitatTypeSyncSerializer, catalogues.pull_habitat_types),
-    SyncEntity("management_type", ManagementTypeSyncSerializer, catalogues.pull_management_types),
-    SyncEntity("transect", TransectSyncSerializer, transects.pull_transects),
-    SyncEntity("transect_section", TransectSectionSyncSerializer, transects.pull_sections),
-    # The phone never writes it, so there is no push.
+    SyncEntity("taxon", TaxonSyncSerializer, catalogues.pull_taxa, reference=True),
+    SyncEntity("plant_taxon", PlantTaxonSyncSerializer, catalogues.pull_plant_taxa, reference=True),
+    SyncEntity(
+        "habitat_type", HabitatTypeSyncSerializer, catalogues.pull_habitat_types, reference=True
+    ),
+    SyncEntity(
+        "management_type",
+        ManagementTypeSyncSerializer,
+        catalogues.pull_management_types,
+        reference=True,
+    ),
+    SyncEntity("transect", TransectSyncSerializer, transects.pull_transects, reference=True),
+    SyncEntity(
+        "transect_section",
+        TransectSectionSyncSerializer,
+        transects.pull_sections,
+        reference=True,
+    ),
+    # The phone never writes it, so there is no push. Not reference data: a resolution does not
+    # make the offline package out of date.
     SyncEntity("sync_conflict", conflicts.SyncConflictSyncSerializer, conflicts.pull_conflicts),
 ]
 # User data scoped to created_by = user (survey_visit, ...) arrives with T034, T036, T044 and
-# T049, and registers `push=PushHandlers(...)` there.
+# T049, and registers `push=PushHandlers(...)` there. It leaves `reference` False: user data does
+# not count towards the offline package version.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 
