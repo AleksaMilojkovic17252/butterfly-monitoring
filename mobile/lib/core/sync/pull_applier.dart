@@ -46,7 +46,12 @@ class PullApplier {
   /// before the entity rows of the same page are written.
   Future<void> applyPage(String projectId, PullPage page) {
     return _db.transaction(() async {
-      await _applyType('sync_conflict', page.changes['sync_conflict'] ?? []);
+      final conflicts =
+          page.changes['sync_conflict']
+              ?.map((e) => {...e, 'project_id': projectId})
+              .toList() ??
+          [];
+      await _applyType('sync_conflict', conflicts);
       for (final entry in page.changes.entries) {
         if (entry.key == 'sync_conflict') continue;
         await _applyType(entry.key, entry.value);
@@ -380,6 +385,7 @@ class PullApplier {
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),
+      projectId: Value(json['project_id'] as String?),
     );
   }
 

@@ -52,7 +52,12 @@ class _Home extends ConsumerWidget {
         label: 'Plants & habitat',
       ),
       const _Tile(icon: Icons.map_outlined, label: 'Map'),
-      _Tile(icon: Icons.sync_outlined, label: 'Unsynced data', badge: pending),
+      _Tile(
+        icon: Icons.sync_outlined,
+        label: 'Unsynced data',
+        badge: pending,
+        onTap: () => context.push('/projects/${project.id}/sync'),
+      ),
       const _Tile(icon: Icons.bar_chart_outlined, label: 'Statistics'),
     ];
 
@@ -94,12 +99,20 @@ class _Home extends ConsumerWidget {
 }
 
 class _Tile extends StatelessWidget {
-  const _Tile({required this.icon, required this.label, this.badge = 0});
+  const _Tile({
+    required this.icon,
+    required this.label,
+    this.badge = 0,
+    this.onTap,
+  });
   final IconData icon;
   final String label;
 
   /// Number shown on the icon; hidden when 0.
   final int badge;
+
+  /// Opens the tile's screen; null keeps the "coming later" snackbar.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -107,11 +120,13 @@ class _Tile extends StatelessWidget {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text('$label is coming in a later version')),
-          ),
+        onTap:
+            onTap ??
+            () => ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text('$label is coming in a later version')),
+              ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

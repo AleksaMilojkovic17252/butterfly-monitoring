@@ -67,7 +67,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T029 | [#46](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/46) | App sync queue | P1 | must | T006 | 1.5 d | done |
 | T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | done |
 | T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | done |
-| T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | todo |
+| T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | done |
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | todo |
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | todo |
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | todo |
@@ -396,6 +396,8 @@ Deferred: the downloaded-transect count, the unsynced count and the offline pack
 
 Update (T031): the transect count and the offline package status are now real (`project_stats.dart`); the unsynced count already was (T030). The card has the Download / Update button (D-055).
 
+Update (T032): the **Unsynced data** tile now opens the sync status screen (`/projects/:id/sync`); its badge and the screen's total use the same provider (D-056).
+
 ### T018 · Audit log with django-simple-history
 [#35](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/35) · E02 · P1 · must · labels: `backend`, `admin`, `must` · implements F4 · est. 1.5 d · **done**
 
@@ -636,7 +638,7 @@ Manual run (2026-10-26, phone over USB): Download with progress and the right tr
 Deferred: checklist steps 5-10 run in T033, T035, T037/T039, T045, T040/T041 and T034+ (see the note above); the MBTiles criterion waits for T060; review points on the status error mapping and on projects pulled before T031 are in D-055.
 
 ### T032 · App sync status screen
-[#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F28 · est. 1.5 d · **todo**
+[#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F28 · est. 1.5 d · **done**
 
 Depends on: T030
 
@@ -645,6 +647,8 @@ Depends on: T030
 - [ ] **Conflicts** list (from `sync_conflicts`) is read-only and reads: "An admin will resolve this. Your change is kept on the server." It shows the resolution once pulled.
 - [ ] **Sync now** button with live progress.
 - [ ] The unsynced badge on project home (T017) matches the counts here.
+
+Deferred: "photos waiting and their total size" shows 0 and 0 B until photos exist (`pendingPhotosProvider`, `TODO(T050)`). Names for visit and observation types in the lists are `TODO(T034)`. A re-pull from cursor 0 (the v6 step, Discard) can release the wrong held queue item when an entity has an old resolved conflict and a newer open one; the fix needs `mutation_id` in the conflict pull (D-056, known risks). See D-056.
 
 ### T033 · App transect list and transect detail
 [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) · E05 · P1 · must · labels: `mobile`, `must` · implements F72 · est. 2 d · **todo**

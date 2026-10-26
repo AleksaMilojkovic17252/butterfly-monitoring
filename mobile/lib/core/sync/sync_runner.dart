@@ -10,6 +10,9 @@ import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 
+/// Which half of a sync run is in progress.
+enum SyncPhase { pushing, pulling }
+
 /// What one finished sync run did.
 /// [ok] is true when there was no error and nothing sendable
 /// was left in the queue.
@@ -50,7 +53,9 @@ class SyncRunState {
     required this.running,
     this.last,
     this.downloadingProjectId,
+    this.phase,
     this.received = 0,
+    this.sent = 0,
   });
   final bool running;
   final SyncResult? last;
@@ -60,6 +65,12 @@ class SyncRunState {
 
   /// Rows received so far in that download.
   final int received;
+
+  /// Phase of the run in progress; null when idle or downloading.
+  final SyncPhase? phase;
+
+  /// Queue items sent so far in this run.
+  final int sent;
 }
 
 /// Runs the sync: pushes the queue, then pulls every downloaded project. Also
@@ -110,7 +121,11 @@ class SyncRunner extends Notifier<SyncRunState> {
     final syncState = ref.read(syncStateRepositoryProvider);
     final projectRepository = ref.read(projectRepositoryProvider);
     final transferCounter = ref.read(transferCounterProvider);
-    state = SyncRunState(running: true, last: state.last);
+    state = SyncRunState(
+      running: true,
+      last: state.last,
+      phase: SyncPhase.pushing,
+    );
     var result = SyncResult(
       ok: false,
       pushed: 0,
@@ -152,6 +167,12 @@ class SyncRunner extends Notifier<SyncRunState> {
         }
         pushed += sending.length;
         sentIds.addAll(sending.map((item) => item.mutationId));
+        state = SyncRunState(
+          running: true,
+          last: state.last,
+          phase: SyncPhase.pushing,
+          sent: pushed,
+        );
         await syncRepository.applyPushResults(sending, pushResults);
       }
       // TODO(T050): upload photos here, after push and before pull.
@@ -164,11 +185,29 @@ class SyncRunner extends Notifier<SyncRunState> {
       }
       if (error == null) {
         final projects = await projectRepository.localProjects();
+        state = SyncRunState(
+          running: true,
+          last: state.last,
+          phase: SyncPhase.pulling,
+          sent: pushed,
+        );
         for (final project in projects) {
           // Only a downloaded project is kept up to date (T031).
           if (!await syncState.isDownloaded(project.id)) continue;
           try {
-            await _pullProject(project.id, onPage: (rows) => pulled += rows);
+            await _pullProject(
+              project.id,
+              onPage: (rows) {
+                pulled += rows;
+                state = SyncRunState(
+                  running: true,
+                  last: state.last,
+                  phase: SyncPhase.pulling,
+                  sent: pushed,
+                  received: pulled,
+                );
+              },
+            );
           } on DioException catch (e) {
             // Not shared with this user any more: go on with the next project.
             if (e.response?.statusCode == 404) continue;

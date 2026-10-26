@@ -789,3 +789,57 @@ authed dio only in `fetchProfile`. Checked with a throwaway test (local server a
 response (offline) should. A project pulled before T031 has a cursor but no `downloaded` flag, so it is not synced until Download is
 pressed once. Every run re-asks the status of each downloaded project (one GET each). A cancel during the last page is ignored: the download
 completes. `GET .../offline-package` returns only the first page, so it is not a complete package by itself.
+
+## D-056 · Sync status screen: per-project counts, local conflict project, retry under a new id, discard resets the cursor
+2026-10 · accepted · T032
+**The screen is per project** (`/projects/:id/sync`, opened from the **Unsynced data** tile). Its total is `projectPendingChangesProvider`,
+the query behind the tile's badge, so the two always match. The per-type rows (`SyncStatusRepository.watchPendingByType`) group the same
+rows by `entityType`, in any status; a `create_batch` counts as one, as in the badge. `SyncStatusRepository` only reads; every write stays in
+`SyncRepository`.
+**`sync_conflict.projectId` is local** (schema v5 → v6, nullable). The server's conflict rows carry no project, so `PullApplier.applyPage`
+adds `project_id` to each incoming conflict map from the page's project. Nothing changes on the server. The v6 step also deletes every
+`cursor:%` row in `sync_state` (the `downloaded:` flags stay), so the next sync pulls each downloaded project from 0 once and fills
+`projectId` on the old conflict rows. The cost is one full re-pull per project after the upgrade.
+**Retry uses a new `mutationId`.** The server answers a resent rejected id with the same rejection (D-050). `SyncRepository.retry` sets the
+item `queued` under a new UUID, `retryCount` 0, no back-off and no `lastError`, and the row `pending`. `retryCount` 0 makes the item
+"unsent" again, so new edits may merge into it; that is correct because nothing has been sent under the new id. The screen syncs at once
+after a retry.
+**Discard drops every queue item of the entity** (later ones were built on the discarded one), in one transaction. A `create_batch`: its
+child rows are deleted. A rejected create the server never had (`server_version` null): the row is deleted. Otherwise the row becomes
+`synced` and the project's pull cursor goes to 0, so the next sync pulls the whole project again and the server version overwrites the
+discarded change (the applier skips only rows that are not `synced`). The cost is a full re-pull of that project. Child rows of a deleted
+parent (track points of a visit) are not handled: `TODO(T036)`.
+**Live progress:** `SyncRunState` gains `phase` (`pushing` / `pulling`) and `sent`; `received` already existed. `_run` emits after each
+push batch and, in `onPage`, after each pulled page. Every emit repeats `running` and `last`, because a new state resets what it leaves
+out. The project list's progress bar reads only `running`.
+**Error messages:** `syncErrorMessage` reads the first `{code, detail, fields}` of `lastError` and maps the code: `validation_error` (with the
+field names), `not_found`, `permission_denied`, `deleted`, `visit_locked` (raised from T042), `read_only_entity` / `unknown_entity_type` /
+`operation_not_allowed` (one text), `integrity_error`, `invalid_data`, `mutation_id_taken`. An unknown code shows `detail`; text that is not
+JSON is shown as it is. The list was checked against `apps/sync/services.py` and `apps/core/exceptions.py`. `entityTypeLabel` has names
+for the reference types only; visits and observations are `TODO(T034)`.
+**The screen** (`SyncStatusScreen`) is a `ListView` in a `SafeArea` (`top: false`), so the system navigation buttons do not cover the last
+card: the Sync now card with progress, a Waiting to sync card (total, one row per type, photos, last successful sync, bytes of the last
+sync), Errors, Conflicts. The last sync shows as "5 minutes ago" / "2 days ago" (`_timeAgo`, computed when the screen builds, it does
+not tick). A redesign from Mobbin references (one status card, hiding empty sections) was tried and reverted at the developer's request:
+the plain layout shows all the data the ticket asks for. Section titles carry the same 4 px as a `Card` margin, so they line up.
+**Known risks (found in the review, accepted for T032):**
+- *Old resolved conflicts after a re-pull.* A pull from cursor 0 (after the v6 upgrade, or after any Discard) delivers resolved conflicts
+  again, and `PullApplier._releaseConflicts` matches a held queue item by entity only. If the same entity has a newer open conflict (it
+  conflicted, was resolved, was edited again and conflicted again) and the re-pull comes before that one is resolved, the old
+  `resolved_server` conflict drops the newer held item and its later items, and the row becomes `synced`: the change is lost locally while
+  the conflict stays open on the server. Fix for a later ticket: send `mutation_id` in the conflict pull, store it locally (schema bump)
+  and release only the item with that id. A time check against `created_at` was rejected: it trusts the phone's clock.
+- *Discard during a sync.* The screen refuses a Discard if a run started while its dialog was open, but a run starting between that check
+  and the transaction can still overwrite the reset cursor. The window is a few milliseconds.
+- *Discard in a project that is not downloaded:* only downloaded projects are pulled, so the row stays `synced` with the discarded values
+  until the project is downloaded.
+- `retry` does not check that the item still exists; the stream-driven UI cannot call it with a stale item. `retry` and `discard` write
+  entity rows with `customUpdate` and no `updates:`, so streams on entity tables refresh late (the D-051 gap, relevant from T034).
+- After the v6 step every downloaded project shows `updateAvailable` until the first sync (the cursor is 0).
+- `discard` of a `create_batch` deletes the child rows of every batch of the parent (their queue items go too); checked in the smoke test.
+**Photos waiting is a placeholder** (`pendingPhotosProvider`, 0 and 0 bytes) until T050 (`TODO(T050)`).
+**Who wrote what:** the developer wrote the `projectId` column, the v6 step, the applier change, the three read queries, `retry` and the
+first version of the runner state and emits. Claude wrote, at the developer's request: the doc comments in `sync_conflicts.dart`,
+`sync_status_repository.dart`, `retry` and the runner; the return statement of `watchPendingByType`; the batch branch and then the whole of
+`discard`; the fix of the pull emits in the runner; and, so the developer could test the UI, the providers, `sync_error_message.dart`,
+`SyncStatusScreen`, the route and the tile `onTap`, then the `SafeArea`, `_timeAgo` and the section-title padding. The throwaway smoke test and the debug seed patch are in `tmp/t032/` (not committed).

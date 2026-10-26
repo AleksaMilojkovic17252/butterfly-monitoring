@@ -5431,6 +5431,17 @@ class $SyncConflictsTable extends SyncConflicts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
       GeneratedColumn<String>(
@@ -5474,6 +5485,7 @@ class $SyncConflictsTable extends SyncConflicts
     resolvedAt,
     resolutionNote,
     status,
+    projectId,
     syncStatus,
     serverVersion,
     deletedAt,
@@ -5563,6 +5575,12 @@ class $SyncConflictsTable extends SyncConflicts
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    }
     if (data.containsKey('server_version')) {
       context.handle(
         _serverVersionMeta,
@@ -5623,6 +5641,10 @@ class $SyncConflictsTable extends SyncConflicts
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      ),
       syncStatus: $SyncConflictsTable.$convertersyncStatus.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -5659,6 +5681,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
   final DateTime? resolvedAt;
   final String resolutionNote;
   final String status;
+  final String? projectId;
   final SyncStatus syncStatus;
   final int? serverVersion;
   final DateTime? deletedAt;
@@ -5672,6 +5695,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
     this.resolvedAt,
     required this.resolutionNote,
     required this.status,
+    this.projectId,
     required this.syncStatus,
     this.serverVersion,
     this.deletedAt,
@@ -5690,6 +5714,9 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
     }
     map['resolution_note'] = Variable<String>(resolutionNote);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || projectId != null) {
+      map['project_id'] = Variable<String>(projectId);
+    }
     {
       map['sync_status'] = Variable<String>(
         $SyncConflictsTable.$convertersyncStatus.toSql(syncStatus),
@@ -5717,6 +5744,9 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
           : Value(resolvedAt),
       resolutionNote: Value(resolutionNote),
       status: Value(status),
+      projectId: projectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(projectId),
       syncStatus: Value(syncStatus),
       serverVersion: serverVersion == null && nullToAbsent
           ? const Value.absent()
@@ -5742,6 +5772,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
       resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
       resolutionNote: serializer.fromJson<String>(json['resolutionNote']),
       status: serializer.fromJson<String>(json['status']),
+      projectId: serializer.fromJson<String?>(json['projectId']),
       syncStatus: $SyncConflictsTable.$convertersyncStatus.fromJson(
         serializer.fromJson<String>(json['syncStatus']),
       ),
@@ -5762,6 +5793,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
       'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
       'resolutionNote': serializer.toJson<String>(resolutionNote),
       'status': serializer.toJson<String>(status),
+      'projectId': serializer.toJson<String?>(projectId),
       'syncStatus': serializer.toJson<String>(
         $SyncConflictsTable.$convertersyncStatus.toJson(syncStatus),
       ),
@@ -5780,6 +5812,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
     Value<DateTime?> resolvedAt = const Value.absent(),
     String? resolutionNote,
     String? status,
+    Value<String?> projectId = const Value.absent(),
     SyncStatus? syncStatus,
     Value<int?> serverVersion = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -5793,6 +5826,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
     resolutionNote: resolutionNote ?? this.resolutionNote,
     status: status ?? this.status,
+    projectId: projectId.present ? projectId.value : this.projectId,
     syncStatus: syncStatus ?? this.syncStatus,
     serverVersion: serverVersion.present
         ? serverVersion.value
@@ -5818,6 +5852,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
           ? data.resolutionNote.value
           : this.resolutionNote,
       status: data.status.present ? data.status.value : this.status,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
       syncStatus: data.syncStatus.present
           ? data.syncStatus.value
           : this.syncStatus,
@@ -5840,6 +5875,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('resolutionNote: $resolutionNote, ')
           ..write('status: $status, ')
+          ..write('projectId: $projectId, ')
           ..write('syncStatus: $syncStatus, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt')
@@ -5858,6 +5894,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
     resolvedAt,
     resolutionNote,
     status,
+    projectId,
     syncStatus,
     serverVersion,
     deletedAt,
@@ -5875,6 +5912,7 @@ class SyncConflict extends DataClass implements Insertable<SyncConflict> {
           other.resolvedAt == this.resolvedAt &&
           other.resolutionNote == this.resolutionNote &&
           other.status == this.status &&
+          other.projectId == this.projectId &&
           other.syncStatus == this.syncStatus &&
           other.serverVersion == this.serverVersion &&
           other.deletedAt == this.deletedAt);
@@ -5890,6 +5928,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
   final Value<DateTime?> resolvedAt;
   final Value<String> resolutionNote;
   final Value<String> status;
+  final Value<String?> projectId;
   final Value<SyncStatus> syncStatus;
   final Value<int?> serverVersion;
   final Value<DateTime?> deletedAt;
@@ -5904,6 +5943,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
     this.resolvedAt = const Value.absent(),
     this.resolutionNote = const Value.absent(),
     this.status = const Value.absent(),
+    this.projectId = const Value.absent(),
     this.syncStatus = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -5919,6 +5959,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
     this.resolvedAt = const Value.absent(),
     required String resolutionNote,
     required String status,
+    this.projectId = const Value.absent(),
     this.syncStatus = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -5941,6 +5982,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
     Expression<DateTime>? resolvedAt,
     Expression<String>? resolutionNote,
     Expression<String>? status,
+    Expression<String>? projectId,
     Expression<String>? syncStatus,
     Expression<int>? serverVersion,
     Expression<DateTime>? deletedAt,
@@ -5956,6 +5998,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
       if (resolvedAt != null) 'resolved_at': resolvedAt,
       if (resolutionNote != null) 'resolution_note': resolutionNote,
       if (status != null) 'status': status,
+      if (projectId != null) 'project_id': projectId,
       if (syncStatus != null) 'sync_status': syncStatus,
       if (serverVersion != null) 'server_version': serverVersion,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -5973,6 +6016,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
     Value<DateTime?>? resolvedAt,
     Value<String>? resolutionNote,
     Value<String>? status,
+    Value<String?>? projectId,
     Value<SyncStatus>? syncStatus,
     Value<int?>? serverVersion,
     Value<DateTime?>? deletedAt,
@@ -5988,6 +6032,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
       resolvedAt: resolvedAt ?? this.resolvedAt,
       resolutionNote: resolutionNote ?? this.resolutionNote,
       status: status ?? this.status,
+      projectId: projectId ?? this.projectId,
       syncStatus: syncStatus ?? this.syncStatus,
       serverVersion: serverVersion ?? this.serverVersion,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -6025,6 +6070,9 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
     if (syncStatus.present) {
       map['sync_status'] = Variable<String>(
         $SyncConflictsTable.$convertersyncStatus.toSql(syncStatus.value),
@@ -6054,6 +6102,7 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('resolutionNote: $resolutionNote, ')
           ..write('status: $status, ')
+          ..write('projectId: $projectId, ')
           ..write('syncStatus: $syncStatus, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt, ')
@@ -11995,6 +12044,7 @@ typedef $$SyncConflictsTableCreateCompanionBuilder =
       Value<DateTime?> resolvedAt,
       required String resolutionNote,
       required String status,
+      Value<String?> projectId,
       Value<SyncStatus> syncStatus,
       Value<int?> serverVersion,
       Value<DateTime?> deletedAt,
@@ -12011,6 +12061,7 @@ typedef $$SyncConflictsTableUpdateCompanionBuilder =
       Value<DateTime?> resolvedAt,
       Value<String> resolutionNote,
       Value<String> status,
+      Value<String?> projectId,
       Value<SyncStatus> syncStatus,
       Value<int?> serverVersion,
       Value<DateTime?> deletedAt,
@@ -12068,6 +12119,11 @@ class $$SyncConflictsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get projectId => $composableBuilder(
+    column: $table.projectId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12142,6 +12198,11 @@ class $$SyncConflictsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => ColumnOrderings(column),
@@ -12202,6 +12263,9 @@ class $$SyncConflictsTableAnnotationComposer
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
+  GeneratedColumn<String> get projectId =>
+      $composableBuilder(column: $table.projectId, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
       $composableBuilder(
         column: $table.syncStatus,
@@ -12257,6 +12321,7 @@ class $$SyncConflictsTableTableManager
                 Value<DateTime?> resolvedAt = const Value.absent(),
                 Value<String> resolutionNote = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> projectId = const Value.absent(),
                 Value<SyncStatus> syncStatus = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -12271,6 +12336,7 @@ class $$SyncConflictsTableTableManager
                 resolvedAt: resolvedAt,
                 resolutionNote: resolutionNote,
                 status: status,
+                projectId: projectId,
                 syncStatus: syncStatus,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
@@ -12287,6 +12353,7 @@ class $$SyncConflictsTableTableManager
                 Value<DateTime?> resolvedAt = const Value.absent(),
                 required String resolutionNote,
                 required String status,
+                Value<String?> projectId = const Value.absent(),
                 Value<SyncStatus> syncStatus = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -12301,6 +12368,7 @@ class $$SyncConflictsTableTableManager
                 resolvedAt: resolvedAt,
                 resolutionNote: resolutionNote,
                 status: status,
+                projectId: projectId,
                 syncStatus: syncStatus,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,

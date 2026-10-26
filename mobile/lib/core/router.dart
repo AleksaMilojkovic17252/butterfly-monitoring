@@ -10,6 +10,7 @@ import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
 import 'package:mobile/features/skeleton/ui/skeleton_screen.dart';
+import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -40,6 +41,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'projects/:id',
             builder: (_, state) =>
                 ProjectHomeScreen(projectId: state.pathParameters['id']!),
+            routes: [
+              // Nested again, so back returns to project home.
+              GoRoute(
+                path: 'sync',
+                builder: (_, state) =>
+                    SyncStatusScreen(projectId: state.pathParameters['id']!),
+              ),
+            ],
           ),
         ],
       ),

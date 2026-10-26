@@ -8,6 +8,7 @@ import 'package:mobile/core/db/sync_columns.dart';
 import 'package:mobile/core/db/sync_queue.dart';
 import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/core/sync/sync_api.dart';
+import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:uuid/uuid.dart';
 
 /// What a queue item asks the server to do. [wireName] is the server's name
@@ -29,6 +30,9 @@ enum SyncOperation {
 class SyncRepository {
   SyncRepository(this._db);
   final AppDatabase _db;
+
+  /// Same database, so its writes join a running [_db] transaction.
+  late final _syncState = SyncStateRepository(_db);
 
   /// Most rows in one `create_batch` item.
   static const maxBatchRows = 500;
@@ -94,6 +98,85 @@ class SyncRepository {
           ],
         );
       }
+    });
+  }
+
+  /// Puts a rejected [item] back in the queue under a new `mutationId` (the
+  /// server answers a resent id with the same rejection, D-050) and marks its
+  /// row `pending`. `retryCount` 0 makes the item unsent again, so new edits
+  /// may merge into it: nothing has been sent under the new id.
+  Future<void> retry(SyncQueueItem item) {
+    return _db.transaction(() async {
+      final query1 = _db.syncQueue.update()
+        ..where((t) => t.seq.equals(item.seq));
+      await query1.write(
+        SyncQueueCompanion(
+          status: const Value(QueueStatus.queued),
+          mutationId: Value(const Uuid().v4()),
+          retryCount: const Value(0),
+          nextAttemptAt: const Value(null),
+          lastError: const Value(null),
+        ),
+      );
+      await _setRowStatus(item, SyncStatus.pending);
+    });
+  }
+
+  /// Throws away a rejected [item] and every other queue item of its entity
+  /// (later ones were built on it). Three outcomes:
+  /// - `create_batch`: the child rows of every batch of the parent are deleted.
+  /// - A create the server never had (`server_version` null): the row is
+  ///   deleted.
+  /// - Otherwise the row becomes `synced` and the project's pull cursor goes
+  ///   back to 0, so the next pull brings the server's version back.
+  ///
+  /// TODO(T036): child rows of a deleted parent (track points of a visit).
+  Future<void> discard(SyncQueueItem item) {
+    return _db.transaction(() async {
+      final queryDelete = _db.syncQueue.delete()
+        ..where(
+          (t) =>
+              t.entityType.equals(item.entityType) &
+              t.entityId.equals(item.entityId),
+        );
+      final items = await queryDelete.goAndReturn();
+
+      if (item.operation == SyncOperation.createBatch.wireName) {
+        // The parent's other batches were deleted above too, so their rows go
+        // as well: a row without a queue item would stay `pending` for ever.
+        for (final deleted in items) {
+          final json = jsonDecode(deleted.payload) as Map<String, dynamic>;
+          final rows = json['rows'] as List;
+          final ids = [for (final row in rows) (row as Map)['id'] as String];
+          if (ids.isEmpty) continue;
+          final marks = List.filled(ids.length, '?').join(', ');
+          await _db.customUpdate(
+            'DELETE FROM "${item.entityType}" WHERE id IN ($marks)',
+            variables: [for (final id in ids) Variable.withString(id)],
+          );
+        }
+        return;
+      }
+
+      final row = await _db
+          .customSelect(
+            'SELECT server_version FROM "${item.entityType}" WHERE id = ?',
+            variables: [Variable.withString(item.entityId)],
+          )
+          .getSingleOrNull();
+      final wasCreate = items.any(
+        (i) => i.operation == SyncOperation.create.wireName,
+      );
+      if (wasCreate && row?.readNullable<int>('server_version') == null) {
+        await _db.customUpdate(
+          'DELETE FROM "${item.entityType}" WHERE id = ?',
+          variables: [Variable.withString(item.entityId)],
+        );
+        return;
+      }
+
+      await _setRowStatus(item, SyncStatus.synced);
+      await _syncState.setLastPullCursor(item.projectId, 0);
     });
   }
 

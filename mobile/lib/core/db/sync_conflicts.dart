@@ -5,6 +5,7 @@ import 'package:mobile/core/db/sync_status.dart';
 /// conflicts, pulled so the app can list them and release held queue items.
 /// Unlike the other pulled tables it has a `syncStatus` column. `status` is the
 /// server's value (`open`, `resolved_server` or `resolved_client`).
+/// `projectId` is local only: the pull fills it, the server does not send it.
 class SyncConflicts extends Table {
   TextColumn get id => text()();
   TextColumn get entityType => text()();
@@ -15,6 +16,7 @@ class SyncConflicts extends Table {
   DateTimeColumn get resolvedAt => dateTime().nullable()();
   TextColumn get resolutionNote => text()();
   TextColumn get status => text()();
+  TextColumn get projectId => text().nullable()();
   TextColumn get syncStatus =>
       textEnum<SyncStatus>().withDefault(Constant(SyncStatus.pending.name))();
   @override

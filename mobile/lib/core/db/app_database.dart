@@ -40,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -71,6 +71,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(schema.transectSection);
         await m.createTable(schema.transect);
         await m.addColumn(schema.project, schema.project.taxonListVersionId);
+      },
+      from5To6: (m, schema) async {
+        await m.addColumn(schema.syncConflict, schema.syncConflict.projectId);
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
       },
     ),
   );
