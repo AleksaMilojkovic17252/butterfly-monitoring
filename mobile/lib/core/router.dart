@@ -11,6 +11,8 @@ import 'package:mobile/features/projects/ui/project_list_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
 import 'package:mobile/features/skeleton/ui/skeleton_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
+import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
+import 'package:mobile/features/transects/ui/transect_list_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -47,6 +49,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'sync',
                 builder: (_, state) =>
                     SyncStatusScreen(projectId: state.pathParameters['id']!),
+              ),
+              GoRoute(
+                path: 'transects',
+                builder: (_, state) =>
+                    TransectListScreen(projectId: state.pathParameters['id']!),
+                routes: [
+                  // Back returns to the transect list.
+                  GoRoute(
+                    path: ':transectId',
+                    builder: (_, state) => TransectDetailScreen(
+                      projectId: state.pathParameters['id']!,
+                      transectId: state.pathParameters['transectId']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

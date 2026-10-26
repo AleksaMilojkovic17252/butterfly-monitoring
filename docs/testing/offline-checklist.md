@@ -21,7 +21,7 @@ result column. No automated test covers this (D-021).
 | 2 | Look at the project list | The demo project shows its transect count and **Ready** | T017, T031 | Passed, 2026-10-26 |
 | 3 | Open the project | Project home opens with all its tiles | T017 | Passed, 2026-10-26 |
 | 4 | Open Settings | Settings opens (server URL, sync tile) | T006 | Passed, 2026-10-26 |
-| 5 | Open the transect list, then one transect | The list has the downloaded transects; the detail shows the protocol summary | T033 | not built yet |
+| 5 | Open the transect list, then one transect | The list has the downloaded transects; the detail shows the protocol summary | T033 | Passed with the server unreachable (`adb reverse` removed, app force-stopped and reopened), 2026-10-26; not yet repeated in airplane mode |
 | 6 | Start a visit | The form opens with the weather fields; the taxon list is loaded | T035 | not built yet |
 | 7 | Run an active visit | The GPS track records and the visit stays open | T037, T039 | not built yet |
 | 8 | Add a butterfly | The quick entry works with the taxon picker | T045 | not built yet |

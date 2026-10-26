@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
+import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 import 'package:mobile/features/projects/domain/offline_package_status.dart';
 
@@ -28,3 +29,14 @@ final offlinePackageStatusProvider =
           .read(projectRepositoryProvider)
           .offlinePackageStatus(projectId);
     });
+
+/// Whether a download of the project has reached its last page (D-055). The
+/// transect list shows it as the "downloaded" flag of each transect (T033).
+final projectDownloadedProvider = FutureProvider.family<bool, String>((
+  ref,
+  projectId,
+) {
+  // Recompute after every sync run and every download.
+  ref.watch(syncRunnerProvider.select((s) => s.last));
+  return ref.read(syncStateRepositoryProvider).isDownloaded(projectId);
+});

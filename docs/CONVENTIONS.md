@@ -56,7 +56,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | FROST-Server (P2) | 2.x latest | VERIFY current tag (2.7.x/2.8.x seen) |
 | Flutter | current stable | VERIFY |
 | drift / drift_flutter | 2.x | |
-| flutter_map | 7.x/8.x | VERIFY |
+| flutter_map + latlong2 | 8.3.2 / 0.10.1 | transect map (T033); approved for T033 |
 | geolocator | latest | Android foreground service via `foregroundNotificationConfig` (VERIFY API) |
 | flutter_riverpod, go_router, dio, uuid, flutter_secure_storage, image_picker, flutter_image_compress, crypto | latest | |
 | connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |

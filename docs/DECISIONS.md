@@ -843,3 +843,28 @@ first version of the runner state and emits. Claude wrote, at the developer's re
 `sync_status_repository.dart`, `retry` and the runner; the return statement of `watchPendingByType`; the batch branch and then the whole of
 `discard`; the fix of the pull emits in the runner; and, so the developer could test the UI, the providers, `sync_error_message.dart`,
 `SyncStatusScreen`, the route and the tile `onTap`, then the `SafeArea`, `_timeAgo` and the section-title padding. The throwaway smoke test and the debug seed patch are in `tmp/t032/` (not committed).
+
+## D-057 · Transect list and detail: package flag as "downloaded", nearest-vertex distance, warnings shared with T035
+2026-10 · accepted · T033
+**Screens:** `TransectListScreen` at `/projects/:id/transects` (opened from the **Transects** tile) and `TransectDetailScreen` at
+`/projects/:id/transects/:transectId`. They read Drift only, through `TransectRepository` (read-only: transects, sections joined to
+`habitat_type`, the project protocol), so they work offline.
+**"Downloaded" flag:** a transect is on the phone only after a pull, so each row shows the project's `downloaded:<projectId>` flag
+(D-055) through `projectDownloadedProvider` (`project_stats.dart`, recomputed after every sync run and download). There is no
+per-transect download (T031: no partial packages).
+**Distance:** straight line from the last known position (`lastKnownPositionProvider`, `getLastKnownPosition`, never waits for a fix) to
+the nearest vertex of the transect line, with latlong2's `Distance`. The app bar's location button takes a fresh fix
+(`currentPositionProvider`), which the screen keeps and prefers. Without a position the distance is "—" and the distance sort falls
+back to code.
+**Map:** flutter_map 8.3.2 and latlong2 0.10.1 (approved for T033), OSM tiles with `userAgentPackageName: rs.amilojkovic.butterfly`.
+The whole line is a wide grey band, and each section is drawn over it in a colour from an 8-colour palette by walking order
+(`sectionColor`, also used for the dots in the section list). flutter_map 8.x caches the tiles it has shown by default
+(`BuiltInMapCachingProvider`, VERIFY done in T033), so an area seen online usually still has a basemap offline. Otherwise the lines are
+drawn on a plain background. The offline basemap proper is T060.
+**Season and time-window warnings** are `seasonWarning` / `timeWindowWarning` in `features/transects/domain/protocol_window.dart`, and
+the summary is the `ProtocolSummary` widget. T035 reuses both. The season is compared by local calendar date, with both ends counting as
+inside. The day window uses local wall-clock time. Start visit is disabled for an inactive transect; outside the window it asks
+"Start anyway" and does not block.
+**Placeholders:** own visit count, last visit and history come from `transectVisitStatsProvider` / `transectVisitsProvider`
+(`visit_stats.dart`, `TODO(T034)`), which emit no visits until the phone has a `survey_visit` table. Start visit ends in a snackbar
+until the start-visit form exists (`TODO(T035)`). The outline's "filter po području" is not in the criteria and was not built.

@@ -68,7 +68,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T030 | [#47](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/47) | App sync runner: push, pull, retry and backoff | P1 | must | T025, T026, T029 | 2.5 d | done |
 | T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | done |
 | T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | done |
-| T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | todo |
+| T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | done |
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | todo |
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | todo |
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | todo |
@@ -651,7 +651,7 @@ Depends on: T030
 Deferred: "photos waiting and their total size" shows 0 and 0 B until photos exist (`pendingPhotosProvider`, `TODO(T050)`). Names for visit and observation types in the lists are `TODO(T034)`. A re-pull from cursor 0 (the v6 step, Discard) can release the wrong held queue item when an entity has an old resolved conflict and a newer open one; the fix needs `mutation_id` in the conflict pull (D-056, known risks). See D-056.
 
 ### T033 · App transect list and transect detail
-[#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) · E05 · P1 · must · labels: `mobile`, `must` · implements F72 · est. 2 d · **todo**
+[#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) · E05 · P1 · must · labels: `mobile`, `must` · implements F72 · est. 2 d · **done**
 
 Depends on: T017, T021, T031
 
@@ -660,8 +660,14 @@ Depends on: T017, T021, T031
 - [ ] Start visit is disabled for inactive transects. It warns (without blocking) outside the season or time window.
 - [ ] Everything works offline.
 
+Manual run (2026-10-26, phone over USB): list with distances, search and both sorts; detail with map, coloured sections, habitat and protocol summary; Start visit warned outside the season and time window, and was disabled after FG4 was set inactive in the dev database (set back afterwards); list and detail worked with the server unreachable (offline checklist step 5). Review fixes: shared location permission check, `autoDispose` last position, guarded GeoJSON parsing.
+
+Deferred: the own visit count, last visit date and visit history show no visits until the phone has a `survey_visit` table (`TODO(T034)` in `visit_stats.dart`). After the season and time-window checks, Start visit shows a snackbar until the start-visit form exists (`TODO(T035)`). See D-057.
+
 ### T034 · SurveyVisit model, lifecycle and API
 [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) · E05 · P1 · must · labels: `backend`, `mobile`, `database`, `must`, `p2-compat` · implements F9 · est. 2.5 d · **todo**
+
+Picks up from T033: the app's own-visit count, last visit and visit history read placeholder providers in `features/transects/domain/visit_stats.dart` (`TODO(T034)`); fill them from the Drift `survey_visit` mirror.
 
 Picks up from T021: `GET /api/v1/transects/{id}/visits` (the caller's visits, admins all) and the real `visit_count` / `last_visit_at` in `transects.services.with_stats` (`TODO(T034)`).
 

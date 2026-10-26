@@ -42,7 +42,11 @@ class _Home extends ConsumerWidget {
     // Each tile opens its screen once the ticket that builds it lands.
     final tiles = [
       const _Tile(icon: Icons.play_arrow_rounded, label: 'Start visit'),
-      const _Tile(icon: Icons.route_outlined, label: 'Transects'),
+      _Tile(
+        icon: Icons.route_outlined,
+        label: 'Transects',
+        onTap: () => context.push('/projects/${project.id}/transects'),
+      ),
       const _Tile(
         icon: Icons.add_location_alt_outlined,
         label: 'Free observation',
