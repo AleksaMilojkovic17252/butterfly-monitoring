@@ -13,6 +13,7 @@ import 'package:mobile/features/skeleton/ui/skeleton_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
 import 'package:mobile/features/transects/ui/transect_list_screen.dart';
+import 'package:mobile/features/visits/ui/start_visit_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -62,6 +63,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                       projectId: state.pathParameters['id']!,
                       transectId: state.pathParameters['transectId']!,
                     ),
+                    routes: [
+                      // The start-visit form (T035); back returns to the
+                      // transect detail.
+                      GoRoute(
+                        path: 'start',
+                        builder: (_, state) => StartVisitScreen(
+                          projectId: state.pathParameters['id']!,
+                          transectId: state.pathParameters['transectId']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

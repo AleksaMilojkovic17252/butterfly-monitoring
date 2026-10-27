@@ -70,7 +70,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | done |
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | done |
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | done |
-| T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | todo |
+| T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | done |
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | todo |
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | todo |
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
@@ -687,7 +687,16 @@ Depends on: T021, T026
 - [ ] Mirrored in Drift; the app uses the same Dart transition table (shared JSON spec in `docs/requirements/visit-states.json`, with a test on both sides that reads it).
 
 ### T035 · App start-visit form
-[#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) · E05 · P1 · must · labels: `mobile`, `must` · implements F8 · est. 1.5 d · **todo**
+[#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) · E05 · P1 · must · labels: `mobile`, `must` · implements F8 · est. 1.5 d · **done**
+
+Manual run (2026-10-27, phone over USB, FG2): season and time-window warnings in the form; Start with empty fields listed what was
+missing; a partial draft saved, came back on "Continue draft" and synced as `draft`; wind 6 Bft, 12.5 °C, 50 % cloud and drizzle listed
+all three failing thresholds live; "Start anyway" gave `in_progress` with `started_at` and `weather_suitable = false` on the server
+(history: `draft`, then `in_progress`, both `sync push`); FG3's Start was refused while FG2 was in progress. The form opened in 200–260 ms
+(debug build, tap to first frame, temporary `Stopwatch`). Repository writes checked with a temporary smoke test (`tmp/t035/`, 8 cases, not committed). Code review fixes: 0 % cloud could not be picked, drafts and the visit in progress filtered by observer, the in-progress check also in `VisitRepository.start`, changes worked out against the draft as opened, the form kept while providers reload, a logged-out message, observer count capped at 20; 0 % checked again on the phone. Precipitation is a dropdown, not the chips the criterion names (developer's choice: the chips reflowed and moved the form when one was selected).
+
+Deferred: starting GPS tracking is T037 (`TODO(T037)` in `VisitRepository.start`); after Start the app returns to the transect
+detail until the active visit screen exists (`TODO(T039)`); the `visit_form_open` event is T073 (`TODO(T073)`). See D-059.
 
 Depends on: T016, T033, T034
 

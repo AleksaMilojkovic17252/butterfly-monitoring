@@ -931,3 +931,41 @@ run in the container; it soft-deletes its visits. The Drift v6 → v7 step was c
 **Found on the way (not fixed, for a later ticket):** the admin group's permissions are granted on accounts' `post_migrate`
 (D-034), which runs before Django creates the permissions of apps listed after `accounts`. A new app's permissions reach the group only on
 the next `migrate`. Here a second `migrate` fixed it; a fresh database would need the same.
+
+## D-059 · Start-visit form: one draft per transect, what Start needs, one visit in progress, changed-fields updates
+2026-10 · accepted · T035
+**Screen:** `StartVisitScreen` at `/projects/:id/transects/:transectId/start`, opened from Start visit on the transect detail after its
+season/time-window dialog (D-057); the form shows the same warnings again as a card that does not block. It reads Drift and the
+in-memory profile only, so it opens offline; measured 200–260 ms from the tap (debug build).
+**Draft:** the form opens the logged-in user's newest `draft` of the transect (`transectDraftProvider`), and Save draft / Start
+update that row instead of making a second one. Drafts and the visit in progress are filtered by `observer_id` = the current user,
+because logout keeps the local database, so another user's visits can still be on the phone. The detail button then reads "Continue draft". Without this a draft could not be reached again: the
+visit history lists only started visits. Nothing is required for a draft.
+**Start needs** temperature, wind, cloud cover and the protocol checkbox. The cloud slider starts "Not set" (null) and gets a value only
+when touched, so 0 % is never stored by accident. It sits at 0 while "Not set", and `Slider.onChanged` skips a value equal to its
+position, so `onChangeEnd` sets the value too (otherwise 0 % could not be picked; found in code review). The observer count stops at
+20 (no protocol limit; guards against a stuck finger). The checkbox is a gate only; no column stores it.
+**Weather check:** `failedWeatherThresholds` (`features/visits/domain/weather_check.dart`) returns the failing thresholds as sentences:
+precipitation other than `none` unless `allow_precipitation`, wind above `max_wind_beaufort`, and below `sunny_temperature_c` either
+temperature below `min_temperature_c` or cloud above `max_cloud_cover_pct_if_cool`. `weather_suitable` is the result (true/false), or null
+while the weather is incomplete (drafts only). Unsuitable weather needs "Start anyway" and is stored `false`. No `weather_missing_reason`
+is asked for here (T040/T055, V05). Beaufort 0–12 labels and field hints and the precipitation labels are in `beaufort.dart`.
+**One visit in progress:** Start is refused (dialog naming the transect) while the user has a local visit `in_progress`, because
+tracking (T037) follows one visit. The form checks first, for the dialog; `VisitRepository.start` checks again inside its write
+transaction and throws a `StateError`, so any later caller is held to the rule too. Until T040/T041 can finish or cancel a visit, a started test visit blocks new starts on that phone; an admin can
+cancel it on the server (`state.move_to(visit, "cancelled", admin, reason)`), and the next pull brings that back.
+**Writes** (`VisitRepository.saveDraft` / `start`, through `SyncRepository.write`): a new visit queues a `create` with every field the
+phone sets (`project`, `transect`, `observer`, `protocol_version` and `survey_method` from the project protocol, `device_id` from
+`sync_state`, `created_at`, `status`, `started_at` and the form's fields). An existing draft queues an `update` with only the fields that
+differ from the draft **as the form opened it** (D-058 obligation): a pull may change the row while the form is open, and comparing
+with the fresh row would send those server values back as the user's edits. `baseVersion` and the status check use the row as it is
+now, read in the same transaction (the runner's rebase fills in the version after a create, D-054); a draft that was deleted or moved
+on meanwhile is a `StateError`. The local row gets all of the form's columns; the server's merged row comes back on the next pull.
+Nothing changed queues nothing. An unsent create absorbs the update (D-051). `start` checks `appMayMove(status, 'in_progress')`.
+**Riverpod 3 pauses a provider nobody listens to**, so `ref.read(someStreamProvider.future)` from a button handler can wait for ever
+(found on the phone: Start did nothing). The form `watch`es `visitInProgressProvider` (and that visit's transect) in `build` and reads
+`.value` in the handler. Use the same pattern elsewhere.
+**The form stays up** while a provider reloads (`hasValue`, not `is AsyncData`), so typed values are not lost; without a profile it
+says "You are logged out", not "download the project".
+**Placeholders:** `TODO(T037)` start tracking in `VisitRepository.start`; `TODO(T039)` after Start the app returns to the transect detail
+with a snackbar; `TODO(T073)` the `visit_form_open` event; a comment marks the T085 "Auto-fill weather" slot in the weather card.

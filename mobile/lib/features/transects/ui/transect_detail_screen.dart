@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
@@ -8,6 +9,7 @@ import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/domain/visit_stats.dart';
 import 'package:mobile/features/transects/ui/protocol_summary.dart';
 import 'package:mobile/features/transects/ui/transect_map.dart';
+import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 
 /// One transect (outline §11.2 E): map with coloured sections, length,
@@ -50,7 +52,7 @@ class _Detail extends ConsumerWidget {
   final Transect transect;
 
   /// Warns (without blocking) outside the season or daily time window, then
-  /// goes on to the start-visit form.
+  /// opens the start-visit form (T035).
   Future<void> _startVisit(
     BuildContext context,
     ProjectProtocol? protocol,
@@ -86,14 +88,7 @@ class _Detail extends ConsumerWidget {
       if (goOn != true || !context.mounted) return;
     }
 
-    // TODO(T035): open the start-visit form for this transect.
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('The start-visit form is coming in a later version'),
-        ),
-      );
+    await context.push('/projects/$projectId/transects/${transect.id}/start');
   }
 
   @override
@@ -101,6 +96,7 @@ class _Detail extends ConsumerWidget {
     final sections = ref.watch(transectSectionsProvider(transect.id)).value;
     final protocol = ref.watch(projectProtocolProvider(projectId)).value;
     final visits = ref.watch(transectVisitsProvider(transect.id)).value ?? [];
+    final draft = ref.watch(transectDraftProvider(transect.id)).value;
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -205,7 +201,8 @@ class _Detail extends ConsumerWidget {
                 width: double.infinity,
                 child: FilledButton.icon(
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Start visit'),
+                  // A saved draft is opened again by the form (T035).
+                  label: Text(draft == null ? 'Start visit' : 'Continue draft'),
                   // Null disables the button.
                   onPressed: transect.active
                       ? () => _startVisit(context, protocol)
