@@ -82,6 +82,28 @@ class InvalidTransition(exceptions.APIException):
     default_detail = "This status change is not allowed."
 
 
+class VisitLocked(exceptions.APIException):
+    """A change to a locked visit or one of its records (T042). Only an admin's unlock (T043)
+    makes it changeable again."""
+
+    status_code = 409
+    default_code = "visit_locked"
+    default_detail = "This visit is locked. An admin must unlock it first."
+
+
+def ensure_unlocked(visit):
+    """Raise `VisitLocked` when `visit` is locked. Every service that changes a visit or one of its
+    records (track points, and from T044 observations, plant resources, habitat, photos) calls it
+    with the parent visit."""
+    if visit.status != VisitStatus.LOCKED:
+        return
+    locked_on = visit.locked_at.strftime("%Y-%m-%d %H:%M UTC") if visit.locked_at else "?"
+    raise VisitLocked(
+        f"This visit is locked (by {visit.locked_by} on {locked_on}: {visit.lock_reason}). "
+        "An admin must unlock it first."
+    )
+
+
 def transition(visit, to, actor, reason=None):
     """Move `visit` to status `to`, on the instance only: the caller saves it with its own
     history reason.

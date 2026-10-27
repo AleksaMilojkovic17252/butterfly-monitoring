@@ -3,7 +3,8 @@ not the models.
 
 A change is built on the instance first (`build_new_visit`, `apply_visit_changes`) and then
 saved by `save_visit`, so push can add the server's completed -> synced step in the same save.
-The visit lock (T042) and the field rules per status (T055) are added here later.
+A locked visit and its track points refuse every change (`state.ensure_unlocked`, T042). The field
+rules per status (T055) are added here later.
 """
 
 import json
@@ -19,7 +20,7 @@ from apps.core.history import save_with_reason
 from apps.projects.services import is_member, projects_for
 from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, VisitStatus
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
-from apps.surveys.state import InvalidTransition, move_to, transition
+from apps.surveys.state import InvalidTransition, ensure_unlocked, move_to, transition
 from apps.sync.handlers import current_push_reason, insert_batch
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /survey-visits
@@ -90,6 +91,7 @@ def build_new_visit(user, visit_id, data):
 def apply_visit_changes(user, visit, data):
     """Apply an update payload to `visit` (unsaved). Only the keys in `data` change; a status
     change goes through `move_to()`, which may take several app moves at once (D-051)."""
+    ensure_unlocked(visit)
     if not is_admin(user) and not is_member(user, visit.project_id):
         raise exceptions.PermissionDenied("You are not a member of this visit's project.")
     serializer = SurveyVisitSyncSerializer(visit, data=data, partial=True)
@@ -166,6 +168,7 @@ def update_visit(user, visit, data):
 
 def complete_visit(user, visit, data):
     """Finish a visit: in_progress -> completed, with any end fields in `data` in the same save."""
+    ensure_unlocked(visit)  # before the status check, so a locked visit says why
     if visit.status != VisitStatus.IN_PROGRESS:
         raise InvalidTransition(f"Only a visit in progress can be completed, not {visit.status}.")
     changes = {**data, "status": VisitStatus.COMPLETED}
@@ -204,6 +207,7 @@ def push_track_points(user, visit_id, rows):
             raise exceptions.PermissionDenied("You can only add track points to your own visits.")
         if not is_member(user, visit.project_id):
             raise exceptions.PermissionDenied("You are not a member of this visit's project.")
+    ensure_unlocked(visit)
 
     serializer = SurveyTrackPointSyncSerializer(data=rows, many=True)
     if not serializer.is_valid():
@@ -295,12 +299,43 @@ def project_of(visit):
     return visit.project
 
 
+def guard_visit(user, visit):
+    """Push guard (`PushHandlers.guard`): runs before the merge, so an update of a locked visit is
+    rejected even when its base version is stale, instead of becoming a conflict (T042)."""
+    ensure_unlocked(visit)
+
+
 # Admin (admin.py)
 
 
 def mark_reviewed(visit, admin_user):
+    # locked -> reviewed is the unlock, which needs a reason (T043's Unlock action), so a locked
+    # visit is refused here.
+    ensure_unlocked(visit)
     transition(visit, VisitStatus.REVIEWED, admin_user)
     return save_visit(visit, admin_user, "marked reviewed")
+
+
+def is_locked(visit):
+    """For admin pages: a locked visit and its records open read-only (T042)."""
+    return visit.status == VisitStatus.LOCKED
+
+
+def check_admin_edit(admin_user, visit, changed_fields):
+    """The rules for an admin's edit of `visit` (unsaved, with the form's values): it must not be
+    locked, and a changed transect or observer must fit the project. Raises DRF exceptions."""
+    ensure_unlocked(visit)
+    if "transect" in changed_fields:
+        _check_project_and_transect(admin_user, visit)
+    if "observer" in changed_fields:
+        _check_observer(admin_user, visit)
+
+
+def admin_save_visit(visit, admin_user, reason, changed_fields):
+    """Save an admin's edit of an unlocked visit. The distance is not worked out again: it is
+    read-only in the admin."""
+    check_admin_edit(admin_user, visit, changed_fields)
+    return save_visit(visit, admin_user, reason or "admin edit")
 
 
 def _check_project_and_transect(user, visit):

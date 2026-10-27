@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T047, T061, T062, T065, T023, T060, T066
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T047, T061, T062, T065, T023, T060, T066, T099
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -77,7 +77,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | todo |
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | todo |
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | todo |
-| T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | todo |
+| T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | todo |
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | todo |
@@ -134,6 +134,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | should | T087, T088, T091 | 1.5 d | todo |
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
 | T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
+| T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | todo |
 
 ## Acceptance criteria
 
@@ -794,6 +795,11 @@ Depends on: T037
 ### T040 · Finish visit: summary, warnings and end weather
 [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) · E05 · P1 · must · labels: `mobile`, `must` · implements F11 · est. 2 d · **todo**
 
+From T042 (D-062): when the visit is finished, the phone also sends how many track points it recorded (e.g. a
+`track_point_count` on `survey_visit`, server-owned except for this one write; needs a Django migration and a Drift column). A visit
+finished offline can reach the server before all its track batches (one push carries at most 100 items), and T043 uses the count to
+keep an admin from locking a visit whose route is still uploading: a locked visit refuses late track batches (T042).
+
 Depends on: T039, T055
 
 - [ ] Summary: duration, distance, number of species, number of individuals, number of observations per section.
@@ -825,7 +831,7 @@ Depends on: T040
 - [ ] Unit tests on both sides.
 
 ### T042 · Visit lock enforced in the API
-[#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) · E05 · P1 · must · labels: `backend`, `sync`, `must` · implements F13 · est. 1 d · **todo**
+[#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) · E05 · P1 · must · labels: `backend`, `sync`, `must` · implements F13 · est. 1 d · **done**
 
 Picks up from T034: `SurveyVisitAdmin` is fully read-only (only the "Mark as reviewed" action). Editing unlocked visits in admin ("unlock, edit and re-lock") starts here: make the fields editable except `status`, `distance_walked_m`, `locked_*` and `quality_flags`, and save through `surveys.services.save_visit`. See D-058.
 
@@ -838,6 +844,10 @@ Depends on: T026, T034
 
 ### T043 · Admin visit review, lock and unlock with mandatory reason
 [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) · E05 · P1 · must · labels: `admin`, `must` · implements F66 · est. 1.5 d · **todo**
+
+From T042 (D-062): **Lock** warns or refuses (decide in the plan) while the server has fewer track points for the visit than
+the count the phone sent on finish (T040). Otherwise a lock can land between the visit and its last track batches, and the phone's
+remaining points are rejected with `visit_locked`. A visit without a count (finished before T040, or through REST) is not blocked.
 
 Depends on: T018, T042
 
@@ -1667,3 +1677,22 @@ Shift + click, which Django's widget documents as vertex delete, added a vertex 
 - [ ] No new dependency: uses the OpenLayers build Django already ships.
 
 Out of scope: merging or splitting polygons, snapping, topology checks. Complex edits stay in QGIS plus re-import.
+
+### T099 · Close a project: no new visits after it is closed
+[#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) · E02 · added 2026-10-27 as a follow-up to T042 · P1 · should · labels: `backend`, `admin`, `mobile`, `should` · est. 1 d · **todo**
+
+Depends on: T015, T034, T035
+
+Why: nothing stops a researcher from starting a visit in last year's project. Outside the season is only a warning (T035, W07 in
+T055) and the visit lock (T042) covers single reviewed visits, not projects. An admin needs to close a finished project so it takes
+no new visits, without deleting it or removing its members.
+
+- [ ] `Project.closed_at` (nullable `timestamptz`) and `closed_by`, server-owned, audited (history reason = the admin's reason), included in the projects API and the project pull. Django migration and Drift column.
+- [ ] Django admin: **Close project** and **Reopen project** actions with an intermediate form and a required reason (at least 10 characters); the project list shows "Closed" and has a filter for it.
+- [ ] Push `create` and `POST /api/v1/survey-visits` of a new visit in a closed project are rejected with code `project_closed`. Decide in the plan, recommended yes: a visit whose `started_at` is before `closed_at` is still accepted, so a walk started offline before the close is not lost when it syncs later (this trusts the phone's clock).
+- [ ] Visits that already exist are not affected: they can still be finished, edited and synced (track points, observations), following the visit lock (T042).
+- [ ] App: the project list and project home show the project as closed; **Start visit** (tile, transect detail, start form) is disabled with "This project is closed"; a visit in progress can still be finished.
+- [ ] The sync screen names `project_closed` (`syncErrorMessage`).
+
+Out of scope: closing automatically at the season end (an admin closes it); exports and pygeoapi are unaffected. Reopen is the only way
+back; closing deletes nothing and keeps all members.

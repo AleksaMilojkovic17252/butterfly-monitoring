@@ -45,6 +45,9 @@ class PushHandlers:
     `project_of` is required when `create`, `update` or `delete` is set: a SyncConflict (T027)
     belongs to the project of the row, and a resent `create` of an existing row is merged like an
     update. A missing one fails at import, not on the first conflict.
+    `guard`, when set, runs on the loaded row after the ownership and deleted checks and before the
+    base_version check, so a row that may not change at all (a locked visit, T042) is rejected
+    instead of being merged or turned into a conflict.
     """
 
     create: Callable[..., Any] | None = None  # (user, entity_id, data) -> instance
@@ -52,6 +55,7 @@ class PushHandlers:
     delete: Callable[..., Any] | None = None  # (user, instance) -> None
     create_batch: Callable[..., Any] | None = None  # (user, entity_id, rows) -> None
     project_of: Callable[..., Any] | None = None  # (instance) -> Project
+    guard: Callable[..., Any] | None = None  # (user, instance) -> None; raises to reject
 
     def __post_init__(self):
         if (self.create or self.update or self.delete) and self.project_of is None:

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
+import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
 /// One GPS fix waiting in the tracker's buffer, with the number it will be
@@ -59,7 +60,8 @@ class TrackPointRepository {
 
   /// Stores [points] of [visit] and queues them for push. Does nothing when
   /// the visit is no longer on the phone (Remove data, a discarded create):
-  /// the points would be orphans pushed for a visit nobody has.
+  /// the points would be orphans pushed for a visit nobody has. Nor when an
+  /// admin has locked it: the server would refuse them (T042).
   Future<void> addPoints(SurveyVisit visit, List<NewTrackPoint> points) {
     final rows = [for (final point in points) _row(point)];
     return _db.transaction(() async {
@@ -67,6 +69,7 @@ class TrackPointRepository {
         _db.surveyVisits,
       )..where((v) => v.id.equals(visit.id))).getSingleOrNull();
       if (current == null || current.deletedAt != null) return;
+      if (visitIsLocked(current.status)) return;
 
       await _sync.writeBatch(
         projectId: visit.projectId,

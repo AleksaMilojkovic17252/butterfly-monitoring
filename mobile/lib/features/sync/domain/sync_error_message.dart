@@ -20,7 +20,9 @@ String syncErrorMessage(String? lastError) {
       'not_found' => 'This record no longer exists on the server.',
       'permission_denied' => 'You are not allowed to change this record.',
       'deleted' => 'This record was deleted on the server.',
-      'visit_locked' => "An admin has locked this visit; it can't be changed.",
+      'visit_locked' =>
+        'An admin has locked this visit, so this change was not accepted. '
+            'Discard it, or retry after the visit is unlocked.',
       // T034: e.g. a finished visit sent back to draft. `detail` names the move.
       'invalid_transition' =>
         detail == null

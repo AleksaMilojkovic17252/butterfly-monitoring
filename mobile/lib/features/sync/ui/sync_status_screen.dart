@@ -98,6 +98,8 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
     final byType = ref.watch(pendingByTypeProvider(projectId)).value ?? {};
     final rejected = ref.watch(rejectedItemsProvider(projectId)).value ?? [];
     final conflicts = ref.watch(conflictsProvider(projectId)).value ?? [];
+    final lockedVisits =
+        ref.watch(lockedVisitIdsProvider(projectId)).value ?? {};
     final lastSync = ref.watch(lastSyncProvider);
     final lastBytes = ref.watch(lastSyncBytesProvider).value;
     final photos = ref.watch(pendingPhotosProvider);
@@ -157,6 +159,10 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
                 _RejectedCard(
                   item: item,
                   busy: run.running,
+                  // A change to a locked visit (the visit's own update or a
+                  // batch of its track points, both with the visit's id)
+                  // can't succeed until an admin unlocks it (T042).
+                  canRetry: !lockedVisits.contains(item.entityId),
                   onRetry: () => _retry(item),
                   onDiscard: () => _discard(item),
                 ),
@@ -231,6 +237,7 @@ class _RejectedCard extends StatelessWidget {
   const _RejectedCard({
     required this.item,
     required this.busy,
+    required this.canRetry,
     required this.onRetry,
     required this.onDiscard,
   });
@@ -238,6 +245,9 @@ class _RejectedCard extends StatelessWidget {
 
   /// A sync is running: the buttons wait.
   final bool busy;
+
+  /// False hides Retry: it could only be rejected again.
+  final bool canRetry;
   final VoidCallback onRetry;
   final VoidCallback onDiscard;
 
@@ -264,12 +274,16 @@ class _RejectedCard extends StatelessWidget {
                   onPressed: busy ? null : onDiscard,
                   child: const Text('Discard local change'),
                 ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: busy ? null : onRetry,
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
-                  child: const Text('Retry'),
-                ),
+                if (canRetry) ...[
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: busy ? null : onRetry,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ],
             ),
           ],

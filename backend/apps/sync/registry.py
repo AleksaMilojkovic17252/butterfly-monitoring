@@ -88,6 +88,7 @@ ENTITIES = [
             create=surveys.push_create,
             update=surveys.push_update,
             project_of=surveys.project_of,
+            guard=surveys.guard_visit,
         ),
     ),
     # Pushed in batches of a visit (`entity_id` = the visit), never changed or deleted one by

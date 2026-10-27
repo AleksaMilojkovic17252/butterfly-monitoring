@@ -176,7 +176,12 @@ class _Detail extends ConsumerWidget {
                 for (final v in visits)
                   ListTile(
                     dense: true,
-                    leading: const Icon(Icons.event_outlined),
+                    // A locked visit is read-only (T042).
+                    leading: Icon(
+                      visitIsLocked(v.status)
+                          ? Icons.lock_outline
+                          : Icons.event_outlined,
+                    ),
                     title: Text(_dateTime(v.startedAt)),
                     subtitle: Text(visitStatusLabel(v.status)),
                   ),

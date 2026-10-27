@@ -39,6 +39,22 @@ class SyncStatusRepository {
     return query.watch();
   }
 
+  /// Ids of the project's visits an admin has locked (T042). A rejected change
+  /// to one of them can't succeed until it is unlocked, so the screen offers
+  /// no Retry for it.
+  Stream<Set<String>> watchLockedVisitIds(String projectId) {
+    final query = _db.selectOnly(_db.surveyVisits)
+      ..addColumns([_db.surveyVisits.id])
+      ..where(
+        _db.surveyVisits.projectId.equals(projectId) &
+            _db.surveyVisits.status.equals('locked') &
+            _db.surveyVisits.deletedAt.isNull(),
+      );
+    return query.watch().map(
+      (rows) => {for (final row in rows) row.read(_db.surveyVisits.id)!},
+    );
+  }
+
   /// The project's conflicts that are not deleted: open ones first, then
   /// newest first.
   Stream<List<SyncConflict>> watchConflicts(String projectId) {

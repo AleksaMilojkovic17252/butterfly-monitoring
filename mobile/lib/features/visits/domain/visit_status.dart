@@ -63,6 +63,11 @@ bool appMayMove(String fromStatus, String toStatus) {
   );
 }
 
+/// True when an admin has locked the visit (T042). A locked visit and its
+/// records are read-only on the phone until an admin unlocks it; the server
+/// refuses any change with `visit_locked`.
+bool visitIsLocked(String status) => status == 'locked';
+
 /// The status as the screens show it.
 String visitStatusLabel(String status) {
   return switch (status) {

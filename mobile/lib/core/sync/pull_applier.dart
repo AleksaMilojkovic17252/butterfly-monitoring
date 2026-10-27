@@ -76,6 +76,9 @@ class PullApplier {
       }
     }
 
+    if (type == 'survey_visit') {
+      await _rejectChangesToLockedVisits(live);
+    }
     final fresh = await _withoutPending(type, live);
     await store(fresh);
     if (type == 'sync_conflict') {
@@ -123,6 +126,63 @@ class PullApplier {
       for (final row in rows)
         if (!notSynced.contains(row['id'])) row,
     ];
+  }
+
+  /// What a change to a locked visit gets as its `lastError`, in the server's
+  /// `[{code, detail, fields}]` form, so the sync screen reads it like a
+  /// rejection from the server.
+  static final _lockedError = jsonEncode([
+    {
+      'code': 'visit_locked',
+      'detail': 'An admin locked this visit before this change was sent.',
+      'fields': <String, Object?>{},
+    },
+  ]);
+
+  /// For each pulled visit an admin has locked (T042): the local changes never
+  /// sent yet (the visit's updates and its track point batches) become
+  /// `rejected`, because the server would refuse them, and the sync screen
+  /// shows them with the lock message. The row is then set `synced`, so the
+  /// pending guard lets the server's locked row in and the visit shows as
+  /// locked. Changes the server has already rejected keep their message.
+  ///
+  /// An item sent before (`retryCount` > 0, e.g. its reply was lost) stays
+  /// queued: the server may already have it and then answers `duplicate`;
+  /// otherwise it rejects it itself. A `conflict` item is left alone: it is
+  /// settled on the server, and until then the row keeps its local values.
+  // TODO(T044): reject the queued changes to the visit's observations too.
+  Future<void> _rejectChangesToLockedVisits(List<_Json> visits) async {
+    for (final visit in visits) {
+      if (visit['status'] != 'locked') continue;
+      final id = visit['id'] as String;
+      // The visit's own items and its track point batches (`entityId` is the
+      // visit for both).
+      final visitItems =
+          _db.syncQueue.entityId.equals(id) &
+          _db.syncQueue.entityType.isIn(['survey_visit', 'survey_track_point']);
+
+      await (_db.update(_db.syncQueue)..where(
+            (t) =>
+                visitItems &
+                t.status.equalsValue(QueueStatus.queued) &
+                t.retryCount.equals(0),
+          ))
+          .write(
+            SyncQueueCompanion(
+              status: const Value(QueueStatus.rejected),
+              lastError: Value(_lockedError),
+            ),
+          );
+
+      final conflicts =
+          await (_db.select(_db.syncQueue)..where(
+                (t) => visitItems & t.status.equalsValue(QueueStatus.conflict),
+              ))
+              .get();
+      if (conflicts.isEmpty) {
+        await _setRowStatus('survey_visit', id, SyncStatus.synced);
+      }
+    }
   }
 
   /// Frees the queue items held by a conflict the admin has settled. It acts

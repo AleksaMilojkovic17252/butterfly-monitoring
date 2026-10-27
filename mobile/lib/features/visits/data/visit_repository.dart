@@ -249,6 +249,9 @@ class VisitRepository {
       if (current == null || current.deletedAt != null) {
         throw StateError('The draft is no longer on this phone.');
       }
+      if (visitIsLocked(current.status)) {
+        throw StateError('An admin has locked this visit.');
+      }
       if (current.status != status && !appMayMove(current.status, status)) {
         throw StateError('A ${current.status} visit cannot become $status.');
       }

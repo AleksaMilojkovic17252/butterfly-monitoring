@@ -1044,3 +1044,75 @@ Otherwise track batches queued during the run, including the last flush after a 
 finish".
 **Not done (code review):** the buffer is not written when the provider is disposed, which happens only when the app goes away. A gap
 inside one app run (location off, then Try again) shows no interruption; that is T038's banner.
+
+## D-062 · Visit lock: a push guard before the merge, `ensure_unlocked` for every child, admin edits unlocked visits, locked pulls reject queued changes
+2026-10 · accepted · T042, *amends D-050, D-058 and D-060*
+**Error:** `surveys.state.VisitLocked` (409, code `visit_locked`; the detail names who locked it, when and why) and
+`ensure_unlocked(visit)`. Every service that changes a visit or one of its records calls it with the parent visit:
+`apply_visit_changes` (REST PATCH, push update, Accept client), `complete_visit` (before its status check, so the answer is
+`visit_locked`, not `invalid_transition`), `push_track_points`, `mark_reviewed` and `admin_save_visit`. **Later child tickets
+(T044 observations, plant resources, habitat features, T049 photos) must call it in their create, update and delete services**,
+with the visit loaded `FOR UPDATE`.
+**Push guard (amends D-050):** `PushHandlers.guard(user, instance)`, optional. `sync.services._apply` calls it after the ownership
+and deleted checks and *before* the resend/`base_version` branch. Without it, a stale update of a locked visit went to `_merge` and
+became a `SyncConflict` (or a silent `merged` with no change) instead of a rejection. `survey_visit` registers
+`guard=surveys.guard_visit`; a child type registers a guard that checks its visit (e.g. `ensure_unlocked(obs.survey_visit)`).
+`create_batch` gets no row checks, so its handler checks the lock itself. A visit cannot be created locked (`move_to` from `draft`
+refuses it) and has no delete (D-058). Order: another user still gets `permission_denied` before `visit_locked`; an admin's push is
+refused too. Accept server in conflict resolution still touches a locked row (an admin action); Accept client fails with "Unlock it
+first" (D-053).
+**"Mark as reviewed" refuses a locked visit.** `locked → reviewed` is the unlock, which T043 does with a reason; the bulk action used
+to clear the lock silently.
+**Admin edits (amends D-058):** an unlocked visit is now editable. Fixed fields (`SurveyVisitAdmin.fixed_fields`): `status`,
+`cancel_reason`, `project`, `distance_walked_m`, `locked_*`, `quality_flags`, `device_id`, `created_offline`, `deleted_at`, plus the
+sync fields. That is more than the TICKETS note listed: a visit cannot change project, the cancel reason belongs to the cancel flow,
+and the device and offline flag record where the visit came from. `SurveyVisitAdminForm.clean()` reloads the row `FOR UPDATE`
+(Django admin validates and saves in one transaction, so the lock holds until the save), refuses a locked row first, then compares the
+hidden `opened_version` (the `server_version` the form was opened with) and refuses with "changed after you opened it, reload" if the
+row moved on: Django's `changed_data` compares the POST with the *reloaded* row, so without this a form opened before a phone push
+would write its old values over it (code review). Then `services.check_admin_edit` (transect in the project, observer a member) runs on
+the reloaded row with only the changed fields set; a refusal is a form error, not a 500. The table's constraints are left to the
+ModelForm (none mixes an editable field with a read-only one). `save_model` saves that row through `services.admin_save_visit` with the
+change-reason dialog's text (`admin edit` when blank). `opened_version` is added to the fields only on an edit form (a read-only page
+would fail to look it up). The distance is not recomputed. A locked visit: `has_change_permission(obj)` is False (read-only page, a POST is 403), and
+`admin/surveys/surveyvisit/change_form.html` shows "Locked by X on Y: reason" in `form_top`. **Child admins (T044+)** return
+`not services.is_locked(obj.survey_visit)` from `has_change_permission`.
+**App:** no schema change; the lock arrives as `status = locked` (D-058). `visitIsLocked(status)` in `visit_status.dart`.
+`PullApplier._rejectChangesToLockedVisits` runs for every pulled `survey_visit` with status `locked`, before the pending guard: the
+visit's never-sent items (`queued` with `retryCount` 0: its updates and its `survey_track_point` batches, both with `entityId` = the
+visit) become `rejected` with
+`lastError = [{code: visit_locked, ...}]`, and the row becomes `synced`, so the guard lets the locked server row in. Items the server
+already rejected keep their own message. An item sent before (`retryCount` > 0, e.g. its reply was lost) stays queued, because the
+server may already have it and then answers `duplicate`; Discard of it would delete points the server holds (code review). `conflict`
+items stay (they are settled on the server); while one exists the row keeps its
+local values and shows as locked only after the conflict is resolved. `TODO(T044)`: observations' queued changes. The rule lives in
+`PullApplier` (which already rewrites queue items in `_releaseConflicts`), not in `SyncRepository` as first planned.
+`VisitRepository._update` throws `StateError` for a locked visit, and `TrackPointRepository.addPoints` writes nothing for one. The
+transect's "My visits" list shows `Icons.lock_outline` with "Locked". The sync screen hides Retry on a rejected item while its visit is locked on the phone
+(`lockedVisitIdsProvider`, matched on `entityId`), whatever the error code; after an unlock is pulled, Retry comes back (the code review
+found that keying it on the stored `visit_locked` code hid Retry for good). The message: "An admin has locked this visit, so this
+change was not accepted. Discard it, or retry after the visit is unlocked." (true for both the pull-time and the server rejection). Discarding a rejected
+track-point batch deletes those points locally (D-056); the server keeps what it had.
+**Closes D-060's "the visit lock (T042) is not checked yet".**
+**Shown by hand:** `tmp/t042/smoke.py` (43 checks, run in the container): push update with a current, a stale overlapping and a stale
+non-overlapping version, an empty update, a resent create (all `visit_locked`, no new conflict, nothing changed), the track batch,
+another user and an admin, REST PATCH and `/complete` (409), Accept client, Mark as reviewed (service and action), admin permission,
+banner, 403 on POST, the edit form (valid edit, observer outside the project, a lock that lands while the form is open), and after an
+unlock the same pushes applied. It leaves one visit "t042 locked demo" locked for the browser. The pull rule was checked with a
+throwaway Drift test (`tmp/t042/locked_pull_test.dart`, 6 cases; not committed). "Tests for each child entity type" was skipped
+(D-021). The admin form part of the smoke script also covers a push while the form is open (refused, push kept), a reload then an
+edit (only that field changes) and a broken time constraint.
+**On the phone (Galaxy S24, USB):** (a) a synced FG3 visit locked on the server showed the lock icon and "Locked" after a sync, with
+no queue items. (b) A walk on FG4 was tracking (created on the server with this phone's device id, so the tracker picked it up), the
+USB link was cut while a 10-point batch queued, the visit was completed and locked on the server, and on reconnect the server rejected
+the batch with `visit_locked`; the visit became `locked`/`synced`, tracking and its notification stopped, and the card showed the message
+with Discard only. After a server unlock (`reviewed`) and a sync, Retry appeared and sent the 10 points.
+**Late track batches (open, for T040/T043):** a lock never comes from losing signal; it is an admin action on a finished visit. But
+a visit finished offline can reach the server before all its track batches (one push carries at most 100 items), and a lock in that
+gap would refuse the rest. Chosen with the developer: T040 sends the phone's track point count on finish, and T043's Lock warns or
+refuses until the server has that many points (notes under both tickets in TICKETS.md). Accepting late batches on a locked visit was
+the alternative; it contradicts T042's criterion.
+**Code review findings not taken:** a DB trigger instead of the per-service calls (a larger change than this ticket; the per-entity
+guard and `ensure_unlocked` are the rule for T044+), batching the per-visit queries in the pull (few locked visits per page),
+`visitIsLocked` in `PullApplier` (`core/` would import `features/`), and the repeated checks in `complete_visit` / after the form
+(cheap; the service keeps the rule in one place).

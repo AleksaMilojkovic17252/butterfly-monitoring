@@ -6,20 +6,93 @@ from django.contrib.gis.forms.widgets import OSMWidget
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
 from apps.core.admin import HistoryAdmin, SyncableAdmin
 from apps.surveys import services
 from apps.surveys.models import SurveyVisit
+from apps.surveys.state import VisitLocked, ensure_unlocked
+
+
+class SurveyVisitAdminForm(forms.ModelForm):
+    """Runs the service's checks for an admin edit (`services.check_admin_edit`), so a locked
+    visit, or a transect or observer that does not fit the project, shows as a form error.
+
+    The form remembers the `server_version` it was opened with. If the visit changed since (a push
+    from the phone, a lock, another admin), Save is refused and the admin reloads the page: the
+    form would otherwise write its old values over that change.
+    """
+
+    opened_version = forms.IntegerField(widget=forms.HiddenInput, required=False)
+    admin_user = None  # set by SurveyVisitAdmin.get_form
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["opened_version"].initial = self.instance.server_version
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Django admin validates and saves in one transaction, so this lock holds until the save.
+        visit = SurveyVisit.objects.select_for_update().get(pk=self.instance.pk)
+        try:
+            # Checked first, so a lock that landed while the form was open says so.
+            ensure_unlocked(visit)
+        except VisitLocked as error:
+            raise forms.ValidationError(str(error.detail)) from error
+        if cleaned_data.get("opened_version") != visit.server_version:
+            raise forms.ValidationError(
+                _(
+                    "This visit was changed after you opened it (on the phone or by another "
+                    "admin). Reload the page and make your change again."
+                )
+            )
+        for field_name in self.changed_data:
+            if field_name in cleaned_data and field_name != "opened_version":
+                setattr(visit, field_name, cleaned_data[field_name])
+        # The table's constraints are checked by the ModelForm itself (none of them mixes an
+        # editable field with a read-only one), and again by save_visit.
+        try:
+            services.check_admin_edit(self.admin_user, visit, self.changed_data)
+        except ValidationError as error:
+            if isinstance(error.detail, dict):
+                for field_name, messages_ in error.detail.items():
+                    self.add_error(field_name if field_name in self.fields else None, messages_)
+            else:
+                self.add_error(None, error.detail)
+        except APIException as error:
+            self.add_error(None, str(error.detail))
+        self.visit_to_save = visit
+        return cleaned_data
 
 
 @admin.register(SurveyVisit)
 class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
-    """Visits are recorded on the phone, so the admin only reads them (T034). The one change is
-    the "Mark as reviewed" action, which goes through `surveys.state.transition()`. Lock and
-    unlock with a reason, and the review screen, are T043. The page ends with the route drawn
-    from the track points (T036).
+    """Visits are recorded on the phone. An admin may correct an unlocked visit (saved through
+    `services.admin_save_visit`, T042); its status moves only through actions: "Mark as reviewed"
+    here, Lock and Unlock with a reason in T043. A locked visit opens read-only with a banner
+    saying who locked it and why. The page ends with the route drawn from the track points (T036).
     """
+
+    form = SurveyVisitAdminForm
+    change_form_template = "admin/surveys/surveyvisit/change_form.html"
+    # Never edited in the admin: the status and the cancel reason move through the lifecycle, a
+    # visit cannot change project (D-058), the distance comes from the track (T036), the lock
+    # fields belong to T043's actions, the flags to T056, and the device and offline flag record
+    # where the visit came from.
+    fixed_fields = [
+        "id",
+        "project",
+        "status",
+        "cancel_reason",
+        "distance_walked_m",
+        "locked_at",
+        "locked_by",
+        "lock_reason",
+        "quality_flags",
+        "device_id",
+        "created_offline",
+        "deleted_at",
+    ]
 
     list_display = ["transect", "observer", "started_at", "status", "project", "last_modified"]
     list_filter = ["status", "project"]
@@ -28,8 +101,26 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     list_select_related = ["transect", "observer", "project"]
     actions = ["mark_reviewed_selected"]
 
+    def get_fields(self, request, obj=None):
+        # Model order, editable or not, so the form reads like the read-only page did.
+        fields = [field.name for field in SurveyVisit._meta.fields] + ["route_map"]
+        if obj is not None and self.has_change_permission(request, obj):
+            fields.append("opened_version")  # the form's own hidden field, only on an edit form
+        return fields
+
     def get_readonly_fields(self, request, obj=None):
-        return [field.name for field in SurveyVisit._meta.fields] + ["route_map"]
+        return [*super().get_readonly_fields(request, obj), *self.fixed_fields, "route_map"]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.admin_user = request.user
+        return form
+
+    def save_model(self, request, obj, form, change):
+        # The row loaded and checked in the form's clean(), with only the changed fields set.
+        services.admin_save_visit(
+            form.visit_to_save, request.user, self.get_change_reason(request), form.changed_data
+        )
 
     @property
     def media(self):
@@ -62,9 +153,11 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        # No edit form: a single visit opens read-only. Without an object Django asks whether
-        # actions may run, and the "Mark as reviewed" action needs that.
-        return obj is None and super().has_change_permission(request)
+        # A locked visit opens read-only until T043's Unlock action (T042). Its records follow
+        # the same rule: a child admin (T044+) checks `services.is_locked(obj.survey_visit)`.
+        if obj is not None and services.is_locked(obj):
+            return False
+        return super().has_change_permission(request, obj)
 
     @admin.action(description=_("Mark as reviewed"), permissions=["change"])
     def mark_reviewed_selected(self, request, queryset):

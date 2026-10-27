@@ -375,6 +375,9 @@ def _apply(user, mutation):
         if operation == "delete":
             return Outcome(MutationStatus.APPLIED, instance.server_version)
         raise PushError("deleted", f"{entity.entity_type} {entity_id} was deleted.")
+    if entity.push.guard is not None:
+        # Before the merge: a locked visit is rejected, not turned into a conflict (T042).
+        entity.push.guard(user, instance)
 
     base_version = mutation["base_version"]
     resend = operation == "create"

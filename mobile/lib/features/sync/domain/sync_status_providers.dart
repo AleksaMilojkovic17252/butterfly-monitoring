@@ -18,6 +18,12 @@ final rejectedItemsProvider =
           ref.watch(syncStatusRepositoryProvider).watchRejected(projectId),
     );
 
+/// Ids of the project's locked visits (T042).
+final lockedVisitIdsProvider = StreamProvider.family<Set<String>, String>(
+  (ref, projectId) =>
+      ref.watch(syncStatusRepositoryProvider).watchLockedVisitIds(projectId),
+);
+
 /// The project's conflicts: open ones first, then newest first.
 final conflictsProvider = StreamProvider.family<List<SyncConflict>, String>(
   (ref, projectId) =>
