@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T047, T061, T062, T065, T023, T060, T066, T099
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -131,10 +131,14 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T093 | [#110](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/110) | Moving Features API: temporal geometry and properties | P2 | must | T092 | 1.5 d | todo |
 | T094 | [#111](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/111) | Trajectory display | P2 | must | T090, T093 | 2 d | todo |
 | T095 | [#112](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/112) | Interoperability and conformance evaluation of SensorThings, EDR and Moving Features | P2 | must | T083, T094 | 2 d | todo |
-| T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | should | T087, T088, T091 | 1.5 d | todo |
+| T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | must | T087, T088 | 1.5 d | todo |
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
 | T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
 | T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | todo |
+| T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | todo |
+| T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
+| T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
+| T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
 
 ## Acceptance criteria
 
@@ -800,6 +804,10 @@ From T042 (D-062): when the visit is finished, the phone also sends how many tra
 finished offline can reach the server before all its track batches (one push carries at most 100 items), and T043 uses the count to
 keep an admin from locking a visit whose route is still uploading: a locked visit refuses late track batches (T042).
 
+From T100 (added 2026-10-27): the server computes the same coverage, so pin the definition. Sample the transect at 0, 10, 20 … m
+plus its end point. A sample is covered when a usable route **point** lies within `maxDistanceFromTransectM`. Usable means the accuracy
+rule of D-060 (`accuracyM` null or ≤ 2 × `gpsAccuracyWarningM`). With fewer than 2 usable points there is no coverage.
+
 Depends on: T039, T055
 
 - [ ] Summary: duration, distance, number of species, number of individuals, number of observations per section.
@@ -1097,6 +1105,9 @@ Depends on: T031, T059
 
 ### T061 · Indicators: server SQL views and admin report
 [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) · E09 · P1 · should · labels: `backend`, `admin`, `database`, `should` · implements F35 · est. 1.5 d · **todo**
+
+From T100 (added 2026-10-27): if T100 is done, `report_transect_indicators` also has `valid_visits`, using T100's valid-visit rule
+(protocol §6, rules 1–3). If T100 is done after this ticket, T100 adds the column.
 
 Depends on: T041, T044, T058
 
@@ -1642,12 +1653,18 @@ Notes: pygeoapi STA bridge test needs T080
 - [ ] Results table (standard, client, operation, result, time, notes) in `evaluation/interop/part2-results.md`.
 
 ### T096 · PostGIS vs MobilityDB comparison
-[#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) · E15 · P2 · should · labels: `evaluation`, `database`, `should` · implements F61, F70 · est. 1.5 d · **todo**
+[#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) · E15 · P2 · must · labels: `evaluation`, `database`, `must` · implements F61, F70 · est. 1.5 d · **todo**
 
-Depends on: T087, T088, T091
+Changed 2026-10-27: `should` → `must`, and T091 is no longer a dependency, so T096 stays under cut line B (Keep 25 d / Drop 12.5 d).
+It is the main database result of Part 2. Under cut line B it runs on visit routes only. Query 3 needs habitat polygons (T053): if T053 was cut,
+it uses section habitat types instead (section lines buffered by 2.5 m, the Pollard recording box).
 
-- [ ] The same six queries (T087) on the simulated season: all observer routes, plus simulated focal follows (add a generator option to T071 if needed), in both implementations.
+Depends on: T087, T088
+Notes: + focal follows if T091 is done
+
+- [ ] The same six queries (T087) on the simulated season: all observer routes (`visit_route_trajectory`, T088), plus simulated focal follows if T091 is done (add a generator option to T071 if needed), in both implementations.
 - [ ] Metrics: execution time (median of 10 runs, warm cache), SQL lines, correctness check (results equal within tolerance), storage size.
+- [ ] The same method as the Phase 1 index benchmark (T102): scratch database restored from a backup, data at scale 1 and 10, median of 10 warm runs, and the plan node from `EXPLAIN (ANALYZE, BUFFERS)`.
 - [ ] A results table and a short discussion in `evaluation/results/postgis-vs-mobilitydb.md`.
 
 ### T097 · Standards comparison write-up
@@ -1696,3 +1713,82 @@ no new visits, without deleting it or removing its members.
 
 Out of scope: closing automatically at the season end (an admin closes it); exports and pygeoapi are unaffected. Reopen is the only way
 back; closing deletes nothing and keeps all members.
+
+### T100 · Server-side route coverage and the valid-visit rule
+[#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) · E08 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements protocol §6, F31 · est. 1 d · **todo**
+
+Depends on: T036, T040, T056
+
+Why: protocol §6 makes coverage ≥ `min_coverage_pct` part of a valid visit and says T061 computes it, but T061's criteria don't, and v4
+cut the server-side coverage flag (T056: "shown in app only"). Without it, T061 and T101 cannot filter on valid visits. Comparing the
+app's and the server's values is also Q7 evidence. The issue has the full SQL.
+
+- [ ] `SurveyVisit.route_coverage_pct` (`numeric(5,1)`, null): server-owned, read-only in the API, neither pushed nor pulled (no Drift change).
+- [ ] Computed where `distance_walked_m` is (D-060): when the visit ends up `completed`/`synced` **and after every track batch for a finished visit** (a visit finished offline arrives before its points), plus `recompute_flags` and the admin recompute action (T056).
+- [ ] Same definition as T040 (note under T040): samples at 0, 10, 20 … m plus the end point, in the transect's UTM zone (`utm_srid`, D-046). A sample is covered when a usable route **point** (D-060 accuracy rule, live points) is within `max_distance_from_transect_m`. Fewer than 2 usable points → `null`. Written into `docs/requirements/protocol.md` §6.
+- [ ] Flag `low_coverage` when below `min_coverage_pct`. This reverses the v4 cut on the server side (DECISIONS.md entry). It is never a rejection.
+- [ ] The valid-visit rule (§6 rules 1–3) is one SQL expression or view that T061 and T101 reuse. `report_transect_indicators` gets `valid_visits` (here if T061 is done, else in T061).
+- [ ] The admin visit page shows the coverage and draws the uncovered parts of the transect (`ST_Difference(transect, ST_Buffer(route_points, d))` in UTM).
+- [ ] Checked once against the app with a replayed track (T072): within 1 percentage point. Result recorded in the evaluation notes.
+
+Out of scope: effort (a route that doubles back counts once) and time (pauses don't matter).
+
+### T101 · Research-question analysis views (Q1, Q3, Q4, Q6)
+[#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) · E09 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements outline §4 · est. 2.5 d · **todo**
+
+Depends on: T044, T048, T051, T053, T061, T071
+Notes: valid-visit filter from T100 if done
+
+Why: the outline's goal is that two or three research questions (§4) can be demonstrated. No ticket computes any of them. One SQL view
+per question, built like the T061 views, answers it with a PostGIS join. On simulated data the generator plants known effects, and the
+results chapter shows the views recover them; it says nothing about real butterflies. The issue has the SQL sketches.
+
+- [ ] **Q1 `report_habitat_richness`** (project × habitat type × year): sections, section km, valid visits, species, individuals, individuals per km. Incidental records take their habitat from the `habitat_feature` polygon they fall in, else `unknown`.
+- [ ] **Q3 `report_specialist_host_plants`** (section × year): specialist individuals, host-plant patches within `host_plant_radius_m` and their summed abundance midpoints. Index-friendly `ST_DWithin` (`&&` prefilter).
+- [ ] **Q4 `report_reproductive_microhabitat`** (project × habitat type): reproductive records in polygons of that type, polygon area, the share of records against the share of area, and Jacobs' index `D = (r − p) / (r + p − 2rp)`. Reproductive uses the T061 definition.
+- [ ] **Q6 `geo.observation_hexgrid`** (project × hexagon, `ST_HexagonGrid`, default 100 m, in UTM): observations, individuals, species, nectaring and reproductive records. Empty hexagons are left out. Published in pygeoapi (T068).
+- [ ] Q1 and Q3 are the core. Q4 and Q6 are dropped if the supervisor picks only two questions.
+- [ ] Server-only `taxon_host_plant (taxon, plant_taxon, source)` from a curated CSV in `database/seeds` (the species the demo project and the generator use, with a source per row). Not synced. Specialist = all host plants in one genus, derived from this table (`Taxon` unchanged) unless the supervisor prefers a literature flag.
+- [ ] `simulate_season` option (e.g. `--planted-effects`): host-plant patches near some sections, specialists biased towards them, reproductive records biased towards one habitat type, and the effect sizes written to the output.
+- [ ] Q1 and Q3 count valid visits only (T100, else completed non-cancelled visits, noted). Effective taxon = `COALESCE(validated_taxon_id, taxon_id)`.
+- [ ] Unmanaged models, read-only admin changelists with project/year filters, and CSV export (T065 if done).
+- [ ] Each view is checked by hand on a tiny seeded case worked out on paper. Results on the simulated season, next to the planted effects, go in `evaluation/results/research-questions.md`.
+- [ ] `EXPLAIN` of each spatial join shows a GiST index scan. Plans are recorded for T102.
+
+Out of scope: statistics (GLMs) in the system; analysis in R uses the export. GPS error (5–15 m) blurs point in polygon for small polygons: document it.
+
+### T102 · Spatial index benchmark on the simulated season
+[#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) · E11 · added 2026-10-27 · P1 · should · labels: `evaluation`, `database`, `should` · implements F61 (P1 part) · est. 1 d · **todo**
+
+Depends on: T048, T056, T071
+Notes: + T100 and T101 queries if done
+
+Why: the code already casts geometry to `geography` (`surveys/services.py`, `transects/services.py`), and a geography cast in a filter or
+in KNN cannot use the GiST index on `geometry`. Nothing measures whether the spatial queries use their indexes. T096 reuses this method in Phase 2.
+
+- [ ] Runs on a scratch database restored from a backup (T010), never on the dev data.
+- [ ] Simulated season at scale 1 and scale 10, using the generator's existing flags if they can do it.
+- [ ] Fixed SQL files in `evaluation/benchmarks/spatial/`: section assignment (T048), `far_from_transect` and `outside_project_area` (T056), walked distance and coverage (T036, T100), T101 Q3/Q4 if done, and KNN nearest host plant.
+- [ ] Configurations: **A** no index (`SET LOCAL enable_indexscan/enable_bitmapscan = off`, or `DROP INDEX` inside `BEGIN … ROLLBACK`), **B** GeoDjango's GiST, **C** B plus a fix (`gist ((geometry::geography))` expression index, `&&` prefilter, or UTM).
+- [ ] Metrics: median of 10 warm runs, plan node from `EXPLAIN (ANALYZE, BUFFERS)`, index size.
+- [ ] Results and discussion in `evaluation/results/spatial-indexes.md`.
+- [ ] Where C clearly wins, fix the real code (new migration) and add a DECISIONS.md rule.
+- [ ] Note the size of the GiST indexes on `historical_*` tables and decide whether to keep them.
+
+Out of scope: general claims. It is one laptop and one generator run, and a Seq Scan winning at Phase 1 volumes is a valid finding.
+
+### T103 · Linear referencing: positions along the transect
+[#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) · E06 · added 2026-10-27 · P1 · could · labels: `backend`, `database`, `could` · implements F19 (extends) · est. 1 d · **todo**
+
+Depends on: T044, T048, T067
+
+Why: transect data is one-dimensional ("200 m from the start"). PostGIS linear referencing gives each transect record its distance along
+the transect and its offset from it. This gives an abundance profile along the route and numbers for T048's section-boundary limitation.
+
+- [ ] `geo.transect_sections` gains `start_m` and `end_m` (UTM, `ST_LineLocatePoint` × length; sections tile the line, D-046).
+- [ ] `geo.butterfly_observations` gains `distance_along_m` and `offset_m` for transect records (null otherwise).
+- [ ] View `report_transect_profile` (transect × year × `bin_m` bin, default 50 m): observations, individuals, species.
+- [ ] On the simulated season, count the records where nearest section (T048) and `[start_m, end_m)` disagree, and their distance to a boundary. Recorded in `evaluation/results/section-assignment.md`.
+- [ ] A DECISIONS.md entry on which method T048 keeps (keep the `offset_m ≤ max_distance_from_transect_m` check either way).
+
+Out of scope: storing the values (views only, no sync or Drift change). On a transect that loops back on itself, `ST_LineLocatePoint` can pick the wrong pass: document it.
