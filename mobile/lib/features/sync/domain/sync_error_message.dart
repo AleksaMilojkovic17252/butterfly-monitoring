@@ -49,6 +49,7 @@ String entityTypeLabel(String type) {
     'management_type' => 'Management types',
     'plant_taxon' => 'Plants',
     'survey_visit' => 'Visits',
+    'survey_track_point' => 'Track points',
     'project_protocol' => 'Protocols',
     'taxon' => 'Butterfly species',
     'transect' => 'Transects',

@@ -969,3 +969,42 @@ Nothing changed queues nothing. An unsent create absorbs the update (D-051). `st
 says "You are logged out", not "download the project".
 **Placeholders:** `TODO(T037)` start tracking in `VisitRepository.start`; `TODO(T039)` after Start the app returns to the transect detail
 with a snackbar; `TODO(T073)` the `visit_form_open` event; a comment marks the T085 "Auto-fill weather" slot in the weather card.
+
+## D-060 · Track points: batch-only entity, not pulled, distance from the track with the phone's figure as fallback
+2026-10 · accepted · T036, *amends D-050 and D-058*
+**Model:** `SurveyTrackPoint` (`survey_track_point`, `apps/surveys/models.py`) as the ticket's section a, with the sync trigger and no
+history (CONVENTIONS A.5.7). Points are never thinned, simplified or deleted by the server: they are the raw input for T088.
+**Push only:** the registry entry has `PushHandlers(create_batch=surveys.push_track_points)` and nothing else, so a single `create`,
+`update` or `delete` is `operation_not_allowed` and no `project_of` is needed. The pull scope is empty (`pull_track_points` returns
+`none()`), so the pull's `survey_track_point` key is always `[]`. The phone that recorded a route already has it, and pulling every
+pushed batch straight back would double the track traffic (T074). The cost: after Remove data or a reinstall, old routes exist only on
+the server (T059's route layer shows local points).
+**Batch handler:** the visit must be live (else `not_found`), the caller's own (or an admin's) and in a project the caller is a member
+of. Rows are validated with `SurveyTrackPointSyncSerializer(many=True)`; **one bad row rejects the whole batch**, and the error names
+the row (`fields: {"rows[3].heading_deg": [...]}`) so the phone's sync error message says which point. `geometry` is a GeoJSON Point
+(`core.serializers.WritableGeoJSONField`, also meant for T044); the phone sends its `lat`/`lon` that way. `heading_deg` is checked in
+the serializer too, so it is a field error and not `integrity_error`. `insert_batch` (`ON CONFLICT DO NOTHING`) makes a resend harmless;
+it also **silently skips** a new id that reuses a `(visit, sequence_number)` pair. The visit lock (T042) is not checked yet.
+**Distance (amends D-050 and D-058):** `distance_walked_m` is no longer server-owned. The phone may send its own figure (T040), and the
+server replaces it whenever it has at least two usable points: `walked_distance_m` = `ST_Length(ST_MakeLine(geometry ORDER BY
+recorded_at, sequence_number)::geography)` over live points with `accuracy_m` null or at most `2 × protocol.gps_accuracy_warning_m`
+(raw SQL: Django's `MakeLine` cannot order), rounded to 0.1 m. `sequence_number` only breaks ties. It runs in `push_create`,
+`push_update`, REST `update_visit` and `complete_visit` when the visit ends up `completed` or `synced` (`set_distance_if_finished`), and **after every
+batch** for a visit already finished (`refresh_distance`). The second path is needed because a visit started and finished offline
+reaches the server as one `create(status=completed)` *before* its track batches: the queue merges the finish into the unsent create and
+keeps its `seq` (D-051). That save uses the push reason and happens only when the value changed, so a resend writes no history row;
+a visit finished offline gets one history row per batch that changes its distance. The column does not record whether a stored value
+came from the server or the phone.
+**Admin:** the visit page ends with a read-only "Route" field (`route_map`): the route of every live point in recorded order, unfiltered
+(`surveys.services.route_geojson`), drawn solid over the dashed transect line by `surveys/route_map.js` with the OpenLayers build
+Django's map widget loads (`OSMWidget().media`), plus the point count. Fewer than two points shows "No route".
+**App:** Drift `survey_track_point` (schema v8, `from7To8`), as section c: `lat`/`lon`, `serverVersion`/`syncStatus` but no
+`deletedAt` (so not the `SyncColumns` mixin), unique `(survey_visit_id, sequence_number)` and a provider CHECK. `SyncRepository.discard`
+of a visit create the server never had now also deletes that visit's track points and their queued batches, which would otherwise be
+pushed for a visit the server never gets (closes the `TODO(T036)` of D-056). The sync screen names the type "Track points". Writing
+points is T037.
+**Shown by** `tmp/t036/smoke.py` (55 checks, run in the container: 1000-row batch in 0.27 s, 1001 rejected, resend and duplicate,
+bad rows, ownership, not-found, single operations refused, empty pull, distance with an outlier left out and one at exactly 2× kept,
+client value kept with 0, 1 or only inaccurate points, the offline-finish path, REST complete, the admin page). It keeps one visit
+("t036 demo route") for the admin map and soft-deletes the rest with their points. The Drift v7 → v8 step was checked with the generated
+migration test, and `discard` with a throwaway test (both in `tmp/t036/`, not committed; D-021).

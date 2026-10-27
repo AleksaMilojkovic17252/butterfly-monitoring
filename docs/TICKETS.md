@@ -71,7 +71,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | done |
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | done |
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | done |
-| T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | todo |
+| T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | done |
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | todo |
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | todo |
@@ -715,7 +715,16 @@ Depends on: T016, T033, T034
 - [ ] Usable one-handed. The form opens in under 1 s (logged by T073).
 
 ### T036 · Track points: model, batch sync and walked distance
-[#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) · E05 · P1 · must · labels: `backend`, `database`, `sync`, `must`, `p2-compat` · implements F10 · est. 1.5 d · **todo**
+[#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) · E05 · P1 · must · labels: `backend`, `database`, `sync`, `must`, `p2-compat` · implements F10 · est. 1.5 d · **done**
+
+Checked by hand (2026-10-27): `tmp/t036/smoke.py`, 55 checks in the container. These covered 1000-row batches (0.27 s), idempotent resends, bad
+rows rejecting the batch with the row named, ownership, the distance with the outlier left out, the client value kept with fewer than 2
+usable points, the visit finished offline before its points arrive, and REST complete, and the admin page (map, point count, scripts). Also checked: the Drift v7 → v8
+migration test, and a throwaway `discard` test (`tmp/t036/`, not committed). Decisions with the developer: the phone's
+`distance_walked_m` is accepted and replaced by the server's when it can compute one; track points are not pulled; the Drift table
+and the `discard` fix are part of this ticket. See D-060.
+
+Deferred: the visit-lock check on batches is T042.
 
 Depends on: T026, T034
 

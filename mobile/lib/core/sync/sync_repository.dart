@@ -128,11 +128,10 @@ class SyncRepository {
   /// (later ones were built on it). Three outcomes:
   /// - `create_batch`: the child rows of every batch of the parent are deleted.
   /// - A create the server never had (`server_version` null): the row is
-  ///   deleted.
+  ///   deleted. For a visit its track points and their queued batches go
+  ///   too, or they would be pushed for a visit the server never gets (T036).
   /// - Otherwise the row becomes `synced` and the project's pull cursor goes
   ///   back to 0, so the next pull brings the server's version back.
-  ///
-  /// TODO(T036): child rows of a deleted parent (track points of a visit).
   Future<void> discard(SyncQueueItem item) {
     return _db.transaction(() async {
       final queryDelete = _db.syncQueue.delete()
@@ -171,6 +170,18 @@ class SyncRepository {
         (i) => i.operation == SyncOperation.create.wireName,
       );
       if (wasCreate && row?.readNullable<int>('server_version') == null) {
+        if (item.entityType == 'survey_visit') {
+          final trackBatches = _db.syncQueue.delete()
+            ..where(
+              (t) =>
+                  t.entityType.equals('survey_track_point') &
+                  t.entityId.equals(item.entityId),
+            );
+          await trackBatches.go();
+          final trackPoints = _db.surveyTrackPoints.delete()
+            ..where((t) => t.surveyVisitId.equals(item.entityId));
+          await trackPoints.go();
+        }
         await _db.customUpdate(
           'DELETE FROM "${item.entityType}" WHERE id = ?',
           variables: [Variable.withString(item.entityId)],
@@ -185,10 +196,10 @@ class SyncRepository {
   }
 
   /// Queues child rows (track points) as `create_batch` items of at most
-  /// [maxBatchRows]. [entityType] is the child table (`track_point`); [parentId]
-  /// (the visit, D-050) is the queue's `entityId`. [rows] have server field
-  /// names and their own `id`; [writeRows] inserts them locally. An unsent batch
-  /// of the same parent is filled up first.
+  /// [maxBatchRows]. [entityType] is the child table (`survey_track_point`);
+  /// [parentId] (the visit, D-050) is the queue's `entityId`. [rows] have
+  /// server field names and their own `id`; [writeRows] inserts them locally.
+  /// An unsent batch of the same parent is filled up first.
   Future<void> writeBatch({
     required String projectId,
     required String entityType,

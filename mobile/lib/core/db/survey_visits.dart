@@ -30,7 +30,9 @@ class SurveyVisits extends Table with SyncColumns {
   IntColumn get durationSeconds => integer().nullable()();
   IntColumn get pausedSeconds => integer().withDefault(const Constant(0))();
 
-  /// Computed by the server from the track (T036); the phone never sends it.
+  /// The phone's own figure (sent by T040). The server replaces it with the
+  /// distance along the track points when it has at least two usable ones
+  /// (T036), and the next pull brings that back.
   RealColumn get distanceWalkedM => real().nullable()();
   IntColumn get observerCount => integer().withDefault(const Constant(1))();
   TextColumn get observerNames => text().withDefault(const Constant(''))();

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
@@ -56,7 +57,8 @@ class SurveyVisit(SyncableModel):
     ended_at = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.PositiveIntegerField(null=True, blank=True)  # excludes pauses
     paused_seconds = models.PositiveIntegerField(default=0)
-    # Computed by the server from the track points (T036); clients cannot set it.
+    # The phone sends its own figure; the server replaces it with the one from the track points
+    # when it has at least two usable points (T036, surveys.services.set_distance_if_finished).
     distance_walked_m = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
     observer_count = models.PositiveSmallIntegerField(default=1)
     observer_names = models.CharField(max_length=300, blank=True)
@@ -156,3 +158,53 @@ class SurveyVisit(SyncableModel):
     def __str__(self):
         start = self.started_at.strftime("%Y-%m-%d %H:%M") if self.started_at else "not started"
         return f"{self.transect} · {start} · {self.status}"
+
+
+class LocationProvider(models.TextChoices):
+    GPS = "gps", "GPS"
+    FUSED = "fused", "Fused"
+    NETWORK = "network", "Network"
+    SIMULATED = "simulated", "Simulated"
+
+
+class SurveyTrackPoint(SyncableModel):
+    """One GPS fix of a visit, as recorded on the phone (T036).
+
+    Append-only and high volume, so no history (CONVENTIONS A.5.7). Points are never thinned or
+    simplified: they are the raw input for the Phase 2 MobilityDB trajectories (T088).
+    """
+
+    survey_visit = models.ForeignKey(
+        SurveyVisit, on_delete=models.CASCADE, related_name="track_points"
+    )
+    recorded_at = models.DateTimeField()
+    geometry = gis_models.PointField(srid=4326)
+    accuracy_m = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
+    altitude_m = models.DecimalField(max_digits=7, decimal_places=1, null=True, blank=True)
+    speed_m_s = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    heading_deg = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    provider = models.CharField(
+        max_length=10, choices=LocationProvider.choices, default=LocationProvider.GPS
+    )
+    sequence_number = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "survey_track_point"
+        indexes = [models.Index(fields=["survey_visit", "recorded_at"])]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["survey_visit", "sequence_number"], name="track_point_seq_unique"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(provider__in=LocationProvider.values),
+                name="track_point_provider_valid",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(heading_deg__isnull=True)
+                | (models.Q(heading_deg__gte=0) & models.Q(heading_deg__lt=360)),
+                name="track_point_heading_ok",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.survey_visit_id} #{self.sequence_number}"

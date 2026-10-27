@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}
+Read-only route of a visit (T036), drawn by surveys/route_map.js: the track in recorded order over
+the transect line (dashed). Shown as a read-only field on the visit page.
+{% endcomment %}
+{% if route %}
+<div class="route_map" data-route-id="{{ route_id }}" data-transect-id="{{ transect_id }}"></div>
+{{ route|json_script:route_id }}
+{{ transect_line|json_script:transect_id }}
+<p class="help">
+  {% blocktranslate count counter=point_count %}{{ counter }} track point, joined in recorded order, unfiltered.{% plural %}{{ counter }} track points, joined in recorded order, unfiltered.{% endblocktranslate %}
+  {% translate "The dashed line is the transect." %}
+</p>
+{% else %}
+<p>{% blocktranslate count counter=point_count %}No route: {{ counter }} track point.{% plural %}No route: {{ counter }} track points.{% endblocktranslate %}</p>
+{% endif %}

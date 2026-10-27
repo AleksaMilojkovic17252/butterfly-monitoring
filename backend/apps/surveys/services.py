@@ -1,22 +1,31 @@
-"""Visit rules and scopes (T034). Push, the REST endpoints and admin call these, not the models.
+"""Visit and track rules and scopes (T034, T036). Push, the REST endpoints and admin call these,
+not the models.
 
 A change is built on the instance first (`build_new_visit`, `apply_visit_changes`) and then
 saved by `save_visit`, so push can add the server's completed -> synced step in the same save.
 The visit lock (T042) and the field rules per status (T055) are added here later.
 """
 
+import json
+from decimal import Decimal
+
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import connection
+from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
 from apps.projects.services import is_member, projects_for
-from apps.surveys.models import CancelReason, SurveyVisit, VisitStatus
-from apps.surveys.serializers import SurveyVisitSyncSerializer
+from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, VisitStatus
+from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.surveys.state import InvalidTransition, move_to, transition
-from apps.sync.handlers import current_push_reason
+from apps.sync.handlers import current_push_reason, insert_batch
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /survey-visits
+
+# Statuses in which the walk is over, so the server works out distance_walked_m (T036).
+FINISHED_STATUSES = [VisitStatus.COMPLETED, VisitStatus.SYNCED]
 
 # Statuses that count as a walked visit in the transect stats: not a draft, not cancelled.
 COUNTED_STATUSES = [
@@ -49,6 +58,12 @@ def counted_visits(user):
 def pull_visits(user, project):
     """The caller's own visits in the project, deleted rows included (D-049)."""
     return SurveyVisit.objects.filter(project=project, created_by=user)
+
+
+def pull_track_points(user, project):
+    """Track points are not pulled (D-060): the phone that recorded them already has them, and
+    sending each pushed batch straight back would double the track traffic."""
+    return SurveyTrackPoint.objects.none()
 
 
 def build_new_visit(user, visit_id, data):
@@ -144,7 +159,9 @@ def create_visit(user, visit_id, data):
 
 
 def update_visit(user, visit, data):
-    return save_visit(apply_visit_changes(user, visit, data), user, REST_REASON)
+    apply_visit_changes(user, visit, data)
+    set_distance_if_finished(visit)
+    return save_visit(visit, user, REST_REASON)
 
 
 def complete_visit(user, visit, data):
@@ -152,7 +169,9 @@ def complete_visit(user, visit, data):
     if visit.status != VisitStatus.IN_PROGRESS:
         raise InvalidTransition(f"Only a visit in progress can be completed, not {visit.status}.")
     changes = {**data, "status": VisitStatus.COMPLETED}
-    return save_visit(apply_visit_changes(user, visit, changes), user, REST_REASON)
+    apply_visit_changes(user, visit, changes)
+    set_distance_if_finished(visit)
+    return save_visit(visit, user, REST_REASON)
 
 
 # Push (sync registry). The framework has checked ownership and the base version.
@@ -161,13 +180,115 @@ def complete_visit(user, visit, data):
 def push_create(user, visit_id, data):
     visit = build_new_visit(user, visit_id, data)
     mark_synced_if_completed(visit)
+    set_distance_if_finished(visit)
     return save_visit(visit, user, current_push_reason())
 
 
 def push_update(user, visit, data):
     apply_visit_changes(user, visit, data)
     mark_synced_if_completed(visit)
+    set_distance_if_finished(visit)
     return save_visit(visit, user, current_push_reason())
+
+
+def push_track_points(user, visit_id, rows):
+    """`create_batch` handler: store a batch of GPS fixes of one visit (T036).
+
+    One bad row rejects the whole batch. A point id the server already has is skipped
+    (`insert_batch`, ON CONFLICT DO NOTHING), so a resent batch changes nothing. The visit is
+    locked for the rest of the push, so a completion in the same push sees these points.
+    """
+    visit = get_object_or_404(SurveyVisit.objects.alive().select_for_update(), pk=visit_id)
+    if not is_admin(user):
+        if visit.created_by_id != user.pk:
+            raise exceptions.PermissionDenied("You can only add track points to your own visits.")
+        if not is_member(user, visit.project_id):
+            raise exceptions.PermissionDenied("You are not a member of this visit's project.")
+
+    serializer = SurveyTrackPointSyncSerializer(data=rows, many=True)
+    if not serializer.is_valid():
+        # DRF reports {row index: {field: messages}}. Name the row in each field instead, e.g.
+        # "rows[3].heading_deg", so the phone's sync error message says which point was refused.
+        raise exceptions.ValidationError(
+            {
+                f"rows[{index}].{field}": messages
+                for index, row_errors in serializer.errors.items()
+                for field, messages in row_errors.items()
+            }
+        )
+    points = [
+        SurveyTrackPoint(survey_visit=visit, created_by=user, updated_by=user, **values)
+        for values in serializer.validated_data
+    ]
+    insert_batch(SurveyTrackPoint, points)
+    refresh_distance(visit, user)
+
+
+def walked_distance_m(visit):
+    """Metres walked along the visit's track, or None with fewer than two usable points.
+
+    Points are joined in recorded order (sequence number breaks ties). A point whose accuracy is
+    worse than twice the protocol's warning value is left out; one without an accuracy is kept.
+    Raw SQL, because Django's MakeLine aggregate cannot order its input.
+    """
+    max_accuracy_m = visit.project.protocol.gps_accuracy_warning_m * 2
+    with connection.cursor() as db:
+        db.execute(
+            """
+            SELECT count(*),
+                   ST_Length(ST_MakeLine(geometry ORDER BY recorded_at, sequence_number)::geography)
+            FROM survey_track_point
+            WHERE survey_visit_id = %s AND deleted_at IS NULL
+              AND (accuracy_m IS NULL OR accuracy_m <= %s)
+            """,
+            [visit.pk, max_accuracy_m],
+        )
+        point_count, length_m = db.fetchone()
+    if point_count < 2:
+        return None
+    return Decimal(str(length_m)).quantize(Decimal("0.1"))
+
+
+def set_distance_if_finished(visit):
+    """Put the server's distance on a finished visit (unsaved). With fewer than two usable points
+    the value the phone sent stays."""
+    if visit.status not in FINISHED_STATUSES:
+        return
+    distance_m = walked_distance_m(visit)
+    if distance_m is not None:
+        visit.distance_walked_m = distance_m
+
+
+def refresh_distance(visit, user):
+    """After new points: work the distance out again if the visit is already finished, and save
+    only when it changed. A visit created and finished offline reaches the server as one create
+    before its points (the phone's queue merges the two, D-051), so this is where it gets its
+    distance."""
+    before = visit.distance_walked_m
+    set_distance_if_finished(visit)
+    if visit.distance_walked_m != before:
+        save_visit(visit, user, current_push_reason())
+
+
+def route_geojson(visit):
+    """The visit's route as `(GeoJSON LineString or None, point count)`, for the admin map.
+
+    Every live point in recorded order, unfiltered; None with fewer than two points.
+    """
+    with connection.cursor() as db:
+        db.execute(
+            """
+            SELECT count(*),
+                   ST_AsGeoJSON(ST_MakeLine(geometry ORDER BY recorded_at, sequence_number))
+            FROM survey_track_point
+            WHERE survey_visit_id = %s AND deleted_at IS NULL
+            """,
+            [visit.pk],
+        )
+        point_count, line = db.fetchone()
+    if point_count < 2:
+        return None, point_count
+    return json.loads(line), point_count
 
 
 def project_of(visit):

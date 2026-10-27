@@ -8,6 +8,7 @@ import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
 import 'package:mobile/core/db/skeleton_pings.dart';
+import 'package:mobile/core/db/survey_track_points.dart';
 import 'package:mobile/core/db/survey_visits.dart';
 import 'package:mobile/core/db/sync_conflicts.dart';
 import 'package:mobile/core/db/sync_queue.dart';
@@ -31,6 +32,7 @@ part 'app_database.g.dart';
     PlantTaxa,
     ProjectProtocols,
     SyncConflicts,
+    SurveyTrackPoints,
     SurveyVisits,
     Taxa,
     TaxonListVersions,
@@ -42,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -82,6 +84,9 @@ class AppDatabase extends _$AppDatabase {
       },
       from6To7: (m, schema) async {
         await m.createTable(schema.surveyVisit);
+      },
+      from7To8: (m, schema) async {
+        await m.createTable(schema.surveyTrackPoint);
       },
     ),
   );

@@ -7745,7 +7745,9 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
   final int? durationSeconds;
   final int pausedSeconds;
 
-  /// Computed by the server from the track (T036); the phone never sends it.
+  /// The phone's own figure (sent by T040). The server replaces it with the
+  /// distance along the track points when it has at least two usable ones
+  /// (T036), and the next pull brings that back.
   final double? distanceWalkedM;
   final int observerCount;
   final String observerNames;
@@ -8765,6 +8767,799 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
           ..write('createdOffline: $createdOffline, ')
           ..write('createdAt: $createdAt, ')
           ..write('pausedAt: $pausedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SurveyTrackPointsTable extends SurveyTrackPoints
+    with TableInfo<$SurveyTrackPointsTable, SurveyTrackPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SurveyTrackPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _surveyVisitIdMeta = const VerificationMeta(
+    'surveyVisitId',
+  );
+  @override
+  late final GeneratedColumn<String> surveyVisitId = GeneratedColumn<String>(
+    'survey_visit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES survey_visit (id)',
+    ),
+  );
+  static const VerificationMeta _recordedAtMeta = const VerificationMeta(
+    'recordedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recordedAt = GeneratedColumn<DateTime>(
+    'recorded_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accuracyMMeta = const VerificationMeta(
+    'accuracyM',
+  );
+  @override
+  late final GeneratedColumn<double> accuracyM = GeneratedColumn<double>(
+    'accuracy_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _altitudeMMeta = const VerificationMeta(
+    'altitudeM',
+  );
+  @override
+  late final GeneratedColumn<double> altitudeM = GeneratedColumn<double>(
+    'altitude_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _speedMSMeta = const VerificationMeta(
+    'speedMS',
+  );
+  @override
+  late final GeneratedColumn<double> speedMS = GeneratedColumn<double>(
+    'speed_m_s',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _headingDegMeta = const VerificationMeta(
+    'headingDeg',
+  );
+  @override
+  late final GeneratedColumn<double> headingDeg = GeneratedColumn<double>(
+    'heading_deg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _providerMeta = const VerificationMeta(
+    'provider',
+  );
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+    'provider',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('gps'),
+  );
+  static const VerificationMeta _sequenceNumberMeta = const VerificationMeta(
+    'sequenceNumber',
+  );
+  @override
+  late final GeneratedColumn<int> sequenceNumber = GeneratedColumn<int>(
+    'sequence_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>($SurveyTrackPointsTable.$convertersyncStatus);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    surveyVisitId,
+    recordedAt,
+    lat,
+    lon,
+    accuracyM,
+    altitudeM,
+    speedMS,
+    headingDeg,
+    provider,
+    sequenceNumber,
+    serverVersion,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'survey_track_point';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SurveyTrackPoint> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('survey_visit_id')) {
+      context.handle(
+        _surveyVisitIdMeta,
+        surveyVisitId.isAcceptableOrUnknown(
+          data['survey_visit_id']!,
+          _surveyVisitIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_surveyVisitIdMeta);
+    }
+    if (data.containsKey('recorded_at')) {
+      context.handle(
+        _recordedAtMeta,
+        recordedAt.isAcceptableOrUnknown(data['recorded_at']!, _recordedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedAtMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('accuracy_m')) {
+      context.handle(
+        _accuracyMMeta,
+        accuracyM.isAcceptableOrUnknown(data['accuracy_m']!, _accuracyMMeta),
+      );
+    }
+    if (data.containsKey('altitude_m')) {
+      context.handle(
+        _altitudeMMeta,
+        altitudeM.isAcceptableOrUnknown(data['altitude_m']!, _altitudeMMeta),
+      );
+    }
+    if (data.containsKey('speed_m_s')) {
+      context.handle(
+        _speedMSMeta,
+        speedMS.isAcceptableOrUnknown(data['speed_m_s']!, _speedMSMeta),
+      );
+    }
+    if (data.containsKey('heading_deg')) {
+      context.handle(
+        _headingDegMeta,
+        headingDeg.isAcceptableOrUnknown(data['heading_deg']!, _headingDegMeta),
+      );
+    }
+    if (data.containsKey('provider')) {
+      context.handle(
+        _providerMeta,
+        provider.isAcceptableOrUnknown(data['provider']!, _providerMeta),
+      );
+    }
+    if (data.containsKey('sequence_number')) {
+      context.handle(
+        _sequenceNumberMeta,
+        sequenceNumber.isAcceptableOrUnknown(
+          data['sequence_number']!,
+          _sequenceNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sequenceNumberMeta);
+    }
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {surveyVisitId, sequenceNumber},
+  ];
+  @override
+  SurveyTrackPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SurveyTrackPoint(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      surveyVisitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_visit_id'],
+      )!,
+      recordedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recorded_at'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      accuracyM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}accuracy_m'],
+      ),
+      altitudeM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}altitude_m'],
+      ),
+      speedMS: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}speed_m_s'],
+      ),
+      headingDeg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}heading_deg'],
+      ),
+      provider: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider'],
+      )!,
+      sequenceNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sequence_number'],
+      )!,
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $SurveyTrackPointsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $SurveyTrackPointsTable createAlias(String alias) {
+    return $SurveyTrackPointsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class SurveyTrackPoint extends DataClass
+    implements Insertable<SurveyTrackPoint> {
+  final String id;
+  final String surveyVisitId;
+  final DateTime recordedAt;
+  final double lat;
+  final double lon;
+  final double? accuracyM;
+  final double? altitudeM;
+  final double? speedMS;
+  final double? headingDeg;
+
+  /// `gps`, `fused`, `network` or `simulated` (T072 replays).
+  final String provider;
+
+  /// Order of the fix within its visit, continuing across app restarts (T037).
+  final int sequenceNumber;
+
+  /// Always null: the server gives `create_batch` rows no version.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+  const SurveyTrackPoint({
+    required this.id,
+    required this.surveyVisitId,
+    required this.recordedAt,
+    required this.lat,
+    required this.lon,
+    this.accuracyM,
+    this.altitudeM,
+    this.speedMS,
+    this.headingDeg,
+    required this.provider,
+    required this.sequenceNumber,
+    this.serverVersion,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['survey_visit_id'] = Variable<String>(surveyVisitId);
+    map['recorded_at'] = Variable<DateTime>(recordedAt);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || accuracyM != null) {
+      map['accuracy_m'] = Variable<double>(accuracyM);
+    }
+    if (!nullToAbsent || altitudeM != null) {
+      map['altitude_m'] = Variable<double>(altitudeM);
+    }
+    if (!nullToAbsent || speedMS != null) {
+      map['speed_m_s'] = Variable<double>(speedMS);
+    }
+    if (!nullToAbsent || headingDeg != null) {
+      map['heading_deg'] = Variable<double>(headingDeg);
+    }
+    map['provider'] = Variable<String>(provider);
+    map['sequence_number'] = Variable<int>(sequenceNumber);
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $SurveyTrackPointsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  SurveyTrackPointsCompanion toCompanion(bool nullToAbsent) {
+    return SurveyTrackPointsCompanion(
+      id: Value(id),
+      surveyVisitId: Value(surveyVisitId),
+      recordedAt: Value(recordedAt),
+      lat: Value(lat),
+      lon: Value(lon),
+      accuracyM: accuracyM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accuracyM),
+      altitudeM: altitudeM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(altitudeM),
+      speedMS: speedMS == null && nullToAbsent
+          ? const Value.absent()
+          : Value(speedMS),
+      headingDeg: headingDeg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(headingDeg),
+      provider: Value(provider),
+      sequenceNumber: Value(sequenceNumber),
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory SurveyTrackPoint.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SurveyTrackPoint(
+      id: serializer.fromJson<String>(json['id']),
+      surveyVisitId: serializer.fromJson<String>(json['surveyVisitId']),
+      recordedAt: serializer.fromJson<DateTime>(json['recordedAt']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      accuracyM: serializer.fromJson<double?>(json['accuracyM']),
+      altitudeM: serializer.fromJson<double?>(json['altitudeM']),
+      speedMS: serializer.fromJson<double?>(json['speedMS']),
+      headingDeg: serializer.fromJson<double?>(json['headingDeg']),
+      provider: serializer.fromJson<String>(json['provider']),
+      sequenceNumber: serializer.fromJson<int>(json['sequenceNumber']),
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $SurveyTrackPointsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'surveyVisitId': serializer.toJson<String>(surveyVisitId),
+      'recordedAt': serializer.toJson<DateTime>(recordedAt),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'accuracyM': serializer.toJson<double?>(accuracyM),
+      'altitudeM': serializer.toJson<double?>(altitudeM),
+      'speedMS': serializer.toJson<double?>(speedMS),
+      'headingDeg': serializer.toJson<double?>(headingDeg),
+      'provider': serializer.toJson<String>(provider),
+      'sequenceNumber': serializer.toJson<int>(sequenceNumber),
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $SurveyTrackPointsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  SurveyTrackPoint copyWith({
+    String? id,
+    String? surveyVisitId,
+    DateTime? recordedAt,
+    double? lat,
+    double? lon,
+    Value<double?> accuracyM = const Value.absent(),
+    Value<double?> altitudeM = const Value.absent(),
+    Value<double?> speedMS = const Value.absent(),
+    Value<double?> headingDeg = const Value.absent(),
+    String? provider,
+    int? sequenceNumber,
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+  }) => SurveyTrackPoint(
+    id: id ?? this.id,
+    surveyVisitId: surveyVisitId ?? this.surveyVisitId,
+    recordedAt: recordedAt ?? this.recordedAt,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    accuracyM: accuracyM.present ? accuracyM.value : this.accuracyM,
+    altitudeM: altitudeM.present ? altitudeM.value : this.altitudeM,
+    speedMS: speedMS.present ? speedMS.value : this.speedMS,
+    headingDeg: headingDeg.present ? headingDeg.value : this.headingDeg,
+    provider: provider ?? this.provider,
+    sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  SurveyTrackPoint copyWithCompanion(SurveyTrackPointsCompanion data) {
+    return SurveyTrackPoint(
+      id: data.id.present ? data.id.value : this.id,
+      surveyVisitId: data.surveyVisitId.present
+          ? data.surveyVisitId.value
+          : this.surveyVisitId,
+      recordedAt: data.recordedAt.present
+          ? data.recordedAt.value
+          : this.recordedAt,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      accuracyM: data.accuracyM.present ? data.accuracyM.value : this.accuracyM,
+      altitudeM: data.altitudeM.present ? data.altitudeM.value : this.altitudeM,
+      speedMS: data.speedMS.present ? data.speedMS.value : this.speedMS,
+      headingDeg: data.headingDeg.present
+          ? data.headingDeg.value
+          : this.headingDeg,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      sequenceNumber: data.sequenceNumber.present
+          ? data.sequenceNumber.value
+          : this.sequenceNumber,
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyTrackPoint(')
+          ..write('id: $id, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('accuracyM: $accuracyM, ')
+          ..write('altitudeM: $altitudeM, ')
+          ..write('speedMS: $speedMS, ')
+          ..write('headingDeg: $headingDeg, ')
+          ..write('provider: $provider, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    surveyVisitId,
+    recordedAt,
+    lat,
+    lon,
+    accuracyM,
+    altitudeM,
+    speedMS,
+    headingDeg,
+    provider,
+    sequenceNumber,
+    serverVersion,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SurveyTrackPoint &&
+          other.id == this.id &&
+          other.surveyVisitId == this.surveyVisitId &&
+          other.recordedAt == this.recordedAt &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.accuracyM == this.accuracyM &&
+          other.altitudeM == this.altitudeM &&
+          other.speedMS == this.speedMS &&
+          other.headingDeg == this.headingDeg &&
+          other.provider == this.provider &&
+          other.sequenceNumber == this.sequenceNumber &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus);
+}
+
+class SurveyTrackPointsCompanion extends UpdateCompanion<SurveyTrackPoint> {
+  final Value<String> id;
+  final Value<String> surveyVisitId;
+  final Value<DateTime> recordedAt;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<double?> accuracyM;
+  final Value<double?> altitudeM;
+  final Value<double?> speedMS;
+  final Value<double?> headingDeg;
+  final Value<String> provider;
+  final Value<int> sequenceNumber;
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const SurveyTrackPointsCompanion({
+    this.id = const Value.absent(),
+    this.surveyVisitId = const Value.absent(),
+    this.recordedAt = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.accuracyM = const Value.absent(),
+    this.altitudeM = const Value.absent(),
+    this.speedMS = const Value.absent(),
+    this.headingDeg = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.sequenceNumber = const Value.absent(),
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SurveyTrackPointsCompanion.insert({
+    required String id,
+    required String surveyVisitId,
+    required DateTime recordedAt,
+    required double lat,
+    required double lon,
+    this.accuracyM = const Value.absent(),
+    this.altitudeM = const Value.absent(),
+    this.speedMS = const Value.absent(),
+    this.headingDeg = const Value.absent(),
+    this.provider = const Value.absent(),
+    required int sequenceNumber,
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       surveyVisitId = Value(surveyVisitId),
+       recordedAt = Value(recordedAt),
+       lat = Value(lat),
+       lon = Value(lon),
+       sequenceNumber = Value(sequenceNumber);
+  static Insertable<SurveyTrackPoint> custom({
+    Expression<String>? id,
+    Expression<String>? surveyVisitId,
+    Expression<DateTime>? recordedAt,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<double>? accuracyM,
+    Expression<double>? altitudeM,
+    Expression<double>? speedMS,
+    Expression<double>? headingDeg,
+    Expression<String>? provider,
+    Expression<int>? sequenceNumber,
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (surveyVisitId != null) 'survey_visit_id': surveyVisitId,
+      if (recordedAt != null) 'recorded_at': recordedAt,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (altitudeM != null) 'altitude_m': altitudeM,
+      if (speedMS != null) 'speed_m_s': speedMS,
+      if (headingDeg != null) 'heading_deg': headingDeg,
+      if (provider != null) 'provider': provider,
+      if (sequenceNumber != null) 'sequence_number': sequenceNumber,
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SurveyTrackPointsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? surveyVisitId,
+    Value<DateTime>? recordedAt,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<double?>? accuracyM,
+    Value<double?>? altitudeM,
+    Value<double?>? speedMS,
+    Value<double?>? headingDeg,
+    Value<String>? provider,
+    Value<int>? sequenceNumber,
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return SurveyTrackPointsCompanion(
+      id: id ?? this.id,
+      surveyVisitId: surveyVisitId ?? this.surveyVisitId,
+      recordedAt: recordedAt ?? this.recordedAt,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      accuracyM: accuracyM ?? this.accuracyM,
+      altitudeM: altitudeM ?? this.altitudeM,
+      speedMS: speedMS ?? this.speedMS,
+      headingDeg: headingDeg ?? this.headingDeg,
+      provider: provider ?? this.provider,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (surveyVisitId.present) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId.value);
+    }
+    if (recordedAt.present) {
+      map['recorded_at'] = Variable<DateTime>(recordedAt.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (accuracyM.present) {
+      map['accuracy_m'] = Variable<double>(accuracyM.value);
+    }
+    if (altitudeM.present) {
+      map['altitude_m'] = Variable<double>(altitudeM.value);
+    }
+    if (speedMS.present) {
+      map['speed_m_s'] = Variable<double>(speedMS.value);
+    }
+    if (headingDeg.present) {
+      map['heading_deg'] = Variable<double>(headingDeg.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (sequenceNumber.present) {
+      map['sequence_number'] = Variable<int>(sequenceNumber.value);
+    }
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $SurveyTrackPointsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyTrackPointsCompanion(')
+          ..write('id: $id, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('accuracyM: $accuracyM, ')
+          ..write('altitudeM: $altitudeM, ')
+          ..write('speedMS: $speedMS, ')
+          ..write('headingDeg: $headingDeg, ')
+          ..write('provider: $provider, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -11024,6 +11819,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncConflictsTable syncConflicts = $SyncConflictsTable(this);
   late final $TransectsTable transects = $TransectsTable(this);
   late final $SurveyVisitsTable surveyVisits = $SurveyVisitsTable(this);
+  late final $SurveyTrackPointsTable surveyTrackPoints =
+      $SurveyTrackPointsTable(this);
   late final $TaxaTable taxa = $TaxaTable(this);
   late final $TaxonListVersionsTable taxonListVersions =
       $TaxonListVersionsTable(this);
@@ -11050,6 +11847,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncConflicts,
     transects,
     surveyVisits,
+    surveyTrackPoints,
     taxa,
     taxonListVersions,
     transectSections,
@@ -15202,6 +16000,27 @@ final class $$SurveyVisitsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static MultiTypedResultKey<$SurveyTrackPointsTable, List<SurveyTrackPoint>>
+  _surveyTrackPointsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.surveyTrackPoints,
+        aliasName: 'survey_visit__id__survey_track_point__survey_visit_id',
+      );
+
+  $$SurveyTrackPointsTableProcessedTableManager get surveyTrackPointsRefs {
+    final manager = $$SurveyTrackPointsTableTableManager(
+      $_db,
+      $_db.surveyTrackPoints,
+    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _surveyTrackPointsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$SurveyVisitsTableFilterComposer
@@ -15418,6 +16237,31 @@ class $$SurveyVisitsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> surveyTrackPointsRefs(
+    Expression<bool> Function($$SurveyTrackPointsTableFilterComposer f) f,
+  ) {
+    final $$SurveyTrackPointsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyTrackPoints,
+      getReferencedColumn: (t) => t.surveyVisitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyTrackPointsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyTrackPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -15834,6 +16678,32 @@ class $$SurveyVisitsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> surveyTrackPointsRefs<T extends Object>(
+    Expression<T> Function($$SurveyTrackPointsTableAnnotationComposer a) f,
+  ) {
+    final $$SurveyTrackPointsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.surveyTrackPoints,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SurveyTrackPointsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.surveyTrackPoints,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$SurveyVisitsTableTableManager
@@ -15849,7 +16719,11 @@ class $$SurveyVisitsTableTableManager
           $$SurveyVisitsTableUpdateCompanionBuilder,
           (SurveyVisit, $$SurveyVisitsTableReferences),
           SurveyVisit,
-          PrefetchHooks Function({bool projectId, bool transectId})
+          PrefetchHooks Function({
+            bool projectId,
+            bool transectId,
+            bool surveyTrackPointsRefs,
+          })
         > {
   $$SurveyVisitsTableTableManager(_$AppDatabase db, $SurveyVisitsTable table)
     : super(
@@ -16018,7 +16892,545 @@ class $$SurveyVisitsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({projectId = false, transectId = false}) {
+          prefetchHooksCallback:
+              ({
+                projectId = false,
+                transectId = false,
+                surveyTrackPointsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (surveyTrackPointsRefs) db.surveyTrackPoints,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable: $$SurveyVisitsTableReferences
+                                ._projectIdTable(db),
+                            referencedColumn: $$SurveyVisitsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (transectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.transectId,
+                            referencedTable: $$SurveyVisitsTableReferences
+                                ._transectIdTable(db),
+                            referencedColumn: $$SurveyVisitsTableReferences
+                                ._transectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (surveyTrackPointsRefs)
+                        await $_getPrefetchedData<
+                          SurveyVisit,
+                          $SurveyVisitsTable,
+                          SurveyTrackPoint
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SurveyVisitsTableReferences
+                              ._surveyTrackPointsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SurveyVisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).surveyTrackPointsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.surveyVisitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$SurveyVisitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SurveyVisitsTable,
+      SurveyVisit,
+      $$SurveyVisitsTableFilterComposer,
+      $$SurveyVisitsTableOrderingComposer,
+      $$SurveyVisitsTableAnnotationComposer,
+      $$SurveyVisitsTableCreateCompanionBuilder,
+      $$SurveyVisitsTableUpdateCompanionBuilder,
+      (SurveyVisit, $$SurveyVisitsTableReferences),
+      SurveyVisit,
+      PrefetchHooks Function({
+        bool projectId,
+        bool transectId,
+        bool surveyTrackPointsRefs,
+      })
+    >;
+typedef $$SurveyTrackPointsTableCreateCompanionBuilder =
+    SurveyTrackPointsCompanion Function({
+      required String id,
+      required String surveyVisitId,
+      required DateTime recordedAt,
+      required double lat,
+      required double lon,
+      Value<double?> accuracyM,
+      Value<double?> altitudeM,
+      Value<double?> speedMS,
+      Value<double?> headingDeg,
+      Value<String> provider,
+      required int sequenceNumber,
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$SurveyTrackPointsTableUpdateCompanionBuilder =
+    SurveyTrackPointsCompanion Function({
+      Value<String> id,
+      Value<String> surveyVisitId,
+      Value<DateTime> recordedAt,
+      Value<double> lat,
+      Value<double> lon,
+      Value<double?> accuracyM,
+      Value<double?> altitudeM,
+      Value<double?> speedMS,
+      Value<double?> headingDeg,
+      Value<String> provider,
+      Value<int> sequenceNumber,
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$SurveyTrackPointsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $SurveyTrackPointsTable,
+          SurveyTrackPoint
+        > {
+  $$SurveyTrackPointsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $SurveyVisitsTable _surveyVisitIdTable(_$AppDatabase db) => db
+      .surveyVisits
+      .createAlias('survey_track_point__survey_visit_id__survey_visit__id');
+
+  $$SurveyVisitsTableProcessedTableManager get surveyVisitId {
+    final $_column = $_itemColumn<String>('survey_visit_id')!;
+
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_surveyVisitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SurveyTrackPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $SurveyTrackPointsTable> {
+  $$SurveyTrackPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get altitudeM => $composableBuilder(
+    column: $table.altitudeM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get speedMS => $composableBuilder(
+    column: $table.speedMS,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get headingDeg => $composableBuilder(
+    column: $table.headingDeg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$SurveyVisitsTableFilterComposer get surveyVisitId {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyTrackPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SurveyTrackPointsTable> {
+  $$SurveyTrackPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get altitudeM => $composableBuilder(
+    column: $table.altitudeM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get speedMS => $composableBuilder(
+    column: $table.speedMS,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get headingDeg => $composableBuilder(
+    column: $table.headingDeg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SurveyVisitsTableOrderingComposer get surveyVisitId {
+    final $$SurveyVisitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyTrackPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SurveyTrackPointsTable> {
+  $$SurveyTrackPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<double> get accuracyM =>
+      $composableBuilder(column: $table.accuracyM, builder: (column) => column);
+
+  GeneratedColumn<double> get altitudeM =>
+      $composableBuilder(column: $table.altitudeM, builder: (column) => column);
+
+  GeneratedColumn<double> get speedMS =>
+      $composableBuilder(column: $table.speedMS, builder: (column) => column);
+
+  GeneratedColumn<double> get headingDeg => $composableBuilder(
+    column: $table.headingDeg,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$SurveyVisitsTableAnnotationComposer get surveyVisitId {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyTrackPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SurveyTrackPointsTable,
+          SurveyTrackPoint,
+          $$SurveyTrackPointsTableFilterComposer,
+          $$SurveyTrackPointsTableOrderingComposer,
+          $$SurveyTrackPointsTableAnnotationComposer,
+          $$SurveyTrackPointsTableCreateCompanionBuilder,
+          $$SurveyTrackPointsTableUpdateCompanionBuilder,
+          (SurveyTrackPoint, $$SurveyTrackPointsTableReferences),
+          SurveyTrackPoint,
+          PrefetchHooks Function({bool surveyVisitId})
+        > {
+  $$SurveyTrackPointsTableTableManager(
+    _$AppDatabase db,
+    $SurveyTrackPointsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SurveyTrackPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SurveyTrackPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SurveyTrackPointsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> surveyVisitId = const Value.absent(),
+                Value<DateTime> recordedAt = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<double?> accuracyM = const Value.absent(),
+                Value<double?> altitudeM = const Value.absent(),
+                Value<double?> speedMS = const Value.absent(),
+                Value<double?> headingDeg = const Value.absent(),
+                Value<String> provider = const Value.absent(),
+                Value<int> sequenceNumber = const Value.absent(),
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyTrackPointsCompanion(
+                id: id,
+                surveyVisitId: surveyVisitId,
+                recordedAt: recordedAt,
+                lat: lat,
+                lon: lon,
+                accuracyM: accuracyM,
+                altitudeM: altitudeM,
+                speedMS: speedMS,
+                headingDeg: headingDeg,
+                provider: provider,
+                sequenceNumber: sequenceNumber,
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String surveyVisitId,
+                required DateTime recordedAt,
+                required double lat,
+                required double lon,
+                Value<double?> accuracyM = const Value.absent(),
+                Value<double?> altitudeM = const Value.absent(),
+                Value<double?> speedMS = const Value.absent(),
+                Value<double?> headingDeg = const Value.absent(),
+                Value<String> provider = const Value.absent(),
+                required int sequenceNumber,
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyTrackPointsCompanion.insert(
+                id: id,
+                surveyVisitId: surveyVisitId,
+                recordedAt: recordedAt,
+                lat: lat,
+                lon: lon,
+                accuracyM: accuracyM,
+                altitudeM: altitudeM,
+                speedMS: speedMS,
+                headingDeg: headingDeg,
+                provider: provider,
+                sequenceNumber: sequenceNumber,
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SurveyTrackPointsTable, SurveyTrackPoint>(table),
+                  $$SurveyTrackPointsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({surveyVisitId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -16038,25 +17450,14 @@ class $$SurveyVisitsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (projectId) {
+                    if (surveyVisitId) {
                       state = state.withJoin(
                         currentTable: table,
-                        currentColumn: table.projectId,
-                        referencedTable: $$SurveyVisitsTableReferences
-                            ._projectIdTable(db),
-                        referencedColumn: $$SurveyVisitsTableReferences
-                            ._projectIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-                    if (transectId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.transectId,
-                        referencedTable: $$SurveyVisitsTableReferences
-                            ._transectIdTable(db),
-                        referencedColumn: $$SurveyVisitsTableReferences
-                            ._transectIdTable(db)
+                        currentColumn: table.surveyVisitId,
+                        referencedTable: $$SurveyTrackPointsTableReferences
+                            ._surveyVisitIdTable(db),
+                        referencedColumn: $$SurveyTrackPointsTableReferences
+                            ._surveyVisitIdTable(db)
                             .id,
                       ) as T;
                     }
@@ -16072,19 +17473,19 @@ class $$SurveyVisitsTableTableManager
       );
 }
 
-typedef $$SurveyVisitsTableProcessedTableManager =
+typedef $$SurveyTrackPointsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $SurveyVisitsTable,
-      SurveyVisit,
-      $$SurveyVisitsTableFilterComposer,
-      $$SurveyVisitsTableOrderingComposer,
-      $$SurveyVisitsTableAnnotationComposer,
-      $$SurveyVisitsTableCreateCompanionBuilder,
-      $$SurveyVisitsTableUpdateCompanionBuilder,
-      (SurveyVisit, $$SurveyVisitsTableReferences),
-      SurveyVisit,
-      PrefetchHooks Function({bool projectId, bool transectId})
+      $SurveyTrackPointsTable,
+      SurveyTrackPoint,
+      $$SurveyTrackPointsTableFilterComposer,
+      $$SurveyTrackPointsTableOrderingComposer,
+      $$SurveyTrackPointsTableAnnotationComposer,
+      $$SurveyTrackPointsTableCreateCompanionBuilder,
+      $$SurveyTrackPointsTableUpdateCompanionBuilder,
+      (SurveyTrackPoint, $$SurveyTrackPointsTableReferences),
+      SurveyTrackPoint,
+      PrefetchHooks Function({bool surveyVisitId})
     >;
 typedef $$TaxaTableCreateCompanionBuilder = TaxaCompanion Function({
   required String id,
@@ -17292,6 +18693,8 @@ class $AppDatabaseManager {
       $$TransectsTableTableManager(_db, _db.transects);
   $$SurveyVisitsTableTableManager get surveyVisits =>
       $$SurveyVisitsTableTableManager(_db, _db.surveyVisits);
+  $$SurveyTrackPointsTableTableManager get surveyTrackPoints =>
+      $$SurveyTrackPointsTableTableManager(_db, _db.surveyTrackPoints);
   $$TaxaTableTableManager get taxa => $$TaxaTableTableManager(_db, _db.taxa);
   $$TaxonListVersionsTableTableManager get taxonListVersions =>
       $$TaxonListVersionsTableTableManager(_db, _db.taxonListVersions);

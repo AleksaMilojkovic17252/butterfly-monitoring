@@ -21,7 +21,7 @@ from apps.catalogues.serializers import (
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
 from apps.surveys import services as surveys
-from apps.surveys.serializers import SurveyVisitSyncSerializer
+from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.sync import conflicts
 from apps.sync.handlers import PushHandlers
 from apps.transects import services as transects
@@ -89,10 +89,17 @@ ENTITIES = [
             update=surveys.push_update,
             project_of=surveys.project_of,
         ),
-        server_owned=frozenset({"distance_walked_m"}),
+    ),
+    # Pushed in batches of a visit (`entity_id` = the visit), never changed or deleted one by
+    # one, and not pulled: the pull scope is empty (T036).
+    SyncEntity(
+        "survey_track_point",
+        SurveyTrackPointSyncSerializer,
+        surveys.pull_track_points,
+        push=PushHandlers(create_batch=surveys.push_track_points),
     ),
 ]
-# More user data arrives with T036, T044 and T049, each registering `push=PushHandlers(...)`.
+# More user data arrives with T044 and T049, each registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 
