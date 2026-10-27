@@ -8,6 +8,7 @@ import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/domain/visit_stats.dart';
 import 'package:mobile/features/transects/ui/protocol_summary.dart';
 import 'package:mobile/features/transects/ui/transect_map.dart';
+import 'package:mobile/features/visits/domain/visit_status.dart';
 
 /// One transect (outline §11.2 E): map with coloured sections, length,
 /// sections with habitat types, habitat summary, protocol summary, own visit
@@ -179,7 +180,7 @@ class _Detail extends ConsumerWidget {
                     dense: true,
                     leading: const Icon(Icons.event_outlined),
                     title: Text(_dateTime(v.startedAt)),
-                    subtitle: Text(v.status),
+                    subtitle: Text(visitStatusLabel(v.status)),
                   ),
               ],
             ),

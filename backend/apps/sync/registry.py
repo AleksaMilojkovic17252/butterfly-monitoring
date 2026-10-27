@@ -20,6 +20,8 @@ from apps.catalogues.serializers import (
 )
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
+from apps.surveys import services as surveys
+from apps.surveys.serializers import SurveyVisitSyncSerializer
 from apps.sync import conflicts
 from apps.sync.handlers import PushHandlers
 from apps.transects import services as transects
@@ -76,10 +78,21 @@ ENTITIES = [
     # The phone never writes it, so there is no push. Not reference data: a resolution does not
     # make the offline package out of date.
     SyncEntity("sync_conflict", conflicts.SyncConflictSyncSerializer, conflicts.pull_conflicts),
+    # User data, scoped to created_by = user. Not reference data: it does not count towards the
+    # offline package version. No delete: a visit is cancelled, not deleted (T034).
+    SyncEntity(
+        "survey_visit",
+        SurveyVisitSyncSerializer,
+        surveys.pull_visits,
+        push=PushHandlers(
+            create=surveys.push_create,
+            update=surveys.push_update,
+            project_of=surveys.project_of,
+        ),
+        server_owned=frozenset({"distance_walked_m"}),
+    ),
 ]
-# User data scoped to created_by = user (survey_visit, ...) arrives with T034, T036, T044 and
-# T049, and registers `push=PushHandlers(...)` there. It leaves `reference` False: user data does
-# not count towards the offline package version.
+# More user data arrives with T036, T044 and T049, each registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 

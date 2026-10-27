@@ -3,11 +3,13 @@
 from django.contrib.gis.gdal import OGRGeometry
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection, transaction
-from django.db.models import Count, DateTimeField, FloatField, Func, Prefetch, Q, Sum, Value
+from django.db.models import Count, FloatField, Func, Max, OuterRef, Prefetch, Q, Subquery, Sum
+from django.db.models.functions import Coalesce
 
 from apps.core.geo_files import open_datasource
 from apps.core.history import save_with_reason
 from apps.projects.services import projects_for
+from apps.surveys.services import counted_visits
 from apps.transects.models import Transect, TransectSection
 
 # How far (metres) any point of a section may be from its transect line.
@@ -82,14 +84,23 @@ def pull_sections(_user, project):
 def with_stats(transects, user):
     """Add `length_m`, `section_count`, `visit_count` and `last_visit_at` to a queryset.
 
-    The visit fields are about the caller's own visits (admins: all visits).
+    The visit fields are about the caller's own walked visits (admins: all visits); drafts and
+    cancelled visits do not count (`surveys.services.COUNTED_STATUSES`).
     """
+    # The visit figures are subqueries, not a second join: joining sections and visits together
+    # would build sections x visits rows per transect.
+    visits_of_transect = (
+        counted_visits(user).filter(transect=OuterRef("pk")).order_by().values("transect")
+    )
     return transects.annotate(
         length_m=GeodesicLength("geometry"),
         section_count=Count("sections", filter=Q(sections__deleted_at__isnull=True)),
-        # TODO(T034): count and latest start of the caller's visits once SurveyVisit exists.
-        visit_count=Value(0),
-        last_visit_at=Value(None, output_field=DateTimeField()),
+        visit_count=Coalesce(
+            Subquery(visits_of_transect.annotate(total=Count("pk")).values("total")), 0
+        ),
+        last_visit_at=Subquery(
+            visits_of_transect.annotate(latest=Max("started_at")).values("latest")
+        ),
     )
 
 

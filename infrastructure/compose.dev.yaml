@@ -6,6 +6,7 @@ services:
     volumes:
       - ./backend:/app
       - ./database/seeds:/seeds
+      - ./docs/requirements:/docs/requirements:ro
       - staticfiles:/app/staticfiles
     command:
       - sh

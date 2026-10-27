@@ -21,6 +21,11 @@ String syncErrorMessage(String? lastError) {
       'permission_denied' => 'You are not allowed to change this record.',
       'deleted' => 'This record was deleted on the server.',
       'visit_locked' => "An admin has locked this visit; it can't be changed.",
+      // T034: e.g. a finished visit sent back to draft. `detail` names the move.
+      'invalid_transition' =>
+        detail == null
+            ? "The visit's status can't change this way."
+            : "The visit's status can't change this way: $detail",
       'read_only_entity' || 'unknown_entity_type' || 'operation_not_allowed' =>
         "This app version can't send this kind of change.",
       'integrity_error' =>
@@ -38,11 +43,12 @@ String syncErrorMessage(String? lastError) {
 /// Plural name of an entity type for the sync screen; an unknown type shows
 /// its raw name.
 String entityTypeLabel(String type) {
-  // TODO(T034): names for visits and observations.
+  // TODO(T044): name for observations.
   return switch (type) {
     'habitat_type' => 'Habitat types',
     'management_type' => 'Management types',
     'plant_taxon' => 'Plants',
+    'survey_visit' => 'Visits',
     'project_protocol' => 'Protocols',
     'taxon' => 'Butterfly species',
     'transect' => 'Transects',

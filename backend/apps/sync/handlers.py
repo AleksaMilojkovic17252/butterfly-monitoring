@@ -60,8 +60,13 @@ class PushHandlers:
             )
 
 
+def current_push_reason():
+    """The history reason save_pushed would use now, for services that save on their own."""
+    return _reason.get()
+
+
 def save_pushed(obj, user):
-    save_with_reason(obj, user, _reason.get())
+    save_with_reason(obj, user, current_push_reason())
 
 
 def soft_delete_pushed(obj, user):

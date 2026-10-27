@@ -38,6 +38,7 @@ class PullApplier {
     'transect_section': (rows) =>
         _store(_db.transectSections, rows, _transectSection),
     'sync_conflict': (rows) => _store(_db.syncConflicts, rows, _syncConflict),
+    'survey_visit': (rows) => _store(_db.surveyVisits, rows, _surveyVisit),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -98,8 +99,8 @@ class PullApplier {
 
   /// Leaves out rows whose local copy is not `synced` (`pending`, `conflict` or
   /// `rejected`): a local change the server has not accepted must not be
-  /// overwritten. Only tables with a `sync_status` column are checked (today
-  /// `sync_conflict`).
+  /// overwritten. Only tables with a `sync_status` column are checked
+  /// (`sync_conflict`, `survey_visit`).
   Future<List<_Json>> _withoutPending(String type, List<_Json> rows) async {
     final table = _tableOf(type);
     if (rows.isEmpty ||
@@ -190,10 +191,14 @@ class PullApplier {
     );
   }
 
+  /// Every local table by its SQL name (`survey_visit`, ...). Built once, on
+  /// first use: the tables do not change while the app runs.
+  late final Map<String, TableInfo<Table, Object?>> _tablesByName = {
+    for (final table in _db.allTables) table.actualTableName: table,
+  };
+
   /// The local table of an entity type, or null when there is none.
-  TableInfo<Table, Object?>? _tableOf(String type) {
-    return _db.allTables.where((t) => t.actualTableName == type).firstOrNull;
-  }
+  TableInfo<Table, Object?>? _tableOf(String type) => _tablesByName[type];
 
   /// Upserts [rows] into [table] in one batch, mapping each with [toRow].
   Future<void> _store<T extends Table, D>(
@@ -389,8 +394,53 @@ class PullApplier {
     );
   }
 
+  /// A visit the caller recorded. `pausedAt` is local state and is not in the
+  /// pull, so it is left as it is.
+  static SurveyVisitsCompanion _surveyVisit(_Json json) {
+    return SurveyVisitsCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      transectId: json['transect'] as String,
+      observerId: json['observer'] as String,
+      protocolVersion: json['protocol_version'] as String,
+      surveyMethod: Value(json['survey_method'] as String),
+      startedAt: Value(_dateOrNull(json['started_at'])),
+      endedAt: Value(_dateOrNull(json['ended_at'])),
+      durationSeconds: Value(json['duration_seconds'] as int?),
+      pausedSeconds: Value(json['paused_seconds'] as int),
+      distanceWalkedM: Value(_decimalOrNull(json['distance_walked_m'])),
+      observerCount: Value(json['observer_count'] as int),
+      observerNames: Value(json['observer_names'] as String),
+      temperatureStartC: Value(_decimalOrNull(json['temperature_start_c'])),
+      temperatureEndC: Value(_decimalOrNull(json['temperature_end_c'])),
+      windBeaufortStart: Value(json['wind_beaufort_start'] as int?),
+      windBeaufortEnd: Value(json['wind_beaufort_end'] as int?),
+      cloudCoverStartPct: Value(json['cloud_cover_start_pct'] as int?),
+      cloudCoverEndPct: Value(json['cloud_cover_end_pct'] as int?),
+      precipitation: Value(json['precipitation'] as String),
+      weatherSuitable: Value(json['weather_suitable'] as bool?),
+      weatherMissingReason: Value(json['weather_missing_reason'] as String),
+      zeroObservationConfirmed: Value(
+        json['zero_observation_confirmed'] as bool,
+      ),
+      notes: Value(json['notes'] as String),
+      status: Value(json['status'] as String),
+      cancelReason: Value(json['cancel_reason'] as String),
+      batterySaverUsed: Value(json['battery_saver_used'] as bool),
+      deviceId: Value(json['device_id'] as String),
+      createdOffline: Value(json['created_offline'] as bool),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
   /// A decimal arrives as a string (`"13.0"`).
   static double _decimal(Object? value) => double.parse(value as String);
+
+  static double? _decimalOrNull(Object? value) =>
+      value == null ? null : _decimal(value);
 
   static DateTime? _dateOrNull(Object? value) =>
       value == null ? null : DateTime.parse(value as String);

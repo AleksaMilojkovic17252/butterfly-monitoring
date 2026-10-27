@@ -166,4 +166,6 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Offline-first sync API for butterfly transect surveys.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Several models have a `status` field; name the visit's enum so the names stay stable.
+    "ENUM_NAME_OVERRIDES": {"VisitStatusEnum": "apps.surveys.models.VisitStatus"},
 }

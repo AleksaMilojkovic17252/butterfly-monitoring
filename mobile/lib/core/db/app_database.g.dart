@@ -6112,6 +6112,2665 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
   }
 }
 
+class $TransectsTable extends Transects
+    with TableInfo<$TransectsTable, Transect> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransectsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLengthMMeta = const VerificationMeta(
+    'targetLengthM',
+  );
+  @override
+  late final GeneratedColumn<double> targetLengthM = GeneratedColumn<double>(
+    'target_length_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _habitatSummaryMeta = const VerificationMeta(
+    'habitatSummary',
+  );
+  @override
+  late final GeneratedColumn<String> habitatSummary = GeneratedColumn<String>(
+    'habitat_summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _geometryMeta = const VerificationMeta(
+    'geometry',
+  );
+  @override
+  late final GeneratedColumn<String> geometry = GeneratedColumn<String>(
+    'geometry',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lengthMMeta = const VerificationMeta(
+    'lengthM',
+  );
+  @override
+  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
+    'length_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    code,
+    name,
+    description,
+    targetLengthM,
+    habitatSummary,
+    active,
+    geometry,
+    lengthM,
+    serverVersion,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transect';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Transect> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('target_length_m')) {
+      context.handle(
+        _targetLengthMMeta,
+        targetLengthM.isAcceptableOrUnknown(
+          data['target_length_m']!,
+          _targetLengthMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('habitat_summary')) {
+      context.handle(
+        _habitatSummaryMeta,
+        habitatSummary.isAcceptableOrUnknown(
+          data['habitat_summary']!,
+          _habitatSummaryMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_habitatSummaryMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('geometry')) {
+      context.handle(
+        _geometryMeta,
+        geometry.isAcceptableOrUnknown(data['geometry']!, _geometryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_geometryMeta);
+    }
+    if (data.containsKey('length_m')) {
+      context.handle(
+        _lengthMMeta,
+        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lengthMMeta);
+    }
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Transect map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Transect(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      targetLengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}target_length_m'],
+      ),
+      habitatSummary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habitat_summary'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      geometry: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geometry'],
+      )!,
+      lengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}length_m'],
+      )!,
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TransectsTable createAlias(String alias) {
+    return $TransectsTable(attachedDatabase, alias);
+  }
+}
+
+class Transect extends DataClass implements Insertable<Transect> {
+  final String id;
+  final String projectId;
+  final String code;
+  final String name;
+  final String description;
+  final double? targetLengthM;
+  final String habitatSummary;
+  final bool active;
+  final String geometry;
+  final double lengthM;
+  final int? serverVersion;
+  final DateTime? deletedAt;
+  const Transect({
+    required this.id,
+    required this.projectId,
+    required this.code,
+    required this.name,
+    required this.description,
+    this.targetLengthM,
+    required this.habitatSummary,
+    required this.active,
+    required this.geometry,
+    required this.lengthM,
+    this.serverVersion,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || targetLengthM != null) {
+      map['target_length_m'] = Variable<double>(targetLengthM);
+    }
+    map['habitat_summary'] = Variable<String>(habitatSummary);
+    map['active'] = Variable<bool>(active);
+    map['geometry'] = Variable<String>(geometry);
+    map['length_m'] = Variable<double>(lengthM);
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  TransectsCompanion toCompanion(bool nullToAbsent) {
+    return TransectsCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      code: Value(code),
+      name: Value(name),
+      description: Value(description),
+      targetLengthM: targetLengthM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLengthM),
+      habitatSummary: Value(habitatSummary),
+      active: Value(active),
+      geometry: Value(geometry),
+      lengthM: Value(lengthM),
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory Transect.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Transect(
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      targetLengthM: serializer.fromJson<double?>(json['targetLengthM']),
+      habitatSummary: serializer.fromJson<String>(json['habitatSummary']),
+      active: serializer.fromJson<bool>(json['active']),
+      geometry: serializer.fromJson<String>(json['geometry']),
+      lengthM: serializer.fromJson<double>(json['lengthM']),
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'targetLengthM': serializer.toJson<double?>(targetLengthM),
+      'habitatSummary': serializer.toJson<String>(habitatSummary),
+      'active': serializer.toJson<bool>(active),
+      'geometry': serializer.toJson<String>(geometry),
+      'lengthM': serializer.toJson<double>(lengthM),
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  Transect copyWith({
+    String? id,
+    String? projectId,
+    String? code,
+    String? name,
+    String? description,
+    Value<double?> targetLengthM = const Value.absent(),
+    String? habitatSummary,
+    bool? active,
+    String? geometry,
+    double? lengthM,
+    Value<int?> serverVersion = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => Transect(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    code: code ?? this.code,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    targetLengthM: targetLengthM.present
+        ? targetLengthM.value
+        : this.targetLengthM,
+    habitatSummary: habitatSummary ?? this.habitatSummary,
+    active: active ?? this.active,
+    geometry: geometry ?? this.geometry,
+    lengthM: lengthM ?? this.lengthM,
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  Transect copyWithCompanion(TransectsCompanion data) {
+    return Transect(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      targetLengthM: data.targetLengthM.present
+          ? data.targetLengthM.value
+          : this.targetLengthM,
+      habitatSummary: data.habitatSummary.present
+          ? data.habitatSummary.value
+          : this.habitatSummary,
+      active: data.active.present ? data.active.value : this.active,
+      geometry: data.geometry.present ? data.geometry.value : this.geometry,
+      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Transect(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('targetLengthM: $targetLengthM, ')
+          ..write('habitatSummary: $habitatSummary, ')
+          ..write('active: $active, ')
+          ..write('geometry: $geometry, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    projectId,
+    code,
+    name,
+    description,
+    targetLengthM,
+    habitatSummary,
+    active,
+    geometry,
+    lengthM,
+    serverVersion,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Transect &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.targetLengthM == this.targetLengthM &&
+          other.habitatSummary == this.habitatSummary &&
+          other.active == this.active &&
+          other.geometry == this.geometry &&
+          other.lengthM == this.lengthM &&
+          other.serverVersion == this.serverVersion &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TransectsCompanion extends UpdateCompanion<Transect> {
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<double?> targetLengthM;
+  final Value<String> habitatSummary;
+  final Value<bool> active;
+  final Value<String> geometry;
+  final Value<double> lengthM;
+  final Value<int?> serverVersion;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const TransectsCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.targetLengthM = const Value.absent(),
+    this.habitatSummary = const Value.absent(),
+    this.active = const Value.absent(),
+    this.geometry = const Value.absent(),
+    this.lengthM = const Value.absent(),
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransectsCompanion.insert({
+    required String id,
+    required String projectId,
+    required String code,
+    required String name,
+    required String description,
+    this.targetLengthM = const Value.absent(),
+    required String habitatSummary,
+    required bool active,
+    required String geometry,
+    required double lengthM,
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       code = Value(code),
+       name = Value(name),
+       description = Value(description),
+       habitatSummary = Value(habitatSummary),
+       active = Value(active),
+       geometry = Value(geometry),
+       lengthM = Value(lengthM);
+  static Insertable<Transect> custom({
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<double>? targetLengthM,
+    Expression<String>? habitatSummary,
+    Expression<bool>? active,
+    Expression<String>? geometry,
+    Expression<double>? lengthM,
+    Expression<int>? serverVersion,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (targetLengthM != null) 'target_length_m': targetLengthM,
+      if (habitatSummary != null) 'habitat_summary': habitatSummary,
+      if (active != null) 'active': active,
+      if (geometry != null) 'geometry': geometry,
+      if (lengthM != null) 'length_m': lengthM,
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransectsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? code,
+    Value<String>? name,
+    Value<String>? description,
+    Value<double?>? targetLengthM,
+    Value<String>? habitatSummary,
+    Value<bool>? active,
+    Value<String>? geometry,
+    Value<double>? lengthM,
+    Value<int?>? serverVersion,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return TransectsCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      targetLengthM: targetLengthM ?? this.targetLengthM,
+      habitatSummary: habitatSummary ?? this.habitatSummary,
+      active: active ?? this.active,
+      geometry: geometry ?? this.geometry,
+      lengthM: lengthM ?? this.lengthM,
+      serverVersion: serverVersion ?? this.serverVersion,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (targetLengthM.present) {
+      map['target_length_m'] = Variable<double>(targetLengthM.value);
+    }
+    if (habitatSummary.present) {
+      map['habitat_summary'] = Variable<String>(habitatSummary.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (geometry.present) {
+      map['geometry'] = Variable<String>(geometry.value);
+    }
+    if (lengthM.present) {
+      map['length_m'] = Variable<double>(lengthM.value);
+    }
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransectsCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('targetLengthM: $targetLengthM, ')
+          ..write('habitatSummary: $habitatSummary, ')
+          ..write('active: $active, ')
+          ..write('geometry: $geometry, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SurveyVisitsTable extends SurveyVisits
+    with TableInfo<$SurveyVisitsTable, SurveyVisit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SurveyVisitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>($SurveyVisitsTable.$convertersyncStatus);
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _transectIdMeta = const VerificationMeta(
+    'transectId',
+  );
+  @override
+  late final GeneratedColumn<String> transectId = GeneratedColumn<String>(
+    'transect_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transect (id)',
+    ),
+  );
+  static const VerificationMeta _observerIdMeta = const VerificationMeta(
+    'observerId',
+  );
+  @override
+  late final GeneratedColumn<String> observerId = GeneratedColumn<String>(
+    'observer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _protocolVersionMeta = const VerificationMeta(
+    'protocolVersion',
+  );
+  @override
+  late final GeneratedColumn<String> protocolVersion = GeneratedColumn<String>(
+    'protocol_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _surveyMethodMeta = const VerificationMeta(
+    'surveyMethod',
+  );
+  @override
+  late final GeneratedColumn<String> surveyMethod = GeneratedColumn<String>(
+    'survey_method',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pollard_walk'),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationSecondsMeta = const VerificationMeta(
+    'durationSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
+    'duration_seconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pausedSecondsMeta = const VerificationMeta(
+    'pausedSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> pausedSeconds = GeneratedColumn<int>(
+    'paused_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _distanceWalkedMMeta = const VerificationMeta(
+    'distanceWalkedM',
+  );
+  @override
+  late final GeneratedColumn<double> distanceWalkedM = GeneratedColumn<double>(
+    'distance_walked_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _observerCountMeta = const VerificationMeta(
+    'observerCount',
+  );
+  @override
+  late final GeneratedColumn<int> observerCount = GeneratedColumn<int>(
+    'observer_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _observerNamesMeta = const VerificationMeta(
+    'observerNames',
+  );
+  @override
+  late final GeneratedColumn<String> observerNames = GeneratedColumn<String>(
+    'observer_names',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _temperatureStartCMeta = const VerificationMeta(
+    'temperatureStartC',
+  );
+  @override
+  late final GeneratedColumn<double> temperatureStartC =
+      GeneratedColumn<double>(
+        'temperature_start_c',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _temperatureEndCMeta = const VerificationMeta(
+    'temperatureEndC',
+  );
+  @override
+  late final GeneratedColumn<double> temperatureEndC = GeneratedColumn<double>(
+    'temperature_end_c',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _windBeaufortStartMeta = const VerificationMeta(
+    'windBeaufortStart',
+  );
+  @override
+  late final GeneratedColumn<int> windBeaufortStart = GeneratedColumn<int>(
+    'wind_beaufort_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _windBeaufortEndMeta = const VerificationMeta(
+    'windBeaufortEnd',
+  );
+  @override
+  late final GeneratedColumn<int> windBeaufortEnd = GeneratedColumn<int>(
+    'wind_beaufort_end',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cloudCoverStartPctMeta =
+      const VerificationMeta('cloudCoverStartPct');
+  @override
+  late final GeneratedColumn<int> cloudCoverStartPct = GeneratedColumn<int>(
+    'cloud_cover_start_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cloudCoverEndPctMeta = const VerificationMeta(
+    'cloudCoverEndPct',
+  );
+  @override
+  late final GeneratedColumn<int> cloudCoverEndPct = GeneratedColumn<int>(
+    'cloud_cover_end_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _precipitationMeta = const VerificationMeta(
+    'precipitation',
+  );
+  @override
+  late final GeneratedColumn<String> precipitation = GeneratedColumn<String>(
+    'precipitation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _weatherSuitableMeta = const VerificationMeta(
+    'weatherSuitable',
+  );
+  @override
+  late final GeneratedColumn<bool> weatherSuitable = GeneratedColumn<bool>(
+    'weather_suitable',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("weather_suitable" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _weatherMissingReasonMeta =
+      const VerificationMeta('weatherMissingReason');
+  @override
+  late final GeneratedColumn<String> weatherMissingReason =
+      GeneratedColumn<String>(
+        'weather_missing_reason',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _zeroObservationConfirmedMeta =
+      const VerificationMeta('zeroObservationConfirmed');
+  @override
+  late final GeneratedColumn<bool> zeroObservationConfirmed =
+      GeneratedColumn<bool>(
+        'zero_observation_confirmed',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("zero_observation_confirmed" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('draft'),
+  );
+  static const VerificationMeta _cancelReasonMeta = const VerificationMeta(
+    'cancelReason',
+  );
+  @override
+  late final GeneratedColumn<String> cancelReason = GeneratedColumn<String>(
+    'cancel_reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _batterySaverUsedMeta = const VerificationMeta(
+    'batterySaverUsed',
+  );
+  @override
+  late final GeneratedColumn<bool> batterySaverUsed = GeneratedColumn<bool>(
+    'battery_saver_used',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("battery_saver_used" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdOfflineMeta = const VerificationMeta(
+    'createdOffline',
+  );
+  @override
+  late final GeneratedColumn<bool> createdOffline = GeneratedColumn<bool>(
+    'created_offline',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("created_offline" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pausedAtMeta = const VerificationMeta(
+    'pausedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pausedAt = GeneratedColumn<DateTime>(
+    'paused_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    transectId,
+    observerId,
+    protocolVersion,
+    surveyMethod,
+    startedAt,
+    endedAt,
+    durationSeconds,
+    pausedSeconds,
+    distanceWalkedM,
+    observerCount,
+    observerNames,
+    temperatureStartC,
+    temperatureEndC,
+    windBeaufortStart,
+    windBeaufortEnd,
+    cloudCoverStartPct,
+    cloudCoverEndPct,
+    precipitation,
+    weatherSuitable,
+    weatherMissingReason,
+    zeroObservationConfirmed,
+    notes,
+    status,
+    cancelReason,
+    batterySaverUsed,
+    deviceId,
+    createdOffline,
+    createdAt,
+    pausedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'survey_visit';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SurveyVisit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('transect_id')) {
+      context.handle(
+        _transectIdMeta,
+        transectId.isAcceptableOrUnknown(data['transect_id']!, _transectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_transectIdMeta);
+    }
+    if (data.containsKey('observer_id')) {
+      context.handle(
+        _observerIdMeta,
+        observerId.isAcceptableOrUnknown(data['observer_id']!, _observerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_observerIdMeta);
+    }
+    if (data.containsKey('protocol_version')) {
+      context.handle(
+        _protocolVersionMeta,
+        protocolVersion.isAcceptableOrUnknown(
+          data['protocol_version']!,
+          _protocolVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_protocolVersionMeta);
+    }
+    if (data.containsKey('survey_method')) {
+      context.handle(
+        _surveyMethodMeta,
+        surveyMethod.isAcceptableOrUnknown(
+          data['survey_method']!,
+          _surveyMethodMeta,
+        ),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('duration_seconds')) {
+      context.handle(
+        _durationSecondsMeta,
+        durationSeconds.isAcceptableOrUnknown(
+          data['duration_seconds']!,
+          _durationSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paused_seconds')) {
+      context.handle(
+        _pausedSecondsMeta,
+        pausedSeconds.isAcceptableOrUnknown(
+          data['paused_seconds']!,
+          _pausedSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('distance_walked_m')) {
+      context.handle(
+        _distanceWalkedMMeta,
+        distanceWalkedM.isAcceptableOrUnknown(
+          data['distance_walked_m']!,
+          _distanceWalkedMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observer_count')) {
+      context.handle(
+        _observerCountMeta,
+        observerCount.isAcceptableOrUnknown(
+          data['observer_count']!,
+          _observerCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observer_names')) {
+      context.handle(
+        _observerNamesMeta,
+        observerNames.isAcceptableOrUnknown(
+          data['observer_names']!,
+          _observerNamesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('temperature_start_c')) {
+      context.handle(
+        _temperatureStartCMeta,
+        temperatureStartC.isAcceptableOrUnknown(
+          data['temperature_start_c']!,
+          _temperatureStartCMeta,
+        ),
+      );
+    }
+    if (data.containsKey('temperature_end_c')) {
+      context.handle(
+        _temperatureEndCMeta,
+        temperatureEndC.isAcceptableOrUnknown(
+          data['temperature_end_c']!,
+          _temperatureEndCMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wind_beaufort_start')) {
+      context.handle(
+        _windBeaufortStartMeta,
+        windBeaufortStart.isAcceptableOrUnknown(
+          data['wind_beaufort_start']!,
+          _windBeaufortStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wind_beaufort_end')) {
+      context.handle(
+        _windBeaufortEndMeta,
+        windBeaufortEnd.isAcceptableOrUnknown(
+          data['wind_beaufort_end']!,
+          _windBeaufortEndMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cloud_cover_start_pct')) {
+      context.handle(
+        _cloudCoverStartPctMeta,
+        cloudCoverStartPct.isAcceptableOrUnknown(
+          data['cloud_cover_start_pct']!,
+          _cloudCoverStartPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cloud_cover_end_pct')) {
+      context.handle(
+        _cloudCoverEndPctMeta,
+        cloudCoverEndPct.isAcceptableOrUnknown(
+          data['cloud_cover_end_pct']!,
+          _cloudCoverEndPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('precipitation')) {
+      context.handle(
+        _precipitationMeta,
+        precipitation.isAcceptableOrUnknown(
+          data['precipitation']!,
+          _precipitationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weather_suitable')) {
+      context.handle(
+        _weatherSuitableMeta,
+        weatherSuitable.isAcceptableOrUnknown(
+          data['weather_suitable']!,
+          _weatherSuitableMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weather_missing_reason')) {
+      context.handle(
+        _weatherMissingReasonMeta,
+        weatherMissingReason.isAcceptableOrUnknown(
+          data['weather_missing_reason']!,
+          _weatherMissingReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('zero_observation_confirmed')) {
+      context.handle(
+        _zeroObservationConfirmedMeta,
+        zeroObservationConfirmed.isAcceptableOrUnknown(
+          data['zero_observation_confirmed']!,
+          _zeroObservationConfirmedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('cancel_reason')) {
+      context.handle(
+        _cancelReasonMeta,
+        cancelReason.isAcceptableOrUnknown(
+          data['cancel_reason']!,
+          _cancelReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('battery_saver_used')) {
+      context.handle(
+        _batterySaverUsedMeta,
+        batterySaverUsed.isAcceptableOrUnknown(
+          data['battery_saver_used']!,
+          _batterySaverUsedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    }
+    if (data.containsKey('created_offline')) {
+      context.handle(
+        _createdOfflineMeta,
+        createdOffline.isAcceptableOrUnknown(
+          data['created_offline']!,
+          _createdOfflineMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('paused_at')) {
+      context.handle(
+        _pausedAtMeta,
+        pausedAt.isAcceptableOrUnknown(data['paused_at']!, _pausedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SurveyVisit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SurveyVisit(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      transectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transect_id'],
+      )!,
+      observerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observer_id'],
+      )!,
+      protocolVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}protocol_version'],
+      )!,
+      surveyMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_method'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      ),
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      durationSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_seconds'],
+      ),
+      pausedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paused_seconds'],
+      )!,
+      distanceWalkedM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}distance_walked_m'],
+      ),
+      observerCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}observer_count'],
+      )!,
+      observerNames: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observer_names'],
+      )!,
+      temperatureStartC: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}temperature_start_c'],
+      ),
+      temperatureEndC: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}temperature_end_c'],
+      ),
+      windBeaufortStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wind_beaufort_start'],
+      ),
+      windBeaufortEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wind_beaufort_end'],
+      ),
+      cloudCoverStartPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cloud_cover_start_pct'],
+      ),
+      cloudCoverEndPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cloud_cover_end_pct'],
+      ),
+      precipitation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}precipitation'],
+      )!,
+      weatherSuitable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}weather_suitable'],
+      ),
+      weatherMissingReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}weather_missing_reason'],
+      )!,
+      zeroObservationConfirmed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}zero_observation_confirmed'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      cancelReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cancel_reason'],
+      )!,
+      batterySaverUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}battery_saver_used'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      createdOffline: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}created_offline'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      pausedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paused_at'],
+      ),
+    );
+  }
+
+  @override
+  $SurveyVisitsTable createAlias(String alias) {
+    return $SurveyVisitsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+  final String transectId;
+  final String observerId;
+  final String protocolVersion;
+  final String surveyMethod;
+  final DateTime? startedAt;
+  final DateTime? endedAt;
+
+  /// Walking time without pauses.
+  final int? durationSeconds;
+  final int pausedSeconds;
+
+  /// Computed by the server from the track (T036); the phone never sends it.
+  final double? distanceWalkedM;
+  final int observerCount;
+  final String observerNames;
+  final double? temperatureStartC;
+  final double? temperatureEndC;
+  final int? windBeaufortStart;
+  final int? windBeaufortEnd;
+  final int? cloudCoverStartPct;
+  final int? cloudCoverEndPct;
+  final String precipitation;
+  final bool? weatherSuitable;
+  final String weatherMissingReason;
+  final bool zeroObservationConfirmed;
+  final String notes;
+  final String status;
+
+  /// Set exactly when `status` is `cancelled`, empty otherwise.
+  final String cancelReason;
+  final bool batterySaverUsed;
+  final String deviceId;
+  final bool createdOffline;
+  final DateTime createdAt;
+
+  /// Local only: when the current pause began, null while walking.
+  final DateTime? pausedAt;
+  const SurveyVisit({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    required this.transectId,
+    required this.observerId,
+    required this.protocolVersion,
+    required this.surveyMethod,
+    this.startedAt,
+    this.endedAt,
+    this.durationSeconds,
+    required this.pausedSeconds,
+    this.distanceWalkedM,
+    required this.observerCount,
+    required this.observerNames,
+    this.temperatureStartC,
+    this.temperatureEndC,
+    this.windBeaufortStart,
+    this.windBeaufortEnd,
+    this.cloudCoverStartPct,
+    this.cloudCoverEndPct,
+    required this.precipitation,
+    this.weatherSuitable,
+    required this.weatherMissingReason,
+    required this.zeroObservationConfirmed,
+    required this.notes,
+    required this.status,
+    required this.cancelReason,
+    required this.batterySaverUsed,
+    required this.deviceId,
+    required this.createdOffline,
+    required this.createdAt,
+    this.pausedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['transect_id'] = Variable<String>(transectId);
+    map['observer_id'] = Variable<String>(observerId);
+    map['protocol_version'] = Variable<String>(protocolVersion);
+    map['survey_method'] = Variable<String>(surveyMethod);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<DateTime>(startedAt);
+    }
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    if (!nullToAbsent || durationSeconds != null) {
+      map['duration_seconds'] = Variable<int>(durationSeconds);
+    }
+    map['paused_seconds'] = Variable<int>(pausedSeconds);
+    if (!nullToAbsent || distanceWalkedM != null) {
+      map['distance_walked_m'] = Variable<double>(distanceWalkedM);
+    }
+    map['observer_count'] = Variable<int>(observerCount);
+    map['observer_names'] = Variable<String>(observerNames);
+    if (!nullToAbsent || temperatureStartC != null) {
+      map['temperature_start_c'] = Variable<double>(temperatureStartC);
+    }
+    if (!nullToAbsent || temperatureEndC != null) {
+      map['temperature_end_c'] = Variable<double>(temperatureEndC);
+    }
+    if (!nullToAbsent || windBeaufortStart != null) {
+      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart);
+    }
+    if (!nullToAbsent || windBeaufortEnd != null) {
+      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd);
+    }
+    if (!nullToAbsent || cloudCoverStartPct != null) {
+      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct);
+    }
+    if (!nullToAbsent || cloudCoverEndPct != null) {
+      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct);
+    }
+    map['precipitation'] = Variable<String>(precipitation);
+    if (!nullToAbsent || weatherSuitable != null) {
+      map['weather_suitable'] = Variable<bool>(weatherSuitable);
+    }
+    map['weather_missing_reason'] = Variable<String>(weatherMissingReason);
+    map['zero_observation_confirmed'] = Variable<bool>(
+      zeroObservationConfirmed,
+    );
+    map['notes'] = Variable<String>(notes);
+    map['status'] = Variable<String>(status);
+    map['cancel_reason'] = Variable<String>(cancelReason);
+    map['battery_saver_used'] = Variable<bool>(batterySaverUsed);
+    map['device_id'] = Variable<String>(deviceId);
+    map['created_offline'] = Variable<bool>(createdOffline);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || pausedAt != null) {
+      map['paused_at'] = Variable<DateTime>(pausedAt);
+    }
+    return map;
+  }
+
+  SurveyVisitsCompanion toCompanion(bool nullToAbsent) {
+    return SurveyVisitsCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      transectId: Value(transectId),
+      observerId: Value(observerId),
+      protocolVersion: Value(protocolVersion),
+      surveyMethod: Value(surveyMethod),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      durationSeconds: durationSeconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationSeconds),
+      pausedSeconds: Value(pausedSeconds),
+      distanceWalkedM: distanceWalkedM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(distanceWalkedM),
+      observerCount: Value(observerCount),
+      observerNames: Value(observerNames),
+      temperatureStartC: temperatureStartC == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temperatureStartC),
+      temperatureEndC: temperatureEndC == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temperatureEndC),
+      windBeaufortStart: windBeaufortStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(windBeaufortStart),
+      windBeaufortEnd: windBeaufortEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(windBeaufortEnd),
+      cloudCoverStartPct: cloudCoverStartPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cloudCoverStartPct),
+      cloudCoverEndPct: cloudCoverEndPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cloudCoverEndPct),
+      precipitation: Value(precipitation),
+      weatherSuitable: weatherSuitable == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weatherSuitable),
+      weatherMissingReason: Value(weatherMissingReason),
+      zeroObservationConfirmed: Value(zeroObservationConfirmed),
+      notes: Value(notes),
+      status: Value(status),
+      cancelReason: Value(cancelReason),
+      batterySaverUsed: Value(batterySaverUsed),
+      deviceId: Value(deviceId),
+      createdOffline: Value(createdOffline),
+      createdAt: Value(createdAt),
+      pausedAt: pausedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pausedAt),
+    );
+  }
+
+  factory SurveyVisit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SurveyVisit(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      transectId: serializer.fromJson<String>(json['transectId']),
+      observerId: serializer.fromJson<String>(json['observerId']),
+      protocolVersion: serializer.fromJson<String>(json['protocolVersion']),
+      surveyMethod: serializer.fromJson<String>(json['surveyMethod']),
+      startedAt: serializer.fromJson<DateTime?>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      durationSeconds: serializer.fromJson<int?>(json['durationSeconds']),
+      pausedSeconds: serializer.fromJson<int>(json['pausedSeconds']),
+      distanceWalkedM: serializer.fromJson<double?>(json['distanceWalkedM']),
+      observerCount: serializer.fromJson<int>(json['observerCount']),
+      observerNames: serializer.fromJson<String>(json['observerNames']),
+      temperatureStartC: serializer.fromJson<double?>(
+        json['temperatureStartC'],
+      ),
+      temperatureEndC: serializer.fromJson<double?>(json['temperatureEndC']),
+      windBeaufortStart: serializer.fromJson<int?>(json['windBeaufortStart']),
+      windBeaufortEnd: serializer.fromJson<int?>(json['windBeaufortEnd']),
+      cloudCoverStartPct: serializer.fromJson<int?>(json['cloudCoverStartPct']),
+      cloudCoverEndPct: serializer.fromJson<int?>(json['cloudCoverEndPct']),
+      precipitation: serializer.fromJson<String>(json['precipitation']),
+      weatherSuitable: serializer.fromJson<bool?>(json['weatherSuitable']),
+      weatherMissingReason: serializer.fromJson<String>(
+        json['weatherMissingReason'],
+      ),
+      zeroObservationConfirmed: serializer.fromJson<bool>(
+        json['zeroObservationConfirmed'],
+      ),
+      notes: serializer.fromJson<String>(json['notes']),
+      status: serializer.fromJson<String>(json['status']),
+      cancelReason: serializer.fromJson<String>(json['cancelReason']),
+      batterySaverUsed: serializer.fromJson<bool>(json['batterySaverUsed']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      createdOffline: serializer.fromJson<bool>(json['createdOffline']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'transectId': serializer.toJson<String>(transectId),
+      'observerId': serializer.toJson<String>(observerId),
+      'protocolVersion': serializer.toJson<String>(protocolVersion),
+      'surveyMethod': serializer.toJson<String>(surveyMethod),
+      'startedAt': serializer.toJson<DateTime?>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'durationSeconds': serializer.toJson<int?>(durationSeconds),
+      'pausedSeconds': serializer.toJson<int>(pausedSeconds),
+      'distanceWalkedM': serializer.toJson<double?>(distanceWalkedM),
+      'observerCount': serializer.toJson<int>(observerCount),
+      'observerNames': serializer.toJson<String>(observerNames),
+      'temperatureStartC': serializer.toJson<double?>(temperatureStartC),
+      'temperatureEndC': serializer.toJson<double?>(temperatureEndC),
+      'windBeaufortStart': serializer.toJson<int?>(windBeaufortStart),
+      'windBeaufortEnd': serializer.toJson<int?>(windBeaufortEnd),
+      'cloudCoverStartPct': serializer.toJson<int?>(cloudCoverStartPct),
+      'cloudCoverEndPct': serializer.toJson<int?>(cloudCoverEndPct),
+      'precipitation': serializer.toJson<String>(precipitation),
+      'weatherSuitable': serializer.toJson<bool?>(weatherSuitable),
+      'weatherMissingReason': serializer.toJson<String>(weatherMissingReason),
+      'zeroObservationConfirmed': serializer.toJson<bool>(
+        zeroObservationConfirmed,
+      ),
+      'notes': serializer.toJson<String>(notes),
+      'status': serializer.toJson<String>(status),
+      'cancelReason': serializer.toJson<String>(cancelReason),
+      'batterySaverUsed': serializer.toJson<bool>(batterySaverUsed),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'createdOffline': serializer.toJson<bool>(createdOffline),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'pausedAt': serializer.toJson<DateTime?>(pausedAt),
+    };
+  }
+
+  SurveyVisit copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    String? transectId,
+    String? observerId,
+    String? protocolVersion,
+    String? surveyMethod,
+    Value<DateTime?> startedAt = const Value.absent(),
+    Value<DateTime?> endedAt = const Value.absent(),
+    Value<int?> durationSeconds = const Value.absent(),
+    int? pausedSeconds,
+    Value<double?> distanceWalkedM = const Value.absent(),
+    int? observerCount,
+    String? observerNames,
+    Value<double?> temperatureStartC = const Value.absent(),
+    Value<double?> temperatureEndC = const Value.absent(),
+    Value<int?> windBeaufortStart = const Value.absent(),
+    Value<int?> windBeaufortEnd = const Value.absent(),
+    Value<int?> cloudCoverStartPct = const Value.absent(),
+    Value<int?> cloudCoverEndPct = const Value.absent(),
+    String? precipitation,
+    Value<bool?> weatherSuitable = const Value.absent(),
+    String? weatherMissingReason,
+    bool? zeroObservationConfirmed,
+    String? notes,
+    String? status,
+    String? cancelReason,
+    bool? batterySaverUsed,
+    String? deviceId,
+    bool? createdOffline,
+    DateTime? createdAt,
+    Value<DateTime?> pausedAt = const Value.absent(),
+  }) => SurveyVisit(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    transectId: transectId ?? this.transectId,
+    observerId: observerId ?? this.observerId,
+    protocolVersion: protocolVersion ?? this.protocolVersion,
+    surveyMethod: surveyMethod ?? this.surveyMethod,
+    startedAt: startedAt.present ? startedAt.value : this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    durationSeconds: durationSeconds.present
+        ? durationSeconds.value
+        : this.durationSeconds,
+    pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+    distanceWalkedM: distanceWalkedM.present
+        ? distanceWalkedM.value
+        : this.distanceWalkedM,
+    observerCount: observerCount ?? this.observerCount,
+    observerNames: observerNames ?? this.observerNames,
+    temperatureStartC: temperatureStartC.present
+        ? temperatureStartC.value
+        : this.temperatureStartC,
+    temperatureEndC: temperatureEndC.present
+        ? temperatureEndC.value
+        : this.temperatureEndC,
+    windBeaufortStart: windBeaufortStart.present
+        ? windBeaufortStart.value
+        : this.windBeaufortStart,
+    windBeaufortEnd: windBeaufortEnd.present
+        ? windBeaufortEnd.value
+        : this.windBeaufortEnd,
+    cloudCoverStartPct: cloudCoverStartPct.present
+        ? cloudCoverStartPct.value
+        : this.cloudCoverStartPct,
+    cloudCoverEndPct: cloudCoverEndPct.present
+        ? cloudCoverEndPct.value
+        : this.cloudCoverEndPct,
+    precipitation: precipitation ?? this.precipitation,
+    weatherSuitable: weatherSuitable.present
+        ? weatherSuitable.value
+        : this.weatherSuitable,
+    weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
+    zeroObservationConfirmed:
+        zeroObservationConfirmed ?? this.zeroObservationConfirmed,
+    notes: notes ?? this.notes,
+    status: status ?? this.status,
+    cancelReason: cancelReason ?? this.cancelReason,
+    batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
+    deviceId: deviceId ?? this.deviceId,
+    createdOffline: createdOffline ?? this.createdOffline,
+    createdAt: createdAt ?? this.createdAt,
+    pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
+  );
+  SurveyVisit copyWithCompanion(SurveyVisitsCompanion data) {
+    return SurveyVisit(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      transectId: data.transectId.present
+          ? data.transectId.value
+          : this.transectId,
+      observerId: data.observerId.present
+          ? data.observerId.value
+          : this.observerId,
+      protocolVersion: data.protocolVersion.present
+          ? data.protocolVersion.value
+          : this.protocolVersion,
+      surveyMethod: data.surveyMethod.present
+          ? data.surveyMethod.value
+          : this.surveyMethod,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      durationSeconds: data.durationSeconds.present
+          ? data.durationSeconds.value
+          : this.durationSeconds,
+      pausedSeconds: data.pausedSeconds.present
+          ? data.pausedSeconds.value
+          : this.pausedSeconds,
+      distanceWalkedM: data.distanceWalkedM.present
+          ? data.distanceWalkedM.value
+          : this.distanceWalkedM,
+      observerCount: data.observerCount.present
+          ? data.observerCount.value
+          : this.observerCount,
+      observerNames: data.observerNames.present
+          ? data.observerNames.value
+          : this.observerNames,
+      temperatureStartC: data.temperatureStartC.present
+          ? data.temperatureStartC.value
+          : this.temperatureStartC,
+      temperatureEndC: data.temperatureEndC.present
+          ? data.temperatureEndC.value
+          : this.temperatureEndC,
+      windBeaufortStart: data.windBeaufortStart.present
+          ? data.windBeaufortStart.value
+          : this.windBeaufortStart,
+      windBeaufortEnd: data.windBeaufortEnd.present
+          ? data.windBeaufortEnd.value
+          : this.windBeaufortEnd,
+      cloudCoverStartPct: data.cloudCoverStartPct.present
+          ? data.cloudCoverStartPct.value
+          : this.cloudCoverStartPct,
+      cloudCoverEndPct: data.cloudCoverEndPct.present
+          ? data.cloudCoverEndPct.value
+          : this.cloudCoverEndPct,
+      precipitation: data.precipitation.present
+          ? data.precipitation.value
+          : this.precipitation,
+      weatherSuitable: data.weatherSuitable.present
+          ? data.weatherSuitable.value
+          : this.weatherSuitable,
+      weatherMissingReason: data.weatherMissingReason.present
+          ? data.weatherMissingReason.value
+          : this.weatherMissingReason,
+      zeroObservationConfirmed: data.zeroObservationConfirmed.present
+          ? data.zeroObservationConfirmed.value
+          : this.zeroObservationConfirmed,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      status: data.status.present ? data.status.value : this.status,
+      cancelReason: data.cancelReason.present
+          ? data.cancelReason.value
+          : this.cancelReason,
+      batterySaverUsed: data.batterySaverUsed.present
+          ? data.batterySaverUsed.value
+          : this.batterySaverUsed,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      createdOffline: data.createdOffline.present
+          ? data.createdOffline.value
+          : this.createdOffline,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      pausedAt: data.pausedAt.present ? data.pausedAt.value : this.pausedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyVisit(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('transectId: $transectId, ')
+          ..write('observerId: $observerId, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('surveyMethod: $surveyMethod, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('distanceWalkedM: $distanceWalkedM, ')
+          ..write('observerCount: $observerCount, ')
+          ..write('observerNames: $observerNames, ')
+          ..write('temperatureStartC: $temperatureStartC, ')
+          ..write('temperatureEndC: $temperatureEndC, ')
+          ..write('windBeaufortStart: $windBeaufortStart, ')
+          ..write('windBeaufortEnd: $windBeaufortEnd, ')
+          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
+          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
+          ..write('precipitation: $precipitation, ')
+          ..write('weatherSuitable: $weatherSuitable, ')
+          ..write('weatherMissingReason: $weatherMissingReason, ')
+          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('cancelReason: $cancelReason, ')
+          ..write('batterySaverUsed: $batterySaverUsed, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('createdOffline: $createdOffline, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pausedAt: $pausedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    transectId,
+    observerId,
+    protocolVersion,
+    surveyMethod,
+    startedAt,
+    endedAt,
+    durationSeconds,
+    pausedSeconds,
+    distanceWalkedM,
+    observerCount,
+    observerNames,
+    temperatureStartC,
+    temperatureEndC,
+    windBeaufortStart,
+    windBeaufortEnd,
+    cloudCoverStartPct,
+    cloudCoverEndPct,
+    precipitation,
+    weatherSuitable,
+    weatherMissingReason,
+    zeroObservationConfirmed,
+    notes,
+    status,
+    cancelReason,
+    batterySaverUsed,
+    deviceId,
+    createdOffline,
+    createdAt,
+    pausedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SurveyVisit &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.transectId == this.transectId &&
+          other.observerId == this.observerId &&
+          other.protocolVersion == this.protocolVersion &&
+          other.surveyMethod == this.surveyMethod &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.durationSeconds == this.durationSeconds &&
+          other.pausedSeconds == this.pausedSeconds &&
+          other.distanceWalkedM == this.distanceWalkedM &&
+          other.observerCount == this.observerCount &&
+          other.observerNames == this.observerNames &&
+          other.temperatureStartC == this.temperatureStartC &&
+          other.temperatureEndC == this.temperatureEndC &&
+          other.windBeaufortStart == this.windBeaufortStart &&
+          other.windBeaufortEnd == this.windBeaufortEnd &&
+          other.cloudCoverStartPct == this.cloudCoverStartPct &&
+          other.cloudCoverEndPct == this.cloudCoverEndPct &&
+          other.precipitation == this.precipitation &&
+          other.weatherSuitable == this.weatherSuitable &&
+          other.weatherMissingReason == this.weatherMissingReason &&
+          other.zeroObservationConfirmed == this.zeroObservationConfirmed &&
+          other.notes == this.notes &&
+          other.status == this.status &&
+          other.cancelReason == this.cancelReason &&
+          other.batterySaverUsed == this.batterySaverUsed &&
+          other.deviceId == this.deviceId &&
+          other.createdOffline == this.createdOffline &&
+          other.createdAt == this.createdAt &&
+          other.pausedAt == this.pausedAt);
+}
+
+class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> transectId;
+  final Value<String> observerId;
+  final Value<String> protocolVersion;
+  final Value<String> surveyMethod;
+  final Value<DateTime?> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<int?> durationSeconds;
+  final Value<int> pausedSeconds;
+  final Value<double?> distanceWalkedM;
+  final Value<int> observerCount;
+  final Value<String> observerNames;
+  final Value<double?> temperatureStartC;
+  final Value<double?> temperatureEndC;
+  final Value<int?> windBeaufortStart;
+  final Value<int?> windBeaufortEnd;
+  final Value<int?> cloudCoverStartPct;
+  final Value<int?> cloudCoverEndPct;
+  final Value<String> precipitation;
+  final Value<bool?> weatherSuitable;
+  final Value<String> weatherMissingReason;
+  final Value<bool> zeroObservationConfirmed;
+  final Value<String> notes;
+  final Value<String> status;
+  final Value<String> cancelReason;
+  final Value<bool> batterySaverUsed;
+  final Value<String> deviceId;
+  final Value<bool> createdOffline;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> pausedAt;
+  final Value<int> rowid;
+  const SurveyVisitsCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.transectId = const Value.absent(),
+    this.observerId = const Value.absent(),
+    this.protocolVersion = const Value.absent(),
+    this.surveyMethod = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.distanceWalkedM = const Value.absent(),
+    this.observerCount = const Value.absent(),
+    this.observerNames = const Value.absent(),
+    this.temperatureStartC = const Value.absent(),
+    this.temperatureEndC = const Value.absent(),
+    this.windBeaufortStart = const Value.absent(),
+    this.windBeaufortEnd = const Value.absent(),
+    this.cloudCoverStartPct = const Value.absent(),
+    this.cloudCoverEndPct = const Value.absent(),
+    this.precipitation = const Value.absent(),
+    this.weatherSuitable = const Value.absent(),
+    this.weatherMissingReason = const Value.absent(),
+    this.zeroObservationConfirmed = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.cancelReason = const Value.absent(),
+    this.batterySaverUsed = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.createdOffline = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.pausedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SurveyVisitsCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    required String transectId,
+    required String observerId,
+    required String protocolVersion,
+    this.surveyMethod = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.distanceWalkedM = const Value.absent(),
+    this.observerCount = const Value.absent(),
+    this.observerNames = const Value.absent(),
+    this.temperatureStartC = const Value.absent(),
+    this.temperatureEndC = const Value.absent(),
+    this.windBeaufortStart = const Value.absent(),
+    this.windBeaufortEnd = const Value.absent(),
+    this.cloudCoverStartPct = const Value.absent(),
+    this.cloudCoverEndPct = const Value.absent(),
+    this.precipitation = const Value.absent(),
+    this.weatherSuitable = const Value.absent(),
+    this.weatherMissingReason = const Value.absent(),
+    this.zeroObservationConfirmed = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.cancelReason = const Value.absent(),
+    this.batterySaverUsed = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.createdOffline = const Value.absent(),
+    required DateTime createdAt,
+    this.pausedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       transectId = Value(transectId),
+       observerId = Value(observerId),
+       protocolVersion = Value(protocolVersion),
+       createdAt = Value(createdAt);
+  static Insertable<SurveyVisit> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? transectId,
+    Expression<String>? observerId,
+    Expression<String>? protocolVersion,
+    Expression<String>? surveyMethod,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<int>? durationSeconds,
+    Expression<int>? pausedSeconds,
+    Expression<double>? distanceWalkedM,
+    Expression<int>? observerCount,
+    Expression<String>? observerNames,
+    Expression<double>? temperatureStartC,
+    Expression<double>? temperatureEndC,
+    Expression<int>? windBeaufortStart,
+    Expression<int>? windBeaufortEnd,
+    Expression<int>? cloudCoverStartPct,
+    Expression<int>? cloudCoverEndPct,
+    Expression<String>? precipitation,
+    Expression<bool>? weatherSuitable,
+    Expression<String>? weatherMissingReason,
+    Expression<bool>? zeroObservationConfirmed,
+    Expression<String>? notes,
+    Expression<String>? status,
+    Expression<String>? cancelReason,
+    Expression<bool>? batterySaverUsed,
+    Expression<String>? deviceId,
+    Expression<bool>? createdOffline,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? pausedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (transectId != null) 'transect_id': transectId,
+      if (observerId != null) 'observer_id': observerId,
+      if (protocolVersion != null) 'protocol_version': protocolVersion,
+      if (surveyMethod != null) 'survey_method': surveyMethod,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (durationSeconds != null) 'duration_seconds': durationSeconds,
+      if (pausedSeconds != null) 'paused_seconds': pausedSeconds,
+      if (distanceWalkedM != null) 'distance_walked_m': distanceWalkedM,
+      if (observerCount != null) 'observer_count': observerCount,
+      if (observerNames != null) 'observer_names': observerNames,
+      if (temperatureStartC != null) 'temperature_start_c': temperatureStartC,
+      if (temperatureEndC != null) 'temperature_end_c': temperatureEndC,
+      if (windBeaufortStart != null) 'wind_beaufort_start': windBeaufortStart,
+      if (windBeaufortEnd != null) 'wind_beaufort_end': windBeaufortEnd,
+      if (cloudCoverStartPct != null)
+        'cloud_cover_start_pct': cloudCoverStartPct,
+      if (cloudCoverEndPct != null) 'cloud_cover_end_pct': cloudCoverEndPct,
+      if (precipitation != null) 'precipitation': precipitation,
+      if (weatherSuitable != null) 'weather_suitable': weatherSuitable,
+      if (weatherMissingReason != null)
+        'weather_missing_reason': weatherMissingReason,
+      if (zeroObservationConfirmed != null)
+        'zero_observation_confirmed': zeroObservationConfirmed,
+      if (notes != null) 'notes': notes,
+      if (status != null) 'status': status,
+      if (cancelReason != null) 'cancel_reason': cancelReason,
+      if (batterySaverUsed != null) 'battery_saver_used': batterySaverUsed,
+      if (deviceId != null) 'device_id': deviceId,
+      if (createdOffline != null) 'created_offline': createdOffline,
+      if (createdAt != null) 'created_at': createdAt,
+      if (pausedAt != null) 'paused_at': pausedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SurveyVisitsCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? transectId,
+    Value<String>? observerId,
+    Value<String>? protocolVersion,
+    Value<String>? surveyMethod,
+    Value<DateTime?>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<int?>? durationSeconds,
+    Value<int>? pausedSeconds,
+    Value<double?>? distanceWalkedM,
+    Value<int>? observerCount,
+    Value<String>? observerNames,
+    Value<double?>? temperatureStartC,
+    Value<double?>? temperatureEndC,
+    Value<int?>? windBeaufortStart,
+    Value<int?>? windBeaufortEnd,
+    Value<int?>? cloudCoverStartPct,
+    Value<int?>? cloudCoverEndPct,
+    Value<String>? precipitation,
+    Value<bool?>? weatherSuitable,
+    Value<String>? weatherMissingReason,
+    Value<bool>? zeroObservationConfirmed,
+    Value<String>? notes,
+    Value<String>? status,
+    Value<String>? cancelReason,
+    Value<bool>? batterySaverUsed,
+    Value<String>? deviceId,
+    Value<bool>? createdOffline,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? pausedAt,
+    Value<int>? rowid,
+  }) {
+    return SurveyVisitsCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      transectId: transectId ?? this.transectId,
+      observerId: observerId ?? this.observerId,
+      protocolVersion: protocolVersion ?? this.protocolVersion,
+      surveyMethod: surveyMethod ?? this.surveyMethod,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+      distanceWalkedM: distanceWalkedM ?? this.distanceWalkedM,
+      observerCount: observerCount ?? this.observerCount,
+      observerNames: observerNames ?? this.observerNames,
+      temperatureStartC: temperatureStartC ?? this.temperatureStartC,
+      temperatureEndC: temperatureEndC ?? this.temperatureEndC,
+      windBeaufortStart: windBeaufortStart ?? this.windBeaufortStart,
+      windBeaufortEnd: windBeaufortEnd ?? this.windBeaufortEnd,
+      cloudCoverStartPct: cloudCoverStartPct ?? this.cloudCoverStartPct,
+      cloudCoverEndPct: cloudCoverEndPct ?? this.cloudCoverEndPct,
+      precipitation: precipitation ?? this.precipitation,
+      weatherSuitable: weatherSuitable ?? this.weatherSuitable,
+      weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
+      zeroObservationConfirmed:
+          zeroObservationConfirmed ?? this.zeroObservationConfirmed,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      cancelReason: cancelReason ?? this.cancelReason,
+      batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
+      deviceId: deviceId ?? this.deviceId,
+      createdOffline: createdOffline ?? this.createdOffline,
+      createdAt: createdAt ?? this.createdAt,
+      pausedAt: pausedAt ?? this.pausedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (transectId.present) {
+      map['transect_id'] = Variable<String>(transectId.value);
+    }
+    if (observerId.present) {
+      map['observer_id'] = Variable<String>(observerId.value);
+    }
+    if (protocolVersion.present) {
+      map['protocol_version'] = Variable<String>(protocolVersion.value);
+    }
+    if (surveyMethod.present) {
+      map['survey_method'] = Variable<String>(surveyMethod.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (durationSeconds.present) {
+      map['duration_seconds'] = Variable<int>(durationSeconds.value);
+    }
+    if (pausedSeconds.present) {
+      map['paused_seconds'] = Variable<int>(pausedSeconds.value);
+    }
+    if (distanceWalkedM.present) {
+      map['distance_walked_m'] = Variable<double>(distanceWalkedM.value);
+    }
+    if (observerCount.present) {
+      map['observer_count'] = Variable<int>(observerCount.value);
+    }
+    if (observerNames.present) {
+      map['observer_names'] = Variable<String>(observerNames.value);
+    }
+    if (temperatureStartC.present) {
+      map['temperature_start_c'] = Variable<double>(temperatureStartC.value);
+    }
+    if (temperatureEndC.present) {
+      map['temperature_end_c'] = Variable<double>(temperatureEndC.value);
+    }
+    if (windBeaufortStart.present) {
+      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart.value);
+    }
+    if (windBeaufortEnd.present) {
+      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd.value);
+    }
+    if (cloudCoverStartPct.present) {
+      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct.value);
+    }
+    if (cloudCoverEndPct.present) {
+      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct.value);
+    }
+    if (precipitation.present) {
+      map['precipitation'] = Variable<String>(precipitation.value);
+    }
+    if (weatherSuitable.present) {
+      map['weather_suitable'] = Variable<bool>(weatherSuitable.value);
+    }
+    if (weatherMissingReason.present) {
+      map['weather_missing_reason'] = Variable<String>(
+        weatherMissingReason.value,
+      );
+    }
+    if (zeroObservationConfirmed.present) {
+      map['zero_observation_confirmed'] = Variable<bool>(
+        zeroObservationConfirmed.value,
+      );
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (cancelReason.present) {
+      map['cancel_reason'] = Variable<String>(cancelReason.value);
+    }
+    if (batterySaverUsed.present) {
+      map['battery_saver_used'] = Variable<bool>(batterySaverUsed.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (createdOffline.present) {
+      map['created_offline'] = Variable<bool>(createdOffline.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (pausedAt.present) {
+      map['paused_at'] = Variable<DateTime>(pausedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyVisitsCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('transectId: $transectId, ')
+          ..write('observerId: $observerId, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('surveyMethod: $surveyMethod, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('distanceWalkedM: $distanceWalkedM, ')
+          ..write('observerCount: $observerCount, ')
+          ..write('observerNames: $observerNames, ')
+          ..write('temperatureStartC: $temperatureStartC, ')
+          ..write('temperatureEndC: $temperatureEndC, ')
+          ..write('windBeaufortStart: $windBeaufortStart, ')
+          ..write('windBeaufortEnd: $windBeaufortEnd, ')
+          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
+          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
+          ..write('precipitation: $precipitation, ')
+          ..write('weatherSuitable: $weatherSuitable, ')
+          ..write('weatherMissingReason: $weatherMissingReason, ')
+          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('cancelReason: $cancelReason, ')
+          ..write('batterySaverUsed: $batterySaverUsed, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('createdOffline: $createdOffline, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -7699,737 +10358,6 @@ class TaxonListVersionsCompanion extends UpdateCompanion<TaxonListVersion> {
   }
 }
 
-class $TransectsTable extends Transects
-    with TableInfo<$TransectsTable, Transect> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TransectsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _projectIdMeta = const VerificationMeta(
-    'projectId',
-  );
-  @override
-  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
-    'project_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES project (id)',
-    ),
-  );
-  static const VerificationMeta _codeMeta = const VerificationMeta('code');
-  @override
-  late final GeneratedColumn<String> code = GeneratedColumn<String>(
-    'code',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta(
-    'description',
-  );
-  @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-    'description',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _targetLengthMMeta = const VerificationMeta(
-    'targetLengthM',
-  );
-  @override
-  late final GeneratedColumn<double> targetLengthM = GeneratedColumn<double>(
-    'target_length_m',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _habitatSummaryMeta = const VerificationMeta(
-    'habitatSummary',
-  );
-  @override
-  late final GeneratedColumn<String> habitatSummary = GeneratedColumn<String>(
-    'habitat_summary',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _activeMeta = const VerificationMeta('active');
-  @override
-  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
-    'active',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("active" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _geometryMeta = const VerificationMeta(
-    'geometry',
-  );
-  @override
-  late final GeneratedColumn<String> geometry = GeneratedColumn<String>(
-    'geometry',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _lengthMMeta = const VerificationMeta(
-    'lengthM',
-  );
-  @override
-  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
-    'length_m',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
-    'serverVersion',
-  );
-  @override
-  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
-    'server_version',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    projectId,
-    code,
-    name,
-    description,
-    targetLengthM,
-    habitatSummary,
-    active,
-    geometry,
-    lengthM,
-    serverVersion,
-    deletedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'transect';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Transect> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('project_id')) {
-      context.handle(
-        _projectIdMeta,
-        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_projectIdMeta);
-    }
-    if (data.containsKey('code')) {
-      context.handle(
-        _codeMeta,
-        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_codeMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('description')) {
-      context.handle(
-        _descriptionMeta,
-        description.isAcceptableOrUnknown(
-          data['description']!,
-          _descriptionMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    if (data.containsKey('target_length_m')) {
-      context.handle(
-        _targetLengthMMeta,
-        targetLengthM.isAcceptableOrUnknown(
-          data['target_length_m']!,
-          _targetLengthMMeta,
-        ),
-      );
-    }
-    if (data.containsKey('habitat_summary')) {
-      context.handle(
-        _habitatSummaryMeta,
-        habitatSummary.isAcceptableOrUnknown(
-          data['habitat_summary']!,
-          _habitatSummaryMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_habitatSummaryMeta);
-    }
-    if (data.containsKey('active')) {
-      context.handle(
-        _activeMeta,
-        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_activeMeta);
-    }
-    if (data.containsKey('geometry')) {
-      context.handle(
-        _geometryMeta,
-        geometry.isAcceptableOrUnknown(data['geometry']!, _geometryMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_geometryMeta);
-    }
-    if (data.containsKey('length_m')) {
-      context.handle(
-        _lengthMMeta,
-        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_lengthMMeta);
-    }
-    if (data.containsKey('server_version')) {
-      context.handle(
-        _serverVersionMeta,
-        serverVersion.isAcceptableOrUnknown(
-          data['server_version']!,
-          _serverVersionMeta,
-        ),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Transect map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Transect(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      projectId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}project_id'],
-      )!,
-      code: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}code'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
-      targetLengthM: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}target_length_m'],
-      ),
-      habitatSummary: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}habitat_summary'],
-      )!,
-      active: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}active'],
-      )!,
-      geometry: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}geometry'],
-      )!,
-      lengthM: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}length_m'],
-      )!,
-      serverVersion: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}server_version'],
-      ),
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-    );
-  }
-
-  @override
-  $TransectsTable createAlias(String alias) {
-    return $TransectsTable(attachedDatabase, alias);
-  }
-}
-
-class Transect extends DataClass implements Insertable<Transect> {
-  final String id;
-  final String projectId;
-  final String code;
-  final String name;
-  final String description;
-  final double? targetLengthM;
-  final String habitatSummary;
-  final bool active;
-  final String geometry;
-  final double lengthM;
-  final int? serverVersion;
-  final DateTime? deletedAt;
-  const Transect({
-    required this.id,
-    required this.projectId,
-    required this.code,
-    required this.name,
-    required this.description,
-    this.targetLengthM,
-    required this.habitatSummary,
-    required this.active,
-    required this.geometry,
-    required this.lengthM,
-    this.serverVersion,
-    this.deletedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['project_id'] = Variable<String>(projectId);
-    map['code'] = Variable<String>(code);
-    map['name'] = Variable<String>(name);
-    map['description'] = Variable<String>(description);
-    if (!nullToAbsent || targetLengthM != null) {
-      map['target_length_m'] = Variable<double>(targetLengthM);
-    }
-    map['habitat_summary'] = Variable<String>(habitatSummary);
-    map['active'] = Variable<bool>(active);
-    map['geometry'] = Variable<String>(geometry);
-    map['length_m'] = Variable<double>(lengthM);
-    if (!nullToAbsent || serverVersion != null) {
-      map['server_version'] = Variable<int>(serverVersion);
-    }
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    return map;
-  }
-
-  TransectsCompanion toCompanion(bool nullToAbsent) {
-    return TransectsCompanion(
-      id: Value(id),
-      projectId: Value(projectId),
-      code: Value(code),
-      name: Value(name),
-      description: Value(description),
-      targetLengthM: targetLengthM == null && nullToAbsent
-          ? const Value.absent()
-          : Value(targetLengthM),
-      habitatSummary: Value(habitatSummary),
-      active: Value(active),
-      geometry: Value(geometry),
-      lengthM: Value(lengthM),
-      serverVersion: serverVersion == null && nullToAbsent
-          ? const Value.absent()
-          : Value(serverVersion),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-    );
-  }
-
-  factory Transect.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Transect(
-      id: serializer.fromJson<String>(json['id']),
-      projectId: serializer.fromJson<String>(json['projectId']),
-      code: serializer.fromJson<String>(json['code']),
-      name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
-      targetLengthM: serializer.fromJson<double?>(json['targetLengthM']),
-      habitatSummary: serializer.fromJson<String>(json['habitatSummary']),
-      active: serializer.fromJson<bool>(json['active']),
-      geometry: serializer.fromJson<String>(json['geometry']),
-      lengthM: serializer.fromJson<double>(json['lengthM']),
-      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'projectId': serializer.toJson<String>(projectId),
-      'code': serializer.toJson<String>(code),
-      'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
-      'targetLengthM': serializer.toJson<double?>(targetLengthM),
-      'habitatSummary': serializer.toJson<String>(habitatSummary),
-      'active': serializer.toJson<bool>(active),
-      'geometry': serializer.toJson<String>(geometry),
-      'lengthM': serializer.toJson<double>(lengthM),
-      'serverVersion': serializer.toJson<int?>(serverVersion),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-    };
-  }
-
-  Transect copyWith({
-    String? id,
-    String? projectId,
-    String? code,
-    String? name,
-    String? description,
-    Value<double?> targetLengthM = const Value.absent(),
-    String? habitatSummary,
-    bool? active,
-    String? geometry,
-    double? lengthM,
-    Value<int?> serverVersion = const Value.absent(),
-    Value<DateTime?> deletedAt = const Value.absent(),
-  }) => Transect(
-    id: id ?? this.id,
-    projectId: projectId ?? this.projectId,
-    code: code ?? this.code,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    targetLengthM: targetLengthM.present
-        ? targetLengthM.value
-        : this.targetLengthM,
-    habitatSummary: habitatSummary ?? this.habitatSummary,
-    active: active ?? this.active,
-    geometry: geometry ?? this.geometry,
-    lengthM: lengthM ?? this.lengthM,
-    serverVersion: serverVersion.present
-        ? serverVersion.value
-        : this.serverVersion,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-  );
-  Transect copyWithCompanion(TransectsCompanion data) {
-    return Transect(
-      id: data.id.present ? data.id.value : this.id,
-      projectId: data.projectId.present ? data.projectId.value : this.projectId,
-      code: data.code.present ? data.code.value : this.code,
-      name: data.name.present ? data.name.value : this.name,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
-      targetLengthM: data.targetLengthM.present
-          ? data.targetLengthM.value
-          : this.targetLengthM,
-      habitatSummary: data.habitatSummary.present
-          ? data.habitatSummary.value
-          : this.habitatSummary,
-      active: data.active.present ? data.active.value : this.active,
-      geometry: data.geometry.present ? data.geometry.value : this.geometry,
-      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
-      serverVersion: data.serverVersion.present
-          ? data.serverVersion.value
-          : this.serverVersion,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Transect(')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('code: $code, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('targetLengthM: $targetLengthM, ')
-          ..write('habitatSummary: $habitatSummary, ')
-          ..write('active: $active, ')
-          ..write('geometry: $geometry, ')
-          ..write('lengthM: $lengthM, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    projectId,
-    code,
-    name,
-    description,
-    targetLengthM,
-    habitatSummary,
-    active,
-    geometry,
-    lengthM,
-    serverVersion,
-    deletedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Transect &&
-          other.id == this.id &&
-          other.projectId == this.projectId &&
-          other.code == this.code &&
-          other.name == this.name &&
-          other.description == this.description &&
-          other.targetLengthM == this.targetLengthM &&
-          other.habitatSummary == this.habitatSummary &&
-          other.active == this.active &&
-          other.geometry == this.geometry &&
-          other.lengthM == this.lengthM &&
-          other.serverVersion == this.serverVersion &&
-          other.deletedAt == this.deletedAt);
-}
-
-class TransectsCompanion extends UpdateCompanion<Transect> {
-  final Value<String> id;
-  final Value<String> projectId;
-  final Value<String> code;
-  final Value<String> name;
-  final Value<String> description;
-  final Value<double?> targetLengthM;
-  final Value<String> habitatSummary;
-  final Value<bool> active;
-  final Value<String> geometry;
-  final Value<double> lengthM;
-  final Value<int?> serverVersion;
-  final Value<DateTime?> deletedAt;
-  final Value<int> rowid;
-  const TransectsCompanion({
-    this.id = const Value.absent(),
-    this.projectId = const Value.absent(),
-    this.code = const Value.absent(),
-    this.name = const Value.absent(),
-    this.description = const Value.absent(),
-    this.targetLengthM = const Value.absent(),
-    this.habitatSummary = const Value.absent(),
-    this.active = const Value.absent(),
-    this.geometry = const Value.absent(),
-    this.lengthM = const Value.absent(),
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  TransectsCompanion.insert({
-    required String id,
-    required String projectId,
-    required String code,
-    required String name,
-    required String description,
-    this.targetLengthM = const Value.absent(),
-    required String habitatSummary,
-    required bool active,
-    required String geometry,
-    required double lengthM,
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       projectId = Value(projectId),
-       code = Value(code),
-       name = Value(name),
-       description = Value(description),
-       habitatSummary = Value(habitatSummary),
-       active = Value(active),
-       geometry = Value(geometry),
-       lengthM = Value(lengthM);
-  static Insertable<Transect> custom({
-    Expression<String>? id,
-    Expression<String>? projectId,
-    Expression<String>? code,
-    Expression<String>? name,
-    Expression<String>? description,
-    Expression<double>? targetLengthM,
-    Expression<String>? habitatSummary,
-    Expression<bool>? active,
-    Expression<String>? geometry,
-    Expression<double>? lengthM,
-    Expression<int>? serverVersion,
-    Expression<DateTime>? deletedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (projectId != null) 'project_id': projectId,
-      if (code != null) 'code': code,
-      if (name != null) 'name': name,
-      if (description != null) 'description': description,
-      if (targetLengthM != null) 'target_length_m': targetLengthM,
-      if (habitatSummary != null) 'habitat_summary': habitatSummary,
-      if (active != null) 'active': active,
-      if (geometry != null) 'geometry': geometry,
-      if (lengthM != null) 'length_m': lengthM,
-      if (serverVersion != null) 'server_version': serverVersion,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  TransectsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? projectId,
-    Value<String>? code,
-    Value<String>? name,
-    Value<String>? description,
-    Value<double?>? targetLengthM,
-    Value<String>? habitatSummary,
-    Value<bool>? active,
-    Value<String>? geometry,
-    Value<double>? lengthM,
-    Value<int?>? serverVersion,
-    Value<DateTime?>? deletedAt,
-    Value<int>? rowid,
-  }) {
-    return TransectsCompanion(
-      id: id ?? this.id,
-      projectId: projectId ?? this.projectId,
-      code: code ?? this.code,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      targetLengthM: targetLengthM ?? this.targetLengthM,
-      habitatSummary: habitatSummary ?? this.habitatSummary,
-      active: active ?? this.active,
-      geometry: geometry ?? this.geometry,
-      lengthM: lengthM ?? this.lengthM,
-      serverVersion: serverVersion ?? this.serverVersion,
-      deletedAt: deletedAt ?? this.deletedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (projectId.present) {
-      map['project_id'] = Variable<String>(projectId.value);
-    }
-    if (code.present) {
-      map['code'] = Variable<String>(code.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
-    }
-    if (targetLengthM.present) {
-      map['target_length_m'] = Variable<double>(targetLengthM.value);
-    }
-    if (habitatSummary.present) {
-      map['habitat_summary'] = Variable<String>(habitatSummary.value);
-    }
-    if (active.present) {
-      map['active'] = Variable<bool>(active.value);
-    }
-    if (geometry.present) {
-      map['geometry'] = Variable<String>(geometry.value);
-    }
-    if (lengthM.present) {
-      map['length_m'] = Variable<double>(lengthM.value);
-    }
-    if (serverVersion.present) {
-      map['server_version'] = Variable<int>(serverVersion.value);
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TransectsCompanion(')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('code: $code, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('targetLengthM: $targetLengthM, ')
-          ..write('habitatSummary: $habitatSummary, ')
-          ..write('active: $active, ')
-          ..write('geometry: $geometry, ')
-          ..write('lengthM: $lengthM, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $TransectSectionsTable extends TransectSections
     with TableInfo<$TransectSectionsTable, TransectSection> {
   @override
@@ -9094,10 +11022,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $SyncConflictsTable syncConflicts = $SyncConflictsTable(this);
+  late final $TransectsTable transects = $TransectsTable(this);
+  late final $SurveyVisitsTable surveyVisits = $SurveyVisitsTable(this);
   late final $TaxaTable taxa = $TaxaTable(this);
   late final $TaxonListVersionsTable taxonListVersions =
       $TaxonListVersionsTable(this);
-  late final $TransectsTable transects = $TransectsTable(this);
   late final $TransectSectionsTable transectSections = $TransectSectionsTable(
     this,
   );
@@ -9119,9 +11048,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     plantTaxa,
     projectProtocols,
     syncConflicts,
+    transects,
+    surveyVisits,
     taxa,
     taxonListVersions,
-    transects,
     transectSections,
     syncQueueEntity,
   ];
@@ -9430,6 +11360,24 @@ final class $$ProjectsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$SurveyVisitsTable, List<SurveyVisit>>
+  _surveyVisitsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.surveyVisits,
+    aliasName: 'project__id__survey_visit__project_id',
+  );
+
+  $$SurveyVisitsTableProcessedTableManager get surveyVisitsRefs {
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_surveyVisitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ProjectsTableFilterComposer
@@ -9537,6 +11485,31 @@ class $$ProjectsTableFilterComposer
           }) => $$TransectsTableFilterComposer(
             $db: $db,
             $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> surveyVisitsRefs(
+    Expression<bool> Function($$SurveyVisitsTableFilterComposer f) f,
+  ) {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -9711,6 +11684,31 @@ class $$ProjectsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> surveyVisitsRefs<T extends Object>(
+    Expression<T> Function($$SurveyVisitsTableAnnotationComposer a) f,
+  ) {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager
@@ -9729,6 +11727,7 @@ class $$ProjectsTableTableManager
           PrefetchHooks Function({
             bool projectProtocolsRefs,
             bool transectsRefs,
+            bool surveyVisitsRefs,
           })
         > {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
@@ -9807,12 +11806,17 @@ class $$ProjectsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({projectProtocolsRefs = false, transectsRefs = false}) {
+              ({
+                projectProtocolsRefs = false,
+                transectsRefs = false,
+                surveyVisitsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (projectProtocolsRefs) db.projectProtocols,
                     if (transectsRefs) db.transects,
+                    if (surveyVisitsRefs) db.surveyVisits,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -9859,6 +11863,27 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (surveyVisitsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          SurveyVisit
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._surveyVisitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).surveyVisitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -9879,7 +11904,11 @@ typedef $$ProjectsTableProcessedTableManager =
       $$ProjectsTableUpdateCompanionBuilder,
       (Project, $$ProjectsTableReferences),
       Project,
-      PrefetchHooks Function({bool projectProtocolsRefs, bool transectsRefs})
+      PrefetchHooks Function({
+        bool projectProtocolsRefs,
+        bool transectsRefs,
+        bool surveyVisitsRefs,
+      })
     >;
 typedef $$SyncQueueTableCreateCompanionBuilder = SyncQueueCompanion Function({
   Value<int> seq,
@@ -12408,6 +14437,1655 @@ typedef $$SyncConflictsTableProcessedTableManager =
       SyncConflict,
       PrefetchHooks Function()
     >;
+typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
+  required String id,
+  required String projectId,
+  required String code,
+  required String name,
+  required String description,
+  Value<double?> targetLengthM,
+  required String habitatSummary,
+  required bool active,
+  required String geometry,
+  required double lengthM,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$TransectsTableUpdateCompanionBuilder = TransectsCompanion Function({
+  Value<String> id,
+  Value<String> projectId,
+  Value<String> code,
+  Value<String> name,
+  Value<String> description,
+  Value<double?> targetLengthM,
+  Value<String> habitatSummary,
+  Value<bool> active,
+  Value<String> geometry,
+  Value<double> lengthM,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+final class $$TransectsTableReferences
+    extends BaseReferences<_$AppDatabase, $TransectsTable, Transect> {
+  $$TransectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('transect__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$SurveyVisitsTable, List<SurveyVisit>>
+  _surveyVisitsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.surveyVisits,
+    aliasName: 'transect__id__survey_visit__transect_id',
+  );
+
+  $$SurveyVisitsTableProcessedTableManager get surveyVisitsRefs {
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_surveyVisitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransectSectionsTable, List<TransectSection>>
+  _transectSectionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transectSections,
+    aliasName: 'transect__id__transect_section__transect_id',
+  );
+
+  $$TransectSectionsTableProcessedTableManager get transectSectionsRefs {
+    final manager = $$TransectSectionsTableTableManager(
+      $_db,
+      $_db.transectSections,
+    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transectSectionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TransectsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geometry => $composableBuilder(
+    column: $table.geometry,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> surveyVisitsRefs(
+    Expression<bool> Function($$SurveyVisitsTableFilterComposer f) f,
+  ) {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transectSectionsRefs(
+    Expression<bool> Function($$TransectSectionsTableFilterComposer f) f,
+  ) {
+    final $$TransectSectionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transectSections,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectSectionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transectSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TransectsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geometry => $composableBuilder(
+    column: $table.geometry,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransectsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<String> get geometry =>
+      $composableBuilder(column: $table.geometry, builder: (column) => column);
+
+  GeneratedColumn<double> get lengthM =>
+      $composableBuilder(column: $table.lengthM, builder: (column) => column);
+
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> surveyVisitsRefs<T extends Object>(
+    Expression<T> Function($$SurveyVisitsTableAnnotationComposer a) f,
+  ) {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> transectSectionsRefs<T extends Object>(
+    Expression<T> Function($$TransectSectionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransectSectionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transectSections,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectSectionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transectSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TransectsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransectsTable,
+          Transect,
+          $$TransectsTableFilterComposer,
+          $$TransectsTableOrderingComposer,
+          $$TransectsTableAnnotationComposer,
+          $$TransectsTableCreateCompanionBuilder,
+          $$TransectsTableUpdateCompanionBuilder,
+          (Transect, $$TransectsTableReferences),
+          Transect,
+          PrefetchHooks Function({
+            bool projectId,
+            bool surveyVisitsRefs,
+            bool transectSectionsRefs,
+          })
+        > {
+  $$TransectsTableTableManager(_$AppDatabase db, $TransectsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransectsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransectsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransectsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<double?> targetLengthM = const Value.absent(),
+                Value<String> habitatSummary = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<String> geometry = const Value.absent(),
+                Value<double> lengthM = const Value.absent(),
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectsCompanion(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                description: description,
+                targetLengthM: targetLengthM,
+                habitatSummary: habitatSummary,
+                active: active,
+                geometry: geometry,
+                lengthM: lengthM,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String projectId,
+                required String code,
+                required String name,
+                required String description,
+                Value<double?> targetLengthM = const Value.absent(),
+                required String habitatSummary,
+                required bool active,
+                required String geometry,
+                required double lengthM,
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectsCompanion.insert(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                description: description,
+                targetLengthM: targetLengthM,
+                habitatSummary: habitatSummary,
+                active: active,
+                geometry: geometry,
+                lengthM: lengthM,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TransectsTable, Transect>(table),
+                  $$TransectsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                projectId = false,
+                surveyVisitsRefs = false,
+                transectSectionsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (surveyVisitsRefs) db.surveyVisits,
+                    if (transectSectionsRefs) db.transectSections,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable: $$TransectsTableReferences
+                                ._projectIdTable(db),
+                            referencedColumn: $$TransectsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (surveyVisitsRefs)
+                        await $_getPrefetchedData<
+                          Transect,
+                          $TransectsTable,
+                          SurveyVisit
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransectsTableReferences
+                              ._surveyVisitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).surveyVisitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transectSectionsRefs)
+                        await $_getPrefetchedData<
+                          Transect,
+                          $TransectsTable,
+                          TransectSection
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransectsTableReferences
+                              ._transectSectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transectSectionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransectsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransectsTable,
+      Transect,
+      $$TransectsTableFilterComposer,
+      $$TransectsTableOrderingComposer,
+      $$TransectsTableAnnotationComposer,
+      $$TransectsTableCreateCompanionBuilder,
+      $$TransectsTableUpdateCompanionBuilder,
+      (Transect, $$TransectsTableReferences),
+      Transect,
+      PrefetchHooks Function({
+        bool projectId,
+        bool surveyVisitsRefs,
+        bool transectSectionsRefs,
+      })
+    >;
+typedef $$SurveyVisitsTableCreateCompanionBuilder =
+    SurveyVisitsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      required String transectId,
+      required String observerId,
+      required String protocolVersion,
+      Value<String> surveyMethod,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> endedAt,
+      Value<int?> durationSeconds,
+      Value<int> pausedSeconds,
+      Value<double?> distanceWalkedM,
+      Value<int> observerCount,
+      Value<String> observerNames,
+      Value<double?> temperatureStartC,
+      Value<double?> temperatureEndC,
+      Value<int?> windBeaufortStart,
+      Value<int?> windBeaufortEnd,
+      Value<int?> cloudCoverStartPct,
+      Value<int?> cloudCoverEndPct,
+      Value<String> precipitation,
+      Value<bool?> weatherSuitable,
+      Value<String> weatherMissingReason,
+      Value<bool> zeroObservationConfirmed,
+      Value<String> notes,
+      Value<String> status,
+      Value<String> cancelReason,
+      Value<bool> batterySaverUsed,
+      Value<String> deviceId,
+      Value<bool> createdOffline,
+      required DateTime createdAt,
+      Value<DateTime?> pausedAt,
+      Value<int> rowid,
+    });
+typedef $$SurveyVisitsTableUpdateCompanionBuilder =
+    SurveyVisitsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String> transectId,
+      Value<String> observerId,
+      Value<String> protocolVersion,
+      Value<String> surveyMethod,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> endedAt,
+      Value<int?> durationSeconds,
+      Value<int> pausedSeconds,
+      Value<double?> distanceWalkedM,
+      Value<int> observerCount,
+      Value<String> observerNames,
+      Value<double?> temperatureStartC,
+      Value<double?> temperatureEndC,
+      Value<int?> windBeaufortStart,
+      Value<int?> windBeaufortEnd,
+      Value<int?> cloudCoverStartPct,
+      Value<int?> cloudCoverEndPct,
+      Value<String> precipitation,
+      Value<bool?> weatherSuitable,
+      Value<String> weatherMissingReason,
+      Value<bool> zeroObservationConfirmed,
+      Value<String> notes,
+      Value<String> status,
+      Value<String> cancelReason,
+      Value<bool> batterySaverUsed,
+      Value<String> deviceId,
+      Value<bool> createdOffline,
+      Value<DateTime> createdAt,
+      Value<DateTime?> pausedAt,
+      Value<int> rowid,
+    });
+
+final class $$SurveyVisitsTableReferences
+    extends BaseReferences<_$AppDatabase, $SurveyVisitsTable, SurveyVisit> {
+  $$SurveyVisitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('survey_visit__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TransectsTable _transectIdTable(_$AppDatabase db) =>
+      db.transects.createAlias('survey_visit__transect_id__transect__id');
+
+  $$TransectsTableProcessedTableManager get transectId {
+    final $_column = $_itemColumn<String>('transect_id')!;
+
+    final manager = $$TransectsTableTableManager(
+      $_db,
+      $_db.transects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SurveyVisitsTableFilterComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableFilterComposer get transectId {
+    final $$TransectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableFilterComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyVisitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableOrderingComposer get transectId {
+    final $$TransectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyVisitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pausedAt =>
+      $composableBuilder(column: $table.pausedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableAnnotationComposer get transectId {
+    final $$TransectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyVisitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SurveyVisitsTable,
+          SurveyVisit,
+          $$SurveyVisitsTableFilterComposer,
+          $$SurveyVisitsTableOrderingComposer,
+          $$SurveyVisitsTableAnnotationComposer,
+          $$SurveyVisitsTableCreateCompanionBuilder,
+          $$SurveyVisitsTableUpdateCompanionBuilder,
+          (SurveyVisit, $$SurveyVisitsTableReferences),
+          SurveyVisit,
+          PrefetchHooks Function({bool projectId, bool transectId})
+        > {
+  $$SurveyVisitsTableTableManager(_$AppDatabase db, $SurveyVisitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SurveyVisitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SurveyVisitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SurveyVisitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> transectId = const Value.absent(),
+                Value<String> observerId = const Value.absent(),
+                Value<String> protocolVersion = const Value.absent(),
+                Value<String> surveyMethod = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<double?> distanceWalkedM = const Value.absent(),
+                Value<int> observerCount = const Value.absent(),
+                Value<String> observerNames = const Value.absent(),
+                Value<double?> temperatureStartC = const Value.absent(),
+                Value<double?> temperatureEndC = const Value.absent(),
+                Value<int?> windBeaufortStart = const Value.absent(),
+                Value<int?> windBeaufortEnd = const Value.absent(),
+                Value<int?> cloudCoverStartPct = const Value.absent(),
+                Value<int?> cloudCoverEndPct = const Value.absent(),
+                Value<String> precipitation = const Value.absent(),
+                Value<bool?> weatherSuitable = const Value.absent(),
+                Value<String> weatherMissingReason = const Value.absent(),
+                Value<bool> zeroObservationConfirmed = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> cancelReason = const Value.absent(),
+                Value<bool> batterySaverUsed = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<bool> createdOffline = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyVisitsCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                transectId: transectId,
+                observerId: observerId,
+                protocolVersion: protocolVersion,
+                surveyMethod: surveyMethod,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                durationSeconds: durationSeconds,
+                pausedSeconds: pausedSeconds,
+                distanceWalkedM: distanceWalkedM,
+                observerCount: observerCount,
+                observerNames: observerNames,
+                temperatureStartC: temperatureStartC,
+                temperatureEndC: temperatureEndC,
+                windBeaufortStart: windBeaufortStart,
+                windBeaufortEnd: windBeaufortEnd,
+                cloudCoverStartPct: cloudCoverStartPct,
+                cloudCoverEndPct: cloudCoverEndPct,
+                precipitation: precipitation,
+                weatherSuitable: weatherSuitable,
+                weatherMissingReason: weatherMissingReason,
+                zeroObservationConfirmed: zeroObservationConfirmed,
+                notes: notes,
+                status: status,
+                cancelReason: cancelReason,
+                batterySaverUsed: batterySaverUsed,
+                deviceId: deviceId,
+                createdOffline: createdOffline,
+                createdAt: createdAt,
+                pausedAt: pausedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                required String transectId,
+                required String observerId,
+                required String protocolVersion,
+                Value<String> surveyMethod = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<double?> distanceWalkedM = const Value.absent(),
+                Value<int> observerCount = const Value.absent(),
+                Value<String> observerNames = const Value.absent(),
+                Value<double?> temperatureStartC = const Value.absent(),
+                Value<double?> temperatureEndC = const Value.absent(),
+                Value<int?> windBeaufortStart = const Value.absent(),
+                Value<int?> windBeaufortEnd = const Value.absent(),
+                Value<int?> cloudCoverStartPct = const Value.absent(),
+                Value<int?> cloudCoverEndPct = const Value.absent(),
+                Value<String> precipitation = const Value.absent(),
+                Value<bool?> weatherSuitable = const Value.absent(),
+                Value<String> weatherMissingReason = const Value.absent(),
+                Value<bool> zeroObservationConfirmed = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> cancelReason = const Value.absent(),
+                Value<bool> batterySaverUsed = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<bool> createdOffline = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyVisitsCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                transectId: transectId,
+                observerId: observerId,
+                protocolVersion: protocolVersion,
+                surveyMethod: surveyMethod,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                durationSeconds: durationSeconds,
+                pausedSeconds: pausedSeconds,
+                distanceWalkedM: distanceWalkedM,
+                observerCount: observerCount,
+                observerNames: observerNames,
+                temperatureStartC: temperatureStartC,
+                temperatureEndC: temperatureEndC,
+                windBeaufortStart: windBeaufortStart,
+                windBeaufortEnd: windBeaufortEnd,
+                cloudCoverStartPct: cloudCoverStartPct,
+                cloudCoverEndPct: cloudCoverEndPct,
+                precipitation: precipitation,
+                weatherSuitable: weatherSuitable,
+                weatherMissingReason: weatherMissingReason,
+                zeroObservationConfirmed: zeroObservationConfirmed,
+                notes: notes,
+                status: status,
+                cancelReason: cancelReason,
+                batterySaverUsed: batterySaverUsed,
+                deviceId: deviceId,
+                createdOffline: createdOffline,
+                createdAt: createdAt,
+                pausedAt: pausedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SurveyVisitsTable, SurveyVisit>(table),
+                  $$SurveyVisitsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false, transectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable: $$SurveyVisitsTableReferences
+                            ._projectIdTable(db),
+                        referencedColumn: $$SurveyVisitsTableReferences
+                            ._projectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (transectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.transectId,
+                        referencedTable: $$SurveyVisitsTableReferences
+                            ._transectIdTable(db),
+                        referencedColumn: $$SurveyVisitsTableReferences
+                            ._transectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SurveyVisitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SurveyVisitsTable,
+      SurveyVisit,
+      $$SurveyVisitsTableFilterComposer,
+      $$SurveyVisitsTableOrderingComposer,
+      $$SurveyVisitsTableAnnotationComposer,
+      $$SurveyVisitsTableCreateCompanionBuilder,
+      $$SurveyVisitsTableUpdateCompanionBuilder,
+      (SurveyVisit, $$SurveyVisitsTableReferences),
+      SurveyVisit,
+      PrefetchHooks Function({bool projectId, bool transectId})
+    >;
 typedef $$TaxaTableCreateCompanionBuilder = TaxaCompanion Function({
   required String id,
   required String author,
@@ -13161,555 +16839,6 @@ typedef $$TaxonListVersionsTableProcessedTableManager =
       TaxonListVersion,
       PrefetchHooks Function()
     >;
-typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
-  required String id,
-  required String projectId,
-  required String code,
-  required String name,
-  required String description,
-  Value<double?> targetLengthM,
-  required String habitatSummary,
-  required bool active,
-  required String geometry,
-  required double lengthM,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-typedef $$TransectsTableUpdateCompanionBuilder = TransectsCompanion Function({
-  Value<String> id,
-  Value<String> projectId,
-  Value<String> code,
-  Value<String> name,
-  Value<String> description,
-  Value<double?> targetLengthM,
-  Value<String> habitatSummary,
-  Value<bool> active,
-  Value<String> geometry,
-  Value<double> lengthM,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-
-final class $$TransectsTableReferences
-    extends BaseReferences<_$AppDatabase, $TransectsTable, Transect> {
-  $$TransectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
-      db.projects.createAlias('transect__project_id__project__id');
-
-  $$ProjectsTableProcessedTableManager get projectId {
-    final $_column = $_itemColumn<String>('project_id')!;
-
-    final manager = $$ProjectsTableTableManager(
-      $_db,
-      $_db.projects,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$TransectSectionsTable, List<TransectSection>>
-  _transectSectionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.transectSections,
-    aliasName: 'transect__id__transect_section__transect_id',
-  );
-
-  $$TransectSectionsTableProcessedTableManager get transectSectionsRefs {
-    final manager = $$TransectSectionsTableTableManager(
-      $_db,
-      $_db.transectSections,
-    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _transectSectionsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$TransectsTableFilterComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get code => $composableBuilder(
-    column: $table.code,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get geometry => $composableBuilder(
-    column: $table.geometry,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get lengthM => $composableBuilder(
-    column: $table.lengthM,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$ProjectsTableFilterComposer get projectId {
-    final $$ProjectsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableFilterComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> transectSectionsRefs(
-    Expression<bool> Function($$TransectSectionsTableFilterComposer f) f,
-  ) {
-    final $$TransectSectionsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transectSections,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectSectionsTableFilterComposer(
-            $db: $db,
-            $table: $db.transectSections,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TransectsTableOrderingComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get code => $composableBuilder(
-    column: $table.code,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get geometry => $composableBuilder(
-    column: $table.geometry,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get lengthM => $composableBuilder(
-    column: $table.lengthM,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$ProjectsTableOrderingComposer get projectId {
-    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableOrderingComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$TransectsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get code =>
-      $composableBuilder(column: $table.code, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get active =>
-      $composableBuilder(column: $table.active, builder: (column) => column);
-
-  GeneratedColumn<String> get geometry =>
-      $composableBuilder(column: $table.geometry, builder: (column) => column);
-
-  GeneratedColumn<double> get lengthM =>
-      $composableBuilder(column: $table.lengthM, builder: (column) => column);
-
-  GeneratedColumn<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  $$ProjectsTableAnnotationComposer get projectId {
-    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> transectSectionsRefs<T extends Object>(
-    Expression<T> Function($$TransectSectionsTableAnnotationComposer a) f,
-  ) {
-    final $$TransectSectionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transectSections,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectSectionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transectSections,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TransectsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TransectsTable,
-          Transect,
-          $$TransectsTableFilterComposer,
-          $$TransectsTableOrderingComposer,
-          $$TransectsTableAnnotationComposer,
-          $$TransectsTableCreateCompanionBuilder,
-          $$TransectsTableUpdateCompanionBuilder,
-          (Transect, $$TransectsTableReferences),
-          Transect,
-          PrefetchHooks Function({bool projectId, bool transectSectionsRefs})
-        > {
-  $$TransectsTableTableManager(_$AppDatabase db, $TransectsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TransectsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TransectsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TransectsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> projectId = const Value.absent(),
-                Value<String> code = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> description = const Value.absent(),
-                Value<double?> targetLengthM = const Value.absent(),
-                Value<String> habitatSummary = const Value.absent(),
-                Value<bool> active = const Value.absent(),
-                Value<String> geometry = const Value.absent(),
-                Value<double> lengthM = const Value.absent(),
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransectsCompanion(
-                id: id,
-                projectId: projectId,
-                code: code,
-                name: name,
-                description: description,
-                targetLengthM: targetLengthM,
-                habitatSummary: habitatSummary,
-                active: active,
-                geometry: geometry,
-                lengthM: lengthM,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String projectId,
-                required String code,
-                required String name,
-                required String description,
-                Value<double?> targetLengthM = const Value.absent(),
-                required String habitatSummary,
-                required bool active,
-                required String geometry,
-                required double lengthM,
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransectsCompanion.insert(
-                id: id,
-                projectId: projectId,
-                code: code,
-                name: name,
-                description: description,
-                targetLengthM: targetLengthM,
-                habitatSummary: habitatSummary,
-                active: active,
-                geometry: geometry,
-                lengthM: lengthM,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$TransectsTable, Transect>(table),
-                  $$TransectsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({projectId = false, transectSectionsRefs = false}) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (transectSectionsRefs) db.transectSections,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (projectId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.projectId,
-                            referencedTable: $$TransectsTableReferences
-                                ._projectIdTable(db),
-                            referencedColumn: $$TransectsTableReferences
-                                ._projectIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (transectSectionsRefs)
-                        await $_getPrefetchedData<
-                          Transect,
-                          $TransectsTable,
-                          TransectSection
-                        >(
-                          currentTable: table,
-                          referencedTable: $$TransectsTableReferences
-                              ._transectSectionsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$TransectsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).transectSectionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.transectId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$TransectsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TransectsTable,
-      Transect,
-      $$TransectsTableFilterComposer,
-      $$TransectsTableOrderingComposer,
-      $$TransectsTableAnnotationComposer,
-      $$TransectsTableCreateCompanionBuilder,
-      $$TransectsTableUpdateCompanionBuilder,
-      (Transect, $$TransectsTableReferences),
-      Transect,
-      PrefetchHooks Function({bool projectId, bool transectSectionsRefs})
-    >;
 typedef $$TransectSectionsTableCreateCompanionBuilder =
     TransectSectionsCompanion Function({
       required String id,
@@ -14159,11 +17288,13 @@ class $AppDatabaseManager {
       $$ProjectProtocolsTableTableManager(_db, _db.projectProtocols);
   $$SyncConflictsTableTableManager get syncConflicts =>
       $$SyncConflictsTableTableManager(_db, _db.syncConflicts);
+  $$TransectsTableTableManager get transects =>
+      $$TransectsTableTableManager(_db, _db.transects);
+  $$SurveyVisitsTableTableManager get surveyVisits =>
+      $$SurveyVisitsTableTableManager(_db, _db.surveyVisits);
   $$TaxaTableTableManager get taxa => $$TaxaTableTableManager(_db, _db.taxa);
   $$TaxonListVersionsTableTableManager get taxonListVersions =>
       $$TaxonListVersionsTableTableManager(_db, _db.taxonListVersions);
-  $$TransectsTableTableManager get transects =>
-      $$TransectsTableTableManager(_db, _db.transects);
   $$TransectSectionsTableTableManager get transectSections =>
       $$TransectSectionsTableTableManager(_db, _db.transectSections);
 }

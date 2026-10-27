@@ -69,7 +69,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T031 | [#48](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/48) | App offline package download and status | P1 | must | T030 | 1.5 d | done |
 | T032 | [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) | App sync status screen | P1 | must | T030 | 1.5 d | done |
 | T033 | [#50](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/50) | App transect list and transect detail | P1 | must | T017, T021, T031 | 2 d | done |
-| T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | todo |
+| T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | done |
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | todo |
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | todo |
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | todo |
@@ -665,11 +665,13 @@ Manual run (2026-10-26, phone over USB): list with distances, search and both so
 Deferred: the own visit count, last visit date and visit history show no visits until the phone has a `survey_visit` table (`TODO(T034)` in `visit_stats.dart`). After the season and time-window checks, Start visit shows a snackbar until the start-visit form exists (`TODO(T035)`). See D-057.
 
 ### T034 · SurveyVisit model, lifecycle and API
-[#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) · E05 · P1 · must · labels: `backend`, `mobile`, `database`, `must`, `p2-compat` · implements F9 · est. 2.5 d · **todo**
+[#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) · E05 · P1 · must · labels: `backend`, `mobile`, `database`, `must`, `p2-compat` · implements F9 · est. 2.5 d · **done**
 
 Picks up from T033: the app's own-visit count, last visit and visit history read placeholder providers in `features/transects/domain/visit_stats.dart` (`TODO(T034)`); fill them from the Drift `survey_visit` mirror.
 
 Picks up from T021: `GET /api/v1/transects/{id}/visits` (the caller's visits, admins all) and the real `visit_count` / `last_visit_at` in `transects.services.with_stats` (`TODO(T034)`).
+
+Notes: the "test on both sides" is written (developer's choice, an exception to D-021): `backend/apps/surveys/tests.py` and `mobile/test/visit_status_test.dart`. VERIFY of the cancel-reason CHECK done with `sqlmigrate`. Lock check (T042), lock/unlock UI (T043), field rules per status (T055) and the app's visit writes (T035) stay with their tickets. See D-058.
 
 Depends on: T021, T026
 
@@ -789,6 +791,8 @@ Depends on: T040
 
 ### T042 · Visit lock enforced in the API
 [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) · E05 · P1 · must · labels: `backend`, `sync`, `must` · implements F13 · est. 1 d · **todo**
+
+Picks up from T034: `SurveyVisitAdmin` is fully read-only (only the "Mark as reviewed" action). Editing unlocked visits in admin ("unlock, edit and re-lock") starts here: make the fields editable except `status`, `distance_walked_m`, `locked_*` and `quality_flags`, and save through `surveys.services.save_visit`. See D-058.
 
 Depends on: T026, T034
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/features/visits/data/visit_repository.dart';
 
 /// The caller's own visits of one transect, as the transect list shows them.
 class TransectVisitStats {
@@ -18,17 +19,41 @@ class VisitSummary {
   final String status;
 }
 
-/// Own visit count and last visit of a transect.
-// TODO(T034): read the local survey_visit table. Until then there are no
-// visits on the phone.
+/// Own visit count and last visit of a transect, from the local
+/// `survey_visit` table. Drafts and cancelled visits do not count
+/// ([VisitRepository.countedStatuses]), the same rule as the server's
+/// `visit_count`.
 final transectVisitStatsProvider =
-    StreamProvider.family<TransectVisitStats, String>(
-      (ref, transectId) => Stream.value(const TransectVisitStats(count: 0)),
-    );
+    StreamProvider.family<TransectVisitStats, String>((ref, transectId) {
+      final visits = ref
+          .watch(visitRepositoryProvider)
+          .watchCountedVisits(transectId);
+      return visits.map((countedVisits) {
+        DateTime? lastVisitAt;
+        for (final visit in countedVisits) {
+          final startedAt = visit.startedAt;
+          if (startedAt != null &&
+              (lastVisitAt == null || startedAt.isAfter(lastVisitAt))) {
+            lastVisitAt = startedAt;
+          }
+        }
+        return TransectVisitStats(
+          count: countedVisits.length,
+          lastVisitAt: lastVisitAt,
+        );
+      });
+    });
 
-/// Own visits of a transect, newest first.
-// TODO(T034): read the local survey_visit table.
+/// Own visits of a transect that have started, newest first.
 final transectVisitsProvider =
-    StreamProvider.family<List<VisitSummary>, String>(
-      (ref, transectId) => Stream.value(const []),
-    );
+    StreamProvider.family<List<VisitSummary>, String>((ref, transectId) {
+      final visits = ref
+          .watch(visitRepositoryProvider)
+          .watchStartedVisits(transectId);
+      return visits.map(
+        (startedVisits) => [
+          for (final visit in startedVisits)
+            VisitSummary(startedAt: visit.startedAt!, status: visit.status),
+        ],
+      );
+    });

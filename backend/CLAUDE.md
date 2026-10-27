@@ -17,6 +17,7 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py makemigrations   # the
 $DC exec django python manage.py makemigrations --check
 $DC exec django python manage.py migrate
 $DC exec django python manage.py check
+$DC exec django python manage.py test apps.surveys   # the one test (T034, D-058): visit states vs docs/requirements/visit-states.json
 $DC exec django python manage.py collectstatic --noinput   # after adding static files: nginx serves the collected copy
 
 # Seed data (T024; docs/setup/seed-data.md). Run as the developer: they write the GBIF cache.

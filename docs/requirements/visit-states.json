@@ -1,0 +1,18 @@
+{
+  "description": "SurveyVisit lifecycle (T034, outline 7.2). The server (apps/surveys/state.py) and the app (lib/features/visits/domain/visit_status.dart) hold the same table; a test on each side reads this file. `by`: app = the visit's creator (or an admin acting for them), server = the push service itself, admin = an admin in Django admin.",
+  "statuses": ["draft", "in_progress", "completed", "synced", "reviewed", "locked", "cancelled"],
+  "cancel_reasons": ["not_conducted", "aborted_weather", "aborted_other", "invalid_protocol"],
+  "transitions": [
+    {"from": "draft", "to": "in_progress", "by": "app"},
+    {"from": "draft", "to": "cancelled", "by": "app"},
+    {"from": "in_progress", "to": "cancelled", "by": "app"},
+    {"from": "in_progress", "to": "completed", "by": "app"},
+    {"from": "completed", "to": "synced", "by": "server"},
+    {"from": "completed", "to": "reviewed", "by": "admin"},
+    {"from": "synced", "to": "reviewed", "by": "admin"},
+    {"from": "completed", "to": "locked", "by": "admin"},
+    {"from": "synced", "to": "locked", "by": "admin"},
+    {"from": "reviewed", "to": "locked", "by": "admin"},
+    {"from": "locked", "to": "reviewed", "by": "admin"}
+  ]
+}

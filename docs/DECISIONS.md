@@ -868,3 +868,66 @@ inside. The day window uses local wall-clock time. Start visit is disabled for a
 **Placeholders:** own visit count, last visit and history come from `transectVisitStatsProvider` / `transectVisitsProvider`
 (`visit_stats.dart`, `TODO(T034)`), which emit no visits until the phone has a `survey_visit` table. Start visit ends in a snackbar
 until the start-visit form exists (`TODO(T035)`). The outline's "filter po području" is not in the criteria and was not built.
+
+## D-058 · Visit lifecycle: a dict table, `transition()` does not save, push-only synced step, two spec tests
+2026-10 · accepted · T034
+**State table:** `apps/surveys/state.py` `TRANSITIONS = {(from, to): actor}` with actor `app` (the visit's creator, or an admin acting
+for them), `server` (`actor=None`, the push service itself) or `admin`. The same table is `visitTransitions` in
+`mobile/lib/features/visits/domain/visit_status.dart`; the spec both copy is `docs/requirements/visit-states.json`. `transition(visit, to,
+actor, reason=None)` checks the move and the actor and sets fields **on the instance only**; callers save with their own history reason
+(`sync push`, `REST API`, `marked reviewed`). `reason` is the `cancel_reason` for `cancelled` (must be a `CancelReason` value) and the lock
+reason for `locked`, which also sets `locked_at`/`locked_by` (the DB constraint needs them; the lock UI is T043). Leaving `locked` clears
+the three lock fields; the history keeps them. `InvalidTransition` is a DRF `APIException` (409, code `invalid_transition`), so push
+stores it as a rejection and REST returns the standard body; the app's `syncErrorMessage` names it.
+**Several moves in one push:** the phone works offline and its queue merges unsent updates (D-051), so one push can carry several app
+moves: a new visit first pushed as `completed`, or a synced draft that was then started and finished offline and arrives as one update
+`draft → completed`. `state.steps_between(from, to)` gives the direct move when the table has one, otherwise the shortest chain of app moves
+(draft → in_progress → completed), or None. `state.move_to(visit, to, actor, reason)` walks it, each step through `transition()`; both
+`build_new_visit` (from `draft`) and `apply_visit_changes` use it. Admin and server moves are never chained, so a status the app cannot reach
+(`synced`, `reviewed`, `locked`) is still `invalid_transition`. (Found in code review: the first version chained moves only for creates.)
+**`completed → synced`** happens only in the push handlers (`mark_synced_if_completed`, in the same save as the change), never in REST,
+admin or a signal (ticket d). So `POST /survey-visits/{id}/complete` leaves a visit `completed`. **A pushed `status: completed` for a visit
+that is already `synced` is no change**, not a move back: a phone that has not pulled since its push still holds `completed`.
+**Services:** `apps/surveys/services.py` builds a change on the instance (`build_new_visit`, `apply_visit_changes`) and saves through
+`save_visit`, which runs `validate_constraints()` first so a broken CHECK comes back as a field error, not `integrity_error`, and reloads
+`server_version` after the save (the trigger writes it, D-029), so REST answers the real version. Push, REST and admin all call these. `sync.handlers.current_push_reason()` was added so a service that saves on its own still uses the push reason
+(D-053). The REST views read input with `SurveyVisitSyncSerializer` (the push schema) and answer with `SurveyVisitSerializer` (adds the
+server-owned fields). `deleted_at` is read-only in the sync serializer: push strips it anyway, but REST validates with the same class, and
+a client must not delete a visit. The visit endpoints accept **JSON only** (`parser_classes = [JSONParser]`, a form body is 415) and refuse a
+body that is not an object (400). `POST /survey-visits` takes the client's `id` (or makes one); an existing id is a 400.
+`GET /transects/{id}/visits` lives in the surveys app (surveys depends on transects, not the other way round) and sorts
+`started_at DESC NULLS LAST`, so unstarted drafts come last as on the phone. The admin action "Mark as reviewed" reloads each visit with
+`select_for_update()` inside its own transaction, so it never saves an older copy over a push that landed meanwhile.
+**Rules chosen with the developer:**
+- *Observer:* a researcher's visit always has `observer = caller` (left out, it defaults to the caller; anything else is a
+  `validation_error`). An admin may name any member of the project or another admin.
+- *Visit count and last visit:* live visits not in `draft` or `cancelled` (`COUNTED_STATUSES`, the same list in `VisitRepository`); last
+  visit = latest `started_at`. Researchers count their own (`created_by`), admins all. `with_stats` takes the visit count and last visit
+  from subqueries on `surveys.services.counted_visits(user)`, not from a second join: joining sections and visits together would build
+  sections × visits rows per transect.
+- *No delete handler:* a visit is cancelled, not deleted, so a pushed `delete` is `operation_not_allowed`. A local create that was never
+  sent can still be removed by the queue's create + delete coalescing (D-051).
+- *Tests:* the ticket's "test on both sides" is written, an exception to D-021 the developer chose: `backend/apps/surveys/tests.py`
+  (`SimpleTestCase`, no database; `manage.py test apps.surveys`) and `mobile/test/visit_status_test.dart`. The django container now mounts
+  `./docs/requirements` read-only at `/docs/requirements` (`compose.dev.yaml`), so the test finds the file at `BASE_DIR.parent / "docs"`
+  in the container and on the host.
+**Scopes:** pull = the project's visits with `created_by = user`, deleted rows included; REST = `visits_for(user)` (live, in
+`projects_for(user)`, researchers only their own). Not reference data (`reference=False`). `distance_walked_m` is server-owned (T036).
+**App:** Drift `survey_visit` (schema v7, `from6To7`), `SyncColumns` mixin (its first user), plus `createdOffline` from the server and
+local-only `pausedAt`. `PullApplier` maps it; the pending-row guard already applies because the table has `sync_status`.
+`SyncRepository`'s raw SQL writes now pass `updates: _tablesOf(entityType)`, so streams on feature tables refresh after `write`, `retry`,
+`discard` and push results (closes the D-051/D-054/D-056 point). `VisitRepository` is read-only (T035 adds writes); the transect list and
+detail read it, and the detail shows `visitStatusLabel`.
+**VERIFY done:** `sqlmigrate surveys 0001` shows `visit_cancel_reason_consistent` as `(status = 'cancelled' AND cancel_reason IN (...)) OR
+(NOT (status = 'cancelled') AND cancel_reason = '')`, as the ticket's DDL. The model also has `visit_survey_method_valid` (the DDL's
+inline CHECK).
+**Shown by hand:** `tmp/t034/smoke.py` (53 checks, all passing after the review fixes: push lifecycle, offline-completed create, draft → completed in one update, illegal moves, observer, cancel reason, delete,
+ownership, history reasons, pull scope, the four REST endpoints, no `/lock`, transect list and stats, the admin action and its refusal),
+run in the container; it soft-deletes its visits. The Drift v6 → v7 step was checked with the generated migration test, kept in
+`tmp/t034/drift_migration_test/` (not committed).
+**Obligation for T035 (from the code review):** update payloads must carry only the fields the phone changed (D-054). The conflict merge
+(D-052) does not know that `completed` on the phone equals `synced` on the server, so an update that resends an unchanged
+`status: completed` after the server moved the visit on (for example to `reviewed`) would be a conflict on `status`.
+**Found on the way (not fixed, for a later ticket):** the admin group's permissions are granted on accounts' `post_migrate`
+(D-034), which runs before Django creates the permissions of apps listed after `accounts`. A new app's permissions reach the group only on
+the next `migrate`. Here a second `migrate` fixed it; a fresh database would need the same.

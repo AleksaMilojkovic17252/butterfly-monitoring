@@ -71,12 +71,12 @@ class SyncRepository {
         baseVersion: baseVersion,
       );
 
-      // No `updates:` here, so table streams do not refresh (T034, see D-051).
       if (operation == SyncOperation.delete) {
         if (cancelledCreate) {
           await _db.customUpdate(
             'DELETE FROM "$entityType" WHERE id = ?',
             variables: [Variable.withString(entityId)],
+            updates: _tablesOf(entityType),
           );
         } else {
           await _db.customUpdate(
@@ -86,6 +86,7 @@ class SyncRepository {
               Variable.withString(SyncStatus.pending.name),
               Variable.withString(entityId),
             ],
+            updates: _tablesOf(entityType),
           );
         }
       } else {
@@ -96,6 +97,7 @@ class SyncRepository {
             Variable.withString(SyncStatus.pending.name),
             Variable.withString(entityId),
           ],
+          updates: _tablesOf(entityType),
         );
       }
     });
@@ -153,6 +155,7 @@ class SyncRepository {
           await _db.customUpdate(
             'DELETE FROM "${item.entityType}" WHERE id IN ($marks)',
             variables: [for (final id in ids) Variable.withString(id)],
+            updates: _tablesOf(item.entityType),
           );
         }
         return;
@@ -171,6 +174,7 @@ class SyncRepository {
         await _db.customUpdate(
           'DELETE FROM "${item.entityType}" WHERE id = ?',
           variables: [Variable.withString(item.entityId)],
+          updates: _tablesOf(item.entityType),
         );
         return;
       }
@@ -245,6 +249,7 @@ class SyncRepository {
             Variable.withString(SyncStatus.pending.name),
             for (final id in chunk) Variable.withString(id),
           ],
+          updates: _tablesOf(entityType),
         );
       }
     });
@@ -522,6 +527,7 @@ class SyncRepository {
           Variable.withString(SyncStatus.synced.name),
           for (final id in ids) Variable.withString(id),
         ],
+        updates: _tablesOf(item.entityType),
       );
       return;
     }
@@ -533,6 +539,7 @@ class SyncRepository {
           Variable.withInt(serverVersion),
           Variable.withString(item.entityId),
         ],
+        updates: _tablesOf(item.entityType),
       );
       // A later update or delete was queued before the version was known.
       await (_db.update(_db.syncQueue)..where(
@@ -587,7 +594,23 @@ class SyncRepository {
         Variable.withString(status.name),
         Variable.withString(item.entityId),
       ],
+      updates: _tablesOf(item.entityType),
     );
+  }
+
+  /// Every local table by its SQL name (`survey_visit`, ...). Built once, on
+  /// first use: the tables do not change while the app runs.
+  late final Map<String, TableInfo> _tablesByName = {
+    for (final table in _db.allTables) table.actualTableName: table,
+  };
+
+  /// The Drift table behind [entityType], as a set for `customUpdate`'s
+  /// `updates:`: raw SQL does not tell Drift which table changed, and without it
+  /// the screens watching that table would not refresh (D-051). Empty when the
+  /// type has no local table.
+  Set<TableInfo> _tablesOf(String entityType) {
+    final table = _tablesByName[entityType];
+    return table == null ? {} : {table};
   }
 
   /// True while an item has not been sent. T030 must raise `retryCount` or set

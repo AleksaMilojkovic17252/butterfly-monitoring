@@ -8,6 +8,7 @@ import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
 import 'package:mobile/core/db/skeleton_pings.dart';
+import 'package:mobile/core/db/survey_visits.dart';
 import 'package:mobile/core/db/sync_conflicts.dart';
 import 'package:mobile/core/db/sync_queue.dart';
 import 'package:mobile/core/db/sync_state_entries.dart';
@@ -30,6 +31,7 @@ part 'app_database.g.dart';
     PlantTaxa,
     ProjectProtocols,
     SyncConflicts,
+    SurveyVisits,
     Taxa,
     TaxonListVersions,
     TransectSections,
@@ -40,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -77,6 +79,9 @@ class AppDatabase extends _$AppDatabase {
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );
+      },
+      from6To7: (m, schema) async {
+        await m.createTable(schema.surveyVisit);
       },
     ),
   );
