@@ -266,6 +266,14 @@ class SyncRepository {
     });
   }
 
+  /// The `seq` of the newest queue item, or 0 when the queue is empty.
+  Future<int> lastSeq() async {
+    final newest = _db.syncQueue.seq.max();
+    final query = _db.selectOnly(_db.syncQueue)..addColumns([newest]);
+    final row = await query.getSingle();
+    return row.read(newest) ?? 0;
+  }
+
   /// Changes not yet synced: every item in the queue, in any status. Items
   /// leave the queue only when the server accepted them.
   Future<int> unsyncedCount() => _db.syncQueue.count().getSingle();

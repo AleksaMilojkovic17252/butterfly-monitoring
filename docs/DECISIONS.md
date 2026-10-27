@@ -1008,3 +1008,39 @@ bad rows, ownership, not-found, single operations refused, empty pull, distance 
 client value kept with 0, 1 or only inaccurate points, the offline-finish path, REST complete, the admin page). It keeps one visit
 ("t036 demo route") for the admin map and soft-deletes the rest with their points. The Drift v7 → v8 step was checked with the generated
 migration test, and `discard` with a throwaway test (both in `tmp/t036/`, not committed; D-021).
+
+## D-061 · GPS tracking: follows this phone's visit, buffered writes, resume marker, permissions before Start
+2026-10 · accepted · T037, *amends D-054*
+
+**Driver:** `TrackingController` (`features/visits/domain/tracking_controller.dart`, a `NotifierProvider` kept alive by `App`) follows
+`deviceVisitInProgressProvider`: the `in_progress` visit whose `device_id` is this phone's, by any user. It does not follow the
+logged-in user's visit, so an expired session or a logout does not stop the recording of a walk. Only Remove data, or the visit leaving
+`in_progress` (finish T040, cancel T041, or a pull), ends it, and a visit walked on another phone is never tracked here. The provider
+is rebuilt when the user changes so the device id is read again after Remove data. The controller acts only when the visit id changes
+(`_handledVisitId`), so edits to the row do not restart tracking. `stop()` (for T040) flushes and does not restart for the same visit.
+**Source:** `LocationSource` / `GeolocatorSource` (`core/location/location_source.dart`): `AndroidSettings(high, intervalDuration,
+distanceFilter: 0, ForegroundNotificationConfig(setOngoing, enableWakeLock))`. The notification reads "Visit in progress: <code>". `WAKE_LOCK`
+is in the manifest because `enableWakeLock` needs it. `ACCESS_BACKGROUND_LOCATION` is not requested (T037 VERIFY). Swiping the app away
+stops the service, since geolocator binds it to the Flutter engine, and the next start resumes. T072 adds a replay source.
+**Interval:** the per-device override (`gps_interval_override_s` in SharedPreferences, Settings) or the protocol's `gps_interval_s`, or 5 s
+when the protocol is missing. It is read when tracking starts.
+**Buffer:** fixes are numbered from `MAX(sequence_number) + 1` and written every 10 points or 30 s through `TrackPointRepository.addPoints`
+(`writeBatch`, one transaction with the queue item). Writes run one after another. A fix not newer than the last stored or buffered one
+(the cached position some phones deliver first) is dropped, so `recorded_at` and `sequence_number` stay in the same order. Writes are
+skipped when the visit is no longer on the phone. Points are stored as `provider = 'fused'` and rounded to the server's decimals,
+with out-of-range values sent as null, because one bad row rejects the whole batch (D-060). Up to 30 s of buffered fixes are lost if
+the process dies.
+**Resume:** a visit whose `started_at` is before the controller was created (an earlier run of the app) gets "Tracking interrupted
+<last point or start>–<first new fix>" on the tracking card. The marker is not stored: gaps can be computed from the points (T038/T040).
+**Card:** `TrackingStatusCard` on project home and transect detail shows the transect, interval, point count and last fix, the
+interruption, a location problem (cleared by the next fix, with Try again only when GPS is not running) and a save problem (kept).
+T039's active visit screen takes it over.
+**Permissions:** `prepareTracking` runs before `VisitRepository.start`, so the service starts while the app is in front (Android 14).
+It asks for location if unanswered, then for notifications (Android 13+), and once per install (`battery_optimisation_prompted`) shows
+an explanation, then `Permission.ignoreBatteryOptimizations.request()` (`permission_handler`, CONVENTIONS A.4). The controller itself
+does not ask for location, so a refusal is not asked twice.
+**Sync runner (amends D-054):** a run is `ok` if no item that was in the queue when it started is left over (`SyncRepository.lastSeq()`).
+Otherwise track batches queued during the run, including the last flush after a pull ends the visit, made it report "Sync did not
+finish".
+**Not done (code review):** the buffer is not written when the provider is disposed, which happens only when the app goes away. A gap
+inside one app run (location off, then Try again) shows no interruption; that is T038's banner.

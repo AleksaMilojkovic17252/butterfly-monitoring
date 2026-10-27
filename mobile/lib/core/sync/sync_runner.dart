@@ -141,6 +141,10 @@ class SyncRunner extends Notifier<SyncRunState> {
     try {
       transferCounter.reset();
       await syncRepository.recoverInFlight();
+      // Items queued after this point (track points written by the GPS
+      // tracker while the run is going, T037) are for the next run and do
+      // not make this one fail.
+      final lastSeqAtStart = await syncRepository.lastSeq();
       final deviceId = await syncState.deviceId();
       final sentIds = <String>{};
       while (true) {
@@ -223,7 +227,9 @@ class SyncRunner extends Notifier<SyncRunState> {
         ignoreBackoff: true,
         max: 1,
       );
-      final ok = (error == null) && leftover.isEmpty;
+      final ok =
+          (error == null) &&
+          (leftover.isEmpty || leftover.first.seq > lastSeqAtStart);
       if (!ok && error == null) {
         error = 'some changes were not sent';
       }

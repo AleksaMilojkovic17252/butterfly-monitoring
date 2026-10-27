@@ -13,6 +13,7 @@ import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/beaufort.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
 import 'package:mobile/features/visits/domain/weather_check.dart';
+import 'package:mobile/features/visits/ui/tracking_permissions.dart';
 
 /// The start-visit form (T035, outline §11.2 F): observers, start weather,
 /// notes and the protocol confirmation, then **Save draft** or **Start**.
@@ -247,6 +248,8 @@ class _StartVisitFormState extends ConsumerState<_StartVisitForm> {
     final repository = ref.read(visitRepositoryProvider);
     try {
       if (start) {
+        // Permissions first: tracking starts as soon as the visit does.
+        await prepareTracking(context, ref);
         await repository.start(
           draft: _openedDraft,
           protocol: widget.protocol,

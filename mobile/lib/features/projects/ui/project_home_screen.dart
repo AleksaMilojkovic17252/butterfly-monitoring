@@ -5,6 +5,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/projects/ui/project_period.dart';
+import 'package:mobile/features/visits/ui/tracking_status_card.dart';
 
 /// The hub for field work in one project (outline §11.2 C). There is no
 /// validation tile: validation happens in Django admin only.
@@ -79,6 +80,7 @@ class _Home extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(8),
         children: [
+          const TrackingStatusCard(),
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
             child: Text(

@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "rs.amilojkovic.butterfly"
-    compileSdk = flutter.compileSdkVersion
+    // 37, not flutter.compileSdkVersion (36): permission_handler_android 14 needs it (T037).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

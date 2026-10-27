@@ -15,13 +15,17 @@ class LocationException implements Exception {
 }
 
 /// Checks that the location service is on and the app may use it, asking
-/// for the permission when it has not been answered yet. Returns why location
-/// cannot be used, or null when it can. Shared by both providers below.
-Future<LocationFailure?> _checkLocationAllowed(GeolocatorPlatform geo) async {
+/// for the permission when it has not been answered yet (unless [ask] is
+/// false). Returns why location cannot be used, or null when it can. Shared
+/// by both providers below and the GPS tracker (T037).
+Future<LocationFailure?> checkLocationAllowed(
+  GeolocatorPlatform geo, {
+  bool ask = true,
+}) async {
   if (!await geo.isLocationServiceEnabled()) return LocationFailure.serviceOff;
 
   var permission = await geo.checkPermission();
-  if (permission == LocationPermission.denied) {
+  if (permission == LocationPermission.denied && ask) {
     try {
       permission = await geo.requestPermission();
     } on PermissionRequestInProgressException {
@@ -40,7 +44,7 @@ final currentPositionProvider = Provider<Future<Position> Function()>((ref) {
   final geo = ref.watch(locationProvider);
 
   return () async {
-    final failure = await _checkLocationAllowed(geo);
+    final failure = await checkLocationAllowed(geo);
     if (failure != null) throw LocationException(failure);
 
     try {
@@ -75,6 +79,6 @@ final lastKnownPositionProvider = FutureProvider.autoDispose<Position?>((
   ref,
 ) async {
   final geo = ref.watch(locationProvider);
-  if (await _checkLocationAllowed(geo) != null) return null;
+  if (await checkLocationAllowed(geo) != null) return null;
   return geo.getLastKnownPosition();
 });

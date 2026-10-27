@@ -83,6 +83,22 @@ class VisitRepository {
     return _inProgressQuery(observerId).watchSingleOrNull();
   }
 
+  /// Live visit in progress that was started on this phone ([deviceId]), by
+  /// any user, or null. The GPS tracker follows it (T037), so an expired
+  /// session or a logout does not stop the recording of a walk.
+  Stream<SurveyVisit?> watchInProgressOnDevice(String deviceId) {
+    final query = _db.select(_db.surveyVisits)
+      ..where(
+        (visit) =>
+            visit.deviceId.equals(deviceId) &
+            visit.deletedAt.isNull() &
+            visit.status.equals('in_progress'),
+      )
+      ..orderBy([(visit) => OrderingTerm.desc(visit.startedAt)])
+      ..limit(1);
+    return query.watchSingleOrNull();
+  }
+
   SimpleSelectStatement<$SurveyVisitsTable, SurveyVisit> _inProgressQuery(
     String observerId,
   ) {
@@ -128,7 +144,8 @@ class VisitRepository {
   /// the form says so first, this is the check that always holds. It runs in
   /// the same transaction as the write.
   ///
-  /// TODO(T037): start GPS tracking for the visit.
+  /// GPS tracking starts by itself: `TrackingController` follows the visit
+  /// in progress (T037).
   Future<void> start({
     required SurveyVisit? draft,
     required ProjectProtocol protocol,
@@ -313,4 +330,18 @@ final visitInProgressProvider = StreamProvider<SurveyVisit?>((ref) {
   final userId = ref.watch(authControllerProvider).profile?.id;
   if (userId == null) return Stream.value(null);
   return ref.watch(visitRepositoryProvider).watchInProgress(userId);
+});
+
+/// The visit in progress started on this phone, by any user, or null (T037).
+/// Rebuilt when the logged-in user changes, so the device id is read again
+/// after Remove data (which deletes it).
+final deviceVisitInProgressProvider = StreamProvider<SurveyVisit?>((
+  ref,
+) async* {
+  ref.watch(authControllerProvider.select((auth) => auth.profile?.id));
+  // Everything from `ref` before the await: a login while it waits rebuilds
+  // this provider, and the old `ref` may not be used any more.
+  final repository = ref.watch(visitRepositoryProvider);
+  final deviceId = await ref.watch(syncStateRepositoryProvider).deviceId();
+  yield* repository.watchInProgressOnDevice(deviceId);
 });

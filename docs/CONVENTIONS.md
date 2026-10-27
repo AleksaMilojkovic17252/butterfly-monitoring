@@ -60,6 +60,8 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | geolocator | latest | Android foreground service via `foregroundNotificationConfig` (VERIFY API) |
 | flutter_riverpod, go_router, dio, uuid, flutter_secure_storage, image_picker, flutter_image_compress, crypto | latest | |
 | connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |
+| permission_handler | 13.0.2 | notification permission and the battery-optimisation dialog of GPS tracking (T037); approved for T037 |
+| Android build: AGP / Gradle / compileSdk | 9.2.1 / 9.4.1 / 37 | raised in T037 for permission_handler_android 14 (needs compileSdk 37); `compileSdk` is set in `app/build.gradle.kts`, not taken from Flutter (36) |
 
 ## A.5 Database conventions (apply to every table ticket)
 

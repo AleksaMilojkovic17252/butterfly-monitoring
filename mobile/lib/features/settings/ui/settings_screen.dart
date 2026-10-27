@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
+import 'package:mobile/core/location/gps_interval_override.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
@@ -204,6 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final running = ref.watch(syncRunnerProvider).running;
     final lastSync = ref.watch(lastSyncProvider);
     final pending = ref.watch(pendingChangesProvider).value ?? 0;
+    final gpsInterval = ref.watch(gpsIntervalOverrideProvider);
     final localizations = MaterialLocalizations.of(context);
     final lastSyncText = lastSync == null
         ? 'Never synced'
@@ -254,6 +256,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                               )
                             : const Text('Sync now'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // This phone's GPS interval (T037); null follows the
+                  // project protocol.
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.gps_fixed),
+                      title: const Text('GPS interval'),
+                      subtitle: const Text(
+                        'Applies when the next visit starts or the app '
+                        'restarts',
+                      ),
+                      trailing: DropdownButton<int?>(
+                        value: gpsInterval,
+                        onChanged: (seconds) => ref
+                            .read(gpsIntervalOverrideProvider.notifier)
+                            .save(seconds),
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Project'),
+                          ),
+                          for (final seconds
+                              in GpsIntervalOverrideNotifier.choices)
+                            DropdownMenuItem(
+                              value: seconds,
+                              child: Text('$seconds s'),
+                            ),
+                        ],
                       ),
                     ),
                   ),

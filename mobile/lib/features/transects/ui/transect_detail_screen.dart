@@ -11,6 +11,7 @@ import 'package:mobile/features/transects/ui/protocol_summary.dart';
 import 'package:mobile/features/transects/ui/transect_map.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
+import 'package:mobile/features/visits/ui/tracking_status_card.dart';
 
 /// One transect (outline §11.2 E): map with coloured sections, length,
 /// sections with habitat types, habitat summary, protocol summary, own visit
@@ -104,6 +105,7 @@ class _Detail extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(8),
         children: [
+          const TrackingStatusCard(),
           Card(
             clipBehavior: Clip.antiAlias,
             child: SizedBox(

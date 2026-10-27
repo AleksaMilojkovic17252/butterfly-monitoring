@@ -72,7 +72,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T034 | [#51](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/51) | SurveyVisit model, lifecycle and API | P1 | must | T021, T026 | 2.5 d | done |
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | done |
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | done |
-| T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | todo |
+| T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | done |
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | todo |
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | todo |
@@ -734,7 +734,24 @@ Depends on: T026, T034
 - [ ] Points are **never** thinned or simplified on the server (raw data kept for Phase 2).
 
 ### T037 · App GPS tracking with an Android foreground service
-[#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) · E05 · P1 · must · labels: `mobile`, `must` · implements F10, F87 · est. 3 d · **todo**
+[#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) · E05 · P1 · must · labels: `mobile`, `must` · implements F10, F87 · est. 3 d · **done**
+
+Checked by hand (2026-10-27) on a Samsung Galaxy S24 (SM-S921B, Android 17, One UI), driven over adb. Start asked for notifications,
+then showed the battery dialog and Android's exemption dialog (granted). A second Start showed neither. The ongoing notification read
+"Visit in progress: FG2 / Recording the route every 5 s", and the geolocator service ran as a foreground service of type `location`.
+At 5 s the card's count rose by 6 every 30 s. **VERIFY (background location):** with the screen off, the battery shown as unplugged
+and deep Doze forced for 5 minutes, 61 points arrived, the longest gap was 8.3 s and none exceeded 30 s, without
+`ACCESS_BACKGROUND_LOCATION`. **VERIFY (geolocator API):** `AndroidSettings` / `ForegroundNotificationConfig` as named in the
+criterion (geolocator_android 5.1.1); `enableWakeLock` also needs `WAKE_LOCK` in the manifest (without it the stream silently never
+starts). Process death (`am force-stop`, relaunch about 2 min later) showed "Tracking interrupted 20:20–20:22", and sequence numbers went
+on 89 → 90. On the server, `count(*) = max(sequence_number)` (104 points), provider `fused`, and the distance was recomputed after the last
+batch. Completing or cancelling the visit on the server and then syncing stopped tracking and removed the notification. The phone run found
+three bugs, all fixed: the missing `WAKE_LOCK`, a provider `ref` used after an `await`, and a sync run reported as failed because of
+track points queued during the run. The `/code-review` findings were fixed except two (see D-061).
+permission_handler 13.0.2 needs compileSdk 37, so the Android build moved to AGP 9.2.1 and Gradle 9.4.1 (CONVENTIONS A.4).
+
+Deferred: the 60-minute run (about 720 points) is measured in T074, as the criterion says. Pause handling (`pausedAt`) is T039, and the
+"No GPS fix" banner for a gap within one app run is T038.
 
 Depends on: T035, T036
 
