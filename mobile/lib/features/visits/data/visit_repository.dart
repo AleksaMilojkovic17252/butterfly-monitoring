@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
+import 'package:mobile/core/validation/rule_messages.dart';
+import 'package:mobile/core/validation/visit_rules.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
@@ -274,6 +276,19 @@ class VisitRepository {
     final deviceId = await _syncState.deviceId();
     final createdAt = DateTime.now().toUtc();
 
+    _checkRules(
+      VisitInput(
+        status: status,
+        startedAt: startedAt,
+        temperatureStartC: values.temperatureC,
+        windBeaufortStart: values.windBeaufort,
+        cloudCoverStartPct: values.cloudCoverPct,
+        precipitation: values.precipitation,
+      ),
+      protocol,
+      0,
+    );
+
     await _sync.write(
       projectId: protocol.projectId,
       entityType: _entityType,
@@ -337,6 +352,17 @@ class VisitRepository {
       if (current.status != status && !appMayMove(current.status, status)) {
         throw StateError('A ${current.status} visit cannot become $status.');
       }
+      final protocol = await (_db.select(
+        _db.projectProtocols,
+      )..where((p) => p.projectId.equals(current.projectId))).getSingleOrNull();
+      if (protocol == null) {
+        throw StateError("The project's protocol is not on this phone.");
+      }
+      _checkRules(
+        _storedInput(current, values, status, startedAt),
+        protocol,
+        await _transectObservationCount(current.id),
+      );
       final before = {
         ...VisitStartValues.fromVisit(opened).toPayload(),
         'status': opened.status,
@@ -369,6 +395,53 @@ class VisitRepository {
         },
       );
     });
+  }
+
+  /// The visit as it will be stored: the row [current] with the form's
+  /// [values], [status] and [startedAt].
+  VisitInput _storedInput(
+    SurveyVisit current,
+    VisitStartValues values,
+    String status,
+    DateTime? startedAt,
+  ) {
+    return VisitInput(
+      status: status,
+      startedAt: startedAt,
+      temperatureStartC: values.temperatureC,
+      temperatureEndC: current.temperatureEndC,
+      windBeaufortStart: values.windBeaufort,
+      windBeaufortEnd: current.windBeaufortEnd,
+      cloudCoverStartPct: values.cloudCoverPct,
+      cloudCoverEndPct: current.cloudCoverEndPct,
+      precipitation: values.precipitation,
+      weatherMissingReason: current.weatherMissingReason,
+      zeroObservationConfirmed: current.zeroObservationConfirmed,
+    );
+  }
+
+  /// How many live transect observations the visit has on this phone.
+  Future<int> _transectObservationCount(String visitId) {
+    final count = _db.butterflyObservations.id.count();
+    final query = _db.selectOnly(_db.butterflyObservations)
+      ..addColumns([count])
+      ..where(
+        _db.butterflyObservations.surveyVisitId.equals(visitId) &
+            _db.butterflyObservations.deletedAt.isNull() &
+            _db.butterflyObservations.source.equals('transect'),
+      );
+    return query.map((row) => row.read(count) ?? 0).getSingle();
+  }
+
+  /// Throws a [StateError] with the rule messages (V05-V07) when [input] may
+  /// not be stored. Today only V07 can fire: the app cannot complete a visit
+  /// before the Finish screen (T040).
+  void _checkRules(VisitInput input, ProjectProtocol protocol, int count) {
+    final errors = validateVisit(
+      input,
+      VisitRuleContext(protocol: protocol, transectObservationCount: count),
+    );
+    if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
   }
 
   /// The form's columns of a visit row, for an insert or an update.

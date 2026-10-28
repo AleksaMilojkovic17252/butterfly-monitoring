@@ -1,5 +1,6 @@
+// W06, see docs/requirements/validation-rules.md
 import 'package:mobile/core/db/app_database.dart';
-import 'package:mobile/features/visits/domain/beaufort.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 
 // Weather suitability against the project protocol (protocol.md §3, T035).
 // Suitable = no precipitation (unless the protocol allows it), wind ≤ max,

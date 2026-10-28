@@ -4,6 +4,9 @@ Baseline for T001. Values marked **(proposed)** are defaults taken from common P
 practice and the ticket text. They are **to confirm with the biologist**. Every threshold below is a
 per-project setting (`ProjectProtocol`, T016); nothing is hard-coded in the app or the server.
 
+The rule IDs used below (V01–V08 reject a save, W01–W07 warn) are defined in
+[validation-rules.md](validation-rules.md).
+
 ## 1. Method: Pollard walk
 
 - Repeated walks of a fixed transect, divided into numbered sections (outline §7.1).
@@ -22,7 +25,7 @@ per-project setting (`ProjectProtocol`, T016); nothing is hard-coded in the app 
 | Setting | Default | Source |
 |---|---|---|
 | Season start / end | **1 April – 30 September** (proposed). No default in the model: the admin must enter both dates | T016 `season_start`, `season_end` |
-| Daily window | **10:00 – 17:00 local time** | T016 `day_start_time`, `day_end_time` |
+| Daily window | **10:00 – 17:00 local time** (the project's `time_zone`) | T016 `day_start_time`, `day_end_time` |
 | Target visits per season | 8 | T016 `target_visits_per_season` |
 
 A visit started outside either window is saved with warning **W07**; it is not rejected.

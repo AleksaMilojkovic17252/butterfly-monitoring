@@ -39,17 +39,3 @@ const beaufortHints = [
 
 /// "3 · Gentle breeze"
 String beaufortLabel(int force) => '$force · ${beaufortDescriptions[force]}';
-
-/// Every precipitation value, in the order the chips show them.
-const precipitationValues = ['none', 'drizzle', 'light_rain', 'rain'];
-
-/// The precipitation value as the form shows it.
-String precipitationLabel(String value) {
-  return switch (value) {
-    'none' => 'None',
-    'drizzle' => 'Drizzle',
-    'light_rain' => 'Light rain',
-    'rain' => 'Rain',
-    _ => value,
-  };
-}

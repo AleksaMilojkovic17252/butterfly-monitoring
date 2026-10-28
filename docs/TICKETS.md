@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -90,7 +90,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T052 | [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) | App plant entry with point and polygon drawing | P1 | should | T050, T051 | 2.5 d | todo |
 | T053 | [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) | HabitatFeature model and API | P1 | should | T020, T026 | 1.5 d | todo |
 | T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | todo |
-| T055 | [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) | Input validation rules (shared by app and server) | P1 | must | T016, T034, T044 | 2 d | todo |
+| T055 | [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) | Input validation rules (shared by app and server) | P1 | must | T016, T034, T044 | 2 d | done |
 | T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | todo |
 | T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | todo |
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | todo |
@@ -139,6 +139,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
+| T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
 
 ## Acceptance criteria
 
@@ -1039,7 +1040,7 @@ Depends on: T052, T053
 - [ ] Reachable from the active visit and from "Plants & habitat" on project home.
 
 ### T055 · Input validation rules (shared by app and server)
-[#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) · E08 · P1 · must · labels: `backend`, `mobile`, `must` · implements F30 · est. 2 d · **todo**
+[#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) · E08 · P1 · must · labels: `backend`, `mobile`, `must` · implements F30 · est. 2 d · **done**
 
 Depends on: T016, T034, T044
 
@@ -1061,6 +1062,8 @@ Depends on: T016, T034, T044
   - **W06** weather outside protocol thresholds
   - **W07** visit outside the season or time window
 - [ ] Server errors use field-level codes (`{"fields": {"observed_at": ["V04"]}}`), and the app maps codes to readable messages.
+
+Note: the tests are written (developer's choice, an exception to D-021): 37 on the server (`manage.py test apps.observations apps.surveys`) and 50 in the app (`flutter test`). The API smoke script `tmp/t055/smoke.py` (not committed) pushed and POSTed bad payloads for V01-V08 and W01 and got the rule IDs back in `fields`; a good payload was still applied. The developer's phone run on 2026-10-28 passed: start form (W06/W07) after the file move, quick entry, W01 (the line, then `validation_status = pending`), V03 on the sync screen (readable text, Discard), and W02 once (a poor fix could not be repeated). W03/W04 have tests only, no UI (T051, T046). V06 is enforced on the server in one direction only, and W07 on the server reads the new `ProjectProtocol.time_zone`. W05 is out of scope. No criterion was skipped as test/CI only. See D-067.
 
 ### T056 · Automatic quality flags
 [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) · E08 · P1 · should · labels: `backend`, `should` · implements F31 · est. 1.5 d · **todo**
@@ -1814,3 +1817,19 @@ the transect and its offset from it. This gives an abundance profile along the r
 - [ ] A DECISIONS.md entry on which method T048 keeps (keep the `offset_m ≤ max_distance_from_transect_m` check either way).
 
 Out of scope: storing the values (views only, no sync or Drift change). On a transect that loops back on itself, `ST_LineLocatePoint` can pick the wrong pass: document it.
+
+### T104 · App reads the protocol's time zone (rule W07)
+[#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) · E08 · added 2026-10-28 · P1 · should · labels: `mobile`, `should` · implements F30 (extends T055) · est. 1 d · **todo**
+
+Depends on: T055, T035
+
+Why: the season dates and the daily window are local times at the study site. T055 gave the protocol a `time_zone` and the server reads it (D-067); the app still uses the phone's zone for W07. Reading the protocol's zone makes both sides agree when the phone's zone is wrong or the project is in another country.
+
+- [ ] Drift `ProjectProtocols` gains `timeZone` (schema bump, snapshot, migration step); the pull applier reads `time_zone`.
+- [ ] Existing protocols reach the phones: server migration `projects/0006` did not change any row's `server_version`. Save each protocol on the server (trigger bumps it), or reset the protocol pull cursor in the app's migration.
+- [ ] `seasonWarning` and `timeWindowWarning` convert the instant to the protocol's zone before comparing (both ends still inside).
+- [ ] The protocol summary and the start-visit form show the zone.
+- [ ] Tests (exception to D-021): a W07 case where the phone's zone and the protocol's zone disagree, with a fixed zone.
+- [ ] `validation-rules.md` (W07 note) and D-067 updated.
+
+Needs a new dependency, the `timezone` package (Dart has no IANA database in the core library): ask the developer when the ticket is built. An unknown zone name falls back to the phone's zone.

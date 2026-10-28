@@ -22,7 +22,8 @@ Sources: outline §8 and the models in the tickets named in each heading.
 
 ## ProjectProtocol ⟳ (T016)
 All fields have defaults except `project` M, `season_start` M and `season_end` M.
-`protocol_version` D "1.0" · `survey_method` D pollard_walk · `day_start_time` D 10:00 ·
+`protocol_version` D "1.0" · `survey_method` D pollard_walk · `time_zone` D Europe/Belgrade (IANA name, T055) ·
+`day_start_time` D 10:00 ·
 `day_end_time` D 17:00 · `min_temperature_c` D 13.0 · `sunny_temperature_c` D 17.0 ·
 `max_cloud_cover_pct_if_cool` D 40 · `max_wind_beaufort` D 5 · `allow_precipitation` D false ·
 `target_visits_per_season` D 8 · `max_distance_from_transect_m` D 20 · `observation_time_tolerance_min` D 5 ·

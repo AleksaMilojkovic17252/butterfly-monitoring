@@ -75,6 +75,7 @@ erDiagram
         uuid project_id FK
         date season_start
         date season_end
+        string time_zone
         time day_start_time
         time day_end_time
     }

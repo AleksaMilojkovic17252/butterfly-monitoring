@@ -26,8 +26,14 @@ class WritableGeoJSONField(serializers.Field):
     """A GEOS geometry read from and written as a GeoJSON geometry object in EPSG:4326.
 
     `geom_type` is the one GEOS type accepted ("Point", "LineString", ...). Track points (T036)
-    and observations (T044) use it for what the phone sends.
+    and observations (T044) use it for what the phone sends. A caller can replace the message
+    with a rule ID: `error_messages={"wrong_type": "V08", "invalid": "V08"}` (T055).
     """
+
+    default_error_messages = {
+        "wrong_type": "Send a GeoJSON {geom_type} object.",
+        "invalid": "Not a valid GeoJSON {geom_type}.",
+    }
 
     def __init__(self, geom_type, **kwargs):
         self.geom_type = geom_type
@@ -38,13 +44,13 @@ class WritableGeoJSONField(serializers.Field):
 
     def to_internal_value(self, data):
         if not isinstance(data, dict) or data.get("type") != self.geom_type:
-            raise serializers.ValidationError(f"Send a GeoJSON {self.geom_type} object.")
+            self.fail("wrong_type", geom_type=self.geom_type)
         try:
             geometry = GEOSGeometry(json.dumps(data), srid=4326)
-        except (GDALException, GEOSException, ValueError, TypeError) as error:
-            raise serializers.ValidationError(f"Not a valid GeoJSON {self.geom_type}.") from error
+        except (GDALException, GEOSException, ValueError, TypeError):
+            self.fail("invalid", geom_type=self.geom_type)
         if geometry.geom_type != self.geom_type or geometry.empty or not geometry.valid:
-            raise serializers.ValidationError(f"Not a valid GeoJSON {self.geom_type}.")
+            self.fail("invalid", geom_type=self.geom_type)
         return geometry
 
 

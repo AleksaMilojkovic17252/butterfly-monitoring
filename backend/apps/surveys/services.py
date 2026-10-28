@@ -3,8 +3,9 @@ not the models.
 
 A change is built on the instance first (`build_new_visit`, `apply_visit_changes`) and then
 saved by `save_visit`, so push can add the server's completed -> synced step in the same save.
-A locked visit and its track points refuse every change (`state.ensure_unlocked`, T042). The field
-rules per status (T055) are added here later.
+A locked visit and its track points refuse every change (`state.ensure_unlocked`, T042).
+`save_visit` checks the input rules of `surveys.rules` (T055), so REST, push and admin are all
+covered.
 """
 
 import json
@@ -18,6 +19,7 @@ from rest_framework import exceptions, serializers
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
 from apps.projects.services import is_member, projects_for
+from apps.surveys import rules
 from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, VisitStatus
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.surveys.state import InvalidTransition, ensure_unlocked, move_to, transition
@@ -138,11 +140,14 @@ def mark_synced_if_completed(visit):
 
 
 def save_visit(visit, user, history_reason):
-    """Check the table's constraints, then save with a history reason.
+    """Check the input rules (T055) and the table's constraints, then save with a history reason.
 
-    The constraints are checked here so a broken rule comes back as a validation error with a
-    message, not as a database error.
+    They are checked here so a broken rule comes back as a validation error with a message (the
+    rule ID, e.g. `{"temperature_end_c": ["V05"]}`), not as a database error.
     """
+    errors = rules.validate_visit(_rule_data(visit), _rule_context(visit))
+    if errors:
+        raise exceptions.ValidationError(errors)
     try:
         visit.validate_constraints()
     except DjangoValidationError as error:
@@ -336,6 +341,41 @@ def admin_save_visit(visit, admin_user, reason, changed_fields):
     read-only in the admin."""
     check_admin_edit(admin_user, visit, changed_fields)
     return save_visit(visit, admin_user, reason or "admin edit")
+
+
+def _rule_data(visit):
+    """The visit's values (unsaved, as they will be stored) that the input rules read."""
+    return {
+        name: getattr(visit, name)
+        for name in (
+            "status",
+            "survey_method",
+            "precipitation",
+            "cancel_reason",
+            "started_at",
+            "zero_observation_confirmed",
+            "weather_missing_reason",
+            "temperature_start_c",
+            "temperature_end_c",
+            "wind_beaufort_start",
+            "wind_beaufort_end",
+            "cloud_cover_start_pct",
+            "cloud_cover_end_pct",
+        )
+    }
+
+
+def _rule_context(visit):
+    """What the input rules need from the database: the protocol and, for a visit confirmed as a
+    true zero, how many transect observations it has (V06)."""
+    transect_observation_count = 0
+    if visit.zero_observation_confirmed and not visit._state.adding:
+        transect_observation_count = visit.observations.filter(
+            deleted_at__isnull=True, source="transect"
+        ).count()
+    return rules.VisitRuleContext(
+        protocol=visit.project.protocol, transect_observation_count=transect_observation_count
+    )
 
 
 def _check_project_and_transect(user, visit):

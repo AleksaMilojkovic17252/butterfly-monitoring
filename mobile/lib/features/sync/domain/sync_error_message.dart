@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:mobile/core/validation/rule_messages.dart';
+
 /// A readable reason for a rejected queue item. [lastError] is the server's
 /// `[{code, detail, fields}]` list as JSON text; the first error is used. An
 /// unknown code shows the server's `detail`, and text that cannot be parsed is
-/// shown as it is.
+/// shown as it is. A `validation_error` names each field with its message; a
+/// rule ID such as `V04` (T055) becomes its sentence.
 String syncErrorMessage(String? lastError) {
   if (lastError == null || lastError.isEmpty) {
     return 'The server did not say why.';
@@ -15,7 +18,7 @@ String syncErrorMessage(String? lastError) {
     return switch (first['code']) {
       'validation_error' =>
         fields is Map && fields.isNotEmpty
-            ? 'Some values were not accepted: ${fields.keys.join(', ')}'
+            ? 'Not accepted: ${_fieldMessages(fields)}.'
             : 'Some values were not accepted.',
       'not_found' => 'This record no longer exists on the server.',
       'permission_denied' => 'You are not allowed to change this record.',
@@ -40,6 +43,34 @@ String syncErrorMessage(String? lastError) {
   } catch (_) {
     return lastError;
   }
+}
+
+/// "The count must be at least 1 (count); ...": each message of each field,
+/// with the field in brackets. A rule ID is replaced by its sentence, any
+/// other text is the server's own. A nested error (an error of one list item)
+/// is flattened to its messages, and `non_field_errors` has no field name.
+String _fieldMessages(Map fields) {
+  final parts = <String>[];
+  for (final MapEntry(:key, :value) in fields.entries) {
+    for (final message in _messagesOf(value)) {
+      final readable = isRuleId(message) ? ruleMessage(message) : message;
+      // "A value is too long." and "A value is too long" read the same here.
+      final sentence = readable.endsWith('.')
+          ? readable.substring(0, readable.length - 1)
+          : readable;
+      parts.add(key == 'non_field_errors' ? sentence : '$sentence ($key)');
+    }
+  }
+  return parts.join('; ');
+}
+
+/// Every message text inside [value]: a string, a list or a map of them.
+List<String> _messagesOf(Object? value) {
+  if (value is List) return [for (final item in value) ..._messagesOf(item)];
+  if (value is Map) {
+    return [for (final item in value.values) ..._messagesOf(item)];
+  }
+  return [value.toString()];
 }
 
 /// Plural name of an entity type for the sync screen; an unknown type shows

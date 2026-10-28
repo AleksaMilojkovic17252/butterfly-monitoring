@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
+import 'package:mobile/core/validation/observation_rules.dart';
+import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
@@ -22,7 +24,8 @@ class ObservationRepository {
   /// fills in the fields that are not sent (sex, life stage, ...).
   ///
   /// Throws a [StateError] when the visit is gone, no longer in progress or
-  /// locked.
+  /// locked, or when a rule of `core/validation` (V01-V08) refuses the entry;
+  /// the message says why.
   Future<String> createQuick({
     required SurveyVisit visit,
     required String taxonId,
@@ -34,7 +37,7 @@ class ObservationRepository {
     required String recordedById,
   }) {
     return _db.transaction(() async {
-      await _checkVisit(visit.id);
+      final current = await _checkVisit(visit.id);
 
       final id = const Uuid().v4();
       final now = DateTime.now().toUtc();
@@ -42,6 +45,18 @@ class ObservationRepository {
       final accuracy = accuracyM == null
           ? null
           : double.parse(accuracyM.toStringAsFixed(1));
+
+      final errors = validateObservation(
+        ObservationInput(
+          observedAt: now,
+          count: count,
+          lat: lat,
+          lon: lon,
+          accuracyM: accuracy,
+        ),
+        await _ruleContext(current, taxonId),
+      );
+      if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
 
       await _sync.write(
         projectId: visit.projectId,
@@ -108,9 +123,42 @@ class ObservationRepository {
     );
   }
 
-  /// Throws a [StateError] unless the visit is still on the phone, in
-  /// progress and not locked (the same checks as `VisitRepository`).
-  Future<void> _checkVisit(String visitId) async {
+  /// What the rules need to know besides the observation: the visit as it is
+  /// now, the project's protocol and the taxon.
+  Future<ObservationRuleContext> _ruleContext(
+    SurveyVisit visit,
+    String taxonId,
+  ) async {
+    final protocol = await (_db.select(
+      _db.projectProtocols,
+    )..where((p) => p.projectId.equals(visit.projectId))).getSingleOrNull();
+    if (protocol == null) {
+      throw StateError(
+        "The project's protocol is not on this phone. Sync first.",
+      );
+    }
+    final taxon = await (_db.select(
+      _db.taxa,
+    )..where((t) => t.id.equals(taxonId))).getSingleOrNull();
+    if (taxon == null) {
+      throw StateError('This species is no longer on this phone. Sync first.');
+    }
+    return ObservationRuleContext(
+      visitStatus: visit.status,
+      visitStartedAt: visit.startedAt,
+      visitEndedAt: visit.endedAt,
+      visitZeroConfirmed: visit.zeroObservationConfirmed,
+      toleranceMin: protocol.observationTimeToleranceMin,
+      accuracyWarningM: protocol.gpsAccuracyWarningM,
+      taxonPhotoRequired: taxon.photoRequired,
+      photoCount: 0, // TODO(T049): count the observation's photos
+    );
+  }
+
+  /// Returns the visit as it is now. Throws a [StateError] unless it is still
+  /// on the phone, in progress and not locked (the same checks as
+  /// `VisitRepository`).
+  Future<SurveyVisit> _checkVisit(String visitId) async {
     final current = await (_db.select(
       _db.surveyVisits,
     )..where((v) => v.id.equals(visitId))).getSingleOrNull();
@@ -123,6 +171,7 @@ class ObservationRepository {
     if (current.status != 'in_progress') {
       throw StateError('The visit is no longer in progress.');
     }
+    return current;
   }
 }
 

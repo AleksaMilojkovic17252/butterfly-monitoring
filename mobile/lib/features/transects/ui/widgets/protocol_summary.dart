@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/db/app_database.dart';
-import 'package:mobile/features/transects/domain/protocol_window.dart';
+import 'package:mobile/core/validation/protocol_window.dart';
 import 'package:mobile/features/transects/ui/widgets/protocol_summary_line.dart';
 
 /// The parts of the project protocol a researcher checks before a visit:

@@ -1,5 +1,6 @@
 from datetime import time
 from decimal import Decimal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
@@ -78,6 +79,14 @@ class SurveyMethod(models.TextChoices):
     OTHER = "other", "Other"
 
 
+def validate_time_zone(value):
+    """The value must be an IANA time zone name, e.g. Europe/Belgrade."""
+    try:
+        ZoneInfo(value)
+    except (ZoneInfoNotFoundError, ValueError, OSError) as error:
+        raise ValidationError(f"{value!r} is not an IANA time zone name.") from error
+
+
 class ProjectProtocol(SyncableModel):
     """Survey protocol of one project. Validation (T055) and flags (T056) read these values.
 
@@ -93,6 +102,10 @@ class ProjectProtocol(SyncableModel):
     season_end = models.DateField()
     day_start_time = models.TimeField(default=time(10, 0))
     day_end_time = models.TimeField(default=time(17, 0))
+    # The zone of the study site: the daily window above is local time there (rule W07).
+    time_zone = models.CharField(
+        max_length=64, default="Europe/Belgrade", validators=[validate_time_zone]
+    )
     min_temperature_c = models.DecimalField(max_digits=4, decimal_places=1, default=Decimal("13.0"))
     sunny_temperature_c = models.DecimalField(
         max_digits=4, decimal_places=1, default=Decimal("17.0")

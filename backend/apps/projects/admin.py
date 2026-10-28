@@ -45,6 +45,10 @@ class ProjectProtocolInline(HelpTextMixin, admin.StackedInline):
             "rejected."
         ),
         "season_end": "Last day of the monitoring season. Visits after it get a warning.",
+        "time_zone": (
+            "Time zone of the study site (IANA name, e.g. Europe/Belgrade). The season dates and "
+            "the daily window below are read in it."
+        ),
         "day_start_time": "Earliest local time of day a visit should start.",
         "day_end_time": (
             "Latest local time of day a visit should start. Must be after the start time."

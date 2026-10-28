@@ -3,7 +3,8 @@ models.
 
 A change is built on the instance first (`build_new_observation`, `apply_observation_changes`)
 and then saved by `save_observation`, as for visits. An observation of a locked visit refuses
-every change (`state.ensure_unlocked`, T042). The field rules (T055) are added here later.
+every change (`state.ensure_unlocked`, T042). `save_observation` checks the input rules of
+`observations.rules` (T055), so REST, push and admin are all covered.
 """
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -11,6 +12,7 @@ from rest_framework import exceptions, serializers
 
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
+from apps.observations import rules
 from apps.observations.models import ButterflyObservation, Confidence, ValidationStatus
 from apps.observations.serializers import ButterflyObservationSyncSerializer
 from apps.projects.services import is_member, projects_for
@@ -53,9 +55,9 @@ def initial_validation_status(confidence, taxon):
     """`pending` when the record needs an expert's look, `not_required` otherwise (outline 8.8).
 
     Used on create only. A new observation has no photo yet (photos arrive later, T049), so a
-    taxon that requires one is always pending.
+    taxon that requires one is always pending (W01).
     """
-    if confidence in PENDING_CONFIDENCES or taxon.photo_required:
+    if confidence in PENDING_CONFIDENCES or rules.photo_missing(taxon.photo_required, 0):
         return ValidationStatus.PENDING
     return ValidationStatus.NOT_REQUIRED
 
@@ -102,11 +104,14 @@ def apply_observation_changes(user, observation, data):
 
 
 def save_observation(observation, user, history_reason):
-    """Check the table's constraints, then save with a history reason.
+    """Check the input rules (T055) and the table's constraints, then save with a history reason.
 
-    The constraints are checked here so a broken rule comes back as a validation error with a
-    message, not as a database error.
+    They are checked here so a broken rule comes back as a validation error with a message (the
+    rule ID, e.g. `{"observed_at": ["V04"]}`), not as a database error.
     """
+    errors = rules.validate_observation(_rule_data(observation), _rule_context(observation))
+    if errors:
+        raise exceptions.ValidationError(errors)
     try:
         observation.validate_constraints()
     except DjangoValidationError as error:
@@ -193,6 +198,40 @@ def check_admin_edit(admin_user, observation, changed_fields):
 def admin_save_observation(observation, admin_user, reason, changed_fields):
     check_admin_edit(admin_user, observation, changed_fields)
     return save_observation(observation, admin_user, reason or "admin edit")
+
+
+def _rule_data(observation):
+    """The observation's values (unsaved, as they will be stored) that the input rules read."""
+    return {
+        name: getattr(observation, name)
+        for name in (
+            "observed_at",
+            "count",
+            "geometry",
+            "source",
+            "sex",
+            "life_stage",
+            "behaviour",
+            "identification_confidence",
+            "location_accuracy_m",
+        )
+    }
+
+
+def _rule_context(observation):
+    """What the input rules need from the database: the visit, the protocol and the taxon."""
+    visit = observation.survey_visit if observation.survey_visit_id is not None else None
+    protocol = observation.project.protocol
+    return rules.ObservationRuleContext(
+        visit_status=visit.status if visit else None,
+        visit_started_at=visit.started_at if visit else None,
+        visit_ended_at=visit.ended_at if visit else None,
+        visit_zero_confirmed=visit.zero_observation_confirmed if visit else False,
+        tolerance_min=protocol.observation_time_tolerance_min,
+        accuracy_warning_m=protocol.gps_accuracy_warning_m,
+        taxon_photo_required=observation.taxon.photo_required,
+        photo_count=photo_count(observation),
+    )
 
 
 def _lock_visit(observation):

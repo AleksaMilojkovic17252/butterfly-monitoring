@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 
 void main() {

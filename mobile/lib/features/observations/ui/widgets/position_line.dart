@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mobile/core/validation/observation_rules.dart';
 
 /// The top line of the sheet: how accurate the position is, with a warning
 /// above the limit, and the section the observer is in.
@@ -18,7 +19,7 @@ class PositionLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final accuracyM = fix?.accuracy;
-    final poor = accuracyM != null && accuracyM > accuracyWarningM;
+    final poor = isPoorAccuracy(accuracyM, accuracyWarningM); // W02
     final color = poor ? scheme.error : scheme.onSurfaceVariant;
     final text = accuracyM == null
         ? 'No GPS fix yet – Save will get one'

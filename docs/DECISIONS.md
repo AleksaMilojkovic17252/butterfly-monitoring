@@ -1263,3 +1263,43 @@ not roll back "recent". The sync screen's "Sync finished" snackbar replaces the 
 (an observation cannot reach the server before its visit).
 **Shown by hand** on the phone and with throwaway tests in `tmp/t045/` (not committed, D-021): the v9 to v10 migration and backfill, the
 discard rule and the rounding. A Niš test project (`tmp/t045/seed_nis.py`, not committed) puts a transect under the developer's test spot.
+
+
+## D-067 · Validation rules: pure rule modules called from `save_*`, rule IDs as messages, V06 split, zone on the protocol
+2026-10 · accepted · T055, *builds on D-050, D-058, D-059, D-065, D-066; narrows the ticket text*
+**Spec and code:** `docs/requirements/validation-rules.md` lists every rule (V01-V08, W01-W04, W06, W07; W05 is out of scope). The server rules
+are pure functions in `observations/rules.py` and `surveys/rules.py` (no database, so `SimpleTestCase` runs them); the app has the same in
+`lib/core/validation/` (`observation_rules.dart`, `visit_rules.dart`). Each rule is one small function with a `# V04`-style comment.
+**Called from the services, not the serializers (narrows the ticket's "called by DRF serializers and the push service"):** REST, push and admin
+all reach `save_observation` and `save_visit`, so the rules run there, before `validate_constraints()`. One place covers every caller.
+**The message is the rule ID.** A violation is `ValidationError({"observed_at": ["V04"]})`, which `error_body` already turns into
+`{"code": "validation_error", "fields": {...}}`; push stores the same body (D-050). The serializers the rules sit behind give the IDs too
+(`count` `min_value` = V01, required `observed_at`/`geometry` = V02, `invalid_choice` = V07, `WritableGeoJSONField` `wrong_type`/`invalid` = V08;
+`behaviour` is a plain list of strings checked in `validate_behaviour`, so a bad item is one `["V07"]` and not one error per index). The app's
+`ruleMessages` map the IDs to sentences, and `syncErrorMessage` shows "Not accepted: <sentence> (<field>)."
+**V03** accepts `in_progress`, `completed`, `synced` and `reviewed` (`synced` and `reviewed` are "completed" seen from the server: a phone that
+pushes after the visit moved on must still be accepted). A locked visit is already `visit_locked` before the rule runs. A transect
+observation with no visit is V03 as well.
+**V04** applies to every observation that has a visit, whatever its source (the ticket text names no source).
+**V06 is split.** The server enforces only "confirmed zero but has observations": it rejects a visit with `zero_observation_confirmed` that has
+live transect observations, and a new or changed transect observation on such a visit. "Completed with 0 observations needs the tick" is in
+Dart only (T041 calls it on Finish; the admin sees it at review, T043). Reason: a visit never sent before it was finished reaches the server as
+one coalesced create with `status = completed` (D-051), ahead of its observations in the queue, so the server would see 0 and reject a good visit.
+**W01** is the existing `validation_status = pending` on create (D-065); `initial_validation_status` calls the rule function. `photo_count` is
+0 until T049. **W03/W04** fire on `oviposition` and on `life_stage = larva` and always will until T051 adds the host-plant link
+(`TODO(T051)` on both sides); there is no UI for them yet (`TODO(T046)`, the quick entry cannot set behaviour or life stage). The server has
+`visit_warnings` (W06, W07) for the spec and tests; no service calls it because warnings are not stored.
+**Time zone (decided with the developer):** every stored time is UTC. Only the protocol's wall-clock settings (the daily window and the season
+dates) need a zone, so `ProjectProtocol.time_zone` (an IANA name, validated with `zoneinfo`, default `Europe/Belgrade`, set per project in the
+admin) holds the study site's zone and W07 on the server reads it. A project abroad picks its own. The **app still uses the phone's zone** for
+W07, which is the site's zone while the researcher is there; reading the protocol's zone in the app needs a zone database (the `timezone`
+package) and a Drift column: ticket T104. Existing protocol rows keep their `server_version`, so phones are not sent the new field
+until a row changes; harmless while the app ignores it, to be checked by the ticket that reads it.
+**App wiring:** `createQuick` and `VisitRepository._create`/`_update` run the rules and throw a `StateError` with the messages (today only
+V07 can fire on a visit write, because the app cannot complete a visit before T040). `PositionLine` uses `isPoorAccuracy` (W02). The quick
+sheet shows the W01 line for a photo-required species. `weather_check.dart` (W06) and `protocol_window.dart` (W07) moved from the visits and
+transects domains to `core/validation/` (`git mv`), and the visit codelists (statuses, cancel reasons, precipitation) moved there too (`visit_values.dart`), so nothing in `core/validation` imports from `features/`.
+**`mark_reviewed` and locking now go through V05** (they save through `save_visit`): an old visit without end weather and without a reason gets
+a field error in the admin. Intended.
+**Tests (an exception to D-021, as D-058, asked for by the ticket):** `observations/tests.py` and `surveys/tests.py` (`SimpleTestCase`, 37
+tests), `test/validation/*` and `test/sync_error_message_test.dart` (plain Dart, no Drift; `flutter test`, 50 in all).

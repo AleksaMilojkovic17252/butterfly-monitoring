@@ -1,3 +1,4 @@
+// W07, see docs/requirements/validation-rules.md
 import 'package:mobile/core/db/app_database.dart';
 
 // Season and daily time-window checks against the project protocol. They only

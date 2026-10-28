@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
+import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
@@ -250,6 +251,19 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
                             ),
+                          ),
+                        ),
+                      // W01. TODO(T046): show the W03/W04 prompts in the extended
+                      // entry.
+                      if (_selected?.photoRequired ?? false)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.photo_camera_outlined),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text('${ruleMessage('W01')}.')),
+                            ],
                           ),
                         ),
                       Row(

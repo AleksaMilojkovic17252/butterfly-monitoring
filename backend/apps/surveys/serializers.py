@@ -26,7 +26,14 @@ class SurveyVisitSyncSerializer(serializers.ModelSerializer):
         # cancelled, never deleted by a client. distance_walked_m is writable: the phone's figure
         # is kept unless the server can work it out from the track (T036).
         read_only_fields = ["deleted_at"]
-        extra_kwargs = {"observer": {"required": False}}
+        # The messages of the hard rules are the rule IDs (T055).
+        extra_kwargs = {
+            "observer": {"required": False},
+            "status": {"error_messages": {"invalid_choice": "V07"}},
+            "survey_method": {"error_messages": {"invalid_choice": "V07"}},
+            "precipitation": {"error_messages": {"invalid_choice": "V07"}},
+            "cancel_reason": {"error_messages": {"invalid_choice": "V07"}},
+        }
 
 
 class SurveyVisitSerializer(serializers.ModelSerializer):

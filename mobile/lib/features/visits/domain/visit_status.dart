@@ -2,27 +2,9 @@
 /// `apps/surveys/state.py`. Both are checked against
 /// `docs/requirements/visit-states.json` by a test (`test/visit_status_test.dart`
 /// here). Statuses are the server's strings, not a Dart enum, because
-/// `in_progress` is not a Dart enum name (as in D-054).
+/// `in_progress` is not a Dart enum name (as in D-054). The lists of statuses and
+/// cancel reasons are in `core/validation/visit_values.dart`.
 library;
-
-/// Every visit status, in lifecycle order.
-const visitStatuses = [
-  'draft',
-  'in_progress',
-  'completed',
-  'synced',
-  'reviewed',
-  'locked',
-  'cancelled',
-];
-
-/// Why a visit was cancelled. Required exactly when the status is `cancelled`.
-const cancelReasons = [
-  'not_conducted',
-  'aborted_weather',
-  'aborted_other',
-  'invalid_protocol',
-];
 
 /// Who may make a move: the visit's creator in the app, the server on its
 /// own (completed to synced after a push), or an admin on the server.
