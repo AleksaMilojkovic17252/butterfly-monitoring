@@ -3,8 +3,8 @@ import 'package:mobile/core/validation/protocol_window.dart';
 import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/core/validation/weather_check.dart';
 
-// Input rules of a visit (T055): V05, V06 and V07 block a save, W06 and W07
-// only warn. The rules are in docs/requirements/validation-rules.md; the
+// Input rules of a visit (T055): V05, V06, V07 and V09 block a save, W06 and
+// W07 only warn. The rules are in docs/requirements/validation-rules.md; the
 // server repeats them in `backend/apps/surveys/rules.py` and is the one that
 // decides. The Finish screen (T040/T041) calls [validateVisit] and
 // [visitWarnings] before it completes a visit.
@@ -23,11 +23,17 @@ class VisitInput {
     this.precipitation = 'none',
     this.weatherMissingReason = '',
     this.zeroObservationConfirmed = false,
+    this.cancelReason = '',
   });
 
-  /// The values of a visit row.
-  factory VisitInput.fromVisit(SurveyVisit visit) => VisitInput(
-    status: visit.status,
+  /// The values of a visit row. [status] and [cancelReason] replace the row's
+  /// own when given, to check a move before it is written.
+  factory VisitInput.fromVisit(
+    SurveyVisit visit, {
+    String? status,
+    String? cancelReason,
+  }) => VisitInput(
+    status: status ?? visit.status,
     startedAt: visit.startedAt,
     temperatureStartC: visit.temperatureStartC,
     temperatureEndC: visit.temperatureEndC,
@@ -38,6 +44,7 @@ class VisitInput {
     precipitation: visit.precipitation,
     weatherMissingReason: visit.weatherMissingReason,
     zeroObservationConfirmed: visit.zeroObservationConfirmed,
+    cancelReason: cancelReason ?? visit.cancelReason,
   );
 
   final String status;
@@ -51,6 +58,7 @@ class VisitInput {
   final String precipitation;
   final String weatherMissingReason;
   final bool zeroObservationConfirmed;
+  final String cancelReason;
 }
 
 /// What the rules need to know besides the visit: the protocol and how many
@@ -77,6 +85,7 @@ Map<String, List<String>> validateVisit(
   _v05Weather(input, errors);
   _v06Visit(input, context, errors);
   _v07Choices(input, errors);
+  _v09CancelReason(input, errors);
   return errors;
 }
 
@@ -133,6 +142,22 @@ void _v07Choices(VisitInput input, Map<String, List<String>> errors) {
   if (!visitStatuses.contains(input.status)) _add(errors, 'status', 'V07');
   if (!precipitationValues.contains(input.precipitation)) {
     _add(errors, 'precipitation', 'V07');
+  }
+  if (input.cancelReason.isNotEmpty &&
+      !cancelReasons.contains(input.cancelReason)) {
+    _add(errors, 'cancel_reason', 'V07');
+  }
+}
+
+void _v09CancelReason(VisitInput input, Map<String, List<String>> errors) {
+  // V09 (T041): 'not conducted' is for a visit that was never started, the
+  // other reasons for one that was. It reads startedAt, not the old status, as
+  // on the server.
+  if (input.status != 'cancelled') return;
+  if (!cancelReasons.contains(input.cancelReason)) return;
+  final neverStarted = input.startedAt == null;
+  if ((input.cancelReason == 'not_conducted') != neverStarted) {
+    _add(errors, 'cancel_reason', 'V09');
   }
 }
 

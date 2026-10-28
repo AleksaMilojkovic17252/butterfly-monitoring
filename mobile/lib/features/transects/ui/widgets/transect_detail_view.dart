@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/protocol_window.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
@@ -156,8 +157,12 @@ class TransectDetailView extends ConsumerWidget {
                           ? Icons.lock_outline
                           : Icons.event_outlined,
                     ),
-                    title: Text(_dateTime(v.startedAt)),
-                    subtitle: Text(visitStatusLabel(v.status)),
+                    title: Text(_dateTime(v.date)),
+                    subtitle: Text(
+                      v.status == 'cancelled'
+                          ? 'Cancelled · ${cancelReasonLabel(v.cancelReason)}'
+                          : visitStatusLabel(v.status),
+                    ),
                   ),
               ],
             ),

@@ -41,7 +41,7 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `migration_ops` (`CreateView`, `AttachSyncTrigger`, `HistoryVersionIndex`), `history.save_with_reason`, the error
   handler in `exceptions.py`, `geo_files.open_datasource` (reading uploaded GeoJSON/KML/GPX), the admin site, and the admin map widgets in `widgets.py`
   (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045).
-- Input rules V01-V08 / W01-W07 (T055, docs/requirements/validation-rules.md) are pure functions in
+- Input rules V01-V09 / W01-W07 (T055, docs/requirements/validation-rules.md) are pure functions in
   `apps/observations/rules.py` and `apps/surveys/rules.py`; `save_observation` and `save_visit` call the hard rules (the warning
   functions are not called by the services),
   and a rejection is `{"<field>": ["V04"]}` (the message is the rule ID).

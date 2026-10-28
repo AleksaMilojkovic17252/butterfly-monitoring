@@ -162,6 +162,20 @@ class SurveyVisit(SyncableModel):
             ),
         ]
 
+    @property
+    def outcome(self):
+        """What the visit came to, for exports (T064) and the admin: `completed_with_records`,
+        `true_zero`, `cancelled:<reason>`, or "" while it is a draft or in progress.
+
+        A finished visit is told apart by the true-zero flag, not by counting observations: the
+        app enforces V06 both ways on Finish (D-067), and an export costs no query per row.
+        """
+        if self.status == VisitStatus.CANCELLED:
+            return f"cancelled:{self.cancel_reason}"
+        if self.status in (VisitStatus.DRAFT, VisitStatus.IN_PROGRESS):
+            return ""
+        return "true_zero" if self.zero_observation_confirmed else "completed_with_records"
+
     def __str__(self):
         start = self.started_at.strftime("%Y-%m-%d %H:%M") if self.started_at else "not started"
         return f"{self.transect} · {start} · {self.status}"

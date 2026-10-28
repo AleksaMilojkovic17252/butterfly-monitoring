@@ -8,10 +8,43 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.admin import HistoryAdmin, SyncableAdmin
+from apps.core.admin import HistoryAdmin, SyncableAdmin, add_validation_errors
 from apps.surveys import services
-from apps.surveys.models import SurveyVisit
+from apps.surveys.models import CancelReason, SurveyVisit
 from apps.surveys.state import VisitLocked, ensure_unlocked
+
+
+def _label(field_name):
+    return str(SurveyVisit._meta.get_field(field_name).verbose_name).capitalize()
+
+
+def _explain_rule(visit, field, rule_id):
+    """The form field to mark and the sentence for a visit rule that refused an admin edit."""
+    if rule_id == "V05":
+        return field, _(
+            "{label} is required for a finished visit. Fill it in, or write why the weather "
+            "is missing in 'Weather missing reason'."
+        ).format(label=_label(field))
+    if rule_id == "V06":
+        return field, _(
+            "This visit has butterfly records, so 'Zero observation confirmed' must stay "
+            "unticked. Tick it only for a visit in which no butterfly was seen."
+        )
+    if rule_id == "V09":
+        # The cancel reason is read-only here, so the field to change is the start time.
+        reason = CancelReason(visit.cancel_reason).label
+        if visit.cancel_reason == CancelReason.NOT_CONDUCTED:
+            text = _(
+                "The cancel reason is '{reason}', which means the visit was never started, so "
+                "'Started at' must be empty."
+            )
+        else:
+            text = _(
+                "The cancel reason is '{reason}', which means the visit was started, so "
+                "'Started at' cannot be empty."
+            )
+        return "started_at", text.format(reason=reason)
+    return field, _("'{label}' is not one of the allowed choices.").format(label=_label(field))
 
 
 class SurveyVisitAdminForm(forms.ModelForm):
@@ -54,11 +87,9 @@ class SurveyVisitAdminForm(forms.ModelForm):
         try:
             services.check_admin_edit(self.admin_user, visit, self.changed_data)
         except ValidationError as error:
-            if isinstance(error.detail, dict):
-                for field_name, messages_ in error.detail.items():
-                    self.add_error(field_name if field_name in self.fields else None, messages_)
-            else:
-                self.add_error(None, error.detail)
+            add_validation_errors(
+                self, error, lambda field, rule_id: _explain_rule(visit, field, rule_id)
+            )
         except APIException as error:
             self.add_error(None, str(error.detail))
         self.visit_to_save = visit
@@ -96,7 +127,15 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         "deleted_at",
     ]
 
-    list_display = ["transect", "observer", "started_at", "status", "project", "last_modified"]
+    list_display = [
+        "transect",
+        "observer",
+        "started_at",
+        "status",
+        "outcome",
+        "project",
+        "last_modified",
+    ]
     list_filter = ["status", "project"]
     search_fields = ["transect__code", "transect__name", "observer__email", "notes"]
     ordering = ["-started_at"]
@@ -105,13 +144,20 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
 
     def get_fields(self, request, obj=None):
         # Model order, editable or not, so the form reads like the read-only page did.
-        fields = [field.name for field in SurveyVisit._meta.fields] + ["route_map"]
+        fields = [field.name for field in SurveyVisit._meta.fields]
+        fields.insert(fields.index("cancel_reason") + 1, "outcome")
+        fields.append("route_map")
         if obj is not None and self.has_change_permission(request, obj):
             fields.append("opened_version")  # the form's own hidden field, only on an edit form
         return fields
 
     def get_readonly_fields(self, request, obj=None):
-        return [*super().get_readonly_fields(request, obj), *self.fixed_fields, "route_map"]
+        return [
+            *super().get_readonly_fields(request, obj),
+            *self.fixed_fields,
+            "outcome",
+            "route_map",
+        ]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -131,6 +177,10 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
             css={"all": ["surveys/route_map.css"]}, js=["surveys/route_map.js"]
         )
         return super().media + OSMWidget().media + route_media
+
+    @admin.display(description=_("Outcome"))
+    def outcome(self, visit):
+        return visit.outcome
 
     @admin.display(description=_("Route"))
     def route_map(self, visit):

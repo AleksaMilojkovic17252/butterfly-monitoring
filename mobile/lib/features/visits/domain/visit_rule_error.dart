@@ -1,7 +1,7 @@
 import 'package:mobile/core/validation/rule_messages.dart';
 
-/// Thrown by `VisitRepository.finish` and `checkCanFinish` when a visit rule
-/// (V05-V07) refuses the visit. [errors] is the rule result, field to rule
+/// Thrown by `VisitRepository.finish`, `checkCanFinish` and `cancel` when a
+/// visit rule (V05-V07, V09) refuses the visit. [errors] is the rule result, field to rule
 /// IDs, so the Finish screen can word it for the observer. [toString] is the
 /// plain rule sentences. A [StateError] cannot be extended, hence its own
 /// class.

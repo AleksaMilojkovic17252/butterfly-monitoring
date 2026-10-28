@@ -38,6 +38,28 @@ class VisitStartValues {
   /// null while some of it is missing.
   final bool? weatherSuitable;
 
+  /// These values with the given fields replaced. A null argument keeps the
+  /// current value, so it cannot clear a weather value.
+  VisitStartValues copyWith({
+    int? observerCount,
+    String? observerNames,
+    double? temperatureC,
+    int? windBeaufort,
+    int? cloudCoverPct,
+    String? precipitation,
+    String? notes,
+    bool? weatherSuitable,
+  }) => VisitStartValues(
+    observerCount: observerCount ?? this.observerCount,
+    observerNames: observerNames ?? this.observerNames,
+    temperatureC: temperatureC ?? this.temperatureC,
+    windBeaufort: windBeaufort ?? this.windBeaufort,
+    cloudCoverPct: cloudCoverPct ?? this.cloudCoverPct,
+    precipitation: precipitation ?? this.precipitation,
+    notes: notes ?? this.notes,
+    weatherSuitable: weatherSuitable ?? this.weatherSuitable,
+  );
+
   /// The same values with the server's field names, as a push payload holds
   /// them.
   Map<String, Object?> toPayload() => {

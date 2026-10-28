@@ -1346,3 +1346,30 @@ season or the daily window (for `startedAt`), and observations a hard rule would
 **Checked without the UI** (the developer runs the phone steps, `tmp/t040/UI_TESTS.md`): `tmp/t040/smoke.py` (push with both fields, a bad
 `pauses`, a coalesced completed create, the admin page) and throwaway Dart tests in `tmp/t040/mobile_tests/` (the v10 to v11 migration,
 coverage and gaps cases, the pauses round trip). Not committed (D-021).
+
+## D-069 · Cancel flow: V09, observations of an aborted visit kept, outcome from the flag, "not conducted" from the start form
+2026-10 · accepted · T041, *builds on D-051, D-054, D-067, D-068*
+**Four reasons, two groups (decided with the developer).** `not_conducted` is for a visit that was never started, `aborted_weather`,
+`aborted_other` and `invalid_protocol` for one that was. New hard rule **V09**: `cancel_reason = not_conducted` exactly when `started_at`
+is empty (error on `cancel_reason`). It reads `started_at`, not the previous status, because `steps_between` takes a visit that was created
+offline and cancelled from draft straight to `cancelled`, even if it was started. The app offers only the fitting reasons
+(`startedCancelReasons`); the server rejects a mismatch. `surveys.services.check_admin_edit` now runs the visit rules too, so an admin edit
+that breaks V05, V06 or V09 is a form error and not an exception from `save_visit` after the form. In the admin the rule ID is never
+shown: `core.admin.add_validation_errors` replaces it with a sentence and marks an editable field in red (V09 marks *Started at*, because
+*Cancel reason* is read-only there). The visit admin and the observation admin both use it; the sentences are in each `admin.py`.
+**Observations of an aborted visit are kept.** V03 (both sides) also accepts a transect observation on a `cancelled` visit with a
+`started_at`. Without it, a visit aborted offline loses its butterflies at sync: the coalesced create (`cancelled`) reaches the server
+before the observation creates (D-051). A not-conducted visit still takes none. The quick entry stays in-progress only (D-066). The visit
+is not a valid visit (protocol §6), but its records stay in species lists and exports.
+**Outcome from the flag.** `SurveyVisit.outcome` is `true_zero` or `completed_with_records` from `zero_observation_confirmed`, not from a
+count: the app enforces V06 both ways on Finish (D-067) and an export costs no query per row. Cancelled gives `cancelled:<reason>`, a draft
+or a visit in progress `""`. T064 puts it in the exports; the admin shows it as a read-only column and field.
+**The note is the `notes` field** (no new column, no migration). The sheet starts with the visit's notes and `notes` is sent only when it
+changed (D-054).
+**Not conducted is recorded from the start-visit form** ("Not conducted…" in the app bar), with or without a saved draft: no draft creates
+a `cancelled` visit with no `started_at` and the default values (the form's weather is not stored, the walk did not happen); a draft is
+cancelled and keeps its stored values. No tracking permission is asked. The transect's "My visits" list now also lists cancelled visits
+without a `started_at`, dated by `created_at` (`watchListedVisits`).
+**One end-of-walk calculation.** `VisitRepository._endOfWalk` (closed pause, `duration_seconds`, and when recorded here the track point count
+and distance) is shared by `finish` and `cancel`; `finish` behaves as before. `cancel` leaves the end weather and the true-zero flag alone,
+and the Finish screen stops the tracker first, as for Finish.

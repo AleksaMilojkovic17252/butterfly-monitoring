@@ -4,6 +4,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/core/validation/visit_rules.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
@@ -51,17 +52,22 @@ class VisitRepository {
     return query.watch();
   }
 
-  /// Live list of the transect's visits that have started, newest first, in
-  /// any status (a visit cancelled after it started is listed too).
-  Stream<List<SurveyVisit>> watchStartedVisits(String transectId) {
+  /// Live list of the transect's visits for the visit list, newest first, in
+  /// any status: the ones that have started, and the cancelled ones, which
+  /// include a visit recorded as not conducted (T041; it has no `started_at`,
+  /// so it is dated by `created_at`). A draft is not listed.
+  Stream<List<SurveyVisit>> watchListedVisits(String transectId) {
     final query = _db.select(_db.surveyVisits)
       ..where(
         (visit) =>
             visit.transectId.equals(transectId) &
             visit.deletedAt.isNull() &
-            visit.startedAt.isNotNull(),
+            (visit.startedAt.isNotNull() | visit.status.equals('cancelled')),
       )
-      ..orderBy([(visit) => OrderingTerm.desc(visit.startedAt)]);
+      ..orderBy([
+        (visit) =>
+            OrderingTerm.desc(coalesce([visit.startedAt, visit.createdAt])),
+      ]);
     return query.watch();
   }
 
@@ -258,33 +264,7 @@ class VisitRepository {
         throw StateError('A ${current.status} visit cannot be finished.');
       }
       final protocol = await _protocolOf(current);
-
-      final now = DateTime.now().toUtc();
-      // Closes a running pause, as resume does.
-      final (:pausedSeconds, :pauses) = closePause(current, now);
-      final startedAt = current.startedAt ?? now;
-      final walkedSeconds = now.difference(startedAt).inSeconds - pausedSeconds;
-      final durationSeconds = walkedSeconds < 0 ? 0 : walkedSeconds;
-
-      // Only the phone that recorded the route knows its points.
-      final recordedHere = current.deviceId == await _syncState.deviceId();
-      int? trackPointCount;
-      double? distanceWalkedM;
-      if (recordedHere) {
-        final points =
-            await (_db.select(_db.surveyTrackPoints)
-                  ..where((t) => t.surveyVisitId.equals(visitId))
-                  ..orderBy([
-                    (t) => OrderingTerm.asc(t.recordedAt),
-                    (t) => OrderingTerm.asc(t.sequenceNumber),
-                  ]))
-                .get();
-        trackPointCount = points.length;
-        // The server stores one decimal (`Decimal(8,1)`).
-        distanceWalkedM = double.parse(
-          routeLengthM(points, protocol.gpsAccuracyWarningM).toStringAsFixed(1),
-        );
-      }
+      final end = await _endOfWalk(current, protocol);
 
       await _checkFinishRules(current, protocol, values);
       final reason = values.weatherMissingReason.trim();
@@ -293,8 +273,7 @@ class VisitRepository {
       // server moved on would be a conflict (D-054).
       final changed = <String, Object?>{
         'status': 'completed',
-        'ended_at': now.toIso8601String(),
-        'duration_seconds': durationSeconds,
+        ..._endOfWalkPayload(current, end),
       };
       void addIfChanged(String field, Object? before, Object? after) {
         if (before != after) changed[field] = after;
@@ -325,20 +304,6 @@ class VisitRepository {
         current.zeroObservationConfirmed,
         values.zeroObservationConfirmed,
       );
-      addIfChanged('paused_seconds', current.pausedSeconds, pausedSeconds);
-      if (current.pausedAt != null) changed['pauses'] = pausesPayload(pauses);
-      if (recordedHere) {
-        addIfChanged(
-          'distance_walked_m',
-          current.distanceWalkedM,
-          distanceWalkedM,
-        );
-        addIfChanged(
-          'track_point_count',
-          current.trackPointCount,
-          trackPointCount,
-        );
-      }
 
       await _sync.write(
         projectId: current.projectId,
@@ -351,30 +316,219 @@ class VisitRepository {
           final query = _db.update(_db.surveyVisits)
             ..where((v) => v.id.equals(visitId));
           return query.write(
-            SurveyVisitsCompanion(
+            _endOfWalkRow(end).copyWith(
               status: const Value('completed'),
-              endedAt: Value(now),
-              durationSeconds: Value(durationSeconds),
-              pausedSeconds: Value(pausedSeconds),
-              pauses: Value(encodePauses(pauses)),
-              pausedAt: const Value(null),
               temperatureEndC: Value(values.temperatureEndC),
               windBeaufortEnd: Value(values.windBeaufortEnd),
               cloudCoverEndPct: Value(values.cloudCoverEndPct),
               weatherMissingReason: Value(reason),
               zeroObservationConfirmed: Value(values.zeroObservationConfirmed),
-              // Left as they are for a visit walked on another phone.
-              distanceWalkedM: recordedHere
-                  ? Value(distanceWalkedM)
-                  : const Value.absent(),
-              trackPointCount: recordedHere
-                  ? Value(trackPointCount)
-                  : const Value.absent(),
             ),
           );
         },
       );
     });
+  }
+
+  /// Cancels the visit in progress (T041) because of [reason], one of
+  /// [startedCancelReasons], with an optional [note]: `status = cancelled`,
+  /// `cancel_reason`, `ended_at`, the walking time and, when this phone
+  /// recorded the route, the track point count and the distance, in one
+  /// `update` that sends only the fields that changed (D-054). The
+  /// observations recorded so far are kept. The end weather and the true-zero
+  /// confirmation are not touched.
+  ///
+  /// [note] replaces the visit's notes; the Cancel sheet starts with the
+  /// current ones. The caller must stop the tracker first, as for [finish].
+  ///
+  /// Throws a [VisitRuleError] when a rule refuses the visit, and a
+  /// [StateError] when the visit is gone, locked or not in progress, or
+  /// [reason] is not one of [startedCancelReasons]. Nothing is written then.
+  Future<void> cancel(
+    String visitId, {
+    required String reason,
+    required String note,
+  }) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      if (!appMayMove(current.status, 'cancelled')) {
+        throw StateError('A ${current.status} visit cannot be cancelled.');
+      }
+      if (!startedCancelReasons.contains(reason)) {
+        throw StateError('A visit that was started cannot be $reason.');
+      }
+      final protocol = await _protocolOf(current);
+      final end = await _endOfWalk(current, protocol);
+
+      // V07 and V09 are the rules of a cancelled visit. V05 (end weather) is
+      // only for a finished one. V06 still fires if the visit carries the
+      // true-zero flag and has butterflies (the flag only comes from a pull or
+      // an admin; the Finish screen sets it on completing).
+      final errors = validateVisit(
+        VisitInput.fromVisit(
+          current,
+          status: 'cancelled',
+          cancelReason: reason,
+        ),
+        VisitRuleContext(
+          protocol: protocol,
+          transectObservationCount: await _transectObservationCount(current.id),
+        ),
+      );
+      if (errors.isNotEmpty) throw VisitRuleError(errors);
+
+      final changed = <String, Object?>{
+        'status': 'cancelled',
+        'cancel_reason': reason,
+        ..._endOfWalkPayload(current, end),
+      };
+      if (note != current.notes) changed['notes'] = note;
+
+      await _sync.write(
+        projectId: current.projectId,
+        entityType: _entityType,
+        entityId: current.id,
+        operation: SyncOperation.update,
+        payload: changed,
+        baseVersion: current.serverVersion,
+        writeRow: () {
+          final query = _db.update(_db.surveyVisits)
+            ..where((v) => v.id.equals(visitId));
+          return query.write(
+            _endOfWalkRow(end).copyWith(
+              status: const Value('cancelled'),
+              cancelReason: Value(reason),
+              notes: Value(note),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  /// Records a visit as not conducted (T041): planned but never walked, so
+  /// `started_at` stays empty. With no [draft] a new visit is created as
+  /// `cancelled`; with a [draft] that draft is cancelled and keeps its stored
+  /// values. Either way `notes` becomes [note]. The weather typed into the
+  /// form is not stored: the walk did not happen.
+  ///
+  /// Nothing is tracked and no permission is needed. Throws a [StateError]
+  /// when a rule refuses it or the draft is gone.
+  Future<void> recordNotConducted({
+    required SurveyVisit? draft,
+    required ProjectProtocol protocol,
+    required String transectId,
+    required String observerId,
+    required String note,
+  }) {
+    if (draft == null) {
+      return _create(
+        protocol: protocol,
+        transectId: transectId,
+        observerId: observerId,
+        values: VisitStartValues(
+          observerCount: 1,
+          observerNames: '',
+          temperatureC: null,
+          windBeaufort: null,
+          cloudCoverPct: null,
+          precipitation: 'none',
+          notes: note,
+          weatherSuitable: null,
+        ),
+        status: 'cancelled',
+        startedAt: null,
+        cancelReason: 'not_conducted',
+      );
+    }
+    final values = VisitStartValues.fromVisit(draft).copyWith(notes: note);
+    return _update(
+      draft,
+      values,
+      status: 'cancelled',
+      startedAt: null,
+      cancelReason: 'not_conducted',
+    );
+  }
+
+  /// The end of a walk worked out for [finish] and [cancel]: the time, the
+  /// walking time without the pauses (a pause still running is closed, as
+  /// [resume] does) and, when this phone recorded the route (the visit's
+  /// `deviceId` is this phone's), the number of track points and the distance
+  /// along them. A visit walked on another phone gets neither: that phone has
+  /// the points. The caller must stop the tracker first, its buffer is written
+  /// then.
+  Future<_WalkEnd> _endOfWalk(
+    SurveyVisit current,
+    ProjectProtocol protocol,
+  ) async {
+    final now = DateTime.now().toUtc();
+    final (:pausedSeconds, :pauses) = closePause(current, now);
+    final startedAt = current.startedAt ?? now;
+    final walkedSeconds = now.difference(startedAt).inSeconds - pausedSeconds;
+
+    final recordedHere = current.deviceId == await _syncState.deviceId();
+    int? trackPointCount;
+    double? distanceWalkedM;
+    if (recordedHere) {
+      final points =
+          await (_db.select(_db.surveyTrackPoints)
+                ..where((t) => t.surveyVisitId.equals(current.id))
+                ..orderBy([
+                  (t) => OrderingTerm.asc(t.recordedAt),
+                  (t) => OrderingTerm.asc(t.sequenceNumber),
+                ]))
+              .get();
+      trackPointCount = points.length;
+      // The server stores one decimal (`Decimal(8,1)`).
+      distanceWalkedM = double.parse(
+        routeLengthM(points, protocol.gpsAccuracyWarningM).toStringAsFixed(1),
+      );
+    }
+    return _WalkEnd(
+      endedAt: now,
+      durationSeconds: walkedSeconds < 0 ? 0 : walkedSeconds,
+      pausedSeconds: pausedSeconds,
+      pauses: pauses,
+      recordedHere: recordedHere,
+      trackPointCount: trackPointCount,
+      distanceWalkedM: distanceWalkedM,
+    );
+  }
+
+  /// The fields of [end] that differ from [current], as a push payload (only
+  /// what changed, D-054: an unchanged field resent after the server moved on
+  /// would be a conflict).
+  Map<String, Object?> _endOfWalkPayload(SurveyVisit current, _WalkEnd end) {
+    return {
+      'ended_at': end.endedAt.toIso8601String(),
+      'duration_seconds': end.durationSeconds,
+      if (current.pausedSeconds != end.pausedSeconds)
+        'paused_seconds': end.pausedSeconds,
+      if (current.pausedAt != null) 'pauses': pausesPayload(end.pauses),
+      if (end.recordedHere && current.distanceWalkedM != end.distanceWalkedM)
+        'distance_walked_m': end.distanceWalkedM,
+      if (end.recordedHere && current.trackPointCount != end.trackPointCount)
+        'track_point_count': end.trackPointCount,
+    };
+  }
+
+  /// The columns of [end] for the local row.
+  SurveyVisitsCompanion _endOfWalkRow(_WalkEnd end) {
+    return SurveyVisitsCompanion(
+      endedAt: Value(end.endedAt),
+      durationSeconds: Value(end.durationSeconds),
+      pausedSeconds: Value(end.pausedSeconds),
+      pauses: Value(encodePauses(end.pauses)),
+      pausedAt: const Value(null),
+      // Left as they are for a visit walked on another phone.
+      distanceWalkedM: end.recordedHere
+          ? Value(end.distanceWalkedM)
+          : const Value.absent(),
+      trackPointCount: end.recordedHere
+          ? Value(end.trackPointCount)
+          : const Value.absent(),
+    );
   }
 
   /// Checks the rules of [finish] without writing anything, so the Finish
@@ -473,6 +627,7 @@ class VisitRepository {
     required VisitStartValues values,
     required String status,
     required DateTime? startedAt,
+    String cancelReason = '',
   }) async {
     final id = const Uuid().v4();
     final deviceId = await _syncState.deviceId();
@@ -486,6 +641,7 @@ class VisitRepository {
         windBeaufortStart: values.windBeaufort,
         cloudCoverStartPct: values.cloudCoverPct,
         precipitation: values.precipitation,
+        cancelReason: cancelReason,
       ),
       protocol,
       0,
@@ -506,12 +662,18 @@ class VisitRepository {
         'created_at': createdAt.toIso8601String(),
         'status': status,
         'started_at': startedAt?.toIso8601String(),
+        if (cancelReason.isNotEmpty) 'cancel_reason': cancelReason,
         ...values.toPayload(),
       },
       writeRow: () => _db
           .into(_db.surveyVisits)
           .insert(
-            _rowValues(values, status: status, startedAt: startedAt).copyWith(
+            _rowValues(
+              values,
+              status: status,
+              startedAt: startedAt,
+              cancelReason: cancelReason,
+            ).copyWith(
               id: Value(id),
               projectId: Value(protocol.projectId),
               transectId: Value(transectId),
@@ -540,6 +702,7 @@ class VisitRepository {
     VisitStartValues values, {
     required String status,
     required DateTime? startedAt,
+    String cancelReason = '',
   }) {
     return _db.transaction(() async {
       final current = await (_db.select(
@@ -561,7 +724,7 @@ class VisitRepository {
         throw StateError("The project's protocol is not on this phone.");
       }
       _checkRules(
-        _storedInput(current, values, status, startedAt),
+        _storedInput(current, values, status, startedAt, cancelReason),
         protocol,
         await _transectObservationCount(current.id),
       );
@@ -569,11 +732,13 @@ class VisitRepository {
         ...VisitStartValues.fromVisit(opened).toPayload(),
         'status': opened.status,
         'started_at': opened.startedAt?.toUtc().toIso8601String(),
+        'cancel_reason': opened.cancelReason,
       };
       final after = {
         ...values.toPayload(),
         'status': status,
         'started_at': startedAt?.toIso8601String(),
+        'cancel_reason': cancelReason,
       };
       final changed = {
         for (final field in after.keys)
@@ -592,7 +757,12 @@ class VisitRepository {
           final query = _db.update(_db.surveyVisits)
             ..where((v) => v.id.equals(current.id));
           return query.write(
-            _rowValues(values, status: status, startedAt: startedAt),
+            _rowValues(
+              values,
+              status: status,
+              startedAt: startedAt,
+              cancelReason: cancelReason,
+            ),
           );
         },
       );
@@ -606,6 +776,7 @@ class VisitRepository {
     VisitStartValues values,
     String status,
     DateTime? startedAt,
+    String cancelReason,
   ) {
     return VisitInput(
       status: status,
@@ -619,6 +790,7 @@ class VisitRepository {
       precipitation: values.precipitation,
       weatherMissingReason: current.weatherMissingReason,
       zeroObservationConfirmed: current.zeroObservationConfirmed,
+      cancelReason: cancelReason,
     );
   }
 
@@ -650,6 +822,7 @@ class VisitRepository {
     VisitStartValues values, {
     required String status,
     required DateTime? startedAt,
+    required String cancelReason,
   }) {
     return SurveyVisitsCompanion(
       observerCount: Value(values.observerCount),
@@ -662,8 +835,34 @@ class VisitRepository {
       weatherSuitable: Value(values.weatherSuitable),
       status: Value(status),
       startedAt: Value(startedAt),
+      cancelReason: Value(cancelReason),
     );
   }
+}
+
+/// The values [VisitRepository._endOfWalk] works out when a walk ends.
+class _WalkEnd {
+  const _WalkEnd({
+    required this.endedAt,
+    required this.durationSeconds,
+    required this.pausedSeconds,
+    required this.pauses,
+    required this.recordedHere,
+    required this.trackPointCount,
+    required this.distanceWalkedM,
+  });
+  final DateTime endedAt;
+
+  /// The walking time, without the pauses.
+  final int durationSeconds;
+  final int pausedSeconds;
+  final List<VisitPause> pauses;
+
+  /// True when this phone recorded the route; the two fields below are null
+  /// when it did not.
+  final bool recordedHere;
+  final int? trackPointCount;
+  final double? distanceWalkedM;
 }
 
 final visitRepositoryProvider = Provider<VisitRepository>(

@@ -13,6 +13,7 @@ import 'package:mobile/features/visits/domain/beaufort.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
 import 'package:mobile/features/visits/ui/temperature_input.dart';
 import 'package:mobile/features/visits/ui/tracking_permissions.dart';
+import 'package:mobile/features/visits/ui/widgets/cancel_visit_sheet.dart';
 import 'package:mobile/features/visits/ui/widgets/form_section_title.dart';
 import 'package:mobile/features/visits/ui/widgets/weather_suitability.dart';
 import 'package:mobile/features/visits/ui/widgets/wind_picker_sheet.dart';
@@ -239,6 +240,38 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     context.pop();
   }
 
+  /// "Not conducted…" (T041): asks for a note, then records the visit as
+  /// planned but not walked, with or without a saved draft, and goes back to
+  /// the transect. Nothing is tracked, so no permission is asked.
+  Future<void> _recordNotConducted() async {
+    final choice = await CancelVisitSheet.show(
+      context,
+      reasons: const ['not_conducted'],
+      initialNote: _notes.text.trim(),
+    );
+    if (choice == null || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(visitRepositoryProvider)
+          .recordNotConducted(
+            draft: _openedDraft,
+            protocol: widget.protocol,
+            transectId: widget.transect.id,
+            observerId: widget.observer.id,
+            note: choice.note,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _showMessage('Could not save the visit: $error');
+      return;
+    }
+    if (!mounted) return;
+    _showMessage('Recorded as not conducted');
+    context.pop();
+  }
+
   void _showMessage(String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -265,7 +298,15 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Start visit · ${widget.transect.code}')),
+      appBar: AppBar(
+        title: Text('Start visit · ${widget.transect.code}'),
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _recordNotConducted,
+            child: const Text('Not conducted…'),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(8),
         children: [

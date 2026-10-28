@@ -163,9 +163,13 @@ void _v03VisitStatus(
 ) {
   // V03
   if (input.source != 'transect') return;
-  if (!_observationVisitStatuses.contains(context.visitStatus)) {
-    _add(errors, 'survey_visit', 'V03');
+  if (_observationVisitStatuses.contains(context.visitStatus)) return;
+  // T041: an aborted visit keeps its butterflies. A cancelled visit that was
+  // started accepts them, as on the server.
+  if (context.visitStatus == 'cancelled' && context.visitStartedAt != null) {
+    return;
   }
+  _add(errors, 'survey_visit', 'V03');
 }
 
 void _v04ObservedAt(

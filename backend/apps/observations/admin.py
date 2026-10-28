@@ -3,10 +3,39 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
+from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin, add_validation_errors
 from apps.observations import services
 from apps.observations.models import Behaviour, ButterflyObservation
 from apps.surveys.state import VisitLocked
+
+
+def _explain_rule(observation, field, rule_id):
+    """The form field to mark and the sentence for an observation rule that refused an edit."""
+    label = str(ButterflyObservation._meta.get_field(field).verbose_name).capitalize()
+    visit = observation.survey_visit if observation.survey_visit_id else None
+    status = visit.get_status_display().lower() if visit else "missing"
+    texts = {
+        "V01": _("The count must be at least 1."),
+        "V02": _("{label} is required.").format(label=label),
+        "V03": _(
+            "A butterfly record can only be on a visit that is in progress, finished, or "
+            "cancelled after it was started. This visit is {status}."
+        ).format(status=status),
+        "V04": _(
+            "The observation time is outside the time of its visit (from start to end, "
+            "plus the protocol's tolerance)."
+        ),
+        "V06": _(
+            "This visit is confirmed as having no butterflies, so it cannot have butterfly "
+            "records. Untick 'Zero observation confirmed' on the visit first."
+        ),
+        "V08": _(
+            "The position is not a valid point. Longitude must be between -180 and 180 and "
+            "latitude between -90 and 90."
+        ),
+    }
+    default = _("'{label}' is not one of the allowed choices.").format(label=label)
+    return field, texts.get(rule_id, default)
 
 
 class ButterflyObservationAdminForm(forms.ModelForm):
@@ -25,11 +54,9 @@ class ButterflyObservationAdminForm(forms.ModelForm):
         except VisitLocked as error:
             raise forms.ValidationError(str(error.detail)) from error
         except ValidationError as error:
-            if isinstance(error.detail, dict):
-                for field_name, messages_ in error.detail.items():
-                    self.add_error(field_name if field_name in self.fields else None, messages_)
-            else:
-                self.add_error(None, error.detail)
+            add_validation_errors(
+                self, error, lambda field, rule_id: _explain_rule(self.instance, field, rule_id)
+            )
         except APIException as error:
             self.add_error(None, str(error.detail))
         return cleaned_data

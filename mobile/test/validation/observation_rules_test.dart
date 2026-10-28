@@ -11,6 +11,7 @@ final ended = DateTime.utc(2026, 6, 1, 9);
 
 ObservationRuleContext makeContext({
   String? visitStatus = 'in_progress',
+  bool visitStarted = true,
   DateTime? visitEndedAt,
   bool visitZeroConfirmed = false,
   bool taxonPhotoRequired = false,
@@ -18,7 +19,7 @@ ObservationRuleContext makeContext({
 }) {
   return ObservationRuleContext(
     visitStatus: visitStatus,
-    visitStartedAt: started,
+    visitStartedAt: visitStarted ? started : null,
     visitEndedAt: visitEndedAt,
     visitZeroConfirmed: visitZeroConfirmed,
     toleranceMin: 5,
@@ -97,8 +98,24 @@ void main() {
         );
       }
     });
-    test('draft, cancelled, locked and no visit are refused', () {
-      for (final status in ['draft', 'cancelled', 'locked', null]) {
+    test('cancelled takes observations only if the visit was started', () {
+      // T041
+      expect(
+        validateObservation(makeInput(), makeContext(visitStatus: 'cancelled')),
+        isEmpty,
+      );
+      expect(
+        validateObservation(
+          makeInput(),
+          makeContext(visitStatus: 'cancelled', visitStarted: false),
+        ),
+        {
+          'survey_visit': ['V03'],
+        },
+      );
+    });
+    test('draft, locked and no visit are refused', () {
+      for (final status in ['draft', 'locked', null]) {
         expect(
           validateObservation(makeInput(), makeContext(visitStatus: status)),
           {

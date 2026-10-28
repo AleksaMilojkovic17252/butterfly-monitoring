@@ -88,13 +88,19 @@ The phone works it out at Finish, from the points it recorded; the server does t
 
 ## 7. True zero, cancelled and missing
 
-| Situation | Representation |
-|---|---|
-| Walked the whole standardised visit, saw nothing | `completed`, `zero_observation_confirmed = true`, no transect observations (V06) |
-| Planned but not walked | `cancelled`, `cancel_reason = not_conducted` |
-| Stopped early because of weather / other reason | `cancelled`, `aborted_weather` / `aborted_other` |
-| Walked but the protocol was not followed | `cancelled`, `invalid_protocol` |
-| Missing data | No visit row at all. Detected only against `target_visits_per_season` |
+| Situation | Representation | Outcome in exports (`SurveyVisit.outcome`) |
+|---|---|---|
+| Walked the whole standardised visit, saw nothing | `completed`, `zero_observation_confirmed = true`, no transect observations (V06) | `true_zero` |
+| Walked, saw butterflies | `completed`, `zero_observation_confirmed = false` | `completed_with_records` |
+| Planned but not walked | `cancelled`, `cancel_reason = not_conducted` | `cancelled:not_conducted` |
+| Stopped early because of weather / other reason | `cancelled`, `aborted_weather` / `aborted_other` | `cancelled:aborted_weather` / `cancelled:aborted_other` |
+| Walked but the protocol was not followed | `cancelled`, `invalid_protocol` | `cancelled:invalid_protocol` |
+| Missing data | No visit row at all. Detected only against `target_visits_per_season` | – |
+
+A draft or a visit in progress has no outcome yet (an empty value; the export writes its missing-value code).
+The reason must fit the visit (V09): `not_conducted` only for a visit that was never started, the other three
+only for one that was. A not-conducted visit has no `started_at`, so its date is `created_at`. The
+observations of an aborted visit are kept, but the visit is not a valid visit (§6).
 
 ## 8. GPS route
 

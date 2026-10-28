@@ -12,11 +12,19 @@ class TransectVisitStats {
 
 /// One of the caller's visits, as the transect detail lists them.
 class VisitSummary {
-  const VisitSummary({required this.startedAt, required this.status});
+  const VisitSummary({
+    required this.date,
+    required this.status,
+    required this.cancelReason,
+  });
 
-  /// UTC; shown in local time.
-  final DateTime startedAt;
+  /// When the visit started, or when it was created for a visit that never
+  /// started (not conducted, T041). UTC; shown in local time.
+  final DateTime date;
   final String status;
+
+  /// Empty unless the visit is cancelled.
+  final String cancelReason;
 }
 
 /// Own visit count and last visit of a transect, from the local
@@ -44,16 +52,21 @@ final transectVisitStatsProvider =
       });
     });
 
-/// Own visits of a transect that have started, newest first.
+/// Own visits of a transect that have started or were cancelled, newest
+/// first.
 final transectVisitsProvider =
     StreamProvider.family<List<VisitSummary>, String>((ref, transectId) {
       final visits = ref
           .watch(visitRepositoryProvider)
-          .watchStartedVisits(transectId);
+          .watchListedVisits(transectId);
       return visits.map(
-        (startedVisits) => [
-          for (final visit in startedVisits)
-            VisitSummary(startedAt: visit.startedAt!, status: visit.status),
+        (listedVisits) => [
+          for (final visit in listedVisits)
+            VisitSummary(
+              date: visit.startedAt ?? visit.createdAt,
+              status: visit.status,
+              cancelReason: visit.cancelReason,
+            ),
         ],
       );
     });

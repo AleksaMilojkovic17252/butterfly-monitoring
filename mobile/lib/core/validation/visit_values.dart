@@ -24,6 +24,22 @@ const cancelReasons = [
   'invalid_protocol',
 ];
 
+/// The reasons that need a started visit: everything but `not_conducted` (V09).
+final startedCancelReasons = cancelReasons
+    .where((reason) => reason != 'not_conducted')
+    .toList();
+
+/// The cancel reason as the cancel sheet and the visit list show it.
+String cancelReasonLabel(String reason) {
+  return switch (reason) {
+    'not_conducted' => 'Not conducted',
+    'aborted_weather' => 'Aborted (weather)',
+    'aborted_other' => 'Aborted (other reason)',
+    'invalid_protocol' => 'Invalid (protocol not followed)',
+    _ => reason,
+  };
+}
+
 /// Every precipitation value, in the order the chips show them.
 const precipitationValues = ['none', 'drizzle', 'light_rain', 'rain'];
 

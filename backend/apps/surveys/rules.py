@@ -1,4 +1,5 @@
-"""Input rules for a visit (T055): V05, V06 (server direction) and V07 reject, W06 and W07 warn.
+"""Input rules for a visit (T055): V05, V06 (server direction), V07 and V09 reject, W06 and W07
+warn.
 
 The rules are in docs/requirements/validation-rules.md; the app repeats them in
 `mobile/lib/core/validation/visit_rules.dart`. Pure functions, no database access:
@@ -49,6 +50,7 @@ def validate_visit(data, context):
     _v05_weather(data, errors)
     _v06_visit(data, context, errors)
     _v07_choices(data, errors)
+    _v09_cancel_reason(data, errors)
     return errors
 
 
@@ -109,6 +111,20 @@ def _v07_choices(data, errors):
     for field, allowed in choices.items():
         if data.get(field) not in allowed:
             _add(errors, field, "V07")
+
+
+def _v09_cancel_reason(data, errors):
+    # V09 (T041): "not conducted" is for a visit that was never started, the other reasons for one
+    # that was. It reads `started_at`, not the previous status: a visit created offline and
+    # cancelled arrives as one create, draft straight to cancelled.
+    if data.get("status") != VisitStatus.CANCELLED:
+        return
+    reason = data.get("cancel_reason")
+    if reason not in CancelReason.values:
+        return  # a missing or unknown reason is V07's
+    never_started = data.get("started_at") is None
+    if (reason == CancelReason.NOT_CONDUCTED) != never_started:
+        _add(errors, "cancel_reason", "V09")
 
 
 def _w06_weather(data, protocol):

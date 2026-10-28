@@ -76,7 +76,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | done |
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | done |
-| T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | todo |
+| T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | done |
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
@@ -845,11 +845,13 @@ Depends on: T039, T055
 - [ ] **Cancel visit** opens T041's cancel flow.
 
 ### T041 · True-zero confirmation and cancelled-visit reasons
-[#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) · E05 · P1 · must · labels: `mobile`, `backend`, `must` · implements F12, F9 · est. 1 d · **todo**
+[#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) · E05 · P1 · must · labels: `mobile`, `backend`, `must` · implements F12, F9 · est. 1 d · **done**
 
 From T040 (D-068): the true-zero checkbox and its V06 check on Finish were built in T040 (`finish_visit_form.dart`). T041 keeps the cancel reasons, the export outcome and its tests, and replaces the Cancel visit placeholder on the Finish screen (`TODO(T041)`).
 
 Depends on: T040
+
+Skipped: unit tests (D-021). V06's "completed with no observations needs the tick" is enforced by the app only (validation-rules.md, D-067). The export criterion is `SurveyVisit.outcome`; T064 puts it in the exports. See D-069.
 
 - [ ] Finishing a visit with zero transect observations requires ticking: *"No butterfly was seen during the complete standardised visit."* This sets `zero_observation_confirmed = true`.
 - [ ] Server rule V06 (T055):
@@ -1179,6 +1181,7 @@ Depends on: T034, T044
 [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) · E09 · P1 · must · labels: `backend`, `must` · implements F36 · est. 2.5 d · **todo**
 
 Depends on: T044, T063
+From T041: the visit outcome is `SurveyVisit.outcome` (D-069).
 Notes: plant, habitat and validation datasets added when T051/T053/T058 are done
 
 - [ ] **Datasets:**

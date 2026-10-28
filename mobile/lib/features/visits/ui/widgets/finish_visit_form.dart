@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
@@ -22,6 +23,7 @@ import 'package:mobile/features/visits/domain/visit_rule_error.dart';
 import 'package:mobile/features/visits/domain/visit_summary.dart';
 import 'package:mobile/features/visits/domain/walking_time.dart';
 import 'package:mobile/features/visits/ui/temperature_input.dart';
+import 'package:mobile/features/visits/ui/widgets/cancel_visit_sheet.dart';
 import 'package:mobile/features/visits/ui/widgets/finish_warnings.dart';
 import 'package:mobile/features/visits/ui/widgets/form_section_title.dart';
 import 'package:mobile/features/visits/ui/widgets/visit_message_screen.dart';
@@ -35,7 +37,8 @@ const _zeroSentence =
 /// The Finish screen itself, once the visit is loaded (shown by
 /// `FinishVisitScreen`). Summary, warnings, end weather, the reason when the
 /// weather is missing, and the true-zero confirmation when the visit has no
-/// butterfly. **Finish and save** completes the visit.
+/// butterfly. **Finish and save** completes the visit; **Cancel visit** asks
+/// why and cancels it (T041).
 class FinishVisitForm extends ConsumerStatefulWidget {
   const FinishVisitForm({
     super.key,
@@ -93,10 +96,38 @@ class _FinishVisitFormState extends ConsumerState<FinishVisitForm> {
     zeroObservationConfirmed: observationCount == 0 && _zeroConfirmed,
   );
 
-  /// Cancelling is T041's.
-  void _cancelVisit() {
-    // TODO(T041): open the cancel flow.
-    _showMessage('Cancelling a visit is coming in a later version');
+  /// Asks why (the Cancel sheet), then stops the tracker, cancels the visit,
+  /// starts a sync and goes to the transect. The butterflies recorded so far
+  /// are kept. Going back from the sheet changes nothing.
+  ///
+  /// As in [_finishAndSave], the tracker starts again if the save is refused.
+  Future<void> _cancelVisit() async {
+    final visit = widget.visit;
+    final choice = await CancelVisitSheet.show(
+      context,
+      reasons: startedCancelReasons,
+      initialNote: visit.notes,
+    );
+    if (choice == null || !mounted) return;
+    final repository = ref.read(visitRepositoryProvider);
+    final tracking = ref.read(trackingControllerProvider.notifier);
+
+    setState(() => _saving = true);
+    try {
+      if (widget.recordedHere) await tracking.stop();
+      await repository.cancel(
+        visit.id,
+        reason: choice.reason,
+        note: choice.note,
+      );
+    } catch (error) {
+      if (widget.recordedHere) await tracking.restart();
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _showMessage('Could not cancel the visit: $error');
+      return;
+    }
+    _leave('Visit cancelled');
   }
 
   /// The route stats for [points], worked out again only when the points,
@@ -175,6 +206,13 @@ class _FinishVisitFormState extends ConsumerState<FinishVisitForm> {
       _showMessage('Could not save the visit: $error');
       return;
     }
+    _leave('Visit saved');
+  }
+
+  /// After a save: starts a sync when logged in, goes to the transect and
+  /// shows [message].
+  void _leave(String message) {
+    final visit = widget.visit;
     if (ref.read(authControllerProvider).profile != null) {
       unawaited(ref.read(syncRunnerProvider.notifier).run());
     }
@@ -184,7 +222,7 @@ class _FinishVisitFormState extends ConsumerState<FinishVisitForm> {
     context.go('/projects/${visit.projectId}/transects/${visit.transectId}');
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Visit saved')));
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showMessage(String text) {

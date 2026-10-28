@@ -327,8 +327,18 @@ def is_locked(visit):
 
 
 def check_admin_edit(admin_user, visit, changed_fields):
-    """The rules for an admin's edit of `visit` (unsaved, with the form's values): it must not be
-    locked, and a changed transect or observer must fit the project. Raises DRF exceptions."""
+    """The checks for an admin's edit of `visit` (unsaved, with the form's values): it must not be
+    locked, a changed transect or observer must fit the project, and the input rules (V05-V09)
+    must hold, so a refused edit shows as a form error and not when `save_visit` runs after the
+    form. Raises DRF exceptions."""
+    _check_admin_scope(admin_user, visit, changed_fields)
+    errors = rules.validate_visit(_rule_data(visit), _rule_context(visit))
+    if errors:
+        raise exceptions.ValidationError(errors)
+
+
+def _check_admin_scope(admin_user, visit, changed_fields):
+    # The part of check_admin_edit that is not an input rule: `save_visit` checks the rules.
     ensure_unlocked(visit)
     if "transect" in changed_fields:
         _check_project_and_transect(admin_user, visit)
@@ -338,8 +348,9 @@ def check_admin_edit(admin_user, visit, changed_fields):
 
 def admin_save_visit(visit, admin_user, reason, changed_fields):
     """Save an admin's edit of an unlocked visit. The distance is not worked out again: it is
-    read-only in the admin."""
-    check_admin_edit(admin_user, visit, changed_fields)
+    read-only in the admin. The form already ran `check_admin_edit`; the input rules run again in
+    `save_visit`, the one place that always checks them."""
+    _check_admin_scope(admin_user, visit, changed_fields)
     return save_visit(visit, admin_user, reason or "admin edit")
 
 

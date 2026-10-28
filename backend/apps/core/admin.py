@@ -1,9 +1,32 @@
+import re
+
 from django.contrib import admin, messages
 from django.contrib.gis.admin import GISModelAdmin
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
+
+_RULE_ID = re.compile(r"^V\d\d$")
+
+
+def add_validation_errors(form, error, explain):
+    """Puts a DRF `ValidationError` on `form` the way an admin should read it.
+
+    The input rules answer with their ID only (`{"started_at": ["V09"]}`, the API's way). Here
+    each ID goes through `explain(field, rule_id)`, which returns the form field to mark in red
+    and a sentence, so the admin never sees a bare "V09". An error on a field the form does not
+    show (a read-only one) becomes a general error at the top. Other messages are kept as they are.
+    """
+    if not isinstance(error.detail, dict):
+        form.add_error(None, error.detail)
+        return
+    for field_name, messages_ in error.detail.items():
+        for message in messages_:
+            target, text = field_name, message
+            if _RULE_ID.match(str(message)):
+                target, text = explain(field_name, str(message))
+            form.add_error(target if target in form.fields else None, text)
 
 
 class HistoryAdmin(SimpleHistoryAdmin):

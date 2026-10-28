@@ -69,11 +69,16 @@ class ObservationRulesTest(SimpleTestCase):
         for status in ["in_progress", "completed", "synced", "reviewed"]:
             context = make_context(visit_status=status, visit_ended_at=ENDED)
             self.assertEqual(validate_observation(make_data(), context), {}, status)
-        for status in ["draft", "cancelled", "locked", None]:
+        for status in ["draft", "locked", None]:
             context = make_context(visit_status=status)
             self.assertEqual(
                 validate_observation(make_data(), context), {"survey_visit": ["V03"]}, status
             )
+        # T041: a cancelled visit takes observations only if it was started.
+        started = make_context(visit_status="cancelled", visit_started_at=STARTED)
+        self.assertEqual(validate_observation(make_data(), started), {})
+        not_started = make_context(visit_status="cancelled", visit_started_at=None)
+        self.assertEqual(validate_observation(make_data(), not_started), {"survey_visit": ["V03"]})
 
     def test_v03_does_not_apply_to_an_incidental_observation(self):
         data = make_data(source="incidental")

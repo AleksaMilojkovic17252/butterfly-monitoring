@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from apps.observations.models import Behaviour, Confidence, LifeStage, ObservationSource, Sex
+from apps.surveys.models import VisitStatus
 
 # Visit statuses a transect observation may be recorded on (V03). A locked visit refuses every
 # change earlier (`visit_locked`); `synced` and `reviewed` are "completed" seen from the server.
@@ -90,8 +91,13 @@ def _v03_visit_status(data, context, errors):
     # V03
     if data.get("source") != ObservationSource.TRANSECT:
         return
-    if context.visit_status not in OBSERVATION_VISIT_STATUSES:
-        _add(errors, "survey_visit", "V03")
+    if context.visit_status in OBSERVATION_VISIT_STATUSES:
+        return
+    # T041: an aborted visit keeps its butterflies. A cancelled visit that was started accepts
+    # them; this also covers a visit cancelled offline, whose create reaches the server first.
+    if context.visit_status == VisitStatus.CANCELLED and context.visit_started_at is not None:
+        return
+    _add(errors, "survey_visit", "V03")
 
 
 def _v04_observed_at(data, context, errors):

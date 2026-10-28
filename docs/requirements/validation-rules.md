@@ -23,12 +23,13 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
 |---|---|---|---|---|---|---|---|
 | V01 | hard | observation | `count` ≥ 1 | `count` | `observations.rules._v01_count` | `observation_rules.dart` `_v01Count` | quick entry sheet (error text) |
 | V02 | hard | observation | `observed_at` and `geometry` are both present | `observed_at`, `geometry` | `observations.rules._v02_required` | `_v02Required` | quick entry sheet |
-| V03 | hard | observation | a `source = transect` observation is on a visit in `in_progress`, `completed`, `synced` or `reviewed`; never `draft`, `cancelled` or `locked` | `survey_visit` | `observations.rules._v03_visit_status` | `_v03VisitStatus` | quick entry sheet; sync screen for a rejected item |
+| V03 | hard | observation | a `source = transect` observation is on a visit in `in_progress`, `completed`, `synced` or `reviewed`, or on a `cancelled` visit that was started (`started_at` is set); never `draft`, `locked`, or a `cancelled` visit that was never started | `survey_visit` | `observations.rules._v03_visit_status` | `_v03VisitStatus` | quick entry sheet; sync screen for a rejected item |
 | V04 | hard | observation | `observed_at` is in `[started_at − tol, ended_at + tol]` of its visit; with no `ended_at` only the lower bound applies; `tol` = `observation_time_tolerance_min` | `observed_at` | `observations.rules._v04_observed_at` | `_v04ObservedAt` | quick entry sheet |
 | V05 | hard | visit | in status `completed`, `synced`, `reviewed` or `locked`: start and end temperature, wind and cloud are all set, or `weather_missing_reason` is not blank | each missing weather field | `surveys.rules._v05_weather` | `visit_rules.dart` `_v05Weather` | visit write (finish form from T040) |
 | V06 | hard | visit and observation | true-zero consistency, see below | visit: `zero_observation_confirmed`; observation: `survey_visit` | `surveys.rules._v06_visit`, `observations.rules._v06_observation` | `_v06Visit`, `_v06Observation` | quick entry sheet; finish (T040/T041) |
 | V07 | hard | both | the value is in the codelist | the field | `observations.rules._v07_choices`, `surveys.rules._v07_choices` | `_v07Choices` | any write |
 | V08 | hard | observation | `geometry` is a non-empty, valid Point with longitude −180..180 and latitude −90..90 | `geometry` | `observations.rules._v08_geometry` | `_v08Geometry` | quick entry sheet |
+| V09 | hard | visit | in status `cancelled`: `cancel_reason = not_conducted` exactly when `started_at` is empty | `cancel_reason` | `surveys.rules._v09_cancel_reason` | `visit_rules.dart` `_v09CancelReason` | cancel sheet (Finish screen), "Not conducted…" on the start form |
 | W01 | warning | observation | the taxon has `photo_required` and the observation has no photo: `validation_status = pending` | – | `observations.rules.photo_missing` | `photoMissing` | line above Save in the quick entry sheet |
 | W02 | warning | observation | `location_accuracy_m` > `gps_accuracy_warning_m` | – | `observations.rules._w02_poor_accuracy` | `isPoorAccuracy` | position line in the quick entry sheet |
 | W03 | warning | observation | `oviposition` in `behaviour` and no host-plant link | – | `observations.rules._w03_oviposition` | `_w03Oviposition` | none yet (extended entry, T046) |
@@ -40,7 +41,10 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
 
 - **V03.** A locked visit already answers `visit_locked` before this rule runs. `synced` and `reviewed`
   count as "completed" seen from the server: a phone that pushes after the visit moved on must still be
-  accepted. The app's quick entry stays in-progress only (D-066).
+  accepted. The app's quick entry stays in-progress only (D-066). T041: a `cancelled` visit that was started
+  also accepts them, because an aborted visit keeps its butterflies. A visit aborted offline reaches the
+  server as one coalesced create with `status = cancelled`, ahead of its observation creates (D-051), so
+  without this the observations would be rejected. A visit that was never started (`not_conducted`) takes none.
 - **V04.** `observed_at` and the visit times are both the phone's clock, so no clock difference is involved.
 - **V05.** Reported once per missing field, e.g. `{"temperature_end_c": ["V05"], "wind_beaufort_end": ["V05"]}`.
 - **V06.** Two directions:
@@ -48,10 +52,14 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
     that has live `source = transect` observations (field `zero_observation_confirmed`), and a new or
     changed transect observation on such a visit (field `survey_visit`). The server enforces this
     direction only.
-  - *Completed with no observations needs the tick.* Only the app checks this (T041 calls it on Finish);
+  - *Completed with no observations needs the tick.* Only the app checks this (T040 built it on Finish, D-068);
     the admin sees it at review (T043). The server cannot check it: a visit that was never sent before it
     was finished reaches the server as one coalesced create with `status = completed` (D-051), ahead of its
     observations in the queue, so the server would see 0 observations and reject a good visit.
+- **V09.** Reads `started_at`, not the previous status, so it holds for a coalesced create too (draft straight to
+  `cancelled`, even for a started visit). Reported on `cancel_reason`. The app offers only the fitting reasons;
+  the server is the one that decides. An admin edit that breaks it (clearing `started_at` of an aborted visit,
+  setting it on a not-conducted one) is refused in the admin form, on *Started at*, with a sentence instead of the ID.
 - **V07 codelists.** Observation: `sex`, `life_stage`, `behaviour` (every item), `source`,
   `identification_confidence`. Visit: `status`, `survey_method`, `precipitation`, `cancel_reason` (blank is
   allowed). The app keeps the same lists in `lib/core/validation/observation_values.dart`,

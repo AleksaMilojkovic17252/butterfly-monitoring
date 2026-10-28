@@ -12,6 +12,7 @@ const ruleMessages = {
   'V06': 'The true-zero confirmation does not match the butterfly records',
   'V07': 'A value is not one of the allowed choices',
   'V08': 'The position is not valid',
+  'V09': "The cancel reason does not fit: 'not conducted' is only for a visit that was never started",
   'W01': 'This species needs a photo. The record will wait for validation',
   'W02': 'Low GPS accuracy',
   'W03': 'Egg-laying: link the host plant',
