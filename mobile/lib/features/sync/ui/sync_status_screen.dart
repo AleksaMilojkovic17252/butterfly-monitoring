@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
@@ -9,6 +7,10 @@ import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/sync/domain/sync_error_message.dart';
 import 'package:mobile/features/sync/domain/sync_status_providers.dart';
+import 'package:mobile/features/sync/ui/widgets/conflict_card.dart';
+import 'package:mobile/features/sync/ui/widgets/rejected_card.dart';
+import 'package:mobile/features/sync/ui/widgets/sync_now_card.dart';
+import 'package:mobile/features/sync/ui/widgets/sync_section_title.dart';
 
 /// What is waiting to sync in one project, what the server rejected (with
 /// Retry and Discard), the conflicts, and a Sync now button with live
@@ -113,9 +115,9 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
         child: ListView(
           padding: const EdgeInsets.all(8),
           children: [
-            _SyncNowCard(run: run, onPressed: _syncNow),
+            SyncNowCard(run: run, onPressed: _syncNow),
             const SizedBox(height: 16),
-            const _SectionTitle('Waiting to sync'),
+            const SyncSectionTitle('Waiting to sync'),
             Card(
               child: Column(
                 children: [
@@ -151,12 +153,12 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const _SectionTitle('Errors'),
+            const SyncSectionTitle('Errors'),
             if (rejected.isEmpty)
               const Card(child: ListTile(title: Text('No errors')))
             else
               for (final item in rejected)
-                _RejectedCard(
+                RejectedCard(
                   item: item,
                   busy: run.running,
                   // A change to a locked visit (the visit's own update or a
@@ -167,201 +169,17 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
                   onDiscard: () => _discard(item),
                 ),
             const SizedBox(height: 16),
-            const _SectionTitle('Conflicts'),
+            const SyncSectionTitle('Conflicts'),
             if (conflicts.isEmpty)
               const Card(child: ListTile(title: Text('No conflicts')))
             else
               for (final conflict in conflicts)
-                _ConflictCard(conflict: conflict),
+                ConflictCard(conflict: conflict),
           ],
         ),
       ),
     );
   }
-}
-
-/// A section heading. A Card has a 4 px margin of its own, so the heading
-/// gets the same, and its text starts where the cards do.
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-    );
-  }
-}
-
-/// The Sync now button; while a run is going it shows its progress.
-class _SyncNowCard extends StatelessWidget {
-  const _SyncNowCard({required this.run, required this.onPressed});
-  final SyncRunState run;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = switch (run.phase) {
-      SyncPhase.pushing => 'Sending changes… ${run.sent} sent',
-      SyncPhase.pulling => 'Receiving… ${run.received} rows',
-      null => 'Working…',
-    };
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FilledButton.icon(
-              onPressed: run.running ? null : onPressed,
-              icon: const Icon(Icons.sync),
-              label: const Text('Sync now'),
-            ),
-            if (run.running) ...[
-              const SizedBox(height: 12),
-              const LinearProgressIndicator(),
-              const SizedBox(height: 8),
-              Text(progress),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// One item the server rejected, with the reason and the two ways out.
-class _RejectedCard extends StatelessWidget {
-  const _RejectedCard({
-    required this.item,
-    required this.busy,
-    required this.canRetry,
-    required this.onRetry,
-    required this.onDiscard,
-  });
-  final SyncQueueItem item;
-
-  /// A sync is running: the buttons wait.
-  final bool busy;
-
-  /// False hides Retry: it could only be rejected again.
-  final bool canRetry;
-  final VoidCallback onRetry;
-  final VoidCallback onDiscard;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${entityTypeLabel(item.entityType)} · '
-              '${_operationLabel(item.operation)}',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 4),
-            Text(syncErrorMessage(item.lastError)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: busy ? null : onDiscard,
-                  child: const Text('Discard local change'),
-                ),
-                if (canRetry) ...[
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: busy ? null : onRetry,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(0, 40),
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A conflict, read only: an admin settles it in Django admin.
-class _ConflictCard extends StatelessWidget {
-  const _ConflictCard({required this.conflict});
-  final SyncConflict conflict;
-
-  @override
-  Widget build(BuildContext context) {
-    final resolvedAt = conflict.resolvedAt;
-    final String text;
-    if (conflict.status == 'open') {
-      text = 'An admin will resolve this. Your change is kept on the server.';
-    } else {
-      final winner = conflict.status == 'resolved_server'
-          ? 'Server version kept'
-          : 'Your change applied';
-      final when = resolvedAt == null
-          ? ''
-          : ' · ${_formatTime(context, resolvedAt)}';
-      final note = conflict.resolutionNote.isEmpty
-          ? ''
-          : '\n${conflict.resolutionNote}';
-      text = '$winner$when$note';
-    }
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${entityTypeLabel(conflict.entityType)} · '
-              '${_operationLabel(conflict.operation)}',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 4),
-            Text('Fields: ${_fieldsText(conflict.conflictingFields)}'),
-            const SizedBox(height: 4),
-            Text(text),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// `create` becomes "Create" and so on; an unknown value shows as it is.
-String _operationLabel(String operation) => switch (operation) {
-  'create' => 'Create',
-  'update' => 'Update',
-  'delete' => 'Delete',
-  'create_batch' => 'Create (batch)',
-  _ => operation,
-};
-
-/// The conflicting field names, stored as a JSON list.
-String _fieldsText(String json) {
-  try {
-    return (jsonDecode(json) as List).join(', ');
-  } catch (_) {
-    return json;
-  }
-}
-
-/// Local date and time, like the Settings sync tile.
-String _formatTime(BuildContext context, DateTime time) {
-  final localizations = MaterialLocalizations.of(context);
-  final local = time.toLocal();
-  return '${localizations.formatShortDate(local)}, '
-      '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
 }
 
 /// "Just now", "5 minutes ago", "2 days ago", "3 months ago": the unit gets

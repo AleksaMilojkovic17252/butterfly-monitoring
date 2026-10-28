@@ -58,6 +58,18 @@ class TrackPointRepository {
         .watchSingle();
   }
 
+  /// Live list of the visit's stored points in recorded order: the walked
+  /// route (T039). Fixes still in the tracker's buffer are not in it yet.
+  Stream<List<SurveyTrackPoint>> watchRoute(String visitId) {
+    final query = _db.select(_db.surveyTrackPoints)
+      ..where((t) => t.surveyVisitId.equals(visitId))
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.recordedAt),
+        (t) => OrderingTerm.asc(t.sequenceNumber),
+      ]);
+    return query.watch();
+  }
+
   /// Stores [points] of [visit] and queues them for push. Does nothing when
   /// the visit is no longer on the phone (Remove data, a discarded create):
   /// the points would be orphans pushed for a visit nobody has. Nor when an
@@ -190,3 +202,11 @@ final trackPointRepositoryProvider = Provider<TrackPointRepository>(
 final trackPointCountProvider = StreamProvider.family<int, String>(
   (ref, visitId) => ref.watch(trackPointRepositoryProvider).watchCount(visitId),
 );
+
+/// Live route of a visit: its stored points in recorded order (T039).
+/// `autoDispose`: the query stops when the active visit screen closes.
+final visitRouteProvider = StreamProvider.autoDispose
+    .family<List<SurveyTrackPoint>, String>(
+      (ref, visitId) =>
+          ref.watch(trackPointRepositoryProvider).watchRoute(visitId),
+    );

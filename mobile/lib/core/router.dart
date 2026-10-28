@@ -13,6 +13,7 @@ import 'package:mobile/features/skeleton/ui/skeleton_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
 import 'package:mobile/features/transects/ui/transect_list_screen.dart';
+import 'package:mobile/features/visits/ui/active_visit_screen.dart';
 import 'package:mobile/features/visits/ui/start_visit_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -50,6 +51,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'sync',
                 builder: (_, state) =>
                     SyncStatusScreen(projectId: state.pathParameters['id']!),
+              ),
+              // The active visit screen (T039); back returns to the screen
+              // it was opened from.
+              GoRoute(
+                path: 'visits/:visitId',
+                builder: (_, state) => ActiveVisitScreen(
+                  visitId: state.pathParameters['visitId']!,
+                ),
               ),
               GoRoute(
                 path: 'transects',

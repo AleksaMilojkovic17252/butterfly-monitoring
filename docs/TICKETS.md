@@ -74,7 +74,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | done |
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | done |
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
-| T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | todo |
+| T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | done |
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | todo |
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | todo |
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
@@ -776,6 +776,10 @@ Depends on: T035, T036
 ### T038 · Battery-saving mode and GPS gap detection
 [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) · E05 · P1 · must · labels: `mobile`, `must` · implements F87 · est. 1 d · **todo**
 
+From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. Decide here how to tell them apart (for example, store the pause intervals).
+
+The banner must stay quiet while the visit is paused (`TrackingState.paused`, T039).
+
 Depends on: T037
 
 - [ ] A toggle on the active visit switches to `gpsIntervalBatterySaverS` and `LocationAccuracy.medium`, and sets `battery_saver_used = true` on the visit.
@@ -784,7 +788,11 @@ Depends on: T037
 - [ ] Gaps are visible later on the visit summary (T040).
 
 ### T039 · App active visit screen
-[#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) · E05 · P1 · must · labels: `mobile`, `must` · implements F11 · est. 2.5 d · **todo**
+[#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) · E05 · P1 · must · labels: `mobile`, `must` · implements F11 · est. 2.5 d · **done**
+
+Deferred: **Add butterfly** (T045), **Add plant** (T052), **Add habitat** (T054) and **Finish** (T040) are on the screen but show
+"coming in a later version" (`TODO(T045)` and so on in `widgets/active_visit_view.dart`); the observation count is 0 until T044 (`TODO(T044)` on
+`visitObservationCountProvider`). `wakelock_plus` is pinned at 1.8.0: 1.8.1 needs `dbus ^0.8`, which conflicts with `geolocator_linux`. See D-063.
 
 Depends on: T037
 
@@ -803,6 +811,12 @@ From T042 (D-062): when the visit is finished, the phone also sends how many tra
 `track_point_count` on `survey_visit`, server-owned except for this one write; needs a Django migration and a Drift column). A visit
 finished offline can reach the server before all its track batches (one push carries at most 100 items), and T043 uses the count to
 keep an admin from locking a visit whose route is still uploading: a locked visit refuses late track batches (T042).
+
+From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. Decide here how to tell them apart (for example, store the pause intervals).
+
+From T039 (D-063): finishing a paused visit must close the pause first (`VisitRepository.resume` adds the open pause to
+`paused_seconds`) before `duration_seconds` is worked out. `routeLengthM` (`features/visits/domain/route_length.dart`) gives the
+phone's `distance_walked_m` with the server's accuracy rule.
 
 From T100 (added 2026-10-27): the server computes the same coverage, so pin the definition. Sample the transect at 0, 10, 20 … m
 plus its end point. A sample is covered when a usable route **point** lies within `maxDistanceFromTransectM`. Usable means the accuracy
@@ -1046,6 +1060,8 @@ Depends on: T016, T034, T044
 
 ### T056 · Automatic quality flags
 [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) · E08 · P1 · should · labels: `backend`, `should` · implements F31 · est. 1.5 d · **todo**
+
+From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. `gps_gap` "outside pauses" needs the pause intervals, which nothing records yet (T038 decides).
 
 Depends on: T036, T048, T055
 

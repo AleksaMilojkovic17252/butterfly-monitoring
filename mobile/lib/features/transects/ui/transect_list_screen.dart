@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
-import 'package:mobile/features/transects/domain/visit_stats.dart';
+import 'package:mobile/features/transects/ui/widgets/transect_tile.dart';
 
 /// The two orders of the list.
 enum _Sort { code, distance }
@@ -201,7 +200,7 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: shown.length,
-                  itemBuilder: (context, i) => _TransectTile(
+                  itemBuilder: (context, i) => TransectTile(
                     projectId: widget.projectId,
                     transect: shown[i].transect,
                     distanceM: shown[i].distanceM,
@@ -214,90 +213,6 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
   }
 }
 
-/// One transect in the list. Opens the transect detail.
-class _TransectTile extends ConsumerWidget {
-  const _TransectTile({
-    required this.projectId,
-    required this.transect,
-    required this.distanceM,
-    required this.downloaded,
-  });
-  final String projectId;
-  final Transect transect;
-  final double? distanceM;
-
-  /// Whether the project's offline package is complete on this phone.
-  final bool downloaded;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
-    final stats = ref.watch(transectVisitStatsProvider(transect.id)).value;
-    final visits = _visitsLabel(stats);
-
-    return Card(
-      child: ListTile(
-        leading: Tooltip(
-          message: downloaded ? 'Downloaded' : 'Download not finished',
-          child: Icon(
-            downloaded ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
-            color: downloaded ? scheme.primary : scheme.outline,
-          ),
-        ),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(
-                '${transect.code} · ${transect.name}',
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (!transect.active) ...[
-              const SizedBox(width: 8),
-              const _InactiveTag(),
-            ],
-          ],
-        ),
-        subtitle: Text(visits),
-        trailing: Text(distanceM == null ? '—' : formatDistance(distanceM!)),
-        onTap: () =>
-            context.push('/projects/$projectId/transects/${transect.id}'),
-      ),
-    );
-  }
-}
-
-/// Small "Inactive" label: the transect is no longer walked.
-class _InactiveTag extends StatelessWidget {
-  const _InactiveTag();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: scheme.errorContainer,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        'Inactive',
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: scheme.onErrorContainer),
-      ),
-    );
-  }
-}
-
-/// "No visits yet", "1 visit · last 26.10.2026." or "3 visits · last …". The
-/// date is left out when the latest visit has none yet.
-String _visitsLabel(TransectVisitStats? stats) {
-  if (stats == null || stats.count == 0) return 'No visits yet';
-  final count = stats.count == 1 ? '1 visit' : '${stats.count} visits';
-  final last = stats.lastVisitAt;
-  return last == null ? count : '$count · last ${_date(last)}';
-}
-
 String _locationMessage(LocationFailure failure) => switch (failure) {
   LocationFailure.serviceOff => 'Location is off. Turn it on in Android.',
   LocationFailure.denied => 'Location permission was not given.',
@@ -305,9 +220,3 @@ String _locationMessage(LocationFailure failure) => switch (failure) {
     'Location permission is blocked. Allow it in Android settings.',
   LocationFailure.unavailable => 'No GPS fix yet. Try again outside.',
 };
-
-/// Local date, "26.10.2026."
-String _date(DateTime d) {
-  final local = d.toLocal();
-  return '${local.day}.${local.month}.${local.year}.';
-}

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/features/skeleton/data/skeleton_ping_repository.dart';
+import 'package:mobile/features/skeleton/ui/widgets/ping_tile.dart';
 
 // T044: delete with the skeleton.
 final skeletonPingsProvider = StreamProvider<List<SkeletonPing>>(
@@ -121,7 +122,7 @@ class _SkeletonScreenState extends ConsumerState<SkeletonScreen> {
                     ? const Center(child: Text('No pings yet'))
                     : ListView.builder(
                         itemCount: rows.length,
-                        itemBuilder: (_, i) => _PingTile(ping: rows[i]),
+                        itemBuilder: (_, i) => PingTile(ping: rows[i]),
                       ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('$e')),
@@ -130,30 +131,6 @@ class _SkeletonScreenState extends ConsumerState<SkeletonScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _PingTile extends StatelessWidget {
-  const _PingTile({required this.ping});
-  final SkeletonPing ping;
-
-  @override
-  Widget build(BuildContext context) {
-    final sent = ping.sentAt != null;
-    return ListTile(
-      leading: Icon(
-        sent ? Icons.cloud_done : Icons.cloud_off,
-        color: sent ? Colors.green : Colors.orange,
-      ),
-      title: Text(
-        '${ping.lat.toStringAsFixed(5)}, ${ping.lon.toStringAsFixed(5)}',
-      ),
-      subtitle: Text(
-        '${ping.observedAt.toLocal()}'
-        '${ping.note.isEmpty ? '' : '\n${ping.note}'}',
-      ),
-      trailing: Text(sent ? 'sent' : 'pending'),
     );
   }
 }

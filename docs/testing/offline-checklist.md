@@ -23,7 +23,7 @@ result column. No automated test covers this (D-021).
 | 4 | Open Settings | Settings opens (server URL, sync tile) | T006 | Passed, 2026-10-26 |
 | 5 | Open the transect list, then one transect | The list has the downloaded transects; the detail shows the protocol summary | T033 | Passed with the server unreachable (`adb reverse` removed, app force-stopped and reopened), 2026-10-26; not yet repeated in airplane mode |
 | 6 | Start a visit | The form opens with the weather fields; the taxon list is loaded | T035 | not built yet |
-| 7 | Run an active visit | The GPS track records and the visit stays open | T037, T039 | not built yet |
+| 7 | Run an active visit | The GPS track records and the visit stays open | T037, T039 | Active visit screen passed with the server unreachable (`adb reverse` removed, app force-stopped and reopened): header, paused banner, map from cached tiles, keep-screen-on toggle, 2026-10-28; GPS recording was run in T037; not yet repeated in airplane mode |
 | 8 | Add a butterfly | The quick entry works with the taxon picker | T045 | not built yet |
 | 9 | Finish a visit | The summary shows; the true-zero and cancel reasons are offered | T040, T041 | not built yet |
 | 10 | Airplane mode off | The next sync pushes everything and the unsynced count goes to 0 | T030, T034+ | not built yet |

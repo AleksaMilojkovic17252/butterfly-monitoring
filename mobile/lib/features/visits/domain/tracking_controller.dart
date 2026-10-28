@@ -19,15 +19,17 @@ class TrackingInterruption {
   final DateTime to;
 }
 
-/// What the GPS tracker is doing, for the tracking card (and T039's active
-/// visit screen). [visitId] is null when there is no visit to track.
+/// What the GPS tracker is doing, for the tracking card and the active visit
+/// screen (T039). [visitId] is null when there is no visit to track.
 class TrackingState {
   const TrackingState({
     this.visitId,
     this.transectCode = '',
     this.intervalS,
     this.recording = false,
+    this.paused = false,
     this.lastFixAt,
+    this.lastPosition,
     this.interruption,
     this.problem,
     this.saveProblem,
@@ -42,8 +44,17 @@ class TrackingState {
   /// True while the GPS stream is running.
   final bool recording;
 
+  /// True while the visit is paused (T039): GPS is off and nothing is
+  /// recorded.
+  final bool paused;
+
   /// UTC time of the newest fix, stored or still in the buffer.
   final DateTime? lastFixAt;
+
+  /// The newest fix (position and accuracy), for the map and the current
+  /// section (T039). Kept during a pause, so the map shows where it began;
+  /// cleared when GPS starts again, until the first new fix.
+  final Position? lastPosition;
 
   /// Shown once after tracking resumed, until the user closes it.
   final TrackingInterruption? interruption;
@@ -53,14 +64,17 @@ class TrackingState {
   final String? problem;
 
   /// Points that could not be saved, so part of the route is lost. Unlike
-  /// [problem] it stays until tracking starts again.
+  /// [problem] it stays for the rest of the visit, also across a pause or a
+  /// retry.
   final String? saveProblem;
 
   /// A copy with the given fields changed. A nullable field is cleared with
   /// its `clear...` flag, since passing null means "keep".
   TrackingState copyWith({
     bool? recording,
+    bool? paused,
     DateTime? lastFixAt,
+    Position? lastPosition,
     TrackingInterruption? interruption,
     bool clearInterruption = false,
     String? problem,
@@ -72,7 +86,9 @@ class TrackingState {
       transectCode: transectCode,
       intervalS: intervalS,
       recording: recording ?? this.recording,
+      paused: paused ?? this.paused,
       lastFixAt: lastFixAt ?? this.lastFixAt,
+      lastPosition: lastPosition ?? this.lastPosition,
       interruption: clearInterruption
           ? null
           : interruption ?? this.interruption,
@@ -89,6 +105,10 @@ class TrackingState {
 /// one), tracking starts; when there is none any more (finished, cancelled,
 /// data removed), it stops. Logging out or an expired session does not stop
 /// it: the walk goes on. `App` watches this provider to keep it alive.
+///
+/// A paused visit (`pausedAt` set, T039) is not tracked: pausing stops GPS,
+/// and resuming starts it again. An app start with a paused visit leaves GPS
+/// off until Resume.
 ///
 /// Fixes are buffered and written to Drift every [_flushPoints] points or
 /// every [_flushEvery], whichever comes first. A buffered fix is lost if the
@@ -108,8 +128,15 @@ class TrackingController extends Notifier<TrackingState> {
 
   /// The visit the provider last reported and this controller acted on, even
   /// if it then stopped ([stop]) or could not start (no permission). A new
-  /// emission for the same visit (any change to its row) changes nothing.
+  /// emission for the same visit changes nothing, unless it was paused or
+  /// resumed ([_handledPaused]).
   String? _handledVisitId;
+
+  /// Whether [_handledVisitId] was paused when the controller last acted.
+  bool _handledPaused = false;
+
+  /// Set by [stop]: the visit stays stopped, even if it is resumed later.
+  bool _stopped = false;
 
   /// The visit being tracked; null when stopped.
   SurveyVisit? _visit;
@@ -137,13 +164,24 @@ class TrackingController extends Notifier<TrackingState> {
     ref.listen(deviceVisitInProgressProvider, (_, next) {
       final visit = next.value;
       _change(() async {
-        if (visit?.id == _handledVisitId) return;
+        final paused = visit?.pausedAt != null;
+        final sameVisit = visit?.id == _handledVisitId;
+        if (sameVisit && (paused == _handledPaused || _stopped)) return;
         _handledVisitId = visit?.id;
+        _handledPaused = paused;
+        _stopped = false;
         await _stopTracking();
+        // An interruption still waiting for its first fix stays open across
+        // a pause, so Resume closes it; another visit starts afresh.
+        if (!sameVisit) _interruptedFrom = null;
         if (visit == null) {
           state = const TrackingState();
+        } else if (paused) {
+          await _showPaused(visit);
         } else {
-          await _start(visit, resume: true);
+          // Picked up for the first time: maybe a resume after the app was
+          // killed. After a pause it is not, so no "Tracking interrupted".
+          await _start(visit, resume: !sameVisit);
         }
       });
     }, fireImmediately: true);
@@ -162,18 +200,21 @@ class TrackingController extends Notifier<TrackingState> {
   /// start again for the same visit, even while it is still in progress.
   Future<void> stop() {
     _change(() async {
+      _stopped = true;
       await _stopTracking();
+      _interruptedFrom = null;
       state = const TrackingState();
     });
     return _changes;
   }
 
   /// Tries again after GPS stopped or never started (location off, permission
-  /// refused). Asks for the permission again.
+  /// refused). Asks for the permission again. Does nothing while paused.
   void retry() {
     final visit = ref.read(deviceVisitInProgressProvider).value;
     _change(() async {
       if (visit == null || visit.id != _handledVisitId) return;
+      if (_stopped || visit.pausedAt != null) return;
       await _stopTracking();
       await _start(visit, askPermission: true);
     });
@@ -216,12 +257,18 @@ class TrackingController extends Notifier<TrackingState> {
         protocol?.gpsIntervalS ??
         _defaultIntervalS;
     final code = transect?.code ?? '';
+    final sameVisit = state.visitId == visit.id;
+    // No `lastPosition`: after a pause or a retry the observer may have
+    // moved, so the old fix must not count as the current position (or
+    // section) until a new one arrives.
     state = TrackingState(
       visitId: visit.id,
       transectCode: code,
       intervalS: intervalS,
-      // Kept across a retry, until the user closes it.
-      interruption: state.interruption,
+      // Kept across a retry or a pause, until the user closes it.
+      interruption: sameVisit ? state.interruption : null,
+      // Lost points stay lost: kept for the rest of the visit.
+      saveProblem: sameVisit ? state.saveProblem : null,
     );
 
     final failure = await checkLocationAllowed(
@@ -254,6 +301,29 @@ class TrackingController extends Notifier<TrackingState> {
     state = state.copyWith(recording: true);
   }
 
+  /// Shows [visit] as paused (T039). GPS is already stopped. The newest
+  /// position (shown grey), an open "Tracking interrupted" and a save problem
+  /// stay when the same visit was being tracked.
+  Future<void> _showPaused(SurveyVisit visit) async {
+    if (state.visitId == visit.id) {
+      state = state.copyWith(
+        recording: false,
+        paused: true,
+        clearProblem: true,
+      );
+      return;
+    }
+    final transect = await ref
+        .read(transectRepositoryProvider)
+        .watchTransect(visit.transectId)
+        .first;
+    state = TrackingState(
+      visitId: visit.id,
+      transectCode: transect?.code ?? '',
+      paused: true,
+    );
+  }
+
   /// Puts a fix in the buffer under the next sequence number.
   void _onFix(Position position) {
     final at = position.timestamp.toUtc();
@@ -271,6 +341,7 @@ class TrackingController extends Notifier<TrackingState> {
     _interruptedFrom = null;
     state = state.copyWith(
       lastFixAt: at,
+      lastPosition: position,
       interruption: from == null
           ? null
           : TrackingInterruption(from: from, to: at),
@@ -333,7 +404,6 @@ class TrackingController extends Notifier<TrackingState> {
     await _flush();
     _visit = null;
     _lastFixAt = null;
-    _interruptedFrom = null;
   }
 
   static String _failureText(LocationFailure failure) {

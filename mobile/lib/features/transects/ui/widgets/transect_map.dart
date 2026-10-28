@@ -25,14 +25,30 @@ Color sectionColor(int index) => _sectionColors[index % _sectionColors.length];
 /// The basemap is OpenStreetMap tiles, which need a connection. flutter_map
 /// keeps the tiles it has shown in a cache, so an area seen online usually
 /// still shows offline; otherwise the lines are drawn on a plain background.
+///
+/// The active visit screen (T039) also passes [currentSection], drawn wider
+/// than the others, and [overlays] (the walked route and the position), drawn
+/// on top of the sections.
 class TransectMap extends StatelessWidget {
-  const TransectMap({super.key, required this.line, required this.sections});
+  const TransectMap({
+    super.key,
+    required this.line,
+    required this.sections,
+    this.currentSection,
+    this.overlays = const [],
+  });
 
   /// The transect line.
   final List<LatLng> line;
 
   /// The section lines, in walking order.
   final List<List<LatLng>> sections;
+
+  /// Index in [sections] of the section the observer is in, or null.
+  final int? currentSection;
+
+  /// More map layers, drawn above the sections and below the attribution.
+  final List<Widget> overlays;
 
   @override
   Widget build(BuildContext context) {
@@ -59,20 +75,27 @@ class TransectMap extends StatelessWidget {
           userAgentPackageName: 'rs.amilojkovic.butterfly',
         ),
         PolylineLayer(
+          // flutter_map cannot draw a line without points (it asserts), and
+          // the transect or a section can still be loading.
           polylines: [
-            Polyline(
-              points: line,
-              strokeWidth: 10,
-              color: Colors.grey.withValues(alpha: 0.6),
-            ),
-            for (var i = 0; i < sections.length; i++)
+            if (line.isNotEmpty)
               Polyline(
-                points: sections[i],
-                strokeWidth: 4,
-                color: sectionColor(i),
+                points: line,
+                strokeWidth: 10,
+                color: Colors.grey.withValues(alpha: 0.6),
               ),
+            for (var i = 0; i < sections.length; i++)
+              if (sections[i].isNotEmpty)
+                Polyline(
+                  points: sections[i],
+                  strokeWidth: i == currentSection ? 9 : 4,
+                  color: sectionColor(i),
+                  borderStrokeWidth: i == currentSection ? 2 : 0,
+                  borderColor: Colors.white,
+                ),
           ],
         ),
+        ...overlays,
         const SimpleAttributionWidget(
           source: Text('OpenStreetMap contributors'),
         ),

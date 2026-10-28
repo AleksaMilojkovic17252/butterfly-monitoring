@@ -60,3 +60,12 @@ String entityTypeLabel(String type) {
     _ => type,
   };
 }
+
+/// `create` becomes "Create" and so on; an unknown value shows as it is.
+String operationLabel(String operation) => switch (operation) {
+  'create' => 'Create',
+  'update' => 'Update',
+  'delete' => 'Delete',
+  'create_batch' => 'Create (batch)',
+  _ => operation,
+};

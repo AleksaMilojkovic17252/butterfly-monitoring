@@ -1116,3 +1116,81 @@ the alternative; it contradicts T042's criterion.
 guard and `ensure_unlocked` are the rule for T044+), batching the per-visit queries in the pull (few locked visits per page),
 `visitIsLocked` in `PullApplier` (`core/` would import `features/`), and the repeated checks in `complete_visit` / after the form
 (cheap; the service keeps the rule in one place).
+
+## D-063 · Active visit screen: pause stops GPS, `paused_seconds` sent on Resume, current section and distance on the phone
+2026-10 · accepted · T039, *amends D-059*
+**Screen:** `ActiveVisitScreen` (`features/visits/ui/active_visit_screen.dart`) at `/projects/:id/visits/:visitId`, nested under
+project home. After Start, the start form is replaced by it (`pushReplacement`), so back goes to the transect detail. The tracking card
+on project home and the transect detail opens it. Leaving the screen does not end the visit. It reads only Drift and the tracker, so
+it works offline (the basemap needs cached tiles, T060). A visit that is no longer `in_progress` (pulled as cancelled or locked) shows
+only a message.
+**Pause (chosen with the developer):** Pause sets the local `pausedAt` (`VisitRepository.pause`, a plain Drift update with nothing
+queued; the pull leaves the column alone because its companion value is absent). `TrackingController` follows the row and **stops the
+GPS stream** while `pausedAt` is set. That also removes the foreground service and its notification, and saves battery. Resume
+(`VisitRepository.resume`) adds `now − pausedAt` to `pausedSeconds`, clears `pausedAt` and queues an `update` with only
+`paused_seconds` (D-059's changed-fields rule; the server accepts it, it is not server-owned). The tracker then starts GPS again,
+without a "Tracking interrupted" marker, because Resume is pressed in the foreground, which Android 14 needs. An app start with a paused
+visit leaves GPS off until Resume. `stop()` (T040) now sets `_stopped`, so a later resume of the same visit does not restart
+tracking. While paused, Add butterfly/plant/habitat first ask "Record anyway?".
+**Consequences for later tickets:**
+- T040 must close an open pause before computing `duration_seconds`.
+- T038's banner must stay quiet while `TrackingState.paused`.
+- Only the *total* paused time is stored, so a pause cannot be told apart from a GPS gap in the points. T038, T040 and T056's
+  "outside pauses" have to settle that; notes are under those tickets (developer's choice: not widened here).
+
+**Header:** walking time = now − `startedAt` − `pausedSeconds` − the running pause (`walking_time.dart`), redrawn every second. A
+gap from a killed app counts as walking time.
+- **Distance** = `routeLengthM` (`route_length.dart`) over the stored points, with the server's accuracy rule (D-060: accuracy null
+  or ≤ 2 × `gpsAccuracyWarningM`), geodesic per step. Stored points arrive with the buffer (≤ 30 s, D-061), so the figure and the
+  drawn route lag that much. The route line runs on to the newest fix, which `TrackingState.lastPosition` now carries on every fix.
+- **Current section** = the nearest section line within `maxDistanceFromTransectM` (20 m when the protocol is missing), as a
+  point-to-segment distance on a local equirectangular plane (`distanceToLineM` in `geo_line.dart`). Otherwise it is "—".
+  `currentSectionProvider(visitId)` is for T045 to store the section.
+- **Observation count:** 0 until T044 (`visitObservationCountProvider`, `TODO(T044)`).
+
+**Map:** `TransectMap` takes an optional `currentSection` (drawn wide with a white border) and `overlays`: the route (all stored
+points, unfiltered, as the admin map, always black: it is recorded data), plus the newest fix with an accuracy circle, grey while
+paused or when GPS is not running. When GPS starts again (Resume, Try again) `lastPosition` is cleared until the first new fix, so an
+old spot never counts as the current position or section. After an app start while paused there is no position until Resume.
+**Keep screen on:** an app-bar toggle, stored per device (`keep_screen_on` in SharedPreferences, `keep_screen_on.dart`). The screen
+calls `WakelockPlus.toggle` while it is open and `disable` when it closes. A tap shows a 2 s snackbar saying which way it went (developer's request: a
+tooltip only shows on a long press, which a thumb in the field never does); the tooltip stays as TalkBack's label. `wakelock_plus` is pinned at 1.8.0 (CONVENTIONS A.4):
+1.8.1+ needs `dbus ^0.8`, which conflicts with `geolocator_linux`'s `^0.7`.
+**Tracking messages:** the interruption, problem and save-problem rows moved from `TrackingStatusCard` into `TrackingMessages`, used
+by both the card and the screen.
+**Placeholders:** Add butterfly (`TODO(T045)`), Add plant (`TODO(T052)`), Add habitat (`TODO(T054)`) and Finish (`TODO(T040)`) show
+"coming in a later version".
+**From the code review:**
+- Only `WalkingTimeFigure` ticks every second, so the map is rebuilt only when data changes.
+- Pause/Resume is disabled when this phone does not record the visit's route, since another phone would send its own `paused_seconds`.
+- A "Tracking interrupted" still waiting for its first fix survives a pause.
+- `saveProblem` stays for the rest of the visit, across pauses.
+- `visitRouteProvider` and `currentSectionProvider` are `autoDispose`.
+
+**Cloud cover starts at 0 % (developer's request, amends D-059):** the start form's slider sat at 0 while showing "Not set", which
+looked like a value. Now the value is 0 % from the start (a draft without one opens at 0 %), so the screen and the stored value agree.
+Start no longer asks for cloud cover; the hint reads "Fill in temperature and wind".
+**Empty lines (found by the developer):** flutter_map asserts when a `Polyline` has no points (it builds its bounding box from them).
+Right after Start the route is empty until the first fix, so the map flashed a red error. The route layer is drawn only from two
+points, and `TransectMap` skips an empty transect or section line, which can occur while it is still loading.
+
+Not taken: returning the section index from `currentSectionProvider` instead of finding it again in the screen (a few sections, a
+cheap search). Also not taken: drawing the route when `TransectMap` has no transect line: a visit starts from a transect on the phone,
+so the line is there.
+
+## D-064 · Mobile UI: one widget per file, screens in `ui/`, the rest in `ui/widgets/`
+2026-10 · accepted · T039 (developer's request)
+Screen files had grown to 300–600 lines with several widgets each, which made them hard to read. Now:
+- `features/<feature>/ui/` holds the screens (the widgets the router opens) and UI helpers that are not widgets
+  (`tracking_permissions.dart`, `project_period.dart`).
+- `features/<feature>/ui/widgets/` holds every other widget, **one public widget per file**, the file named after the widget
+  (`VisitHeader` → `visit_header.dart`). A `State` class stays in the file of its widget, and a private helper (a formatter, a
+  constant) stays in the file of the one widget that uses it.
+- Dart privacy is per file, so the moved widgets lost their `_`: names say where they belong (`FormSectionTitle`,
+  `DetailSectionTitle`, `SyncSectionTitle` are kept apart rather than shared, since they differ or belong to one screen each).
+- The loaded body of a screen that first waits for data is a `…View` widget (`ActiveVisitView`, `TransectDetailView`,
+  `ProjectHomeView`); `StartVisitForm` is the start-visit form's.
+- `TransectMap`, `ProtocolSummary` and `TrackingStatusCard` moved into `ui/widgets/`. `trackingTime` moved with `TrackingMessages`,
+  and the sync screen's operation label became `operationLabel` beside `entityTypeLabel` (`sync_error_message.dart`), since both
+  cards use it.
+Not taken: `part` files (they keep `_` names but split one library over files, which reads worse) and one folder per screen.

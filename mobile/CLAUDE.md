@@ -46,10 +46,11 @@ server URL is chosen in Settings.
 | `lib/core/sync/` | Sync API (`SyncApi`), queue rules and push results (`SyncRepository`), pull applier, runner (`SyncRunner`), project download (T031) and triggers (T030); `sync_state` store and status providers (T029) |
 | `lib/features/sync/` | Sync status screen (T032): read queries, providers, error messages, `SyncStatusScreen` at `/projects/:id/sync` |
 | `lib/features/transects/` | Transect list and detail (T033): read-only `TransectRepository`, map (`TransectMap`), `ProtocolSummary` and the season/time-window warnings (reused by T035) |
-| `lib/features/visits/` | Visits (T034): the lifecycle table `visit_status.dart` (same as the server's, checked against `docs/requirements/visit-states.json`); `VisitRepository` (reads, plus draft/start writes through `SyncRepository.write`, T035); the start-visit form `StartVisitScreen` at `/projects/:id/transects/:transectId/start` with the weather check `weather_check.dart` and Beaufort labels (T035); GPS tracking (T037): `TrackingController` follows the visit in progress and buffers fixes into `TrackPointRepository`, `TrackingStatusCard` shows it, `prepareTracking` asks for the permissions before Start |
+| `lib/features/visits/` | Visits (T034): the lifecycle table `visit_status.dart` (same as the server's, checked against `docs/requirements/visit-states.json`); `VisitRepository` (reads, plus draft/start writes through `SyncRepository.write`, T035); the start-visit form `StartVisitScreen` at `/projects/:id/transects/:transectId/start` with the weather check `weather_check.dart` and Beaufort labels (T035); GPS tracking (T037): `TrackingController` follows the visit in progress and buffers fixes into `TrackPointRepository`, `TrackingStatusCard` shows it, `prepareTracking` asks for the permissions before Start; the active visit screen `ActiveVisitScreen` at `/projects/:id/visits/:visitId` (T039): header, map with route and current section (`current_section.dart`), pause/resume (`VisitRepository.pause`/`resume`), keep-screen-on toggle |
 | `lib/features/<feature>/data` | Repositories: the only code that reads/writes Drift and calls the API |
 | `lib/features/<feature>/domain` | Plain models and notifiers/controllers |
-| `lib/features/<feature>/ui` | Screens and widgets |
+| `lib/features/<feature>/ui` | Screens (what the router opens) and non-widget UI helpers |
+| `lib/features/<feature>/ui/widgets` | Every other widget, one public widget per file named after it (D-064) |
 | `drift_schemas/` | Committed schema snapshots used by `make-migrations` |
 
 ## Riverpod

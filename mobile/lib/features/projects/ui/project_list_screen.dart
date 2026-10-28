@@ -7,9 +7,7 @@ import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
-import 'package:mobile/features/projects/domain/offline_package_status.dart';
-import 'package:mobile/features/projects/domain/project_stats.dart';
-import 'package:mobile/features/projects/ui/project_period.dart';
+import 'package:mobile/features/projects/ui/widgets/project_card.dart';
 
 class ProjectListScreen extends ConsumerStatefulWidget {
   const ProjectListScreen({super.key});
@@ -98,135 +96,12 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
             padding: const EdgeInsets.all(8),
             itemCount: list.length,
             itemBuilder: (context, i) =>
-                _ProjectCard(project: list[i], onTap: () => _open(list[i])),
+                ProjectCard(project: list[i], onTap: () => _open(list[i])),
           ),
           AsyncError(:final error) => Center(child: Text('$error')),
           _ => const Center(child: CircularProgressIndicator()),
         },
       ),
-    );
-  }
-}
-
-class _ProjectCard extends ConsumerWidget {
-  const _ProjectCard({required this.project, required this.onTap});
-  final Project project;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final transects =
-        ref.watch(downloadedTransectCountProvider(project.id)).value ?? 0;
-    final pending =
-        ref.watch(projectPendingChangesProvider(project.id)).value ?? 0;
-    final status = ref.watch(offlinePackageStatusProvider(project.id)).value;
-    final runState = ref.watch(syncRunnerProvider);
-    final downloading = runState.downloadingProjectId == project.id;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(project.name, style: textTheme.titleMedium),
-              const SizedBox(height: 4),
-              Text(project.periodLabel, style: textTheme.bodySmall),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _Stat(
-                    icon: Icons.route_outlined,
-                    text: '$transects transects',
-                  ),
-                  _Stat(icon: Icons.sync_outlined, text: '$pending unsynced'),
-                  if (status != null)
-                    _Stat(
-                      icon: status == OfflinePackageStatus.ready
-                          ? Icons.offline_pin_outlined
-                          : Icons.cloud_download_outlined,
-                      text: status.label,
-                    ),
-                ],
-              ),
-              if (downloading) ...[
-                const SizedBox(height: 6),
-                const LinearProgressIndicator(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text('${runState.received} records received'),
-                    ),
-                    TextButton(
-                      onPressed: () => ref
-                          .read(syncRunnerProvider.notifier)
-                          .cancelDownload(),
-                      child: const Text('Cancel'),
-                    ),
-                  ],
-                ),
-              ] else if (status == OfflinePackageStatus.notDownloaded ||
-                  status == OfflinePackageStatus.updateAvailable) ...[
-                const SizedBox(height: 6),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FilledButton.tonalIcon(
-                      // One download at a time.
-                      onPressed: runState.downloadingProjectId != null
-                          ? null
-                          : () => _download(context, ref),
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text(
-                        status == OfflinePackageStatus.notDownloaded
-                            ? 'Download'
-                            : 'Update',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Runs the download and tells the user how it ended.
-  Future<void> _download(BuildContext context, WidgetRef ref) async {
-    final result = await ref
-        .read(syncRunnerProvider.notifier)
-        .download(project.id);
-    if (!context.mounted) return;
-    final message = result.ok
-        ? 'Project downloaded.'
-        : result.cancelled
-        ? 'Download paused. Tap Download to continue.'
-        : 'Download did not finish: ${result.error}';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-}
-
-/// A small icon and label, one per number on the project card.
-class _Stat extends StatelessWidget {
-  const _Stat({required this.icon, required this.text});
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [Icon(icon, size: 18), const SizedBox(width: 4), Text(text)],
     );
   }
 }

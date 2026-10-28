@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:latlong2/latlong.dart';
 
@@ -31,6 +32,47 @@ double? distanceToNearestVertexM(LatLng from, List<LatLng> line) {
   double? nearest;
   for (final point in line) {
     final d = distance.as(LengthUnit.Meter, from, point);
+    if (nearest == null || d < nearest) nearest = d;
+  }
+  return nearest;
+}
+
+/// Shortest distance in metres from [from] to [line], measured to the
+/// segments between the vertices, or null for an empty line.
+///
+/// The points are first put on a flat plane in metres around [from]
+/// (equirectangular projection: x east, y north, [from] at 0, 0). Over the
+/// length of a transect that is accurate to well under a metre (T039).
+double? distanceToLineM(LatLng from, List<LatLng> line) {
+  if (line.isEmpty) return null;
+  const earthRadiusM = 6371008.8;
+  final cosLat = math.cos(from.latitudeInRad);
+
+  // x and y of [p] in metres.
+  (double, double) project(LatLng p) => (
+    (p.longitudeInRad - from.longitudeInRad) * cosLat * earthRadiusM,
+    (p.latitudeInRad - from.latitudeInRad) * earthRadiusM,
+  );
+
+  if (line.length == 1) {
+    final (x, y) = project(line.first);
+    return math.sqrt(x * x + y * y);
+  }
+  double? nearest;
+  for (var i = 0; i + 1 < line.length; i++) {
+    final (ax, ay) = project(line[i]);
+    final (bx, by) = project(line[i + 1]);
+    final dx = bx - ax;
+    final dy = by - ay;
+    final lengthSquared = dx * dx + dy * dy;
+    // Where the point of the segment closest to [from] lies: 0 at the first
+    // vertex, 1 at the second.
+    final t = lengthSquared == 0
+        ? 0.0
+        : (-(ax * dx + ay * dy) / lengthSquared).clamp(0.0, 1.0);
+    final x = ax + t * dx;
+    final y = ay + t * dy;
+    final d = math.sqrt(x * x + y * y);
     if (nearest == null || d < nearest) nearest = d;
   }
   return nearest;

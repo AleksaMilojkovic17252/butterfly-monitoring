@@ -62,6 +62,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |
 | permission_handler | 13.0.2 | notification permission and the battery-optimisation dialog of GPS tracking (T037); approved for T037 |
 | Android build: AGP / Gradle / compileSdk | 9.2.1 / 9.4.1 / 37 | raised in T037 for permission_handler_android 14 (needs compileSdk 37); `compileSdk` is set in `app/build.gradle.kts`, not taken from Flutter (36) |
+| wakelock_plus | 1.8.0 | keep-screen-on toggle of the active visit screen (T039); approved for T039. 1.8.1+ needs `dbus ^0.8`, which conflicts with `geolocator_linux` (`dbus ^0.7`) |
 
 ## A.5 Database conventions (apply to every table ticket)
 

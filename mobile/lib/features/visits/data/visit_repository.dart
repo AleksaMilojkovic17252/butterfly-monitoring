@@ -138,7 +138,8 @@ class VisitRepository {
   }
 
   /// Starts the visit: `status = in_progress` and `started_at = now`. A new
-  /// visit when [draft] is null, otherwise the draft moves on.
+  /// visit when [draft] is null, otherwise the draft moves on. Returns the
+  /// visit's id, for the active visit screen (T039).
   ///
   /// Throws a [StateError] when [observerId] already has a visit in progress:
   /// the form says so first, this is the check that always holds. It runs in
@@ -146,7 +147,7 @@ class VisitRepository {
   ///
   /// GPS tracking starts by itself: `TrackingController` follows the visit
   /// in progress (T037).
-  Future<void> start({
+  Future<String> start({
     required SurveyVisit? draft,
     required ProjectProtocol protocol,
     required String transectId,
@@ -160,7 +161,7 @@ class VisitRepository {
         throw StateError('Another visit is already in progress.');
       }
       if (draft == null) {
-        await _create(
+        return _create(
           protocol: protocol,
           transectId: transectId,
           observerId: observerId,
@@ -168,20 +169,87 @@ class VisitRepository {
           status: 'in_progress',
           startedAt: startedAt,
         );
-      } else {
-        await _update(
-          draft,
-          values,
-          status: 'in_progress',
-          startedAt: startedAt,
-        );
       }
+      await _update(draft, values, status: 'in_progress', startedAt: startedAt);
+      return draft.id;
     });
   }
 
-  /// Inserts a new visit and queues its `create`. The payload holds every
-  /// field the phone sets; the server fills in the rest.
-  Future<void> _create({
+  /// Pauses the visit in progress (T039) by storing when the pause began.
+  /// `pausedAt` is local and never sent, so nothing is queued; the server
+  /// learns about the pause on [resume]. The tracker sees the change and
+  /// stops GPS. Pausing a paused visit does nothing.
+  Future<void> pause(String visitId) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      if (current.pausedAt != null) return;
+      final query = _db.update(_db.surveyVisits)
+        ..where((v) => v.id.equals(visitId));
+      await query.write(
+        SurveyVisitsCompanion(pausedAt: Value(DateTime.now().toUtc())),
+      );
+    });
+  }
+
+  /// Ends the pause (T039): the time since `pausedAt` is added to
+  /// `pausedSeconds`, `pausedAt` is cleared, and an `update` with only
+  /// `paused_seconds` is queued. The tracker sees the change and starts GPS
+  /// again. Resuming a visit that is not paused does nothing.
+  Future<void> resume(String visitId) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      final pausedAt = current.pausedAt;
+      if (pausedAt == null) return;
+      final seconds = DateTime.now().toUtc().difference(pausedAt).inSeconds;
+      final pausedSeconds = current.pausedSeconds + (seconds < 0 ? 0 : seconds);
+
+      await _sync.write(
+        projectId: current.projectId,
+        entityType: _entityType,
+        entityId: current.id,
+        operation: SyncOperation.update,
+        payload: {'paused_seconds': pausedSeconds},
+        baseVersion: current.serverVersion,
+        writeRow: () {
+          final query = _db.update(_db.surveyVisits)
+            ..where((v) => v.id.equals(visitId));
+          return query.write(
+            SurveyVisitsCompanion(
+              pausedSeconds: Value(pausedSeconds),
+              pausedAt: const Value(null),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  /// The visit [visitId] as it is now, for a pause or resume. Throws a
+  /// [StateError] when it is gone or no longer in progress (finished,
+  /// cancelled or locked by a pull meanwhile).
+  Future<SurveyVisit> _inProgressRow(String visitId) async {
+    final current = await (_db.select(
+      _db.surveyVisits,
+    )..where((v) => v.id.equals(visitId))).getSingleOrNull();
+    if (current == null || current.deletedAt != null) {
+      throw StateError('The visit is no longer on this phone.');
+    }
+    if (current.status != 'in_progress') {
+      throw StateError('The visit is no longer in progress.');
+    }
+    return current;
+  }
+
+  /// Live row of one visit, or null when it is not on this phone.
+  Stream<SurveyVisit?> watchVisit(String visitId) {
+    final query = _db.select(_db.surveyVisits)
+      ..where((visit) => visit.id.equals(visitId) & visit.deletedAt.isNull());
+    return query.watchSingleOrNull();
+  }
+
+  /// Inserts a new visit and queues its `create`, and returns its id. The
+  /// payload holds every field the phone sets; the server fills in the rest.
+  Future<String> _create({
     required ProjectProtocol protocol,
     required String transectId,
     required String observerId,
@@ -225,6 +293,7 @@ class VisitRepository {
             ),
           ),
     );
+    return id;
   }
 
   /// Updates the visit [opened] and queues an `update` with only the fields
@@ -318,6 +387,11 @@ final visitRepositoryProvider = Provider<VisitRepository>(
   ),
 );
 
+/// One visit, live, or null when it is not on this phone (T039).
+final visitProvider = StreamProvider.family<SurveyVisit?, String>(
+  (ref, visitId) => ref.watch(visitRepositoryProvider).watchVisit(visitId),
+);
+
 /// The logged-in user's newest draft of a transect, or null (T035).
 final transectDraftProvider = StreamProvider.family<SurveyVisit?, String>((
   ref,
@@ -348,3 +422,9 @@ final deviceVisitInProgressProvider = StreamProvider<SurveyVisit?>((
   final deviceId = await ref.watch(syncStateRepositoryProvider).deviceId();
   yield* repository.watchInProgressOnDevice(deviceId);
 });
+
+/// Number of observations recorded on a visit (T039's header).
+// TODO(T044): count the visit's live rows in the Drift observation table.
+final visitObservationCountProvider = Provider.family<int, String>(
+  (ref, visitId) => 0,
+);
