@@ -1373,3 +1373,33 @@ without a `started_at`, dated by `created_at` (`watchListedVisits`).
 **One end-of-walk calculation.** `VisitRepository._endOfWalk` (closed pause, `duration_seconds`, and when recorded here the track point count
 and distance) is shared by `finish` and `cancel`; `finish` behaves as before. `cancel` leaves the end weather and the true-zero flag alone,
 and the Finish screen stops the tracker first, as for Finish.
+
+## D-070 · Lock and unlock actions: a reason for each, refuse a short track, unlock goes to `reviewed`
+2026-10 · accepted · T043, *builds on D-058, D-062, D-068; closes D-062's open point on the lock and missing track points*
+**Services:** `surveys.services.lock_visit(visit, admin_user, reason, allow_missing_points=False)` and `unlock_visit(visit, admin_user,
+reason)`, next to `mark_reviewed`. Both move the status on the instance (`transition()`) and save through `save_visit` with the admin's
+reason, so the history row's `history_change_reason` is the text as typed. The caller holds the visit row `FOR UPDATE`; `push_track_points`
+locks it too, so the point count and the lock cannot interleave with a batch. Locking a locked visit fails in `transition()` (the table
+has no (locked, locked)); `unlock_visit` refuses a visit that is not locked with `InvalidTransition("This visit is not locked.")`. No API
+endpoint (the ticket: locking is admin-only).
+**Unlock goes `locked → reviewed`** (the table's move; `transition()` clears `locked_at`, `locked_by` and `lock_reason`, the history keeps
+them). **Unlock does not run the input rules** (`save_visit(check_rules=False)`; the table's constraints still run): a rule or protocol threshold
+that tightens after the lock must not leave the visit locked, because its page is read-only and the admin could not fix it first. Lock still runs them. The lock reason is the reason typed in the action; the unlock reason lives only in the history row.
+**Missing track points: refuse, with an override (decided with the developer).** `missing_track_points(visit)` is `(server, phone)` when
+`track_point_count` is set and the server has fewer live points, else None. `lock_visit` refuses such a visit with "The server has N of M
+track points; wait for the phone to sync, or tick 'Lock even if track points are missing'" (a DRF `ValidationError`, code
+`track_points_missing`, on the field `track_point_count`). The lock form has that checkbox, unticked by default. A visit with no count
+(finished before T040, or through REST) is never blocked. The Lock page lists the shortfall per visit before the admin confirms.
+**Admin:** one loop, `SurveyVisitAdmin._apply_to_each` (it posts the success count only when something changed or nothing was refused), for Mark as reviewed, Lock and Unlock: each visit in its own transaction, reloaded
+`select_for_update()` (never the changelist queryset: `FOR UPDATE` does not combine with its `GROUP BY` count), an `APIException` is
+collected as `<visit> (<sentence>)` in one ERROR message and the others still change. A rule ID (`V05`...) in a refusal is turned into
+its sentence with `_explain_rule`. Lock and Unlock ask for the reason on an intermediate page
+(`admin/surveys/surveyvisit/visit_reason.html`, the pattern of `synonymise_into_existing`): `VisitReasonForm` (at least 10 characters after
+trimming) and `LockVisitForm` (adds the override). Opening the page changes nothing; the form posts back with `apply`.
+**List:** columns transect, observer, start, duration (`h:mm`), distance, observation count (annotation counting live observations),
+status, flags, then outcome, project and last modified (the count is annotated on the list only, not on the change and history pages). Filters: project, transect and observer (only those with visits), status, start
+date, and flag. `QualityFlagFilter` takes its values from the distinct flags in use on live visits (`unnest(quality_flags)`), so it shows nothing until
+T056 sets a flag and needs no change then. **Inline:** `ObservationInline` is a read-only summary of the live observations, ordered by
+time, with a "View" link to each (Django shows view, not change, for an inline that cannot be changed); the route map was already on the
+page (T036). The inline is shown on a locked visit too. Saving an unlocked visit with the inline present was checked.
+**Shown by hand:** `tmp/t043/smoke.py` (run in the container, not committed, D-021).

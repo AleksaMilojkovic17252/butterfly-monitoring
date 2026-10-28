@@ -2,15 +2,15 @@
 {% load i18n %}
 
 {% comment %}
-Visit change form (T042): a locked visit opens read-only with this banner. Unlocking is T043's
-Unlock action.
+Visit change form (T042): a locked visit opens read-only with this banner. Unlocking is the
+Unlock action in the visit list (T043).
 {% endcomment %}
 
 {% block form_top %}
 {% if original.status == "locked" %}
 <p class="errornote">
   {% blocktranslate with by=original.locked_by on=original.locked_at|date:"Y-m-d H:i T" reason=original.lock_reason %}Locked by {{ by }} on {{ on }}: {{ reason }}{% endblocktranslate %}
-  <br>{% translate "Nothing on this visit can be changed until an admin unlocks it." %}
+  <br>{% translate "Nothing on this visit can be changed until an admin unlocks it (Unlock action in the visit list)." %}
 </p>
 {% endif %}
 {{ block.super }}

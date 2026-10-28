@@ -3,12 +3,15 @@ import json
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.gis.forms.widgets import OSMWidget
-from django.db import transaction
+from django.db import connection, transaction
+from django.db.models import Count, Q
 from django.template.loader import render_to_string
+from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.admin import HistoryAdmin, SyncableAdmin, add_validation_errors
+from apps.core.admin import _RULE_ID, HistoryAdmin, SyncableAdmin, add_validation_errors
+from apps.observations.models import ButterflyObservation
 from apps.surveys import services
 from apps.surveys.models import CancelReason, SurveyVisit
 from apps.surveys.state import VisitLocked, ensure_unlocked
@@ -45,6 +48,21 @@ def _explain_rule(visit, field, rule_id):
             )
         return "started_at", text.format(reason=reason)
     return field, _("'{label}' is not one of the allowed choices.").format(label=_label(field))
+
+
+def _refusal_text(visit, error):
+    """What an action says when it refused `visit`: a rule ID becomes its sentence."""
+    if not isinstance(error.detail, dict):
+        return str(error.detail)
+    sentences = []
+    for field, messages_ in error.detail.items():
+        if isinstance(messages_, str):  # DRF keeps a lone string as it is
+            messages_ = [messages_]
+        for message in messages_:
+            if _RULE_ID.match(str(message)):
+                message = _explain_rule(visit, field, str(message))[1]
+            sentences.append(str(message))
+    return " ".join(sentences)
 
 
 class SurveyVisitAdminForm(forms.ModelForm):
@@ -96,20 +114,102 @@ class SurveyVisitAdminForm(forms.ModelForm):
         return cleaned_data
 
 
+class VisitReasonForm(forms.Form):
+    """The reason the Lock and Unlock actions ask for. It becomes the visit's history reason."""
+
+    reason = forms.CharField(
+        label=_("Reason"),
+        min_length=10,
+        strip=True,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("At least 10 characters. It is kept in the visit's history."),
+    )
+
+
+class LockVisitForm(VisitReasonForm):
+    allow_missing_points = forms.BooleanField(
+        required=False,
+        label=_("Lock even if track points are missing"),
+        help_text=_(
+            "Tick it only when the phone will not send the rest (it was lost or wiped). "
+            "Points it still has are refused once the visit is locked."
+        ),
+    )
+
+
+class QualityFlagFilter(admin.SimpleListFilter):
+    title = _("flag")
+    parameter_name = "flag"
+
+    def lookups(self, request, model_admin):
+        # The flags in use on live visits, so the list needs no change when T056 adds one.
+        with connection.cursor() as db:
+            db.execute(
+                "SELECT DISTINCT unnest(quality_flags) FROM survey_visit "
+                "WHERE deleted_at IS NULL ORDER BY 1"
+            )
+            return [(flag, flag) for (flag,) in db.fetchall()]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(quality_flags__contains=[self.value()])
+        return queryset
+
+
+class ObservationInline(admin.TabularInline):
+    """The visit's butterfly records as a read-only summary, each with a link to its own page."""
+
+    model = ButterflyObservation
+    fk_name = "survey_visit"
+    fields = [
+        "observed_at",
+        "taxon",
+        "count",
+        "source",
+        "identification_confidence",
+        "transect_section",
+        "validation_status",
+    ]
+    readonly_fields = fields
+    show_change_link = True
+    extra = 0
+    can_delete = False
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .filter(deleted_at__isnull=True)
+            .select_related("taxon", "transect_section")
+            .order_by("observed_at")
+        )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(SurveyVisit)
 class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     """Visits are recorded on the phone. An admin may correct an unlocked visit (saved through
-    `services.admin_save_visit`, T042); its status moves only through actions: "Mark as reviewed"
-    here, Lock and Unlock with a reason in T043. A locked visit opens read-only with a banner
-    saying who locked it and why. The page ends with the route drawn from the track points (T036).
+    `services.admin_save_visit`, T042); its status moves only through actions: Mark as reviewed,
+    and Lock and Unlock, which ask for a reason (T043). A locked visit opens read-only with a
+    banner saying who locked it and why. The page lists the visit's observations and ends with
+    the route drawn from the track points (T036).
     """
 
     form = SurveyVisitAdminForm
     change_form_template = "admin/surveys/surveyvisit/change_form.html"
     # Never edited in the admin: the status and the cancel reason move through the lifecycle, a
     # visit cannot change project (D-058), the distance comes from the track (T036), the lock
-    # fields belong to T043's actions, the flags to T056, the pauses and the point count come from
-    # the phone (T040), and the device and offline flag record where the visit came from.
+    # fields belong to the Lock and Unlock actions, the flags to T056, the pauses and the point
+    # count come from the phone (T040), and the device and offline flag record where the visit
+    # came from.
     fixed_fields = [
         "id",
         "project",
@@ -131,16 +231,39 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         "transect",
         "observer",
         "started_at",
+        "duration",
+        "distance",
+        "observation_count",
         "status",
+        "flags",
         "outcome",
         "project",
         "last_modified",
     ]
-    list_filter = ["status", "project"]
+    list_filter = [
+        "project",
+        ("transect", admin.RelatedOnlyFieldListFilter),
+        "status",
+        ("observer", admin.RelatedOnlyFieldListFilter),
+        "started_at",
+        QualityFlagFilter,
+    ]
     search_fields = ["transect__code", "transect__name", "observer__email", "notes"]
     ordering = ["-started_at"]
     list_select_related = ["transect", "observer", "project"]
-    actions = ["mark_reviewed_selected"]
+    inlines = [ObservationInline]
+    actions = ["mark_reviewed_selected", "lock_selected", "unlock_selected"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        # The list's observation count, on the list only (the change and history pages do not
+        # need the join). The actions load each visit again before changing it: the GROUP BY of
+        # this count does not combine with FOR UPDATE.
+        if getattr(request.resolver_match, "url_name", None) != "surveys_surveyvisit_changelist":
+            return queryset
+        return queryset.annotate(
+            observation_count=Count("observations", filter=Q(observations__deleted_at__isnull=True))
+        )
 
     def get_fields(self, request, obj=None):
         # Model order, editable or not, so the form reads like the read-only page did.
@@ -178,6 +301,26 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         )
         return super().media + OSMWidget().media + route_media
 
+    @admin.display(description=_("Duration"), ordering="duration_seconds")
+    def duration(self, visit):
+        if visit.duration_seconds is None:
+            return ""
+        return f"{visit.duration_seconds // 3600}:{visit.duration_seconds % 3600 // 60:02d}"
+
+    @admin.display(description=_("Distance"), ordering="distance_walked_m")
+    def distance(self, visit):
+        if visit.distance_walked_m is None:
+            return ""
+        return f"{visit.distance_walked_m} m"
+
+    @admin.display(description=_("Observations"), ordering="observation_count")
+    def observation_count(self, visit):
+        return visit.observation_count
+
+    @admin.display(description=_("Flags"))
+    def flags(self, visit):
+        return ", ".join(visit.quality_flags)
+
     @admin.display(description=_("Outcome"))
     def outcome(self, visit):
         return visit.outcome
@@ -205,18 +348,18 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        # A locked visit opens read-only until T043's Unlock action (T042). Its records follow
+        # A locked visit opens read-only until the Unlock action (T042, T043). Its records follow
         # the same rule: a child admin (T044+) checks `services.is_locked(obj.survey_visit)`.
         if obj is not None and services.is_locked(obj):
             return False
         return super().has_change_permission(request, obj)
 
-    @admin.action(description=_("Mark as reviewed"), permissions=["change"])
-    def mark_reviewed_selected(self, request, queryset):
-        reviewed_count = 0
+    def _apply_to_each(self, request, visit_ids, change, done_message):
+        """Run `change(visit)` on each visit in its own transaction, so a refused visit is named
+        in an error message and the others still change."""
+        done_count = 0
         refused_visits = []
-        selected_ids = list(queryset.filter(deleted_at__isnull=True).values_list("pk", flat=True))
-        for visit_id in selected_ids:
+        for visit_id in visit_ids:
             try:
                 with transaction.atomic():
                     # Load it again, locked: a push may have changed it since the list was
@@ -226,17 +369,115 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
                     )
                     if visit is None:
                         continue  # deleted in the meantime
-                    services.mark_reviewed(visit, request.user)
+                    change(visit)
             except APIException as error:
-                refused_visits.append(f"{visit} ({error.detail})")
+                refused_visits.append(f"{visit} ({_refusal_text(visit, error)})")
                 continue
-            reviewed_count += 1
-        self.message_user(
-            request, _("Marked %(count)d visit(s) reviewed.") % {"count": reviewed_count}
-        )
+            done_count += 1
+        if done_count or not refused_visits:
+            self.message_user(request, done_message % {"count": done_count})
         if refused_visits:
             self.message_user(
                 request,
                 _("Not changed: %(visits)s") % {"visits": "; ".join(refused_visits)},
                 messages.ERROR,
             )
+
+    def _ask_for_reason(
+        self,
+        request,
+        queryset,
+        action,
+        title,
+        intro,
+        form_class,
+        change_for,
+        note_short_tracks=False,
+    ):
+        """The page between the list and the change: the selected visits and a reason form.
+
+        The list posts the action; this page posts back with "apply". `change_for(cleaned_data)`
+        gives the `change(visit)` for `_apply_to_each` and the success text. With
+        `note_short_tracks` each visit that lacks track points carries `missing_points`.
+        """
+        visits = list(queryset.filter(deleted_at__isnull=True).order_by("started_at"))
+        if not visits:
+            self.message_user(request, _("Select at least one visit."), messages.ERROR)
+            return None
+        if note_short_tracks:
+            for visit in visits:
+                visit.missing_points = services.missing_track_points(visit)
+        form = form_class(request.POST if "apply" in request.POST else None)
+        if "apply" in request.POST and form.is_valid():
+            change, done_message = change_for(form.cleaned_data)
+            self._apply_to_each(request, [visit.pk for visit in visits], change, done_message)
+            return None
+        context = {
+            **self.admin_site.each_context(request),
+            "title": title,
+            "intro": intro,
+            "opts": self.model._meta,
+            "visits": visits,
+            "form": form,
+            "action": action,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        return TemplateResponse(request, "admin/surveys/surveyvisit/visit_reason.html", context)
+
+    @admin.action(description=_("Mark as reviewed"), permissions=["change"])
+    def mark_reviewed_selected(self, request, queryset):
+        visit_ids = list(queryset.filter(deleted_at__isnull=True).values_list("pk", flat=True))
+        self._apply_to_each(
+            request,
+            visit_ids,
+            lambda visit: services.mark_reviewed(visit, request.user),
+            _("Marked %(count)d visit(s) reviewed."),
+        )
+
+    @admin.action(description=_("Lock…"), permissions=["change"])
+    def lock_selected(self, request, queryset):
+        def change_for(cleaned_data):
+            return (
+                lambda visit: services.lock_visit(
+                    visit,
+                    request.user,
+                    cleaned_data["reason"],
+                    allow_missing_points=cleaned_data["allow_missing_points"],
+                ),
+                _("Locked %(count)d visit(s)."),
+            )
+
+        return self._ask_for_reason(
+            request,
+            queryset,
+            "lock_selected",
+            _("Lock visits"),
+            _(
+                "Locking a visit makes it read-only: the phones can no longer change it or its "
+                "records, and neither can the admin. The reason is kept in its history."
+            ),
+            LockVisitForm,
+            change_for,
+            note_short_tracks=True,
+        )
+
+    @admin.action(description=_("Unlock…"), permissions=["change"])
+    def unlock_selected(self, request, queryset):
+        def change_for(cleaned_data):
+            return (
+                lambda visit: services.unlock_visit(visit, request.user, cleaned_data["reason"]),
+                _("Unlocked %(count)d visit(s)."),
+            )
+
+        return self._ask_for_reason(
+            request,
+            queryset,
+            "unlock_selected",
+            _("Unlock visits"),
+            _(
+                "An unlocked visit becomes 'reviewed' and can be changed again. The reason is "
+                "kept in its history."
+            ),
+            VisitReasonForm,
+            change_for,
+        )

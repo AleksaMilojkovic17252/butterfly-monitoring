@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>{{ intro }}</p>
+<ul>
+  {% for visit in visits %}
+  <li>{{ visit }}{% if visit.missing_points %}
+    <strong>({{ visit.missing_points.0 }} of {{ visit.missing_points.1 }} track points on the server)</strong>{% endif %}</li>
+  {% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="{{ action }}">
+  {% for visit in visits %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ visit.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="{{ title }}">
+  <a href="{% url 'admin:surveys_surveyvisit_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

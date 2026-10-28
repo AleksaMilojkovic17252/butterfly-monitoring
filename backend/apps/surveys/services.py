@@ -139,15 +139,18 @@ def mark_synced_if_completed(visit):
         transition(visit, VisitStatus.SYNCED, actor=None)
 
 
-def save_visit(visit, user, history_reason):
+def save_visit(visit, user, history_reason, check_rules=True):
     """Check the input rules (T055) and the table's constraints, then save with a history reason.
 
     They are checked here so a broken rule comes back as a validation error with a message (the
-    rule ID, e.g. `{"temperature_end_c": ["V05"]}`), not as a database error.
+    rule ID, e.g. `{"temperature_end_c": ["V05"]}`), not as a database error. `check_rules=False`
+    leaves the input rules out (the unlock, which changes no field a rule reads); the table's
+    constraints are always checked.
     """
-    errors = rules.validate_visit(_rule_data(visit), _rule_context(visit))
-    if errors:
-        raise exceptions.ValidationError(errors)
+    if check_rules:
+        errors = rules.validate_visit(_rule_data(visit), _rule_context(visit))
+        if errors:
+            raise exceptions.ValidationError(errors)
     try:
         visit.validate_constraints()
     except DjangoValidationError as error:
@@ -314,11 +317,61 @@ def guard_visit(user, visit):
 
 
 def mark_reviewed(visit, admin_user):
-    # locked -> reviewed is the unlock, which needs a reason (T043's Unlock action), so a locked
-    # visit is refused here.
+    # locked -> reviewed is the unlock, which needs a reason (`unlock_visit`), so a locked visit
+    # is refused here.
     ensure_unlocked(visit)
     transition(visit, VisitStatus.REVIEWED, admin_user)
     return save_visit(visit, admin_user, "marked reviewed")
+
+
+def missing_track_points(visit):
+    """`(points on the server, points the phone recorded)` when the server has fewer live track
+    points than the count the phone sent on finish (T040, D-062); otherwise None. A visit without
+    a count (finished before T040, or through REST) is never short."""
+    if visit.track_point_count is None:
+        return None
+    server_count = visit.track_points.filter(deleted_at__isnull=True).count()
+    if server_count < visit.track_point_count:
+        return server_count, visit.track_point_count
+    return None
+
+
+def lock_visit(visit, admin_user, reason, allow_missing_points=False):
+    """Lock a finished visit, with the admin's reason as the lock reason and the history reason.
+
+    Refused while the server has fewer track points than the phone recorded, because a lock that
+    lands before the last batches makes the phone's remaining points fail with `visit_locked`;
+    `allow_missing_points` overrides that. Locking a locked visit fails in `transition()`.
+    The caller holds the visit row `FOR UPDATE`: `push_track_points` locks it too, so the point
+    count and the lock cannot interleave with a batch.
+    """
+    shortfall = None if allow_missing_points else missing_track_points(visit)
+    if shortfall:
+        raise exceptions.ValidationError(
+            {
+                "track_point_count": [
+                    f"The server has {shortfall[0]} of {shortfall[1]} track points; wait for the "
+                    "phone to sync, or tick 'Lock even if track points are missing'."
+                ]
+            },
+            code="track_points_missing",
+        )
+    transition(visit, VisitStatus.LOCKED, admin_user, reason=reason)
+    return save_visit(visit, admin_user, reason)
+
+
+def unlock_visit(visit, admin_user, reason):
+    """Unlock a locked visit: it becomes `reviewed` and editable again. `transition()` clears the
+    lock fields; the history row keeps them and carries the admin's reason. The caller holds the
+    visit row `FOR UPDATE`.
+
+    The input rules are not run: a locked visit must always be unlockable, even when a rule or the
+    protocol changed after the lock (the page is read-only, so the admin could not fix it first).
+    The admin corrects the data once the visit is editable."""
+    if visit.status != VisitStatus.LOCKED:
+        raise InvalidTransition("This visit is not locked.")
+    transition(visit, VisitStatus.REVIEWED, admin_user)
+    return save_visit(visit, admin_user, reason, check_rules=False)
 
 
 def is_locked(visit):

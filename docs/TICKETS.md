@@ -78,7 +78,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | done |
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | done |
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
-| T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
+| T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | done |
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | done |
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | todo |
@@ -876,7 +876,7 @@ Depends on: T026, T034
 - [ ] Tests for each child entity type.
 
 ### T043 · Admin visit review, lock and unlock with mandatory reason
-[#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) · E05 · P1 · must · labels: `admin`, `must` · implements F66 · est. 1.5 d · **todo**
+[#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) · E05 · P1 · must · labels: `admin`, `must` · implements F66 · est. 1.5 d · **done**
 
 From T042 (D-062): **Lock** warns or refuses (decide in the plan) while the server has fewer track points for the visit than
 the count the phone sent on finish (T040). Otherwise a lock can land between the visit and its last track batches, and the phone's
@@ -891,6 +891,8 @@ Depends on: T018, T042
 - [ ] Actions: **Mark reviewed**, **Lock**, **Unlock**. Lock and unlock use an intermediate form with a required reason (at least 10 characters) and set `locked_at`, `locked_by` and `lock_reason` (cleared on unlock).
 - [ ] The history row carries the reason as `history_change_reason`.
 - [ ] Invalid transitions (for example locking a draft) show an error per visit without failing the whole action.
+
+Note: every criterion shown by hand with `tmp/t043/smoke.py` (drives the admin list and the reason pages with the Django test client: lock and unlock with a reason and the history row, a short reason, a draft and a synced visit together, the track point rule with and without the override, the flag filter, the observation count, the inline, saving an unlocked visit with the inline present, the locked page). Nothing skipped as test/CI only. "Lock warns or refuses" is settled as refuse with an override (D-070). The flag filter stays hidden until T056 sets a flag. See D-070.
 
 ### T044 · ButterflyObservation model and API
 [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) · E06 · P1 · must · labels: `backend`, `database`, `sync`, `must`, `p2-compat` · implements F14, F15, F17 · est. 2.5 d · **done**
