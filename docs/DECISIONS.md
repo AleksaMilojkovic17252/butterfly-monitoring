@@ -1237,3 +1237,29 @@ upgrade are pulled again. A locked visit's queued, never-sent observation change
 header's observation count reads the table (`watchObservationCount`). Not done: dropping a never-sent visit's observations on discard
 (`TODO(T045)`), since rows exist only from T045.
 
+
+## D-066 · Quick butterfly entry: stored `searchText`, a fix of its own when there is no live one, Undo is a sync `delete`
+2026-10 · accepted · T045, *builds on D-063, D-064, D-065*
+**Sheet:** Add butterfly opens `QuickButterflySheet` (`features/observations/`). A tile only selects, so a repeat species is open, tap, Save
+(3 taps; T073 measures it). The count starts at 1 each time. Recent (last 8 used in the project) and Favourites show while the search is
+empty. The sheet returns `(id, label)`, and the active visit screen shows "Saved: name × count" with Undo for 10 s (`persist: false`: in
+Flutter 3.47 a snackbar with an action never closes by itself otherwise). Undo uses the repository captured before the sheet opened, so it
+works after the screen is left.
+**Search:** `taxon.searchText` is a **stored column** (as T019 specified), built on pull and backfilled by the v10 migration. It holds the
+scientific, Serbian and English names lower-cased without diacritics (`search_text.dart`). **`đ` becomes `dj`**, so typing a plain "d" does
+not find it. Taxa are filtered in memory on every key. Measured on the phone (debug build, 300 taxa): at most 0.46 ms, against the 100 ms
+criterion. The picker lists taxa that are `active`, not retired and not deleted.
+**Position:** the newest fix is used only when it is **live** (same visit, recording, not paused): `lastPosition` is kept during a pause, so a
+paused "Record anyway" would otherwise store an old spot. Without a live fix, Save asks `currentPositionProvider` for one fix (up to 15 s,
+then the last known position) behind a spinner, and stays open with the reason if that fails. The sheet cannot be closed while it waits.
+**Section (decided with the developer):** with a live fix it is `currentSectionProvider`. With a fresh fix it is worked out from that fix
+(`sectionAt`, extracted from the provider), not read from the tracker, whose position is stale or cleared in that case. Accuracy is rounded to
+one decimal (`Decimal(6,1)` on the server). Confidence is `confirmed_in_field`, source `transect`, recorder the signed-in user.
+**Undo:** a sync `delete`. A create the server never saw disappears with its queue item. A synced row is soft-deleted and a `delete` with
+`baseVersion` is queued (shown on the phone, then in the server). The usage is recorded in the same transaction as the create, so Undo does
+not roll back "recent". The sync screen's "Sync finished" snackbar replaces the Undo one: pressing Sync now within the 10 s loses the Undo.
+**`taxon_usage`** is local only (no `SyncColumns`, no foreign keys): favourites are per device (ticket text).
+**Discard (closes D-065's open point):** discarding a never-sent visit create also deletes the visit's observations and their queue items
+(an observation cannot reach the server before its visit).
+**Shown by hand** on the phone and with throwaway tests in `tmp/t045/` (not committed, D-021): the v9 to v10 migration and backfill, the
+discard rule and the rounding. A Niš test project (`tmp/t045/seed_nis.py`, not committed) puts a transect under the developer's test spot.

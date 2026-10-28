@@ -128,8 +128,9 @@ class SyncRepository {
   /// (later ones were built on it). Three outcomes:
   /// - `create_batch`: the child rows of every batch of the parent are deleted.
   /// - A create the server never had (`server_version` null): the row is
-  ///   deleted. For a visit its track points and their queued batches go
-  ///   too, or they would be pushed for a visit the server never gets (T036).
+  ///   deleted. For a visit its track points, observations and their queued
+  ///   items go too, or they would be pushed for a visit the server never
+  ///   gets (T036, T045).
   /// - Otherwise the row becomes `synced` and the project's pull cursor goes
   ///   back to 0, so the next pull brings the server's version back.
   Future<void> discard(SyncQueueItem item) {
@@ -181,7 +182,22 @@ class SyncRepository {
           final trackPoints = _db.surveyTrackPoints.delete()
             ..where((t) => t.surveyVisitId.equals(item.entityId));
           await trackPoints.go();
-          // TODO(T045): also drop the visit's never-sent observations.
+          // An observation cannot reach the server before its visit, so all of
+          // the visit's observations are unsent too.
+          final observations = await (_db.select(
+            _db.butterflyObservations,
+          )..where((t) => t.surveyVisitId.equals(item.entityId))).get();
+          final observationIds = [for (final o in observations) o.id];
+          final observationItems = _db.syncQueue.delete()
+            ..where(
+              (t) =>
+                  t.entityType.equals('butterfly_observation') &
+                  t.entityId.isIn(observationIds),
+            );
+          await observationItems.go();
+          final observationRows = _db.butterflyObservations.delete()
+            ..where((t) => t.surveyVisitId.equals(item.entityId));
+          await observationRows.go();
         }
         await _db.customUpdate(
           'DELETE FROM "${item.entityType}" WHERE id = ?',

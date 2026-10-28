@@ -80,7 +80,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
-| T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | todo |
+| T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | done |
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | todo |
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | todo |
@@ -898,7 +898,7 @@ Depends on: T019, T026, T034
 Note: `validation_status` on create only (decision 2026-10-28); pygeoapi skeleton collection removed here (see D-065).
 
 ### T045 · App quick butterfly entry
-[#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) · E06 · P1 · must · labels: `mobile`, `must` · implements F14 · est. 2.5 d · **todo**
+[#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) · E06 · P1 · must · labels: `mobile`, `must` · implements F14 · est. 2.5 d · **done**
 
 Depends on: T039, T044
 
@@ -909,6 +909,8 @@ Depends on: T039, T044
 - [ ] Section = current section (T039). Confidence defaults to `confirmed_in_field`.
 - [ ] An **Undo** snackbar for 10 s soft-deletes the last record.
 - [ ] Local table `taxon_usage` stores favourites and recent use.
+
+Note: search takes at most 0.46 ms for 300 taxa (debug build, on the phone). Checklist step 8 passed with the server unreachable, 2026-10-28; not repeated in airplane mode. The section path was checked with a fresh fix on a phone away from the transect (section empty); a section stored from a live fix is the same lookup as the header's. "Measured by T073" is T073's. No criterion was skipped as test/CI only. See D-066.
 
 ### T046 · App extended entry
 [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) · E06 · P1 · should · labels: `mobile`, `should` · implements F15 · est. 1.5 d · **todo**

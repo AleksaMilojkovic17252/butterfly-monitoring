@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
+import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
 
@@ -31,6 +32,20 @@ int? currentSectionIndex(
   return nearestIndex;
 }
 
+/// The section of [sections] that [position] is in, or null (off the
+/// transect, or no sections). [protocol] gives the allowed distance; the
+/// server's default is used while it is not on the phone.
+TransectSection? sectionAt(
+  LatLng position,
+  List<SectionWithHabitat> sections,
+  ProjectProtocol? protocol,
+) {
+  final index = currentSectionIndex(position, [
+    for (final s in sections) parseLineString(s.section.geometry),
+  ], protocol?.maxDistanceFromTransectM ?? _defaultMaxDistanceM);
+  return index == null ? null : sections[index].section;
+}
+
 /// The section the observer of a visit is in now, from the newest GPS fix,
 /// or null (no fix yet, off the transect, or the visit is not tracked on
 /// this phone). The active visit screen shows its code; the butterfly entry
@@ -52,10 +67,9 @@ final currentSectionProvider = Provider.autoDispose
       final protocol = ref
           .watch(projectProtocolProvider(visit.projectId))
           .value;
-      final index = currentSectionIndex(
+      return sectionAt(
         LatLng(position.latitude, position.longitude),
-        [for (final s in sections) parseLineString(s.section.geometry)],
-        protocol?.maxDistanceFromTransectM ?? _defaultMaxDistanceM,
+        sections,
+        protocol,
       );
-      return index == null ? null : sections[index].section;
     });

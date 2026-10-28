@@ -21,6 +21,10 @@ class Taxa extends Table {
   TextColumn get introducedInId => text()();
   TextColumn get retiredInId => text().nullable()();
   TextColumn get scientificName => text()();
+
+  /// Local only, built on pull (T045): the three names lower-cased without
+  /// diacritics (`taxonSearchText`), so a search is one `contains`.
+  TextColumn get searchText => text().withDefault(const Constant(''))();
   @override
   Set<Column> get primaryKey => {id};
 

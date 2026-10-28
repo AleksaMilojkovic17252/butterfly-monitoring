@@ -3514,6 +3514,18 @@ class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _searchTextMeta = const VerificationMeta(
+    'searchText',
+  );
+  @override
+  late final GeneratedColumn<String> searchText = GeneratedColumn<String>(
+    'search_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _serverVersionMeta = const VerificationMeta(
     'serverVersion',
   );
@@ -3554,6 +3566,7 @@ class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
     introducedInId,
     retiredInId,
     scientificName,
+    searchText,
     serverVersion,
     deletedAt,
   ];
@@ -3718,6 +3731,12 @@ class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
     } else if (isInserting) {
       context.missing(_scientificNameMeta);
     }
+    if (data.containsKey('search_text')) {
+      context.handle(
+        _searchTextMeta,
+        searchText.isAcceptableOrUnknown(data['search_text']!, _searchTextMeta),
+      );
+    }
     if (data.containsKey('server_version')) {
       context.handle(
         _serverVersionMeta,
@@ -3806,6 +3825,10 @@ class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
         DriftSqlType.string,
         data['${effectivePrefix}scientific_name'],
       )!,
+      searchText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}search_text'],
+      )!,
       serverVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}server_version'],
@@ -3840,6 +3863,10 @@ class Taxon extends DataClass implements Insertable<Taxon> {
   final String introducedInId;
   final String? retiredInId;
   final String scientificName;
+
+  /// Local only, built on pull (T045): the three names lower-cased without
+  /// diacritics (`taxonSearchText`), so a search is one `contains`.
+  final String searchText;
   final int? serverVersion;
   final DateTime? deletedAt;
   const Taxon({
@@ -3859,6 +3886,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
     required this.introducedInId,
     this.retiredInId,
     required this.scientificName,
+    required this.searchText,
     this.serverVersion,
     this.deletedAt,
   });
@@ -3887,6 +3915,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
       map['retired_in_id'] = Variable<String>(retiredInId);
     }
     map['scientific_name'] = Variable<String>(scientificName);
+    map['search_text'] = Variable<String>(searchText);
     if (!nullToAbsent || serverVersion != null) {
       map['server_version'] = Variable<int>(serverVersion);
     }
@@ -3920,6 +3949,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
           ? const Value.absent()
           : Value(retiredInId),
       scientificName: Value(scientificName),
+      searchText: Value(searchText),
       serverVersion: serverVersion == null && nullToAbsent
           ? const Value.absent()
           : Value(serverVersion),
@@ -3953,6 +3983,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
       introducedInId: serializer.fromJson<String>(json['introducedInId']),
       retiredInId: serializer.fromJson<String?>(json['retiredInId']),
       scientificName: serializer.fromJson<String>(json['scientificName']),
+      searchText: serializer.fromJson<String>(json['searchText']),
       serverVersion: serializer.fromJson<int?>(json['serverVersion']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -3977,6 +4008,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
       'introducedInId': serializer.toJson<String>(introducedInId),
       'retiredInId': serializer.toJson<String?>(retiredInId),
       'scientificName': serializer.toJson<String>(scientificName),
+      'searchText': serializer.toJson<String>(searchText),
       'serverVersion': serializer.toJson<int?>(serverVersion),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -3999,6 +4031,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
     String? introducedInId,
     Value<String?> retiredInId = const Value.absent(),
     String? scientificName,
+    String? searchText,
     Value<int?> serverVersion = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Taxon(
@@ -4022,6 +4055,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
     introducedInId: introducedInId ?? this.introducedInId,
     retiredInId: retiredInId.present ? retiredInId.value : this.retiredInId,
     scientificName: scientificName ?? this.scientificName,
+    searchText: searchText ?? this.searchText,
     serverVersion: serverVersion.present
         ? serverVersion.value
         : this.serverVersion,
@@ -4065,6 +4099,9 @@ class Taxon extends DataClass implements Insertable<Taxon> {
       scientificName: data.scientificName.present
           ? data.scientificName.value
           : this.scientificName,
+      searchText: data.searchText.present
+          ? data.searchText.value
+          : this.searchText,
       serverVersion: data.serverVersion.present
           ? data.serverVersion.value
           : this.serverVersion,
@@ -4091,6 +4128,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
           ..write('introducedInId: $introducedInId, ')
           ..write('retiredInId: $retiredInId, ')
           ..write('scientificName: $scientificName, ')
+          ..write('searchText: $searchText, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -4115,6 +4153,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
     introducedInId,
     retiredInId,
     scientificName,
+    searchText,
     serverVersion,
     deletedAt,
   );
@@ -4138,6 +4177,7 @@ class Taxon extends DataClass implements Insertable<Taxon> {
           other.introducedInId == this.introducedInId &&
           other.retiredInId == this.retiredInId &&
           other.scientificName == this.scientificName &&
+          other.searchText == this.searchText &&
           other.serverVersion == this.serverVersion &&
           other.deletedAt == this.deletedAt);
 }
@@ -4159,6 +4199,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
   final Value<String> introducedInId;
   final Value<String?> retiredInId;
   final Value<String> scientificName;
+  final Value<String> searchText;
   final Value<int?> serverVersion;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -4179,6 +4220,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
     this.introducedInId = const Value.absent(),
     this.retiredInId = const Value.absent(),
     this.scientificName = const Value.absent(),
+    this.searchText = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -4200,6 +4242,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
     required String introducedInId,
     this.retiredInId = const Value.absent(),
     required String scientificName,
+    this.searchText = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -4233,6 +4276,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
     Expression<String>? introducedInId,
     Expression<String>? retiredInId,
     Expression<String>? scientificName,
+    Expression<String>? searchText,
     Expression<int>? serverVersion,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -4255,6 +4299,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
       if (introducedInId != null) 'introduced_in_id': introducedInId,
       if (retiredInId != null) 'retired_in_id': retiredInId,
       if (scientificName != null) 'scientific_name': scientificName,
+      if (searchText != null) 'search_text': searchText,
       if (serverVersion != null) 'server_version': serverVersion,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -4278,6 +4323,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
     Value<String>? introducedInId,
     Value<String?>? retiredInId,
     Value<String>? scientificName,
+    Value<String>? searchText,
     Value<int?>? serverVersion,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -4299,6 +4345,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
       introducedInId: introducedInId ?? this.introducedInId,
       retiredInId: retiredInId ?? this.retiredInId,
       scientificName: scientificName ?? this.scientificName,
+      searchText: searchText ?? this.searchText,
       serverVersion: serverVersion ?? this.serverVersion,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -4356,6 +4403,9 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
     if (scientificName.present) {
       map['scientific_name'] = Variable<String>(scientificName.value);
     }
+    if (searchText.present) {
+      map['search_text'] = Variable<String>(searchText.value);
+    }
     if (serverVersion.present) {
       map['server_version'] = Variable<int>(serverVersion.value);
     }
@@ -4387,6 +4437,7 @@ class TaxaCompanion extends UpdateCompanion<Taxon> {
           ..write('introducedInId: $introducedInId, ')
           ..write('retiredInId: $retiredInId, ')
           ..write('scientificName: $scientificName, ')
+          ..write('searchText: $searchText, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -12183,6 +12234,384 @@ class TaxonListVersionsCompanion extends UpdateCompanion<TaxonListVersion> {
   }
 }
 
+class $TaxonUsagesTable extends TaxonUsages
+    with TableInfo<$TaxonUsagesTable, TaxonUsage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TaxonUsagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taxonIdMeta = const VerificationMeta(
+    'taxonId',
+  );
+  @override
+  late final GeneratedColumn<String> taxonId = GeneratedColumn<String>(
+    'taxon_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isFavouriteMeta = const VerificationMeta(
+    'isFavourite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavourite = GeneratedColumn<bool>(
+    'is_favourite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favourite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lastUsedAtMeta = const VerificationMeta(
+    'lastUsedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastUsedAt = GeneratedColumn<DateTime>(
+    'last_used_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _useCountMeta = const VerificationMeta(
+    'useCount',
+  );
+  @override
+  late final GeneratedColumn<int> useCount = GeneratedColumn<int>(
+    'use_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    projectId,
+    taxonId,
+    isFavourite,
+    lastUsedAt,
+    useCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'taxon_usage';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TaxonUsage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('taxon_id')) {
+      context.handle(
+        _taxonIdMeta,
+        taxonId.isAcceptableOrUnknown(data['taxon_id']!, _taxonIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taxonIdMeta);
+    }
+    if (data.containsKey('is_favourite')) {
+      context.handle(
+        _isFavouriteMeta,
+        isFavourite.isAcceptableOrUnknown(
+          data['is_favourite']!,
+          _isFavouriteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_used_at')) {
+      context.handle(
+        _lastUsedAtMeta,
+        lastUsedAt.isAcceptableOrUnknown(
+          data['last_used_at']!,
+          _lastUsedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('use_count')) {
+      context.handle(
+        _useCountMeta,
+        useCount.isAcceptableOrUnknown(data['use_count']!, _useCountMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {projectId, taxonId};
+  @override
+  TaxonUsage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TaxonUsage(
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      taxonId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}taxon_id'],
+      )!,
+      isFavourite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favourite'],
+      )!,
+      lastUsedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_used_at'],
+      ),
+      useCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}use_count'],
+      )!,
+    );
+  }
+
+  @override
+  $TaxonUsagesTable createAlias(String alias) {
+    return $TaxonUsagesTable(attachedDatabase, alias);
+  }
+}
+
+class TaxonUsage extends DataClass implements Insertable<TaxonUsage> {
+  final String projectId;
+  final String taxonId;
+  final bool isFavourite;
+  final DateTime? lastUsedAt;
+  final int useCount;
+  const TaxonUsage({
+    required this.projectId,
+    required this.taxonId,
+    required this.isFavourite,
+    this.lastUsedAt,
+    required this.useCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['project_id'] = Variable<String>(projectId);
+    map['taxon_id'] = Variable<String>(taxonId);
+    map['is_favourite'] = Variable<bool>(isFavourite);
+    if (!nullToAbsent || lastUsedAt != null) {
+      map['last_used_at'] = Variable<DateTime>(lastUsedAt);
+    }
+    map['use_count'] = Variable<int>(useCount);
+    return map;
+  }
+
+  TaxonUsagesCompanion toCompanion(bool nullToAbsent) {
+    return TaxonUsagesCompanion(
+      projectId: Value(projectId),
+      taxonId: Value(taxonId),
+      isFavourite: Value(isFavourite),
+      lastUsedAt: lastUsedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastUsedAt),
+      useCount: Value(useCount),
+    );
+  }
+
+  factory TaxonUsage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TaxonUsage(
+      projectId: serializer.fromJson<String>(json['projectId']),
+      taxonId: serializer.fromJson<String>(json['taxonId']),
+      isFavourite: serializer.fromJson<bool>(json['isFavourite']),
+      lastUsedAt: serializer.fromJson<DateTime?>(json['lastUsedAt']),
+      useCount: serializer.fromJson<int>(json['useCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'projectId': serializer.toJson<String>(projectId),
+      'taxonId': serializer.toJson<String>(taxonId),
+      'isFavourite': serializer.toJson<bool>(isFavourite),
+      'lastUsedAt': serializer.toJson<DateTime?>(lastUsedAt),
+      'useCount': serializer.toJson<int>(useCount),
+    };
+  }
+
+  TaxonUsage copyWith({
+    String? projectId,
+    String? taxonId,
+    bool? isFavourite,
+    Value<DateTime?> lastUsedAt = const Value.absent(),
+    int? useCount,
+  }) => TaxonUsage(
+    projectId: projectId ?? this.projectId,
+    taxonId: taxonId ?? this.taxonId,
+    isFavourite: isFavourite ?? this.isFavourite,
+    lastUsedAt: lastUsedAt.present ? lastUsedAt.value : this.lastUsedAt,
+    useCount: useCount ?? this.useCount,
+  );
+  TaxonUsage copyWithCompanion(TaxonUsagesCompanion data) {
+    return TaxonUsage(
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      taxonId: data.taxonId.present ? data.taxonId.value : this.taxonId,
+      isFavourite: data.isFavourite.present
+          ? data.isFavourite.value
+          : this.isFavourite,
+      lastUsedAt: data.lastUsedAt.present
+          ? data.lastUsedAt.value
+          : this.lastUsedAt,
+      useCount: data.useCount.present ? data.useCount.value : this.useCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaxonUsage(')
+          ..write('projectId: $projectId, ')
+          ..write('taxonId: $taxonId, ')
+          ..write('isFavourite: $isFavourite, ')
+          ..write('lastUsedAt: $lastUsedAt, ')
+          ..write('useCount: $useCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(projectId, taxonId, isFavourite, lastUsedAt, useCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TaxonUsage &&
+          other.projectId == this.projectId &&
+          other.taxonId == this.taxonId &&
+          other.isFavourite == this.isFavourite &&
+          other.lastUsedAt == this.lastUsedAt &&
+          other.useCount == this.useCount);
+}
+
+class TaxonUsagesCompanion extends UpdateCompanion<TaxonUsage> {
+  final Value<String> projectId;
+  final Value<String> taxonId;
+  final Value<bool> isFavourite;
+  final Value<DateTime?> lastUsedAt;
+  final Value<int> useCount;
+  final Value<int> rowid;
+  const TaxonUsagesCompanion({
+    this.projectId = const Value.absent(),
+    this.taxonId = const Value.absent(),
+    this.isFavourite = const Value.absent(),
+    this.lastUsedAt = const Value.absent(),
+    this.useCount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TaxonUsagesCompanion.insert({
+    required String projectId,
+    required String taxonId,
+    this.isFavourite = const Value.absent(),
+    this.lastUsedAt = const Value.absent(),
+    this.useCount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : projectId = Value(projectId),
+       taxonId = Value(taxonId);
+  static Insertable<TaxonUsage> custom({
+    Expression<String>? projectId,
+    Expression<String>? taxonId,
+    Expression<bool>? isFavourite,
+    Expression<DateTime>? lastUsedAt,
+    Expression<int>? useCount,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (projectId != null) 'project_id': projectId,
+      if (taxonId != null) 'taxon_id': taxonId,
+      if (isFavourite != null) 'is_favourite': isFavourite,
+      if (lastUsedAt != null) 'last_used_at': lastUsedAt,
+      if (useCount != null) 'use_count': useCount,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TaxonUsagesCompanion copyWith({
+    Value<String>? projectId,
+    Value<String>? taxonId,
+    Value<bool>? isFavourite,
+    Value<DateTime?>? lastUsedAt,
+    Value<int>? useCount,
+    Value<int>? rowid,
+  }) {
+    return TaxonUsagesCompanion(
+      projectId: projectId ?? this.projectId,
+      taxonId: taxonId ?? this.taxonId,
+      isFavourite: isFavourite ?? this.isFavourite,
+      lastUsedAt: lastUsedAt ?? this.lastUsedAt,
+      useCount: useCount ?? this.useCount,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (taxonId.present) {
+      map['taxon_id'] = Variable<String>(taxonId.value);
+    }
+    if (isFavourite.present) {
+      map['is_favourite'] = Variable<bool>(isFavourite.value);
+    }
+    if (lastUsedAt.present) {
+      map['last_used_at'] = Variable<DateTime>(lastUsedAt.value);
+    }
+    if (useCount.present) {
+      map['use_count'] = Variable<int>(useCount.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaxonUsagesCompanion(')
+          ..write('projectId: $projectId, ')
+          ..write('taxonId: $taxonId, ')
+          ..write('isFavourite: $isFavourite, ')
+          ..write('lastUsedAt: $lastUsedAt, ')
+          ..write('useCount: $useCount, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransectSectionsTable extends TransectSections
     with TableInfo<$TransectSectionsTable, TransectSection> {
   @override
@@ -12855,6 +13284,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $SurveyTrackPointsTable(this);
   late final $TaxonListVersionsTable taxonListVersions =
       $TaxonListVersionsTable(this);
+  late final $TaxonUsagesTable taxonUsages = $TaxonUsagesTable(this);
   late final $TransectSectionsTable transectSections = $TransectSectionsTable(
     this,
   );
@@ -12881,6 +13311,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncConflicts,
     surveyTrackPoints,
     taxonListVersions,
+    taxonUsages,
     transectSections,
     syncQueueEntity,
   ];
@@ -15488,6 +15919,7 @@ typedef $$TaxaTableCreateCompanionBuilder = TaxaCompanion Function({
   required String introducedInId,
   Value<String?> retiredInId,
   required String scientificName,
+  Value<String> searchText,
   Value<int?> serverVersion,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -15509,6 +15941,7 @@ typedef $$TaxaTableUpdateCompanionBuilder = TaxaCompanion Function({
   Value<String> introducedInId,
   Value<String?> retiredInId,
   Value<String> scientificName,
+  Value<String> searchText,
   Value<int?> serverVersion,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -15629,6 +16062,11 @@ class $$TaxaTableFilterComposer extends Composer<_$AppDatabase, $TaxaTable> {
 
   ColumnFilters<String> get scientificName => $composableBuilder(
     column: $table.scientificName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get searchText => $composableBuilder(
+    column: $table.searchText,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15757,6 +16195,11 @@ class $$TaxaTableOrderingComposer extends Composer<_$AppDatabase, $TaxaTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get searchText => $composableBuilder(
+    column: $table.searchText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
     builder: (column) => ColumnOrderings(column),
@@ -15845,6 +16288,11 @@ class $$TaxaTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get searchText => $composableBuilder(
+    column: $table.searchText,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
     builder: (column) => column,
@@ -15924,6 +16372,7 @@ class $$TaxaTableTableManager
                 Value<String> introducedInId = const Value.absent(),
                 Value<String?> retiredInId = const Value.absent(),
                 Value<String> scientificName = const Value.absent(),
+                Value<String> searchText = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -15944,6 +16393,7 @@ class $$TaxaTableTableManager
                 introducedInId: introducedInId,
                 retiredInId: retiredInId,
                 scientificName: scientificName,
+                searchText: searchText,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -15966,6 +16416,7 @@ class $$TaxaTableTableManager
                 required String introducedInId,
                 Value<String?> retiredInId = const Value.absent(),
                 required String scientificName,
+                Value<String> searchText = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -15986,6 +16437,7 @@ class $$TaxaTableTableManager
                 introducedInId: introducedInId,
                 retiredInId: retiredInId,
                 scientificName: scientificName,
+                searchText: searchText,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -20275,6 +20727,219 @@ typedef $$TaxonListVersionsTableProcessedTableManager =
       TaxonListVersion,
       PrefetchHooks Function()
     >;
+typedef $$TaxonUsagesTableCreateCompanionBuilder =
+    TaxonUsagesCompanion Function({
+      required String projectId,
+      required String taxonId,
+      Value<bool> isFavourite,
+      Value<DateTime?> lastUsedAt,
+      Value<int> useCount,
+      Value<int> rowid,
+    });
+typedef $$TaxonUsagesTableUpdateCompanionBuilder =
+    TaxonUsagesCompanion Function({
+      Value<String> projectId,
+      Value<String> taxonId,
+      Value<bool> isFavourite,
+      Value<DateTime?> lastUsedAt,
+      Value<int> useCount,
+      Value<int> rowid,
+    });
+
+class $$TaxonUsagesTableFilterComposer
+    extends Composer<_$AppDatabase, $TaxonUsagesTable> {
+  $$TaxonUsagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taxonId => $composableBuilder(
+    column: $table.taxonId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavourite => $composableBuilder(
+    column: $table.isFavourite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastUsedAt => $composableBuilder(
+    column: $table.lastUsedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get useCount => $composableBuilder(
+    column: $table.useCount,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TaxonUsagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $TaxonUsagesTable> {
+  $$TaxonUsagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taxonId => $composableBuilder(
+    column: $table.taxonId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFavourite => $composableBuilder(
+    column: $table.isFavourite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastUsedAt => $composableBuilder(
+    column: $table.lastUsedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get useCount => $composableBuilder(
+    column: $table.useCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TaxonUsagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaxonUsagesTable> {
+  $$TaxonUsagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get projectId =>
+      $composableBuilder(column: $table.projectId, builder: (column) => column);
+
+  GeneratedColumn<String> get taxonId =>
+      $composableBuilder(column: $table.taxonId, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavourite => $composableBuilder(
+    column: $table.isFavourite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastUsedAt => $composableBuilder(
+    column: $table.lastUsedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get useCount =>
+      $composableBuilder(column: $table.useCount, builder: (column) => column);
+}
+
+class $$TaxonUsagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TaxonUsagesTable,
+          TaxonUsage,
+          $$TaxonUsagesTableFilterComposer,
+          $$TaxonUsagesTableOrderingComposer,
+          $$TaxonUsagesTableAnnotationComposer,
+          $$TaxonUsagesTableCreateCompanionBuilder,
+          $$TaxonUsagesTableUpdateCompanionBuilder,
+          (
+            TaxonUsage,
+            BaseReferences<_$AppDatabase, $TaxonUsagesTable, TaxonUsage>,
+          ),
+          TaxonUsage,
+          PrefetchHooks Function()
+        > {
+  $$TaxonUsagesTableTableManager(_$AppDatabase db, $TaxonUsagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TaxonUsagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaxonUsagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TaxonUsagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> projectId = const Value.absent(),
+                Value<String> taxonId = const Value.absent(),
+                Value<bool> isFavourite = const Value.absent(),
+                Value<DateTime?> lastUsedAt = const Value.absent(),
+                Value<int> useCount = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaxonUsagesCompanion(
+                projectId: projectId,
+                taxonId: taxonId,
+                isFavourite: isFavourite,
+                lastUsedAt: lastUsedAt,
+                useCount: useCount,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String projectId,
+                required String taxonId,
+                Value<bool> isFavourite = const Value.absent(),
+                Value<DateTime?> lastUsedAt = const Value.absent(),
+                Value<int> useCount = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaxonUsagesCompanion.insert(
+                projectId: projectId,
+                taxonId: taxonId,
+                isFavourite: isFavourite,
+                lastUsedAt: lastUsedAt,
+                useCount: useCount,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TaxonUsagesTable, TaxonUsage>(table),
+                  BaseReferences<_$AppDatabase, $TaxonUsagesTable, TaxonUsage>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TaxonUsagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TaxonUsagesTable,
+      TaxonUsage,
+      $$TaxonUsagesTableFilterComposer,
+      $$TaxonUsagesTableOrderingComposer,
+      $$TaxonUsagesTableAnnotationComposer,
+      $$TaxonUsagesTableCreateCompanionBuilder,
+      $$TaxonUsagesTableUpdateCompanionBuilder,
+      (
+        TaxonUsage,
+        BaseReferences<_$AppDatabase, $TaxonUsagesTable, TaxonUsage>,
+      ),
+      TaxonUsage,
+      PrefetchHooks Function()
+    >;
 typedef $$TransectSectionsTableCreateCompanionBuilder =
     TransectSectionsCompanion Function({
       required String id,
@@ -20733,6 +21398,8 @@ class $AppDatabaseManager {
       $$SurveyTrackPointsTableTableManager(_db, _db.surveyTrackPoints);
   $$TaxonListVersionsTableTableManager get taxonListVersions =>
       $$TaxonListVersionsTableTableManager(_db, _db.taxonListVersions);
+  $$TaxonUsagesTableTableManager get taxonUsages =>
+      $$TaxonUsagesTableTableManager(_db, _db.taxonUsages);
   $$TransectSectionsTableTableManager get transectSections =>
       $$TransectSectionsTableTableManager(_db, _db.transectSections);
 }

@@ -14,8 +14,10 @@ import 'package:mobile/core/db/sync_conflicts.dart';
 import 'package:mobile/core/db/sync_queue.dart';
 import 'package:mobile/core/db/sync_state_entries.dart';
 import 'package:mobile/core/db/sync_status.dart';
+import 'package:mobile/core/db/search_text.dart';
 import 'package:mobile/core/db/taxa.dart';
 import 'package:mobile/core/db/taxon_list_versions.dart';
+import 'package:mobile/core/db/taxon_usages.dart';
 import 'package:mobile/core/db/transect_sections.dart';
 import 'package:mobile/core/db/transects.dart';
 
@@ -36,6 +38,7 @@ part 'app_database.g.dart';
     SurveyVisits,
     Taxa,
     TaxonListVersions,
+    TaxonUsages,
     TransectSections,
     Transects,
   ],
@@ -44,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -98,6 +101,32 @@ class AppDatabase extends _$AppDatabase {
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );
+      },
+      from9To10: (m, schema) async {
+        await m.createTable(schema.taxonUsage);
+        await m.addColumn(schema.taxon, schema.taxon.searchText);
+        // Fill the new column for the taxa already on the phone (about 200).
+        final taxa = await m.database
+            .customSelect(
+              'SELECT id, scientific_name, vernacular_name_sr, '
+              'vernacular_name_en FROM taxon',
+            )
+            .get();
+        for (final row in taxa) {
+          await m.database.customUpdate(
+            'UPDATE taxon SET search_text = ? WHERE id = ?',
+            variables: [
+              Variable.withString(
+                taxonSearchText(
+                  row.read<String>('scientific_name'),
+                  row.read<String>('vernacular_name_sr'),
+                  row.read<String>('vernacular_name_en'),
+                ),
+              ),
+              Variable.withString(row.read<String>('id')),
+            ],
+          );
+        }
       },
     ),
   );

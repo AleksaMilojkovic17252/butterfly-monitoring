@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/observations/data/observation_repository.dart';
+import 'package:mobile/features/observations/ui/widgets/quick_butterfly_sheet.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/ui/widgets/transect_map.dart';
@@ -102,10 +104,31 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     return goOn == true && mounted;
   }
 
+  /// Opens the quick butterfly entry (T045) and offers Undo for what it saved.
   Future<void> _addButterfly() async {
     if (!await _confirmIfPaused()) return;
-    // TODO(T045): open the quick butterfly entry.
-    _showMessage('Butterfly entry is coming in a later version');
+    if (!mounted) return;
+    // Taken now: the Undo button may be pressed after this screen is gone.
+    final repository = ref.read(observationRepositoryProvider);
+    final protocol = ref.read(projectProtocolProvider(widget.visit.projectId));
+    final saved = await QuickButterflySheet.show(
+      context,
+      visit: widget.visit,
+      accuracyWarningM:
+          protocol.value?.gpsAccuracyWarningM ?? _defaultAccuracyWarningM,
+    );
+    if (saved == null || !mounted) return;
+    // Stays 10 s, then goes by itself. A snackbar with an action would
+    // otherwise stay until it is closed (`persist` defaults to true).
+    _showMessage(
+      'Saved: ${saved.label}',
+      duration: const Duration(seconds: 10),
+      persist: false,
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () => repository.undo(saved.id),
+      ),
+    );
   }
 
   Future<void> _addPlant() async {
@@ -141,11 +164,20 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
   void _showMessage(
     String text, {
     Duration duration = const Duration(seconds: 4),
+    bool? persist,
+    SnackBarAction? action,
   }) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text), duration: duration));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          duration: duration,
+          persist: persist,
+          action: action,
+        ),
+      );
   }
 
   @override

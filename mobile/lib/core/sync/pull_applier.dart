@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/db/search_text.dart';
 import 'package:mobile/core/db/sync_queue.dart';
 import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/core/sync/sync_api.dart';
@@ -354,6 +355,13 @@ class PullApplier {
       family: json['family'] as String,
       vernacularNameSr: json['vernacular_name_sr'] as String,
       vernacularNameEn: json['vernacular_name_en'] as String,
+      searchText: Value(
+        taxonSearchText(
+          json['scientific_name'] as String,
+          json['vernacular_name_sr'] as String,
+          json['vernacular_name_en'] as String,
+        ),
+      ),
       taxonSource: json['taxon_source'] as String,
       taxonSourceId: json['taxon_source_id'] as String,
       active: json['active'] as bool,
