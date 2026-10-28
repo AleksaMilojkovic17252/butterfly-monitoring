@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -127,6 +127,15 @@ class AppDatabase extends _$AppDatabase {
             ],
           );
         }
+      },
+      from10To11: (m, schema) async {
+        // The server added both columns without changing any row, and the
+        // defaults agree with it ('[]' and null), so no cursor reset.
+        await m.addColumn(schema.surveyVisit, schema.surveyVisit.pauses);
+        await m.addColumn(
+          schema.surveyVisit,
+          schema.surveyVisit.trackPointCount,
+        );
       },
     ),
   );

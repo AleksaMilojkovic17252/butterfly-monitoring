@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
@@ -143,9 +144,11 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     _showMessage('Habitat entry is coming in a later version');
   }
 
+  /// Opens the Finish screen (T040). Backing out of it changes nothing.
   void _finish() {
-    // TODO(T040): open the finish screen (summary, warnings, end weather).
-    _showMessage('Finishing a visit is coming in a later version');
+    context.push(
+      '/projects/${widget.visit.projectId}/visits/${widget.visit.id}/finish',
+    );
   }
 
   /// Turns keep-screen-on on or off and says which, since a tooltip only

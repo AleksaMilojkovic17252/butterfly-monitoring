@@ -23,6 +23,13 @@ class TaxonRepository {
     return query.watch();
   }
 
+  /// Live taxa with the given ids, retired ones included, for the names on
+  /// the Finish screen (T040).
+  Stream<List<Taxon>> watchTaxaByIds(List<String> ids) {
+    final query = _db.select(_db.taxa)..where((t) => t.id.isIn(ids));
+    return query.watch();
+  }
+
   /// Live favourites and recent use of the project's taxa.
   Stream<List<TaxonUsage>> watchUsage(String projectId) {
     final query = _db.select(_db.taxonUsages)
@@ -87,3 +94,12 @@ final pickerTaxaProvider = StreamProvider<List<Taxon>>(
 final taxonUsageProvider = StreamProvider.family<List<TaxonUsage>, String>(
   (ref, projectId) => ref.watch(taxonRepositoryProvider).watchUsage(projectId),
 );
+
+/// The taxa with the given ids (T040). The argument is the ids joined with
+/// commas, sorted: a family argument needs `==`, and a list does not have it.
+final taxaByIdsProvider = StreamProvider.autoDispose
+    .family<List<Taxon>, String>(
+      (ref, ids) => ref
+          .watch(taxonRepositoryProvider)
+          .watchTaxaByIds(ids.isEmpty ? [] : ids.split(',')),
+    );

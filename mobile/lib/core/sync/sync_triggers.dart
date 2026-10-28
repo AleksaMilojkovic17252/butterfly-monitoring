@@ -67,8 +67,6 @@ final syncTriggersProvider = Provider<void>((ref) {
     }
   }, fireImmediately: true);
 
-  // TODO(T040): the finish-visit flow calls syncRunnerProvider.run().
-
   ref.onDispose(() {
     timer?.cancel();
     lifecycle.dispose();

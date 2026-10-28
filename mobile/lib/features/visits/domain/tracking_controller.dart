@@ -208,6 +208,25 @@ class TrackingController extends Notifier<TrackingState> {
     return _changes;
   }
 
+  /// Undoes [stop] when the visit could not be finished (T040): tracking
+  /// starts again for the visit if it is still in progress on this phone,
+  /// without the "Tracking interrupted" message. A paused visit stays off
+  /// until Resume. Does nothing when the visit is gone or no longer in
+  /// progress (finished, cancelled or locked by a pull).
+  Future<void> restart() {
+    _change(() async {
+      final visit = ref.read(deviceVisitInProgressProvider).value;
+      if (visit == null || visit.id != _handledVisitId || !_stopped) return;
+      _stopped = false;
+      if (visit.pausedAt != null) {
+        await _showPaused(visit);
+      } else {
+        await _start(visit);
+      }
+    });
+    return _changes;
+  }
+
   /// Tries again after GPS stopped or never started (location off, permission
   /// refused). Asks for the permission again. Does nothing while paused.
   void retry() {

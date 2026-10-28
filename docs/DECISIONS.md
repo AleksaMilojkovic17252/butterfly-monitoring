@@ -1303,3 +1303,46 @@ transects domains to `core/validation/` (`git mv`), and the visit codelists (sta
 a field error in the admin. Intended.
 **Tests (an exception to D-021, as D-058, asked for by the ticket):** `observations/tests.py` and `surveys/tests.py` (`SimpleTestCase`, 37
 tests), `test/validation/*` and `test/sync_error_message_test.dart` (plain Dart, no Drift; `flutter test`, 50 in all).
+
+
+## D-068 · Finish visit: pause list, track point count, coverage and gaps on the phone
+2026-10 · accepted · T040, *builds on D-051, D-060, D-061, D-062, D-063, D-064, D-066, D-067*
+**Two new `survey_visit` fields (decided with the developer), sent by the phone.** `pauses` (server `JSONField`, Drift text column, default
+`[]`) is the list of `{"started_at", "ended_at"}` in UTC. `VisitRepository.resume` appends the pause it closes and sends `pauses` in the same
+`update` as `paused_seconds`; Finish does the same for a pause still running. It closes D-063's "only the total paused time is stored" point
+for T038, T040 and T056: the Finish screen leaves pauses out of the GPS-gap warning, and T056's `gps_gap` ("outside pauses") reads the same
+list. `track_point_count` (nullable integer) is how many points the phone recorded, sent on Finish; it closes D-062's "T040 sends the count",
+and T043's Lock compares it with the points the server has. Null for a visit finished before T040 or through REST.
+**`validate_pauses`** (sync serializer, so push and REST): a list of at most 500 dicts with exactly `started_at` and `ended_at`, both ISO 8601
+with a UTC offset, `ended_at` not before `started_at`. They are stored as UTC strings with a `Z`. A bad value is a 400 with `fields.pauses`.
+Both fields are read-only in the admin (`fixed_fields`). A stale update carrying `pauses` merges with a server edit (`_merge` compares the
+lists as JSON; checked in `tmp/t040/smoke.py`). Drift is at schema 11; no cursor reset, the defaults agree with the server's.
+**Finish order:** (1) `VisitRepository.checkCanFinish` runs the V05/V06/V07 rules without writing and without touching the tracker; a
+`VisitRuleError` (field to rule IDs) is worded for the observer by the screen; (2) when this phone recorded the route,
+`TrackingController.stop()` flushes the buffer; (3) `VisitRepository.finish` closes a running pause (`closePause`, shared with Resume),
+works out `duration_seconds` (never below 0), counts the points and sums the distance, checks the same rules again, and queues one `update`
+with only the fields that changed; (4) a sync starts without waiting; (5) go to the transect detail with "Visit saved". **If the save is
+refused after the tracker was stopped** (an admin's lock or a cancel arrived by a pull in those seconds), `TrackingController.restart()` starts
+tracking again; it does nothing when the visit is no longer in progress.
+**Count and distance only from the recording phone:** `finish` sends `track_point_count` and `distance_walked_m` (one decimal, the server's
+`Decimal(8,1)`) only when the visit's `deviceId` is this phone's. A visit walked on another phone has no points here; the Finish screen then
+shows "The route was recorded on another phone." instead of coverage and gaps. The screen decides this from `deviceVisitInProgressProvider`.
+**Coverage** is defined in `protocol.md` §6 (samples every 10 m plus the end point, usable point within the limit, fewer than 2 usable points
+gives none), in `route_coverage.dart`, and is only a warning. The accuracy rule is `isUsablePoint`, extracted from `routeLengthM`.
+**GPS gaps** (`gps_gaps.dart`): for each pair of consecutive points (all points, recorded order) the time between them minus its overlap with
+the pauses; a gap when that is more than `gps_gap_s`. The stretch from the last point to now is checked as well (`trailingGpsGap`), with a
+pause still running counted as a pause; it is worked out on each build because it moves with the clock. The screen lists at most 5 and counts
+the rest. The slow parts (distance, coverage, the pair gaps) are `RouteStats`, worked out once per route and not on every keystroke.
+`parsePauses` skips a bad item instead of returning an empty list, because the list is sent back on Resume and Finish.
+**True zero moved here from T041:** with 0 live `source = transect` observations the screen shows T041's checkbox ("No butterfly was seen
+during the complete standardised visit.") and sets `zero_observation_confirmed`; without it rule V06 (Dart) blocks Finish. T041 keeps the
+cancel reasons, the export outcome and its tests. **Cancel visit** is a placeholder until T041 (`TODO(T041)`).
+**Moved out of the start form** so both screens use them, without changing the start form: `temperatureFormatter` and `parseTemperature`
+(`ui/temperature_input.dart`) and the Beaufort sheet (`ui/widgets/wind_picker_sheet.dart`). Cloud cover starts at 0 % (D-063);
+precipitation is one column for the whole visit and is not asked again.
+**Warnings** (none blocks): end weather missing or outside the protocol (V05/W06 for the end values only), coverage, GPS gaps, outside the
+season or the daily window (for `startedAt`), and observations a hard rule would refuse today (`ObservationInput.fromObservation`,
+`visitStatus: 'completed'`). Coverage and gaps read the stored points, which lag the live position by up to 30 s (D-061).
+**Checked without the UI** (the developer runs the phone steps, `tmp/t040/UI_TESTS.md`): `tmp/t040/smoke.py` (push with both fields, a bad
+`pauses`, a coalesced completed create, the admin page) and throwaway Dart tests in `tmp/t040/mobile_tests/` (the v10 to v11 migration,
+coverage and gaps cases, the pauses round trip). Not committed (D-021).

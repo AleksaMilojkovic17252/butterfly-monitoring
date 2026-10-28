@@ -486,6 +486,8 @@ class PullApplier {
       endedAt: Value(_dateOrNull(json['ended_at'])),
       durationSeconds: Value(json['duration_seconds'] as int?),
       pausedSeconds: Value(json['paused_seconds'] as int),
+      pauses: Value(jsonEncode(json['pauses'] ?? [])),
+      trackPointCount: Value(json['track_point_count'] as int?),
       distanceWalkedM: Value(_decimalOrNull(json['distance_walked_m'])),
       observerCount: Value(json['observer_count'] as int),
       observerNames: Value(json['observer_names'] as String),

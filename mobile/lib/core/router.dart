@@ -13,6 +13,7 @@ import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
 import 'package:mobile/features/transects/ui/transect_list_screen.dart';
 import 'package:mobile/features/visits/ui/active_visit_screen.dart';
+import 'package:mobile/features/visits/ui/finish_visit_screen.dart';
 import 'package:mobile/features/visits/ui/start_visit_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -58,6 +59,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) => ActiveVisitScreen(
                   visitId: state.pathParameters['visitId']!,
                 ),
+                routes: [
+                  // The Finish screen (T040); back returns to the active
+                  // visit screen.
+                  GoRoute(
+                    path: 'finish',
+                    builder: (_, state) => FinishVisitScreen(
+                      visitId: state.pathParameters['visitId']!,
+                    ),
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'transects',

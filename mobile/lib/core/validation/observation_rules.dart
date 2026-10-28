@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/observation_values.dart';
 
 // Input rules of a butterfly observation (T055): V01-V04, V06-V08 block a
@@ -19,6 +22,23 @@ class ObservationInput {
     this.confidence = 'confirmed_in_field',
     this.behaviour = const [],
   });
+
+  /// The values of a stored observation row. `behaviour` is JSON text; text
+  /// that is not a list of strings gives an empty list.
+  factory ObservationInput.fromObservation(ButterflyObservation row) =>
+      ObservationInput(
+        observedAt: row.observedAt,
+        count: row.count,
+        lat: row.lat,
+        lon: row.lon,
+        accuracyM: row.locationAccuracyM,
+        source: row.source,
+        sex: row.sex,
+        lifeStage: row.lifeStage,
+        confidence: row.identificationConfidence,
+        behaviour: _behaviourList(row.behaviour),
+      );
+
   final DateTime? observedAt;
   final int count;
   final double? lat;
@@ -29,6 +49,18 @@ class ObservationInput {
   final String lifeStage;
   final String confidence;
   final List<String> behaviour;
+}
+
+List<String> _behaviourList(String json) {
+  try {
+    final decoded = jsonDecode(json);
+    if (decoded is List<dynamic> && decoded.every((item) => item is String)) {
+      return decoded.cast<String>();
+    }
+  } on FormatException {
+    // Falls through to the empty list.
+  }
+  return [];
 }
 
 /// What the rules need to know besides the observation: its visit, the

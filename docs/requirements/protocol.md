@@ -80,6 +80,12 @@ A visit counts as **valid** for analysis when all of these hold:
 Everything else is stored but is not valid: `cancelled` visits, and completed visits that fail 2 or 3.
 Coverage is shown in the app and computed in indicators (T061); it is not a rejection rule.
 
+**Coverage** (T040, D-068): the transect is sampled every 10 m along its line, starting at 0 m, plus its end point. A sample is
+covered when a **usable** track point lies within `max_distance_from_transect_m` of it (point to point, not point to route segment).
+A point is usable by the accuracy rule of D-060: no accuracy, or an accuracy of at most 2 × `gps_accuracy_warning_m`. Coverage is the
+covered samples divided by all samples, in percent with one decimal. With fewer than 2 usable points there is no coverage (`null`).
+The phone works it out at Finish, from the points it recorded; the server does the same in T100.
+
 ## 7. True zero, cancelled and missing
 
 | Situation | Representation |
@@ -94,7 +100,9 @@ Coverage is shown in the app and computed in indicators (T061); it is not a reje
 
 - Default interval 5 s; battery-saver interval 15 s (`gps_interval_s`, `gps_interval_battery_saver_s`).
 - Fix accuracy worse than 25 m raises warning W02 (`gps_accuracy_warning_m`).
-- A gap longer than 60 s between fixes (outside pauses) sets the visit flag `gps_gap` (`gps_gap_s`).
+- A gap longer than 60 s between fixes (outside pauses) sets the visit flag `gps_gap` (`gps_gap_s`). The pauses are recorded in
+  `survey_visit.pauses` (a list of `{started_at, ended_at}`, T040, D-068), so "outside pauses" can be checked: for two consecutive
+  points, the time between them minus its overlap with the pauses. The Finish screen lists such gaps; T056 sets the flag.
 - Points are stored raw and never thinned.
 
 ## 9. Simulated field day (paper walk-through)

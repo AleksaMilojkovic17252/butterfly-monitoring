@@ -30,7 +30,16 @@ class SurveyVisits extends Table with SyncColumns {
   IntColumn get durationSeconds => integer().nullable()();
   IntColumn get pausedSeconds => integer().withDefault(const Constant(0))();
 
-  /// The phone's own figure (sent by T040). The server replaces it with the
+  /// The visit's pauses (T040, D-068) as JSON text, the same list as the
+  /// server's `pauses`: `[{"started_at": "<UTC ISO>", "ended_at": "<UTC ISO>"}]`.
+  /// Read with `parsePauses` (`features/visits/domain/visit_pauses.dart`).
+  TextColumn get pauses => text().withDefault(const Constant('[]'))();
+
+  /// How many track points this phone recorded, set when it finishes the
+  /// visit (T040). Null until then, and for a visit finished on another phone.
+  IntColumn get trackPointCount => integer().nullable()();
+
+  /// The phone's own figure (sent by T040, one decimal). The server replaces it with the
   /// distance along the track points when it has at least two usable ones
   /// (T036), and the next pull brings that back.
   RealColumn get distanceWalkedM => real().nullable()();

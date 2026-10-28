@@ -57,6 +57,13 @@ class SurveyVisit(SyncableModel):
     ended_at = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.PositiveIntegerField(null=True, blank=True)  # excludes pauses
     paused_seconds = models.PositiveIntegerField(default=0)
+    # The visit's pauses as [{"started_at", "ended_at"}, ...] in UTC, sent by the phone on resume
+    # and finish (T040, D-068). Lets T056's gps_gap tell a pause from a GPS gap.
+    pauses = models.JSONField(default=list, blank=True)
+    # How many track points the phone recorded, sent when it finishes the visit (T040). T043's
+    # Lock compares it with the points the server has (D-062). Null for a visit finished before
+    # T040 or through REST.
+    track_point_count = models.PositiveIntegerField(null=True, blank=True)
     # The phone sends its own figure; the server replaces it with the one from the track points
     # when it has at least two usable points (T036, surveys.services.set_distance_if_finished).
     distance_walked_m = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)

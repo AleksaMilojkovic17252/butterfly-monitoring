@@ -64,6 +64,8 @@ Optional until the visit progresses: `started_at` (M from `in_progress`), `ended
 `temperature_start_c`/`_end_c`, `wind_beaufort_start`/`_end`, `cloud_cover_start_pct`/`_end_pct`
 (start and end weather M from `completed`, or `weather_missing_reason`, V05), `weather_suitable`,
 `weather_missing_reason`, `notes`, `device_id`.
+Sent by the phone (T040, D-068): `pauses` (list of `{started_at, ended_at}` in UTC, default `[]`) and `track_point_count`
+(points the phone recorded, set when the visit is finished; null when finished before T040 or through REST).
 `cancel_reason`: M when `status = cancelled`, empty otherwise.
 Server-owned: `locked_at`, `locked_by`, `lock_reason`, `quality_flags`.
 

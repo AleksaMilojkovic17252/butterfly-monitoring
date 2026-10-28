@@ -75,7 +75,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | done |
 | T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | done |
-| T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | todo |
+| T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | done |
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | todo |
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
@@ -781,6 +781,8 @@ From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. On
 
 The banner must stay quiet while the visit is paused (`TrackingState.paused`, T039).
 
+From T040 (D-068): the pauses are recorded in `survey_visit.pauses` (a list of `{started_at, ended_at}`, UTC), so a pause can be told from a GPS gap. The Finish screen already lists the gaps (`features/visits/domain/gps_gaps.dart`); T038 can reuse it for the visit summary.
+
 Depends on: T037
 
 - [ ] A toggle on the active visit switches to `gpsIntervalBatterySaverS` and `LocationAccuracy.medium`, and sets `battery_saver_used = true` on the visit.
@@ -806,7 +808,7 @@ Depends on: T037
 - [ ] Works fully offline.
 
 ### T040 · Finish visit: summary, warnings and end weather
-[#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) · E05 · P1 · must · labels: `mobile`, `must` · implements F11 · est. 2 d · **todo**
+[#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) · E05 · P1 · must · labels: `mobile`, `must` · implements F11 · est. 2 d · **done**
 
 From T042 (D-062): when the visit is finished, the phone also sends how many track points it recorded (e.g. a
 `track_point_count` on `survey_visit`, server-owned except for this one write; needs a Django migration and a Drift column). A visit
@@ -822,6 +824,10 @@ phone's `distance_walked_m` with the server's accuracy rule.
 From T100 (added 2026-10-27): the server computes the same coverage, so pin the definition. Sample the transect at 0, 10, 20 … m
 plus its end point. A sample is covered when a usable route **point** lies within `maxDistanceFromTransectM`. Usable means the accuracy
 rule of D-060 (`accuracyM` null or ≤ 2 × `gpsAccuracyWarningM`). With fewer than 2 usable points there is no coverage.
+
+Skipped criteria: none (no criterion asks only for tests or CI). **Cancel visit** is a placeholder (snackbar, `TODO(T041)`) until T041. Pauses are stored as a list (`pauses`) and the phone sends `track_point_count`, both new `survey_visit` fields; the true-zero checkbox is built here. See D-068.
+
+Deferred: **Cancel visit opens T041's cancel flow** (last criterion): the button is on the Finish screen and shows a "coming in a later version" snackbar (`TODO(T041)` in `finish_visit_form.dart`) until T041. Offline checklist step 9 (T040 part, airplane mode) is for the developer to fill in (`docs/testing/offline-checklist.md`).
 
 Depends on: T039, T055
 
@@ -840,6 +846,8 @@ Depends on: T039, T055
 
 ### T041 · True-zero confirmation and cancelled-visit reasons
 [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) · E05 · P1 · must · labels: `mobile`, `backend`, `must` · implements F12, F9 · est. 1 d · **todo**
+
+From T040 (D-068): the true-zero checkbox and its V06 check on Finish were built in T040 (`finish_visit_form.dart`). T041 keeps the cancel reasons, the export outcome and its tests, and replaces the Cancel visit placeholder on the Finish screen (`TODO(T041)`).
 
 Depends on: T040
 
@@ -871,6 +879,8 @@ Depends on: T026, T034
 From T042 (D-062): **Lock** warns or refuses (decide in the plan) while the server has fewer track points for the visit than
 the count the phone sent on finish (T040). Otherwise a lock can land between the visit and its last track batches, and the phone's
 remaining points are rejected with `visit_locked`. A visit without a count (finished before T040, or through REST) is not blocked.
+
+From T040 (D-068): the field is `track_point_count` on `survey_visit` (null for a visit finished before T040 or through REST).
 
 Depends on: T018, T042
 
@@ -1069,6 +1079,8 @@ Note: the tests are written (developer's choice, an exception to D-021): 37 on t
 [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) · E08 · P1 · should · labels: `backend`, `should` · implements F31 · est. 1.5 d · **todo**
 
 From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. `gps_gap` "outside pauses" needs the pause intervals, which nothing records yet (T038 decides).
+
+From T040 (D-068): "outside pauses" reads `survey_visit.pauses` (a list of `{started_at, ended_at}`, UTC): for two consecutive points, the time between them minus its overlap with the pauses. The phone does the same in `gps_gaps.dart`.
 
 Depends on: T036, T048, T055
 

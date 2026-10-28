@@ -77,14 +77,16 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     change_form_template = "admin/surveys/surveyvisit/change_form.html"
     # Never edited in the admin: the status and the cancel reason move through the lifecycle, a
     # visit cannot change project (D-058), the distance comes from the track (T036), the lock
-    # fields belong to T043's actions, the flags to T056, and the device and offline flag record
-    # where the visit came from.
+    # fields belong to T043's actions, the flags to T056, the pauses and the point count come from
+    # the phone (T040), and the device and offline flag record where the visit came from.
     fixed_fields = [
         "id",
         "project",
         "status",
         "cancel_reason",
         "distance_walked_m",
+        "pauses",
+        "track_point_count",
         "locked_at",
         "locked_by",
         "lock_reason",

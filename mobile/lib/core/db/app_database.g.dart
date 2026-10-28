@@ -1563,6 +1563,27 @@ class $SurveyVisitsTable extends SurveyVisits
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _pausesMeta = const VerificationMeta('pauses');
+  @override
+  late final GeneratedColumn<String> pauses = GeneratedColumn<String>(
+    'pauses',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _trackPointCountMeta = const VerificationMeta(
+    'trackPointCount',
+  );
+  @override
+  late final GeneratedColumn<int> trackPointCount = GeneratedColumn<int>(
+    'track_point_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _distanceWalkedMMeta = const VerificationMeta(
     'distanceWalkedM',
   );
@@ -1828,6 +1849,8 @@ class $SurveyVisitsTable extends SurveyVisits
     endedAt,
     durationSeconds,
     pausedSeconds,
+    pauses,
+    trackPointCount,
     distanceWalkedM,
     observerCount,
     observerNames,
@@ -1953,6 +1976,21 @@ class $SurveyVisitsTable extends SurveyVisits
         pausedSeconds.isAcceptableOrUnknown(
           data['paused_seconds']!,
           _pausedSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pauses')) {
+      context.handle(
+        _pausesMeta,
+        pauses.isAcceptableOrUnknown(data['pauses']!, _pausesMeta),
+      );
+    }
+    if (data.containsKey('track_point_count')) {
+      context.handle(
+        _trackPointCountMeta,
+        trackPointCount.isAcceptableOrUnknown(
+          data['track_point_count']!,
+          _trackPointCountMeta,
         ),
       );
     }
@@ -2195,6 +2233,14 @@ class $SurveyVisitsTable extends SurveyVisits
         DriftSqlType.int,
         data['${effectivePrefix}paused_seconds'],
       )!,
+      pauses: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pauses'],
+      )!,
+      trackPointCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}track_point_count'],
+      ),
       distanceWalkedM: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}distance_walked_m'],
@@ -2311,7 +2357,16 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
   final int? durationSeconds;
   final int pausedSeconds;
 
-  /// The phone's own figure (sent by T040). The server replaces it with the
+  /// The visit's pauses (T040, D-068) as JSON text, the same list as the
+  /// server's `pauses`: `[{"started_at": "<UTC ISO>", "ended_at": "<UTC ISO>"}]`.
+  /// Read with `parsePauses` (`features/visits/domain/visit_pauses.dart`).
+  final String pauses;
+
+  /// How many track points this phone recorded, set when it finishes the
+  /// visit (T040). Null until then, and for a visit finished on another phone.
+  final int? trackPointCount;
+
+  /// The phone's own figure (sent by T040, one decimal). The server replaces it with the
   /// distance along the track points when it has at least two usable ones
   /// (T036), and the next pull brings that back.
   final double? distanceWalkedM;
@@ -2353,6 +2408,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
     this.endedAt,
     this.durationSeconds,
     required this.pausedSeconds,
+    required this.pauses,
+    this.trackPointCount,
     this.distanceWalkedM,
     required this.observerCount,
     required this.observerNames,
@@ -2405,6 +2462,10 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
       map['duration_seconds'] = Variable<int>(durationSeconds);
     }
     map['paused_seconds'] = Variable<int>(pausedSeconds);
+    map['pauses'] = Variable<String>(pauses);
+    if (!nullToAbsent || trackPointCount != null) {
+      map['track_point_count'] = Variable<int>(trackPointCount);
+    }
     if (!nullToAbsent || distanceWalkedM != null) {
       map['distance_walked_m'] = Variable<double>(distanceWalkedM);
     }
@@ -2474,6 +2535,10 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
           ? const Value.absent()
           : Value(durationSeconds),
       pausedSeconds: Value(pausedSeconds),
+      pauses: Value(pauses),
+      trackPointCount: trackPointCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(trackPointCount),
       distanceWalkedM: distanceWalkedM == null && nullToAbsent
           ? const Value.absent()
           : Value(distanceWalkedM),
@@ -2537,6 +2602,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
       endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
       durationSeconds: serializer.fromJson<int?>(json['durationSeconds']),
       pausedSeconds: serializer.fromJson<int>(json['pausedSeconds']),
+      pauses: serializer.fromJson<String>(json['pauses']),
+      trackPointCount: serializer.fromJson<int?>(json['trackPointCount']),
       distanceWalkedM: serializer.fromJson<double?>(json['distanceWalkedM']),
       observerCount: serializer.fromJson<int>(json['observerCount']),
       observerNames: serializer.fromJson<String>(json['observerNames']),
@@ -2585,6 +2652,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
       'endedAt': serializer.toJson<DateTime?>(endedAt),
       'durationSeconds': serializer.toJson<int?>(durationSeconds),
       'pausedSeconds': serializer.toJson<int>(pausedSeconds),
+      'pauses': serializer.toJson<String>(pauses),
+      'trackPointCount': serializer.toJson<int?>(trackPointCount),
       'distanceWalkedM': serializer.toJson<double?>(distanceWalkedM),
       'observerCount': serializer.toJson<int>(observerCount),
       'observerNames': serializer.toJson<String>(observerNames),
@@ -2625,6 +2694,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
     Value<DateTime?> endedAt = const Value.absent(),
     Value<int?> durationSeconds = const Value.absent(),
     int? pausedSeconds,
+    String? pauses,
+    Value<int?> trackPointCount = const Value.absent(),
     Value<double?> distanceWalkedM = const Value.absent(),
     int? observerCount,
     String? observerNames,
@@ -2664,6 +2735,10 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
         ? durationSeconds.value
         : this.durationSeconds,
     pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+    pauses: pauses ?? this.pauses,
+    trackPointCount: trackPointCount.present
+        ? trackPointCount.value
+        : this.trackPointCount,
     distanceWalkedM: distanceWalkedM.present
         ? distanceWalkedM.value
         : this.distanceWalkedM,
@@ -2734,6 +2809,10 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
       pausedSeconds: data.pausedSeconds.present
           ? data.pausedSeconds.value
           : this.pausedSeconds,
+      pauses: data.pauses.present ? data.pauses.value : this.pauses,
+      trackPointCount: data.trackPointCount.present
+          ? data.trackPointCount.value
+          : this.trackPointCount,
       distanceWalkedM: data.distanceWalkedM.present
           ? data.distanceWalkedM.value
           : this.distanceWalkedM,
@@ -2806,6 +2885,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
           ..write('endedAt: $endedAt, ')
           ..write('durationSeconds: $durationSeconds, ')
           ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('pauses: $pauses, ')
+          ..write('trackPointCount: $trackPointCount, ')
           ..write('distanceWalkedM: $distanceWalkedM, ')
           ..write('observerCount: $observerCount, ')
           ..write('observerNames: $observerNames, ')
@@ -2846,6 +2927,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
     endedAt,
     durationSeconds,
     pausedSeconds,
+    pauses,
+    trackPointCount,
     distanceWalkedM,
     observerCount,
     observerNames,
@@ -2885,6 +2968,8 @@ class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
           other.endedAt == this.endedAt &&
           other.durationSeconds == this.durationSeconds &&
           other.pausedSeconds == this.pausedSeconds &&
+          other.pauses == this.pauses &&
+          other.trackPointCount == this.trackPointCount &&
           other.distanceWalkedM == this.distanceWalkedM &&
           other.observerCount == this.observerCount &&
           other.observerNames == this.observerNames &&
@@ -2922,6 +3007,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
   final Value<DateTime?> endedAt;
   final Value<int?> durationSeconds;
   final Value<int> pausedSeconds;
+  final Value<String> pauses;
+  final Value<int?> trackPointCount;
   final Value<double?> distanceWalkedM;
   final Value<int> observerCount;
   final Value<String> observerNames;
@@ -2958,6 +3045,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
     this.endedAt = const Value.absent(),
     this.durationSeconds = const Value.absent(),
     this.pausedSeconds = const Value.absent(),
+    this.pauses = const Value.absent(),
+    this.trackPointCount = const Value.absent(),
     this.distanceWalkedM = const Value.absent(),
     this.observerCount = const Value.absent(),
     this.observerNames = const Value.absent(),
@@ -2995,6 +3084,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
     this.endedAt = const Value.absent(),
     this.durationSeconds = const Value.absent(),
     this.pausedSeconds = const Value.absent(),
+    this.pauses = const Value.absent(),
+    this.trackPointCount = const Value.absent(),
     this.distanceWalkedM = const Value.absent(),
     this.observerCount = const Value.absent(),
     this.observerNames = const Value.absent(),
@@ -3037,6 +3128,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
     Expression<DateTime>? endedAt,
     Expression<int>? durationSeconds,
     Expression<int>? pausedSeconds,
+    Expression<String>? pauses,
+    Expression<int>? trackPointCount,
     Expression<double>? distanceWalkedM,
     Expression<int>? observerCount,
     Expression<String>? observerNames,
@@ -3074,6 +3167,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
       if (endedAt != null) 'ended_at': endedAt,
       if (durationSeconds != null) 'duration_seconds': durationSeconds,
       if (pausedSeconds != null) 'paused_seconds': pausedSeconds,
+      if (pauses != null) 'pauses': pauses,
+      if (trackPointCount != null) 'track_point_count': trackPointCount,
       if (distanceWalkedM != null) 'distance_walked_m': distanceWalkedM,
       if (observerCount != null) 'observer_count': observerCount,
       if (observerNames != null) 'observer_names': observerNames,
@@ -3116,6 +3211,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
     Value<DateTime?>? endedAt,
     Value<int?>? durationSeconds,
     Value<int>? pausedSeconds,
+    Value<String>? pauses,
+    Value<int?>? trackPointCount,
     Value<double?>? distanceWalkedM,
     Value<int>? observerCount,
     Value<String>? observerNames,
@@ -3153,6 +3250,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
       endedAt: endedAt ?? this.endedAt,
       durationSeconds: durationSeconds ?? this.durationSeconds,
       pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+      pauses: pauses ?? this.pauses,
+      trackPointCount: trackPointCount ?? this.trackPointCount,
       distanceWalkedM: distanceWalkedM ?? this.distanceWalkedM,
       observerCount: observerCount ?? this.observerCount,
       observerNames: observerNames ?? this.observerNames,
@@ -3222,6 +3321,12 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
     }
     if (pausedSeconds.present) {
       map['paused_seconds'] = Variable<int>(pausedSeconds.value);
+    }
+    if (pauses.present) {
+      map['pauses'] = Variable<String>(pauses.value);
+    }
+    if (trackPointCount.present) {
+      map['track_point_count'] = Variable<int>(trackPointCount.value);
     }
     if (distanceWalkedM.present) {
       map['distance_walked_m'] = Variable<double>(distanceWalkedM.value);
@@ -3312,6 +3417,8 @@ class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
           ..write('endedAt: $endedAt, ')
           ..write('durationSeconds: $durationSeconds, ')
           ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('pauses: $pauses, ')
+          ..write('trackPointCount: $trackPointCount, ')
           ..write('distanceWalkedM: $distanceWalkedM, ')
           ..write('observerCount: $observerCount, ')
           ..write('observerNames: $observerNames, ')
@@ -14708,6 +14815,8 @@ typedef $$SurveyVisitsTableCreateCompanionBuilder =
       Value<DateTime?> endedAt,
       Value<int?> durationSeconds,
       Value<int> pausedSeconds,
+      Value<String> pauses,
+      Value<int?> trackPointCount,
       Value<double?> distanceWalkedM,
       Value<int> observerCount,
       Value<String> observerNames,
@@ -14746,6 +14855,8 @@ typedef $$SurveyVisitsTableUpdateCompanionBuilder =
       Value<DateTime?> endedAt,
       Value<int?> durationSeconds,
       Value<int> pausedSeconds,
+      Value<String> pauses,
+      Value<int?> trackPointCount,
       Value<double?> distanceWalkedM,
       Value<int> observerCount,
       Value<String> observerNames,
@@ -14917,6 +15028,16 @@ class $$SurveyVisitsTableFilterComposer
 
   ColumnFilters<int> get pausedSeconds => $composableBuilder(
     column: $table.pausedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pauses => $composableBuilder(
+    column: $table.pauses,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get trackPointCount => $composableBuilder(
+    column: $table.trackPointCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15187,6 +15308,16 @@ class $$SurveyVisitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get pauses => $composableBuilder(
+    column: $table.pauses,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get trackPointCount => $composableBuilder(
+    column: $table.trackPointCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get distanceWalkedM => $composableBuilder(
     column: $table.distanceWalkedM,
     builder: (column) => ColumnOrderings(column),
@@ -15393,6 +15524,14 @@ class $$SurveyVisitsTableAnnotationComposer
 
   GeneratedColumn<int> get pausedSeconds => $composableBuilder(
     column: $table.pausedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pauses =>
+      $composableBuilder(column: $table.pauses, builder: (column) => column);
+
+  GeneratedColumn<int> get trackPointCount => $composableBuilder(
+    column: $table.trackPointCount,
     builder: (column) => column,
   );
 
@@ -15636,6 +15775,8 @@ class $$SurveyVisitsTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
                 Value<int?> durationSeconds = const Value.absent(),
                 Value<int> pausedSeconds = const Value.absent(),
+                Value<String> pauses = const Value.absent(),
+                Value<int?> trackPointCount = const Value.absent(),
                 Value<double?> distanceWalkedM = const Value.absent(),
                 Value<int> observerCount = const Value.absent(),
                 Value<String> observerNames = const Value.absent(),
@@ -15672,6 +15813,8 @@ class $$SurveyVisitsTableTableManager
                 endedAt: endedAt,
                 durationSeconds: durationSeconds,
                 pausedSeconds: pausedSeconds,
+                pauses: pauses,
+                trackPointCount: trackPointCount,
                 distanceWalkedM: distanceWalkedM,
                 observerCount: observerCount,
                 observerNames: observerNames,
@@ -15710,6 +15853,8 @@ class $$SurveyVisitsTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
                 Value<int?> durationSeconds = const Value.absent(),
                 Value<int> pausedSeconds = const Value.absent(),
+                Value<String> pauses = const Value.absent(),
+                Value<int?> trackPointCount = const Value.absent(),
                 Value<double?> distanceWalkedM = const Value.absent(),
                 Value<int> observerCount = const Value.absent(),
                 Value<String> observerNames = const Value.absent(),
@@ -15746,6 +15891,8 @@ class $$SurveyVisitsTableTableManager
                 endedAt: endedAt,
                 durationSeconds: durationSeconds,
                 pausedSeconds: pausedSeconds,
+                pauses: pauses,
+                trackPointCount: trackPointCount,
                 distanceWalkedM: distanceWalkedM,
                 observerCount: observerCount,
                 observerNames: observerNames,

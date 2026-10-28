@@ -7,6 +7,10 @@ import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/core/validation/visit_rules.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
+import 'package:mobile/features/visits/domain/finish_values.dart';
+import 'package:mobile/features/visits/domain/route_length.dart';
+import 'package:mobile/features/visits/domain/visit_pauses.dart';
+import 'package:mobile/features/visits/domain/visit_rule_error.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
@@ -194,23 +198,28 @@ class VisitRepository {
   }
 
   /// Ends the pause (T039): the time since `pausedAt` is added to
-  /// `pausedSeconds`, `pausedAt` is cleared, and an `update` with only
-  /// `paused_seconds` is queued. The tracker sees the change and starts GPS
+  /// `pausedSeconds`, the pause is added to the `pauses` list (T040, D-068),
+  /// `pausedAt` is cleared, and an `update` with `paused_seconds` and
+  /// `pauses` is queued. The tracker sees the change and starts GPS
   /// again. Resuming a visit that is not paused does nothing.
   Future<void> resume(String visitId) {
     return _db.transaction(() async {
       final current = await _inProgressRow(visitId);
-      final pausedAt = current.pausedAt;
-      if (pausedAt == null) return;
-      final seconds = DateTime.now().toUtc().difference(pausedAt).inSeconds;
-      final pausedSeconds = current.pausedSeconds + (seconds < 0 ? 0 : seconds);
+      if (current.pausedAt == null) return;
+      final (:pausedSeconds, :pauses) = closePause(
+        current,
+        DateTime.now().toUtc(),
+      );
 
       await _sync.write(
         projectId: current.projectId,
         entityType: _entityType,
         entityId: current.id,
         operation: SyncOperation.update,
-        payload: {'paused_seconds': pausedSeconds},
+        payload: {
+          'paused_seconds': pausedSeconds,
+          'pauses': pausesPayload(pauses),
+        },
         baseVersion: current.serverVersion,
         writeRow: () {
           final query = _db.update(_db.surveyVisits)
@@ -218,6 +227,7 @@ class VisitRepository {
           return query.write(
             SurveyVisitsCompanion(
               pausedSeconds: Value(pausedSeconds),
+              pauses: Value(encodePauses(pauses)),
               pausedAt: const Value(null),
             ),
           );
@@ -226,7 +236,199 @@ class VisitRepository {
     });
   }
 
-  /// The visit [visitId] as it is now, for a pause or resume. Throws a
+  /// Finishes the visit (T040): `status = completed`, `ended_at`, the walking
+  /// time, the end weather and the true-zero confirmation, in one `update`
+  /// that sends only the fields that changed (D-054).
+  ///
+  /// A pause that is still running is closed first, as [resume] does. When
+  /// this phone recorded the route (the visit's `deviceId` is this phone's),
+  /// the update also carries the number of track points and the distance
+  /// along them, so the caller must stop the tracker first (its buffer is
+  /// written then). A visit walked on another phone sends neither: that phone
+  /// has the points.
+  ///
+  /// Throws a [VisitRuleError] when a rule refuses the visit (V05: the end
+  /// weather or a reason is missing; V06: the true-zero confirmation does not
+  /// match the observations), and a [StateError] when the visit is gone,
+  /// locked or not in progress. Nothing is written then.
+  Future<void> finish(String visitId, FinishValues values) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      if (!appMayMove(current.status, 'completed')) {
+        throw StateError('A ${current.status} visit cannot be finished.');
+      }
+      final protocol = await _protocolOf(current);
+
+      final now = DateTime.now().toUtc();
+      // Closes a running pause, as resume does.
+      final (:pausedSeconds, :pauses) = closePause(current, now);
+      final startedAt = current.startedAt ?? now;
+      final walkedSeconds = now.difference(startedAt).inSeconds - pausedSeconds;
+      final durationSeconds = walkedSeconds < 0 ? 0 : walkedSeconds;
+
+      // Only the phone that recorded the route knows its points.
+      final recordedHere = current.deviceId == await _syncState.deviceId();
+      int? trackPointCount;
+      double? distanceWalkedM;
+      if (recordedHere) {
+        final points =
+            await (_db.select(_db.surveyTrackPoints)
+                  ..where((t) => t.surveyVisitId.equals(visitId))
+                  ..orderBy([
+                    (t) => OrderingTerm.asc(t.recordedAt),
+                    (t) => OrderingTerm.asc(t.sequenceNumber),
+                  ]))
+                .get();
+        trackPointCount = points.length;
+        // The server stores one decimal (`Decimal(8,1)`).
+        distanceWalkedM = double.parse(
+          routeLengthM(points, protocol.gpsAccuracyWarningM).toStringAsFixed(1),
+        );
+      }
+
+      await _checkFinishRules(current, protocol, values);
+      final reason = values.weatherMissingReason.trim();
+
+      // Only what differs from the row: an unchanged field resent after the
+      // server moved on would be a conflict (D-054).
+      final changed = <String, Object?>{
+        'status': 'completed',
+        'ended_at': now.toIso8601String(),
+        'duration_seconds': durationSeconds,
+      };
+      void addIfChanged(String field, Object? before, Object? after) {
+        if (before != after) changed[field] = after;
+      }
+
+      addIfChanged(
+        'temperature_end_c',
+        current.temperatureEndC,
+        values.temperatureEndC,
+      );
+      addIfChanged(
+        'wind_beaufort_end',
+        current.windBeaufortEnd,
+        values.windBeaufortEnd,
+      );
+      addIfChanged(
+        'cloud_cover_end_pct',
+        current.cloudCoverEndPct,
+        values.cloudCoverEndPct,
+      );
+      addIfChanged(
+        'weather_missing_reason',
+        current.weatherMissingReason,
+        reason,
+      );
+      addIfChanged(
+        'zero_observation_confirmed',
+        current.zeroObservationConfirmed,
+        values.zeroObservationConfirmed,
+      );
+      addIfChanged('paused_seconds', current.pausedSeconds, pausedSeconds);
+      if (current.pausedAt != null) changed['pauses'] = pausesPayload(pauses);
+      if (recordedHere) {
+        addIfChanged(
+          'distance_walked_m',
+          current.distanceWalkedM,
+          distanceWalkedM,
+        );
+        addIfChanged(
+          'track_point_count',
+          current.trackPointCount,
+          trackPointCount,
+        );
+      }
+
+      await _sync.write(
+        projectId: current.projectId,
+        entityType: _entityType,
+        entityId: current.id,
+        operation: SyncOperation.update,
+        payload: changed,
+        baseVersion: current.serverVersion,
+        writeRow: () {
+          final query = _db.update(_db.surveyVisits)
+            ..where((v) => v.id.equals(visitId));
+          return query.write(
+            SurveyVisitsCompanion(
+              status: const Value('completed'),
+              endedAt: Value(now),
+              durationSeconds: Value(durationSeconds),
+              pausedSeconds: Value(pausedSeconds),
+              pauses: Value(encodePauses(pauses)),
+              pausedAt: const Value(null),
+              temperatureEndC: Value(values.temperatureEndC),
+              windBeaufortEnd: Value(values.windBeaufortEnd),
+              cloudCoverEndPct: Value(values.cloudCoverEndPct),
+              weatherMissingReason: Value(reason),
+              zeroObservationConfirmed: Value(values.zeroObservationConfirmed),
+              // Left as they are for a visit walked on another phone.
+              distanceWalkedM: recordedHere
+                  ? Value(distanceWalkedM)
+                  : const Value.absent(),
+              trackPointCount: recordedHere
+                  ? Value(trackPointCount)
+                  : const Value.absent(),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  /// Checks the rules of [finish] without writing anything, so the Finish
+  /// screen can refuse before it stops the tracker. Throws what [finish]
+  /// throws for a rule or a missing visit.
+  Future<void> checkCanFinish(String visitId, FinishValues values) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      await _checkFinishRules(current, await _protocolOf(current), values);
+    });
+  }
+
+  /// The project's protocol for [visit], or a [StateError] when it is not on
+  /// this phone.
+  Future<ProjectProtocol> _protocolOf(SurveyVisit visit) async {
+    final protocol = await (_db.select(
+      _db.projectProtocols,
+    )..where((p) => p.projectId.equals(visit.projectId))).getSingleOrNull();
+    if (protocol == null) {
+      throw StateError("The project's protocol is not on this phone.");
+    }
+    return protocol;
+  }
+
+  /// Throws a [VisitRuleError] when [current] with [values] may not be
+  /// completed: V05 (end weather), V06 (true zero) or V07.
+  Future<void> _checkFinishRules(
+    SurveyVisit current,
+    ProjectProtocol protocol,
+    FinishValues values,
+  ) async {
+    final errors = validateVisit(
+      VisitInput(
+        status: 'completed',
+        startedAt: current.startedAt,
+        temperatureStartC: current.temperatureStartC,
+        temperatureEndC: values.temperatureEndC,
+        windBeaufortStart: current.windBeaufortStart,
+        windBeaufortEnd: values.windBeaufortEnd,
+        cloudCoverStartPct: current.cloudCoverStartPct,
+        cloudCoverEndPct: values.cloudCoverEndPct,
+        precipitation: current.precipitation,
+        weatherMissingReason: values.weatherMissingReason.trim(),
+        zeroObservationConfirmed: values.zeroObservationConfirmed,
+      ),
+      VisitRuleContext(
+        protocol: protocol,
+        transectObservationCount: await _transectObservationCount(current.id),
+      ),
+    );
+    if (errors.isNotEmpty) throw VisitRuleError(errors);
+  }
+
+  /// The visit [visitId] as it is now, for a pause, resume or finish. Throws a
   /// [StateError] when it is gone or no longer in progress (finished,
   /// cancelled or locked by a pull meanwhile).
   Future<SurveyVisit> _inProgressRow(String visitId) async {
@@ -434,8 +636,7 @@ class VisitRepository {
   }
 
   /// Throws a [StateError] with the rule messages (V05-V07) when [input] may
-  /// not be stored. Today only V07 can fire: the app cannot complete a visit
-  /// before the Finish screen (T040).
+  /// not be stored. V05 and V06 only fire in [finish].
   void _checkRules(VisitInput input, ProjectProtocol protocol, int count) {
     final errors = validateVisit(
       input,

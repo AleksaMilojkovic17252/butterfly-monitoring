@@ -1,3 +1,6 @@
+from datetime import UTC
+
+from django.utils.dateparse import parse_datetime
 from rest_framework import serializers
 
 from apps.core.serializers import UTCDateTimeField, WritableGeoJSONField
@@ -6,6 +9,24 @@ from apps.surveys.models import SurveyTrackPoint, SurveyVisit
 # Never sent to the phone: who saved it, and the lock and quality data the server owns. The phone
 # learns about a lock from `status = locked`.
 _NOT_SYNCED = ["created_by", "updated_by", "locked_at", "locked_by", "lock_reason", "quality_flags"]
+
+_MAX_PAUSES = 500
+
+
+def _aware_datetime(text):
+    """Parse an ISO 8601 string that carries a UTC offset; anything else is a field error."""
+    try:
+        # Raises ValueError for text that is shaped like a date but is not one ("2026-02-30...").
+        parsed = parse_datetime(text) if isinstance(text, str) else None
+    except ValueError:
+        parsed = None
+    if parsed is None or parsed.utcoffset() is None:
+        raise serializers.ValidationError("Pause times must be ISO 8601 with a UTC offset.")
+    return parsed
+
+
+def _utc_iso(moment):
+    return moment.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 class SurveyVisitSyncSerializer(serializers.ModelSerializer):
@@ -34,6 +55,22 @@ class SurveyVisitSyncSerializer(serializers.ModelSerializer):
             "precipitation": {"error_messages": {"invalid_choice": "V07"}},
             "cancel_reason": {"error_messages": {"invalid_choice": "V07"}},
         }
+
+    def validate_pauses(self, value):
+        """A list of at most 500 `{started_at, ended_at}` pairs, returned as UTC ISO strings."""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Must be a list.")
+        if len(value) > _MAX_PAUSES:
+            raise serializers.ValidationError(f"At most {_MAX_PAUSES} pauses.")
+        pauses = []
+        for item in value:
+            if not isinstance(item, dict) or set(item) != {"started_at", "ended_at"}:
+                raise serializers.ValidationError("Each pause needs started_at and ended_at.")
+            started, ended = (_aware_datetime(item[key]) for key in ("started_at", "ended_at"))
+            if ended < started:
+                raise serializers.ValidationError("A pause cannot end before it starts.")
+            pauses.append({"started_at": _utc_iso(started), "ended_at": _utc_iso(ended)})
+        return pauses
 
 
 class SurveyVisitSerializer(serializers.ModelSerializer):

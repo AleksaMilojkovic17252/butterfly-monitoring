@@ -19,6 +19,15 @@ class ObservationRepository {
   /// The server's entity type and the local table name.
   static const _entityType = 'butterfly_observation';
 
+  /// Live observations of a visit (any source), by the time they were seen,
+  /// for the Finish screen (T040).
+  Stream<List<ButterflyObservation>> watchVisitObservations(String visitId) {
+    final query = _db.select(_db.butterflyObservations)
+      ..where((o) => o.surveyVisitId.equals(visitId) & o.deletedAt.isNull())
+      ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
+    return query.watch();
+  }
+
   /// Saves a quick entry of [count] butterflies of [taxonId] seen on [visit] at
   /// ([lat], [lon]), now, and returns the new observation's id. The server
   /// fills in the fields that are not sent (sex, life stage, ...).
@@ -182,3 +191,12 @@ final observationRepositoryProvider = Provider<ObservationRepository>(
     ref.watch(taxonRepositoryProvider),
   ),
 );
+
+/// Live observations of a visit (T040). `autoDispose`: the query stops when
+/// the Finish screen closes.
+final visitObservationsProvider = StreamProvider.autoDispose
+    .family<List<ButterflyObservation>, String>(
+      (ref, visitId) => ref
+          .watch(observationRepositoryProvider)
+          .watchVisitObservations(visitId),
+    );

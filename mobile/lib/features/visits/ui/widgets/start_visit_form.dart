@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
@@ -12,22 +11,15 @@ import 'package:mobile/features/transects/ui/widgets/protocol_summary.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/beaufort.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
+import 'package:mobile/features/visits/ui/temperature_input.dart';
 import 'package:mobile/features/visits/ui/tracking_permissions.dart';
 import 'package:mobile/features/visits/ui/widgets/form_section_title.dart';
 import 'package:mobile/features/visits/ui/widgets/weather_suitability.dart';
+import 'package:mobile/features/visits/ui/widgets/wind_picker_sheet.dart';
 
 /// Most observers the stepper allows. The protocol has no limit; this keeps
 /// a stuck finger from producing an implausible count.
 const _maxObservers = 20;
-
-/// Allows a temperature like "-3", "17" or "17,5": an optional minus, up to
-/// two digits and one decimal. Any other edit is ignored.
-final _temperatureFormatter = TextInputFormatter.withFunction(
-  (oldValue, newValue) =>
-      RegExp(r'^-?\d{0,2}([.,]\d?)?$').hasMatch(newValue.text)
-      ? newValue
-      : oldValue,
-);
 
 /// The start-visit form itself, once the transect, protocol and any draft
 /// are loaded (shown by `StartVisitScreen`). Its fields start from [draft]
@@ -96,13 +88,8 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     super.dispose();
   }
 
-  /// The typed temperature with one decimal, or null when empty or not a
-  /// number. A comma counts as the decimal point.
-  double? get _temperatureC {
-    final value = double.tryParse(_temperature.text.replaceAll(',', '.'));
-    if (value == null) return null;
-    return (value * 10).round() / 10;
-  }
+  /// The typed temperature, or null when empty or not a number.
+  double? get _temperatureC => parseTemperature(_temperature.text);
 
   /// The failed weather thresholds, or null while temperature or wind is
   /// missing (the weather cannot be checked yet).
@@ -258,28 +245,8 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
-  /// Bottom sheet with the 13 Beaufort forces; large rows for one thumb.
   Future<void> _pickWind() async {
-    final picked = await showModalBottomSheet<int>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (var force = 0; force <= 12; force++)
-              ListTile(
-                selected: force == _wind,
-                leading: CircleAvatar(child: Text('$force')),
-                title: Text(beaufortDescriptions[force]),
-                subtitle: Text(beaufortHints[force]),
-                onTap: () => Navigator.pop(context, force),
-              ),
-          ],
-        ),
-      ),
-    );
+    final picked = await WindPickerSheet.show(context, selected: _wind);
     if (picked != null) setState(() => _wind = picked);
   }
 
@@ -388,7 +355,7 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
                       decimal: true,
                       signed: true,
                     ),
-                    inputFormatters: [_temperatureFormatter],
+                    inputFormatters: [temperatureFormatter],
                     onChanged: (_) => setState(() {}),
                     decoration: const InputDecoration(
                       labelText: 'Temperature',
