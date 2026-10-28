@@ -9,7 +9,6 @@ import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
-import 'package:mobile/features/skeleton/ui/skeleton_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
 import 'package:mobile/features/transects/ui/transect_list_screen.dart';
@@ -93,9 +92,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
-      // T044: delete with the skeleton.
-      if (kDebugMode)
-        GoRoute(path: '/skeleton', builder: (_, _) => const SkeletonScreen()),
     ],
   );
 });

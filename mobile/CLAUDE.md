@@ -41,7 +41,7 @@ server URL is chosen in Settings.
 | `lib/core/router.dart` | go_router routes (`routerProvider`) |
 | `lib/core/config/` | Server URL presets and notifier, `SharedPreferences` provider |
 | `lib/core/http/` | dio instance and the JWT auth interceptor |
-| `lib/core/db/` | `AppDatabase`, one file per Drift table, `app_database.steps.dart` (generated) |
+| `lib/core/db/` | `AppDatabase`, one file per Drift table, `app_database.steps.dart` (generated). `butterfly_observations.dart` (T044) is the local observation table, filled by pull; the entry screen comes with T045 |
 | `lib/core/location/` | geolocator providers; `LocationSource` / `GeolocatorSource` (the foreground-service position stream, T037) and the per-device GPS interval override (`gps_interval_override.dart`) |
 | `lib/core/sync/` | Sync API (`SyncApi`), queue rules and push results (`SyncRepository`), pull applier, runner (`SyncRunner`), project download (T031) and triggers (T030); `sync_state` store and status providers (T029) |
 | `lib/features/sync/` | Sync status screen (T032): read queries, providers, error messages, `SyncStatusScreen` at `/projects/:id/sync` |

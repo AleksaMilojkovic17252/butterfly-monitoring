@@ -43,7 +43,7 @@ Restoring MobilityDB data in Phase 2 needs the same MobilityDB version (1.3) in 
 ## Restore test
 
 1. Note row counts:
-   `docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml exec db psql -U postgres -d butterfly -c "select (select count(*) from django_migrations) m, (select count(*) from skeleton_ping) p, (select count(*) from accounts_user) u"`
+   `docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml exec db psql -U postgres -d butterfly -c "select (select count(*) from django_migrations) m, (select count(*) from survey_visit) p, (select count(*) from accounts_user) u"`
 2. Make sure a photo exists: before T049, upload any file to the `photos` bucket in the MinIO console
    (`http://localhost:9001`); afterwards, use a photo created through the API.
 3. `scripts/backup.sh ~/backups`

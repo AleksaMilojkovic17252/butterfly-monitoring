@@ -18,6 +18,8 @@ from apps.catalogues.serializers import (
     TaxonListVersionSyncSerializer,
     TaxonSyncSerializer,
 )
+from apps.observations import services as observations
+from apps.observations.serializers import ButterflyObservationSyncSerializer
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
 from apps.surveys import services as surveys
@@ -99,8 +101,21 @@ ENTITIES = [
         surveys.pull_track_points,
         push=PushHandlers(create_batch=surveys.push_track_points),
     ),
+    # Scoped to created_by = user, like visits. The first type with a push delete (a soft delete).
+    SyncEntity(
+        "butterfly_observation",
+        ButterflyObservationSyncSerializer,
+        observations.pull_observations,
+        push=PushHandlers(
+            create=observations.push_create,
+            update=observations.push_update,
+            delete=observations.push_delete,
+            project_of=observations.project_of,
+            guard=observations.guard_observation,
+        ),
+    ),
 ]
-# More user data arrives with T044 and T049, each registering `push=PushHandlers(...)`.
+# More user data arrives with T049, registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 

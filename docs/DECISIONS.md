@@ -1194,3 +1194,46 @@ Screen files had grown to 300–600 lines with several widgets each, which made 
   and the sync screen's operation label became `operationLabel` beside `entityTypeLabel` (`sync_error_message.dart`), since both
   cards use it.
 Not taken: `part` files (they keep `_` names but split one library over files, which reads worse) and one folder per screen.
+
+## D-065 · Butterfly observations: rules in `observations.services`, validation status on create only, first push delete, skeleton removed
+2026-10 · accepted · T044, *builds on D-049, D-050, D-052, D-053, D-058, D-062*
+**Services (`apps/observations/services.py`)** copy the shape of `surveys.services`: build or change the instance
+(`build_new_observation`, `apply_observation_changes`), then `save_observation` (checks the table's constraints, so a broken rule is a
+400 with a message, then `save_with_reason`). REST, push and admin call them.
+- **Context (`_check_context`):** the project is live; the user is an admin or a member (else 403); the taxon is not soft-deleted
+  (a *retired* taxon is allowed, D-043); a visit must be visible through `visits_for(user)` (so a researcher cannot add to someone
+  else's visit), in the same project, and unlocked; the section must be live and on the visit's transect, or, with no visit, on a live
+  transect of the project.
+- **Recorder (`_check_recorder`):** a researcher records as themselves (the default when `recorded_by` is left out); an admin may name
+  any project member or admin.
+- **Lock (amends D-062's list):** `_lock_visit` loads the visit `FOR UPDATE` and calls `ensure_unlocked` first in update, delete and
+  push delete. `guard_observation` is the push guard, so a stale update or delete of an observation of a locked visit is
+  `visit_locked`, not a conflict. `project` and `survey_visit` cannot change (400 "Cannot be changed"); a changed section, taxon or
+  recorder is checked again.
+- **Admin:** `check_admin_edit` / `admin_save_observation` as for visits. No add; an observation of a locked visit opens read-only;
+  `behaviour` is a checkbox field; the validation fields, `quality_flags`, project, visit and `photo_count` are read-only.
+**`validation_status` is set on create only (decision 2026-10-28):** `pending` for confidence `photo_required`,
+`expert_review_required`, `unknown` or `genus_only`, or when the taxon has `photo_required` (a new observation never has a photo yet);
+else `not_required`. A value the client sends is never read (the sync serializer has no such field). A later PATCH of the confidence
+or taxon does not recompute it, and neither does a photo arriving in T049: re-evaluation belongs to T055 (W01) and T057.
+**Server-owned fields:** the sync serializer excludes `created_by`, `updated_by`, every `validation_*` field and `quality_flags`, so
+push, REST POST and REST PATCH ignore them; the pull row has none of them either. `photo_count` is a computed output field
+(`services.photo_count`, always 0 until T049, `TODO(T049)`); there is no column.
+**First push `delete` and REST DELETE:** push delete uses `soft_delete_pushed` (D-053) and a second delete is `applied` again (D-050).
+REST `DELETE /observations/{id}` is 204 with reason "REST API"; the row then leaves `observations_for`, so a second call is 404.
+There is no list endpoint (outline 14).
+**`contained_by` VERIFY:** Django 5.2 renders `models.Q(behaviour__contained_by=Behaviour.values)` in a `CheckConstraint` correctly,
+as `CHECK ("behaviour" <@ (ARRAY['flying', ...])::varchar(20)[])`, so no `RunSQL`. The serializer maps the array to
+`ListField(child=ChoiceField)` and `validate_behaviour` drops repeated values, keeping the order; the model field keeps `blank=True`,
+or DRF would reject an empty list.
+**Names:** index names are shortened (`butterfly_obs_*`, Django allows 30 characters); a GIN index on `quality_flags`, as on visits.
+**Skeleton drop:** `core/0004_drop_skeleton_ping` drops the view `geo.skeleton_pings`, then the model; reversing recreates the view.
+The pygeoapi `skeleton-pings` collection is removed in T044, not T068 (`resources: {}` until T068 adds the real ones; pygeoapi starts
+and lists no collections). The `/skeleton/pings` endpoint, the Drift table, the debug screen and its route are gone.
+`docs/architecture/skeleton-findings.md` stays as the historical record.
+**App (schema v9):** `butterfly_observation` table (name equals the entity type), filled by pull; no entry UI until T045. `from8To9`
+drops `skeleton_ping`, creates the table and clears the pull cursors (as `from5To6`), so observations the server sent before the
+upgrade are pulled again. A locked visit's queued, never-sent observation changes are rejected like the visit's own (D-062). The
+header's observation count reads the table (`watchObservationCount`). Not done: dropping a never-sent visit's observations on discard
+(`TODO(T045)`), since rows exist only from T045.
+

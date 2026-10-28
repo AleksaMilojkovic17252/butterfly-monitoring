@@ -55,6 +55,3 @@ class SyncableModel(models.Model):
         self.deleted_at = timezone.now()
         self.updated_by = user
         self.save(update_fields=["deleted_at", "updated_by", "updated_at"])
-
-
-from apps.core.models_skeleton import SkeletonPing  # noqa: E402,F401  (T007, removed in T044)

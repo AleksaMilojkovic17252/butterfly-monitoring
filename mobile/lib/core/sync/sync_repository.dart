@@ -181,6 +181,7 @@ class SyncRepository {
           final trackPoints = _db.surveyTrackPoints.delete()
             ..where((t) => t.surveyVisitId.equals(item.entityId));
           await trackPoints.go();
+          // TODO(T045): also drop the visit's never-sent observations.
         }
         await _db.customUpdate(
           'DELETE FROM "${item.entityType}" WHERE id = ?',

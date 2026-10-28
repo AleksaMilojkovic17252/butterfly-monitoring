@@ -39,6 +39,8 @@ class PullApplier {
         _store(_db.transectSections, rows, _transectSection),
     'sync_conflict': (rows) => _store(_db.syncConflicts, rows, _syncConflict),
     'survey_visit': (rows) => _store(_db.surveyVisits, rows, _surveyVisit),
+    'butterfly_observation': (rows) =>
+        _store(_db.butterflyObservations, rows, _butterflyObservation),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -140,8 +142,8 @@ class PullApplier {
   ]);
 
   /// For each pulled visit an admin has locked (T042): the local changes never
-  /// sent yet (the visit's updates and its track point batches) become
-  /// `rejected`, because the server would refuse them, and the sync screen
+  /// sent yet (the visit's updates, its track point batches and the changes to
+  /// its observations) become `rejected`, because the server would refuse them, and the sync screen
   /// shows them with the lock message. The row is then set `synced`, so the
   /// pending guard lets the server's locked row in and the visit shows as
   /// locked. Changes the server has already rejected keep their message.
@@ -150,7 +152,6 @@ class PullApplier {
   /// queued: the server may already have it and then answers `duplicate`;
   /// otherwise it rejects it itself. A `conflict` item is left alone: it is
   /// settled on the server, and until then the row keeps its local values.
-  // TODO(T044): reject the queued changes to the visit's observations too.
   Future<void> _rejectChangesToLockedVisits(List<_Json> visits) async {
     for (final visit in visits) {
       if (visit['status'] != 'locked') continue;
@@ -161,9 +162,18 @@ class PullApplier {
           _db.syncQueue.entityId.equals(id) &
           _db.syncQueue.entityType.isIn(['survey_visit', 'survey_track_point']);
 
+      // The queue items of the visit's observations: `entityId` is the
+      // observation here, so look up which observations the visit has.
+      final observations = await (_db.select(
+        _db.butterflyObservations,
+      )..where((t) => t.surveyVisitId.equals(id))).get();
+      final observationItems =
+          _db.syncQueue.entityType.equals('butterfly_observation') &
+          _db.syncQueue.entityId.isIn([for (final o in observations) o.id]);
+
       await (_db.update(_db.syncQueue)..where(
             (t) =>
-                visitItems &
+                (visitItems | observationItems) &
                 t.status.equalsValue(QueueStatus.queued) &
                 t.retryCount.equals(0),
           ))
@@ -489,6 +499,38 @@ class PullApplier {
       batterySaverUsed: Value(json['battery_saver_used'] as bool),
       deviceId: Value(json['device_id'] as String),
       createdOffline: Value(json['created_offline'] as bool),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// An observation the caller recorded. Foreign keys arrive without `_id`, and
+  /// the geometry is a GeoJSON Point (`[lon, lat]`). The server's
+  /// `validation_*` fields are not in the pull, and the app keeps none.
+  static ButterflyObservationsCompanion _butterflyObservation(_Json json) {
+    final coordinates = (json['geometry']['coordinates'] as List).cast<num>();
+    return ButterflyObservationsCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      surveyVisitId: Value(json['survey_visit'] as String?),
+      transectSectionId: Value(json['transect_section'] as String?),
+      observedAt: DateTime.parse(json['observed_at'] as String),
+      taxonId: json['taxon'] as String,
+      count: Value(json['count'] as int),
+      lat: coordinates[1].toDouble(),
+      lon: coordinates[0].toDouble(),
+      locationAccuracyM: Value(_decimalOrNull(json['location_accuracy_m'])),
+      identificationConfidence: json['identification_confidence'] as String,
+      recordedById: json['recorded_by'] as String,
+      sex: Value(json['sex'] as String),
+      lifeStage: Value(json['life_stage'] as String),
+      behaviour: Value(jsonEncode(json['behaviour'])),
+      microhabitat: Value(json['microhabitat'] as String),
+      flightDirectionDeg: Value(json['flight_direction_deg'] as int?),
+      notes: Value(json['notes'] as String),
+      source: Value(json['source'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),

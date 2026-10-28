@@ -45,8 +45,8 @@ String syncErrorMessage(String? lastError) {
 /// Plural name of an entity type for the sync screen; an unknown type shows
 /// its raw name.
 String entityTypeLabel(String type) {
-  // TODO(T044): name for observations.
   return switch (type) {
+    'butterfly_observation' => 'Butterfly observations',
     'habitat_type' => 'Habitat types',
     'management_type' => 'Management types',
     'plant_taxon' => 'Plants',

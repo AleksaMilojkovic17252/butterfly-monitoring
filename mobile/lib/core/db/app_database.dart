@@ -2,12 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.steps.dart';
+import 'package:mobile/core/db/butterfly_observations.dart';
 import 'package:mobile/core/db/habitat_types.dart';
 import 'package:mobile/core/db/management_types.dart';
 import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
-import 'package:mobile/core/db/skeleton_pings.dart';
 import 'package:mobile/core/db/survey_track_points.dart';
 import 'package:mobile/core/db/survey_visits.dart';
 import 'package:mobile/core/db/sync_conflicts.dart';
@@ -23,7 +23,7 @@ part 'app_database.g.dart';
 
 @DriftDatabase(
   tables: [
-    SkeletonPings,
+    ButterflyObservations,
     Projects,
     SyncQueue,
     SyncStateEntries,
@@ -44,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -87,6 +87,17 @@ class AppDatabase extends _$AppDatabase {
       },
       from7To8: (m, schema) async {
         await m.createTable(schema.surveyTrackPoint);
+      },
+      from8To9: (m, schema) async {
+        // The T007 walking skeleton is gone; observations take its place.
+        await m.deleteTable('skeleton_ping');
+        await m.createTable(schema.butterflyObservation);
+        // Start every pull from the beginning, as from5To6 did: observations the
+        // server sent before this version had no table here, so they would
+        // otherwise never be pulled.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
       },
     ),
   );

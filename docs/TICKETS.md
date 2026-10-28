@@ -79,7 +79,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | todo |
 | T042 | [#59](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/59) | Visit lock enforced in the API | P1 | must | T026, T034 | 1 d | done |
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | todo |
-| T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | todo |
+| T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | todo |
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | todo |
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
@@ -880,7 +880,7 @@ Depends on: T018, T042
 - [ ] Invalid transitions (for example locking a draft) show an error per visit without failing the whole action.
 
 ### T044 · ButterflyObservation model and API
-[#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) · E06 · P1 · must · labels: `backend`, `database`, `sync`, `must`, `p2-compat` · implements F14, F15, F17 · est. 2.5 d · **todo**
+[#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) · E06 · P1 · must · labels: `backend`, `database`, `sync`, `must`, `p2-compat` · implements F14, F15, F17 · est. 2.5 d · **done**
 
 Depends on: T019, T026, T034
 
@@ -894,6 +894,8 @@ Depends on: T019, T026, T034
 - [ ] `behaviour` accepts a list of values from the fixed enum (multi-select, outline §8.12).
 - [ ] Migration drops `skeleton_ping` and `geo.skeleton_pings` (and the pygeoapi collection in T068). The Drift migration drops `skeleton_pings`.
 - [ ] `photo_count` (outline field) is computed in serializers and views, not stored.
+
+Note: `validation_status` on create only (decision 2026-10-28); pygeoapi skeleton collection removed here (see D-065).
 
 ### T045 · App quick butterfly entry
 [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) · E06 · P1 · must · labels: `mobile`, `must` · implements F14 · est. 2.5 d · **todo**
@@ -1222,6 +1224,8 @@ Notes: plant/habitat views added when T051/T053 are done
 [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) · E10 · P1 · must · labels: `ogc`, `infra`, `must` · implements F39, F40, F41 · est. 1.5 d · **todo**
 
 Depends on: T007, T067
+
+Note: skeleton collection already removed in T044.
 
 - [ ] `pygeoapi/config/pygeoapi-config.yml`:
   - server `url: http://localhost:8080/ogc` (set it to the Tailscale URL if you browse it from elsewhere)

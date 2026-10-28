@@ -247,6 +247,19 @@ class VisitRepository {
     return query.watchSingleOrNull();
   }
 
+  /// Number of live observations recorded on a visit, kept up to date (T039's
+  /// header counts them).
+  Stream<int> watchObservationCount(String visitId) {
+    final count = _db.butterflyObservations.id.count();
+    final query = _db.selectOnly(_db.butterflyObservations)
+      ..addColumns([count])
+      ..where(
+        _db.butterflyObservations.surveyVisitId.equals(visitId) &
+            _db.butterflyObservations.deletedAt.isNull(),
+      );
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
+
   /// Inserts a new visit and queues its `create`, and returns its id. The
   /// payload holds every field the phone sets; the server fills in the rest.
   Future<String> _create({
@@ -423,8 +436,9 @@ final deviceVisitInProgressProvider = StreamProvider<SurveyVisit?>((
   yield* repository.watchInProgressOnDevice(deviceId);
 });
 
-/// Number of observations recorded on a visit (T039's header).
-// TODO(T044): count the visit's live rows in the Drift observation table.
-final visitObservationCountProvider = Provider.family<int, String>(
-  (ref, visitId) => 0,
+/// Number of observations recorded on a visit (T039's header); null while the
+/// first count is loading.
+final visitObservationCountProvider = StreamProvider.family<int, String>(
+  (ref, visitId) =>
+      ref.watch(visitRepositoryProvider).watchObservationCount(visitId),
 );

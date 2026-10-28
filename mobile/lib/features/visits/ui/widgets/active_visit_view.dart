@@ -158,7 +158,8 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     final route = ref.watch(visitRouteProvider(visit.id)).value ?? [];
     final tracking = ref.watch(trackingControllerProvider);
     final currentSection = ref.watch(currentSectionProvider(visit.id));
-    final observations = ref.watch(visitObservationCountProvider(visit.id));
+    final observations =
+        ref.watch(visitObservationCountProvider(visit.id)).value ?? 0;
     final keepScreenOn = ref.watch(keepScreenOnProvider);
 
     final tracked = tracking.visitId == visit.id;

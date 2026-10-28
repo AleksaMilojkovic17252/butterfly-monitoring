@@ -3,408 +3,6 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $SkeletonPingsTable extends SkeletonPings
-    with TableInfo<$SkeletonPingsTable, SkeletonPing> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SkeletonPingsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _observedAtMeta = const VerificationMeta(
-    'observedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> observedAt = GeneratedColumn<DateTime>(
-    'observed_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _latMeta = const VerificationMeta('lat');
-  @override
-  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
-    'lat',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
-  @override
-  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
-    'lon',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
-  @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-    'note',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _sentAtMeta = const VerificationMeta('sentAt');
-  @override
-  late final GeneratedColumn<DateTime> sentAt = GeneratedColumn<DateTime>(
-    'sent_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    observedAt,
-    lat,
-    lon,
-    note,
-    sentAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'skeleton_ping';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SkeletonPing> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('observed_at')) {
-      context.handle(
-        _observedAtMeta,
-        observedAt.isAcceptableOrUnknown(data['observed_at']!, _observedAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_observedAtMeta);
-    }
-    if (data.containsKey('lat')) {
-      context.handle(
-        _latMeta,
-        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_latMeta);
-    }
-    if (data.containsKey('lon')) {
-      context.handle(
-        _lonMeta,
-        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_lonMeta);
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    }
-    if (data.containsKey('sent_at')) {
-      context.handle(
-        _sentAtMeta,
-        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SkeletonPing map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SkeletonPing(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      observedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}observed_at'],
-      )!,
-      lat: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}lat'],
-      )!,
-      lon: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}lon'],
-      )!,
-      note: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}note'],
-      )!,
-      sentAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}sent_at'],
-      ),
-    );
-  }
-
-  @override
-  $SkeletonPingsTable createAlias(String alias) {
-    return $SkeletonPingsTable(attachedDatabase, alias);
-  }
-}
-
-class SkeletonPing extends DataClass implements Insertable<SkeletonPing> {
-  final String id;
-  final DateTime observedAt;
-  final double lat;
-  final double lon;
-  final String note;
-  final DateTime? sentAt;
-  const SkeletonPing({
-    required this.id,
-    required this.observedAt,
-    required this.lat,
-    required this.lon,
-    required this.note,
-    this.sentAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['observed_at'] = Variable<DateTime>(observedAt);
-    map['lat'] = Variable<double>(lat);
-    map['lon'] = Variable<double>(lon);
-    map['note'] = Variable<String>(note);
-    if (!nullToAbsent || sentAt != null) {
-      map['sent_at'] = Variable<DateTime>(sentAt);
-    }
-    return map;
-  }
-
-  SkeletonPingsCompanion toCompanion(bool nullToAbsent) {
-    return SkeletonPingsCompanion(
-      id: Value(id),
-      observedAt: Value(observedAt),
-      lat: Value(lat),
-      lon: Value(lon),
-      note: Value(note),
-      sentAt: sentAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(sentAt),
-    );
-  }
-
-  factory SkeletonPing.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SkeletonPing(
-      id: serializer.fromJson<String>(json['id']),
-      observedAt: serializer.fromJson<DateTime>(json['observedAt']),
-      lat: serializer.fromJson<double>(json['lat']),
-      lon: serializer.fromJson<double>(json['lon']),
-      note: serializer.fromJson<String>(json['note']),
-      sentAt: serializer.fromJson<DateTime?>(json['sentAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'observedAt': serializer.toJson<DateTime>(observedAt),
-      'lat': serializer.toJson<double>(lat),
-      'lon': serializer.toJson<double>(lon),
-      'note': serializer.toJson<String>(note),
-      'sentAt': serializer.toJson<DateTime?>(sentAt),
-    };
-  }
-
-  SkeletonPing copyWith({
-    String? id,
-    DateTime? observedAt,
-    double? lat,
-    double? lon,
-    String? note,
-    Value<DateTime?> sentAt = const Value.absent(),
-  }) => SkeletonPing(
-    id: id ?? this.id,
-    observedAt: observedAt ?? this.observedAt,
-    lat: lat ?? this.lat,
-    lon: lon ?? this.lon,
-    note: note ?? this.note,
-    sentAt: sentAt.present ? sentAt.value : this.sentAt,
-  );
-  SkeletonPing copyWithCompanion(SkeletonPingsCompanion data) {
-    return SkeletonPing(
-      id: data.id.present ? data.id.value : this.id,
-      observedAt: data.observedAt.present
-          ? data.observedAt.value
-          : this.observedAt,
-      lat: data.lat.present ? data.lat.value : this.lat,
-      lon: data.lon.present ? data.lon.value : this.lon,
-      note: data.note.present ? data.note.value : this.note,
-      sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SkeletonPing(')
-          ..write('id: $id, ')
-          ..write('observedAt: $observedAt, ')
-          ..write('lat: $lat, ')
-          ..write('lon: $lon, ')
-          ..write('note: $note, ')
-          ..write('sentAt: $sentAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, observedAt, lat, lon, note, sentAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SkeletonPing &&
-          other.id == this.id &&
-          other.observedAt == this.observedAt &&
-          other.lat == this.lat &&
-          other.lon == this.lon &&
-          other.note == this.note &&
-          other.sentAt == this.sentAt);
-}
-
-class SkeletonPingsCompanion extends UpdateCompanion<SkeletonPing> {
-  final Value<String> id;
-  final Value<DateTime> observedAt;
-  final Value<double> lat;
-  final Value<double> lon;
-  final Value<String> note;
-  final Value<DateTime?> sentAt;
-  final Value<int> rowid;
-  const SkeletonPingsCompanion({
-    this.id = const Value.absent(),
-    this.observedAt = const Value.absent(),
-    this.lat = const Value.absent(),
-    this.lon = const Value.absent(),
-    this.note = const Value.absent(),
-    this.sentAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  SkeletonPingsCompanion.insert({
-    required String id,
-    required DateTime observedAt,
-    required double lat,
-    required double lon,
-    this.note = const Value.absent(),
-    this.sentAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       observedAt = Value(observedAt),
-       lat = Value(lat),
-       lon = Value(lon);
-  static Insertable<SkeletonPing> custom({
-    Expression<String>? id,
-    Expression<DateTime>? observedAt,
-    Expression<double>? lat,
-    Expression<double>? lon,
-    Expression<String>? note,
-    Expression<DateTime>? sentAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (observedAt != null) 'observed_at': observedAt,
-      if (lat != null) 'lat': lat,
-      if (lon != null) 'lon': lon,
-      if (note != null) 'note': note,
-      if (sentAt != null) 'sent_at': sentAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  SkeletonPingsCompanion copyWith({
-    Value<String>? id,
-    Value<DateTime>? observedAt,
-    Value<double>? lat,
-    Value<double>? lon,
-    Value<String>? note,
-    Value<DateTime?>? sentAt,
-    Value<int>? rowid,
-  }) {
-    return SkeletonPingsCompanion(
-      id: id ?? this.id,
-      observedAt: observedAt ?? this.observedAt,
-      lat: lat ?? this.lat,
-      lon: lon ?? this.lon,
-      note: note ?? this.note,
-      sentAt: sentAt ?? this.sentAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (observedAt.present) {
-      map['observed_at'] = Variable<DateTime>(observedAt.value);
-    }
-    if (lat.present) {
-      map['lat'] = Variable<double>(lat.value);
-    }
-    if (lon.present) {
-      map['lon'] = Variable<double>(lon.value);
-    }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
-    }
-    if (sentAt.present) {
-      map['sent_at'] = Variable<DateTime>(sentAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SkeletonPingsCompanion(')
-          ..write('id: $id, ')
-          ..write('observedAt: $observedAt, ')
-          ..write('lat: $lat, ')
-          ..write('lon: $lon, ')
-          ..write('note: $note, ')
-          ..write('sentAt: $sentAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1074,6 +672,5155 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('area: $area, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TransectsTable extends Transects
+    with TableInfo<$TransectsTable, Transect> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransectsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLengthMMeta = const VerificationMeta(
+    'targetLengthM',
+  );
+  @override
+  late final GeneratedColumn<double> targetLengthM = GeneratedColumn<double>(
+    'target_length_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _habitatSummaryMeta = const VerificationMeta(
+    'habitatSummary',
+  );
+  @override
+  late final GeneratedColumn<String> habitatSummary = GeneratedColumn<String>(
+    'habitat_summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _geometryMeta = const VerificationMeta(
+    'geometry',
+  );
+  @override
+  late final GeneratedColumn<String> geometry = GeneratedColumn<String>(
+    'geometry',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lengthMMeta = const VerificationMeta(
+    'lengthM',
+  );
+  @override
+  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
+    'length_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    code,
+    name,
+    description,
+    targetLengthM,
+    habitatSummary,
+    active,
+    geometry,
+    lengthM,
+    serverVersion,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transect';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Transect> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('target_length_m')) {
+      context.handle(
+        _targetLengthMMeta,
+        targetLengthM.isAcceptableOrUnknown(
+          data['target_length_m']!,
+          _targetLengthMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('habitat_summary')) {
+      context.handle(
+        _habitatSummaryMeta,
+        habitatSummary.isAcceptableOrUnknown(
+          data['habitat_summary']!,
+          _habitatSummaryMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_habitatSummaryMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('geometry')) {
+      context.handle(
+        _geometryMeta,
+        geometry.isAcceptableOrUnknown(data['geometry']!, _geometryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_geometryMeta);
+    }
+    if (data.containsKey('length_m')) {
+      context.handle(
+        _lengthMMeta,
+        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lengthMMeta);
+    }
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Transect map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Transect(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      targetLengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}target_length_m'],
+      ),
+      habitatSummary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habitat_summary'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      geometry: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geometry'],
+      )!,
+      lengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}length_m'],
+      )!,
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TransectsTable createAlias(String alias) {
+    return $TransectsTable(attachedDatabase, alias);
+  }
+}
+
+class Transect extends DataClass implements Insertable<Transect> {
+  final String id;
+  final String projectId;
+  final String code;
+  final String name;
+  final String description;
+  final double? targetLengthM;
+  final String habitatSummary;
+  final bool active;
+  final String geometry;
+  final double lengthM;
+  final int? serverVersion;
+  final DateTime? deletedAt;
+  const Transect({
+    required this.id,
+    required this.projectId,
+    required this.code,
+    required this.name,
+    required this.description,
+    this.targetLengthM,
+    required this.habitatSummary,
+    required this.active,
+    required this.geometry,
+    required this.lengthM,
+    this.serverVersion,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || targetLengthM != null) {
+      map['target_length_m'] = Variable<double>(targetLengthM);
+    }
+    map['habitat_summary'] = Variable<String>(habitatSummary);
+    map['active'] = Variable<bool>(active);
+    map['geometry'] = Variable<String>(geometry);
+    map['length_m'] = Variable<double>(lengthM);
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  TransectsCompanion toCompanion(bool nullToAbsent) {
+    return TransectsCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      code: Value(code),
+      name: Value(name),
+      description: Value(description),
+      targetLengthM: targetLengthM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLengthM),
+      habitatSummary: Value(habitatSummary),
+      active: Value(active),
+      geometry: Value(geometry),
+      lengthM: Value(lengthM),
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory Transect.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Transect(
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      targetLengthM: serializer.fromJson<double?>(json['targetLengthM']),
+      habitatSummary: serializer.fromJson<String>(json['habitatSummary']),
+      active: serializer.fromJson<bool>(json['active']),
+      geometry: serializer.fromJson<String>(json['geometry']),
+      lengthM: serializer.fromJson<double>(json['lengthM']),
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'targetLengthM': serializer.toJson<double?>(targetLengthM),
+      'habitatSummary': serializer.toJson<String>(habitatSummary),
+      'active': serializer.toJson<bool>(active),
+      'geometry': serializer.toJson<String>(geometry),
+      'lengthM': serializer.toJson<double>(lengthM),
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  Transect copyWith({
+    String? id,
+    String? projectId,
+    String? code,
+    String? name,
+    String? description,
+    Value<double?> targetLengthM = const Value.absent(),
+    String? habitatSummary,
+    bool? active,
+    String? geometry,
+    double? lengthM,
+    Value<int?> serverVersion = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => Transect(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    code: code ?? this.code,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    targetLengthM: targetLengthM.present
+        ? targetLengthM.value
+        : this.targetLengthM,
+    habitatSummary: habitatSummary ?? this.habitatSummary,
+    active: active ?? this.active,
+    geometry: geometry ?? this.geometry,
+    lengthM: lengthM ?? this.lengthM,
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  Transect copyWithCompanion(TransectsCompanion data) {
+    return Transect(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      targetLengthM: data.targetLengthM.present
+          ? data.targetLengthM.value
+          : this.targetLengthM,
+      habitatSummary: data.habitatSummary.present
+          ? data.habitatSummary.value
+          : this.habitatSummary,
+      active: data.active.present ? data.active.value : this.active,
+      geometry: data.geometry.present ? data.geometry.value : this.geometry,
+      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Transect(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('targetLengthM: $targetLengthM, ')
+          ..write('habitatSummary: $habitatSummary, ')
+          ..write('active: $active, ')
+          ..write('geometry: $geometry, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    projectId,
+    code,
+    name,
+    description,
+    targetLengthM,
+    habitatSummary,
+    active,
+    geometry,
+    lengthM,
+    serverVersion,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Transect &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.targetLengthM == this.targetLengthM &&
+          other.habitatSummary == this.habitatSummary &&
+          other.active == this.active &&
+          other.geometry == this.geometry &&
+          other.lengthM == this.lengthM &&
+          other.serverVersion == this.serverVersion &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TransectsCompanion extends UpdateCompanion<Transect> {
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<double?> targetLengthM;
+  final Value<String> habitatSummary;
+  final Value<bool> active;
+  final Value<String> geometry;
+  final Value<double> lengthM;
+  final Value<int?> serverVersion;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const TransectsCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.targetLengthM = const Value.absent(),
+    this.habitatSummary = const Value.absent(),
+    this.active = const Value.absent(),
+    this.geometry = const Value.absent(),
+    this.lengthM = const Value.absent(),
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransectsCompanion.insert({
+    required String id,
+    required String projectId,
+    required String code,
+    required String name,
+    required String description,
+    this.targetLengthM = const Value.absent(),
+    required String habitatSummary,
+    required bool active,
+    required String geometry,
+    required double lengthM,
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       code = Value(code),
+       name = Value(name),
+       description = Value(description),
+       habitatSummary = Value(habitatSummary),
+       active = Value(active),
+       geometry = Value(geometry),
+       lengthM = Value(lengthM);
+  static Insertable<Transect> custom({
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<double>? targetLengthM,
+    Expression<String>? habitatSummary,
+    Expression<bool>? active,
+    Expression<String>? geometry,
+    Expression<double>? lengthM,
+    Expression<int>? serverVersion,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (targetLengthM != null) 'target_length_m': targetLengthM,
+      if (habitatSummary != null) 'habitat_summary': habitatSummary,
+      if (active != null) 'active': active,
+      if (geometry != null) 'geometry': geometry,
+      if (lengthM != null) 'length_m': lengthM,
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransectsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? code,
+    Value<String>? name,
+    Value<String>? description,
+    Value<double?>? targetLengthM,
+    Value<String>? habitatSummary,
+    Value<bool>? active,
+    Value<String>? geometry,
+    Value<double>? lengthM,
+    Value<int?>? serverVersion,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return TransectsCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      targetLengthM: targetLengthM ?? this.targetLengthM,
+      habitatSummary: habitatSummary ?? this.habitatSummary,
+      active: active ?? this.active,
+      geometry: geometry ?? this.geometry,
+      lengthM: lengthM ?? this.lengthM,
+      serverVersion: serverVersion ?? this.serverVersion,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (targetLengthM.present) {
+      map['target_length_m'] = Variable<double>(targetLengthM.value);
+    }
+    if (habitatSummary.present) {
+      map['habitat_summary'] = Variable<String>(habitatSummary.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (geometry.present) {
+      map['geometry'] = Variable<String>(geometry.value);
+    }
+    if (lengthM.present) {
+      map['length_m'] = Variable<double>(lengthM.value);
+    }
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransectsCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('targetLengthM: $targetLengthM, ')
+          ..write('habitatSummary: $habitatSummary, ')
+          ..write('active: $active, ')
+          ..write('geometry: $geometry, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SurveyVisitsTable extends SurveyVisits
+    with TableInfo<$SurveyVisitsTable, SurveyVisit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SurveyVisitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>($SurveyVisitsTable.$convertersyncStatus);
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _transectIdMeta = const VerificationMeta(
+    'transectId',
+  );
+  @override
+  late final GeneratedColumn<String> transectId = GeneratedColumn<String>(
+    'transect_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transect (id)',
+    ),
+  );
+  static const VerificationMeta _observerIdMeta = const VerificationMeta(
+    'observerId',
+  );
+  @override
+  late final GeneratedColumn<String> observerId = GeneratedColumn<String>(
+    'observer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _protocolVersionMeta = const VerificationMeta(
+    'protocolVersion',
+  );
+  @override
+  late final GeneratedColumn<String> protocolVersion = GeneratedColumn<String>(
+    'protocol_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _surveyMethodMeta = const VerificationMeta(
+    'surveyMethod',
+  );
+  @override
+  late final GeneratedColumn<String> surveyMethod = GeneratedColumn<String>(
+    'survey_method',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pollard_walk'),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationSecondsMeta = const VerificationMeta(
+    'durationSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
+    'duration_seconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pausedSecondsMeta = const VerificationMeta(
+    'pausedSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> pausedSeconds = GeneratedColumn<int>(
+    'paused_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _distanceWalkedMMeta = const VerificationMeta(
+    'distanceWalkedM',
+  );
+  @override
+  late final GeneratedColumn<double> distanceWalkedM = GeneratedColumn<double>(
+    'distance_walked_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _observerCountMeta = const VerificationMeta(
+    'observerCount',
+  );
+  @override
+  late final GeneratedColumn<int> observerCount = GeneratedColumn<int>(
+    'observer_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _observerNamesMeta = const VerificationMeta(
+    'observerNames',
+  );
+  @override
+  late final GeneratedColumn<String> observerNames = GeneratedColumn<String>(
+    'observer_names',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _temperatureStartCMeta = const VerificationMeta(
+    'temperatureStartC',
+  );
+  @override
+  late final GeneratedColumn<double> temperatureStartC =
+      GeneratedColumn<double>(
+        'temperature_start_c',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _temperatureEndCMeta = const VerificationMeta(
+    'temperatureEndC',
+  );
+  @override
+  late final GeneratedColumn<double> temperatureEndC = GeneratedColumn<double>(
+    'temperature_end_c',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _windBeaufortStartMeta = const VerificationMeta(
+    'windBeaufortStart',
+  );
+  @override
+  late final GeneratedColumn<int> windBeaufortStart = GeneratedColumn<int>(
+    'wind_beaufort_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _windBeaufortEndMeta = const VerificationMeta(
+    'windBeaufortEnd',
+  );
+  @override
+  late final GeneratedColumn<int> windBeaufortEnd = GeneratedColumn<int>(
+    'wind_beaufort_end',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cloudCoverStartPctMeta =
+      const VerificationMeta('cloudCoverStartPct');
+  @override
+  late final GeneratedColumn<int> cloudCoverStartPct = GeneratedColumn<int>(
+    'cloud_cover_start_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cloudCoverEndPctMeta = const VerificationMeta(
+    'cloudCoverEndPct',
+  );
+  @override
+  late final GeneratedColumn<int> cloudCoverEndPct = GeneratedColumn<int>(
+    'cloud_cover_end_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _precipitationMeta = const VerificationMeta(
+    'precipitation',
+  );
+  @override
+  late final GeneratedColumn<String> precipitation = GeneratedColumn<String>(
+    'precipitation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _weatherSuitableMeta = const VerificationMeta(
+    'weatherSuitable',
+  );
+  @override
+  late final GeneratedColumn<bool> weatherSuitable = GeneratedColumn<bool>(
+    'weather_suitable',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("weather_suitable" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _weatherMissingReasonMeta =
+      const VerificationMeta('weatherMissingReason');
+  @override
+  late final GeneratedColumn<String> weatherMissingReason =
+      GeneratedColumn<String>(
+        'weather_missing_reason',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _zeroObservationConfirmedMeta =
+      const VerificationMeta('zeroObservationConfirmed');
+  @override
+  late final GeneratedColumn<bool> zeroObservationConfirmed =
+      GeneratedColumn<bool>(
+        'zero_observation_confirmed',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("zero_observation_confirmed" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('draft'),
+  );
+  static const VerificationMeta _cancelReasonMeta = const VerificationMeta(
+    'cancelReason',
+  );
+  @override
+  late final GeneratedColumn<String> cancelReason = GeneratedColumn<String>(
+    'cancel_reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _batterySaverUsedMeta = const VerificationMeta(
+    'batterySaverUsed',
+  );
+  @override
+  late final GeneratedColumn<bool> batterySaverUsed = GeneratedColumn<bool>(
+    'battery_saver_used',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("battery_saver_used" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdOfflineMeta = const VerificationMeta(
+    'createdOffline',
+  );
+  @override
+  late final GeneratedColumn<bool> createdOffline = GeneratedColumn<bool>(
+    'created_offline',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("created_offline" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pausedAtMeta = const VerificationMeta(
+    'pausedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pausedAt = GeneratedColumn<DateTime>(
+    'paused_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    transectId,
+    observerId,
+    protocolVersion,
+    surveyMethod,
+    startedAt,
+    endedAt,
+    durationSeconds,
+    pausedSeconds,
+    distanceWalkedM,
+    observerCount,
+    observerNames,
+    temperatureStartC,
+    temperatureEndC,
+    windBeaufortStart,
+    windBeaufortEnd,
+    cloudCoverStartPct,
+    cloudCoverEndPct,
+    precipitation,
+    weatherSuitable,
+    weatherMissingReason,
+    zeroObservationConfirmed,
+    notes,
+    status,
+    cancelReason,
+    batterySaverUsed,
+    deviceId,
+    createdOffline,
+    createdAt,
+    pausedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'survey_visit';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SurveyVisit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('transect_id')) {
+      context.handle(
+        _transectIdMeta,
+        transectId.isAcceptableOrUnknown(data['transect_id']!, _transectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_transectIdMeta);
+    }
+    if (data.containsKey('observer_id')) {
+      context.handle(
+        _observerIdMeta,
+        observerId.isAcceptableOrUnknown(data['observer_id']!, _observerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_observerIdMeta);
+    }
+    if (data.containsKey('protocol_version')) {
+      context.handle(
+        _protocolVersionMeta,
+        protocolVersion.isAcceptableOrUnknown(
+          data['protocol_version']!,
+          _protocolVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_protocolVersionMeta);
+    }
+    if (data.containsKey('survey_method')) {
+      context.handle(
+        _surveyMethodMeta,
+        surveyMethod.isAcceptableOrUnknown(
+          data['survey_method']!,
+          _surveyMethodMeta,
+        ),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('duration_seconds')) {
+      context.handle(
+        _durationSecondsMeta,
+        durationSeconds.isAcceptableOrUnknown(
+          data['duration_seconds']!,
+          _durationSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paused_seconds')) {
+      context.handle(
+        _pausedSecondsMeta,
+        pausedSeconds.isAcceptableOrUnknown(
+          data['paused_seconds']!,
+          _pausedSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('distance_walked_m')) {
+      context.handle(
+        _distanceWalkedMMeta,
+        distanceWalkedM.isAcceptableOrUnknown(
+          data['distance_walked_m']!,
+          _distanceWalkedMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observer_count')) {
+      context.handle(
+        _observerCountMeta,
+        observerCount.isAcceptableOrUnknown(
+          data['observer_count']!,
+          _observerCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observer_names')) {
+      context.handle(
+        _observerNamesMeta,
+        observerNames.isAcceptableOrUnknown(
+          data['observer_names']!,
+          _observerNamesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('temperature_start_c')) {
+      context.handle(
+        _temperatureStartCMeta,
+        temperatureStartC.isAcceptableOrUnknown(
+          data['temperature_start_c']!,
+          _temperatureStartCMeta,
+        ),
+      );
+    }
+    if (data.containsKey('temperature_end_c')) {
+      context.handle(
+        _temperatureEndCMeta,
+        temperatureEndC.isAcceptableOrUnknown(
+          data['temperature_end_c']!,
+          _temperatureEndCMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wind_beaufort_start')) {
+      context.handle(
+        _windBeaufortStartMeta,
+        windBeaufortStart.isAcceptableOrUnknown(
+          data['wind_beaufort_start']!,
+          _windBeaufortStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wind_beaufort_end')) {
+      context.handle(
+        _windBeaufortEndMeta,
+        windBeaufortEnd.isAcceptableOrUnknown(
+          data['wind_beaufort_end']!,
+          _windBeaufortEndMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cloud_cover_start_pct')) {
+      context.handle(
+        _cloudCoverStartPctMeta,
+        cloudCoverStartPct.isAcceptableOrUnknown(
+          data['cloud_cover_start_pct']!,
+          _cloudCoverStartPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cloud_cover_end_pct')) {
+      context.handle(
+        _cloudCoverEndPctMeta,
+        cloudCoverEndPct.isAcceptableOrUnknown(
+          data['cloud_cover_end_pct']!,
+          _cloudCoverEndPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('precipitation')) {
+      context.handle(
+        _precipitationMeta,
+        precipitation.isAcceptableOrUnknown(
+          data['precipitation']!,
+          _precipitationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weather_suitable')) {
+      context.handle(
+        _weatherSuitableMeta,
+        weatherSuitable.isAcceptableOrUnknown(
+          data['weather_suitable']!,
+          _weatherSuitableMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weather_missing_reason')) {
+      context.handle(
+        _weatherMissingReasonMeta,
+        weatherMissingReason.isAcceptableOrUnknown(
+          data['weather_missing_reason']!,
+          _weatherMissingReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('zero_observation_confirmed')) {
+      context.handle(
+        _zeroObservationConfirmedMeta,
+        zeroObservationConfirmed.isAcceptableOrUnknown(
+          data['zero_observation_confirmed']!,
+          _zeroObservationConfirmedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('cancel_reason')) {
+      context.handle(
+        _cancelReasonMeta,
+        cancelReason.isAcceptableOrUnknown(
+          data['cancel_reason']!,
+          _cancelReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('battery_saver_used')) {
+      context.handle(
+        _batterySaverUsedMeta,
+        batterySaverUsed.isAcceptableOrUnknown(
+          data['battery_saver_used']!,
+          _batterySaverUsedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    }
+    if (data.containsKey('created_offline')) {
+      context.handle(
+        _createdOfflineMeta,
+        createdOffline.isAcceptableOrUnknown(
+          data['created_offline']!,
+          _createdOfflineMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('paused_at')) {
+      context.handle(
+        _pausedAtMeta,
+        pausedAt.isAcceptableOrUnknown(data['paused_at']!, _pausedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SurveyVisit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SurveyVisit(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      transectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transect_id'],
+      )!,
+      observerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observer_id'],
+      )!,
+      protocolVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}protocol_version'],
+      )!,
+      surveyMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_method'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      ),
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      durationSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_seconds'],
+      ),
+      pausedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paused_seconds'],
+      )!,
+      distanceWalkedM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}distance_walked_m'],
+      ),
+      observerCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}observer_count'],
+      )!,
+      observerNames: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observer_names'],
+      )!,
+      temperatureStartC: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}temperature_start_c'],
+      ),
+      temperatureEndC: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}temperature_end_c'],
+      ),
+      windBeaufortStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wind_beaufort_start'],
+      ),
+      windBeaufortEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wind_beaufort_end'],
+      ),
+      cloudCoverStartPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cloud_cover_start_pct'],
+      ),
+      cloudCoverEndPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cloud_cover_end_pct'],
+      ),
+      precipitation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}precipitation'],
+      )!,
+      weatherSuitable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}weather_suitable'],
+      ),
+      weatherMissingReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}weather_missing_reason'],
+      )!,
+      zeroObservationConfirmed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}zero_observation_confirmed'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      cancelReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cancel_reason'],
+      )!,
+      batterySaverUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}battery_saver_used'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      createdOffline: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}created_offline'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      pausedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paused_at'],
+      ),
+    );
+  }
+
+  @override
+  $SurveyVisitsTable createAlias(String alias) {
+    return $SurveyVisitsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+  final String transectId;
+  final String observerId;
+  final String protocolVersion;
+  final String surveyMethod;
+  final DateTime? startedAt;
+  final DateTime? endedAt;
+
+  /// Walking time without pauses.
+  final int? durationSeconds;
+  final int pausedSeconds;
+
+  /// The phone's own figure (sent by T040). The server replaces it with the
+  /// distance along the track points when it has at least two usable ones
+  /// (T036), and the next pull brings that back.
+  final double? distanceWalkedM;
+  final int observerCount;
+  final String observerNames;
+  final double? temperatureStartC;
+  final double? temperatureEndC;
+  final int? windBeaufortStart;
+  final int? windBeaufortEnd;
+  final int? cloudCoverStartPct;
+  final int? cloudCoverEndPct;
+  final String precipitation;
+  final bool? weatherSuitable;
+  final String weatherMissingReason;
+  final bool zeroObservationConfirmed;
+  final String notes;
+  final String status;
+
+  /// Set exactly when `status` is `cancelled`, empty otherwise.
+  final String cancelReason;
+  final bool batterySaverUsed;
+  final String deviceId;
+  final bool createdOffline;
+  final DateTime createdAt;
+
+  /// Local only: when the current pause began, null while walking.
+  final DateTime? pausedAt;
+  const SurveyVisit({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    required this.transectId,
+    required this.observerId,
+    required this.protocolVersion,
+    required this.surveyMethod,
+    this.startedAt,
+    this.endedAt,
+    this.durationSeconds,
+    required this.pausedSeconds,
+    this.distanceWalkedM,
+    required this.observerCount,
+    required this.observerNames,
+    this.temperatureStartC,
+    this.temperatureEndC,
+    this.windBeaufortStart,
+    this.windBeaufortEnd,
+    this.cloudCoverStartPct,
+    this.cloudCoverEndPct,
+    required this.precipitation,
+    this.weatherSuitable,
+    required this.weatherMissingReason,
+    required this.zeroObservationConfirmed,
+    required this.notes,
+    required this.status,
+    required this.cancelReason,
+    required this.batterySaverUsed,
+    required this.deviceId,
+    required this.createdOffline,
+    required this.createdAt,
+    this.pausedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['transect_id'] = Variable<String>(transectId);
+    map['observer_id'] = Variable<String>(observerId);
+    map['protocol_version'] = Variable<String>(protocolVersion);
+    map['survey_method'] = Variable<String>(surveyMethod);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<DateTime>(startedAt);
+    }
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    if (!nullToAbsent || durationSeconds != null) {
+      map['duration_seconds'] = Variable<int>(durationSeconds);
+    }
+    map['paused_seconds'] = Variable<int>(pausedSeconds);
+    if (!nullToAbsent || distanceWalkedM != null) {
+      map['distance_walked_m'] = Variable<double>(distanceWalkedM);
+    }
+    map['observer_count'] = Variable<int>(observerCount);
+    map['observer_names'] = Variable<String>(observerNames);
+    if (!nullToAbsent || temperatureStartC != null) {
+      map['temperature_start_c'] = Variable<double>(temperatureStartC);
+    }
+    if (!nullToAbsent || temperatureEndC != null) {
+      map['temperature_end_c'] = Variable<double>(temperatureEndC);
+    }
+    if (!nullToAbsent || windBeaufortStart != null) {
+      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart);
+    }
+    if (!nullToAbsent || windBeaufortEnd != null) {
+      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd);
+    }
+    if (!nullToAbsent || cloudCoverStartPct != null) {
+      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct);
+    }
+    if (!nullToAbsent || cloudCoverEndPct != null) {
+      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct);
+    }
+    map['precipitation'] = Variable<String>(precipitation);
+    if (!nullToAbsent || weatherSuitable != null) {
+      map['weather_suitable'] = Variable<bool>(weatherSuitable);
+    }
+    map['weather_missing_reason'] = Variable<String>(weatherMissingReason);
+    map['zero_observation_confirmed'] = Variable<bool>(
+      zeroObservationConfirmed,
+    );
+    map['notes'] = Variable<String>(notes);
+    map['status'] = Variable<String>(status);
+    map['cancel_reason'] = Variable<String>(cancelReason);
+    map['battery_saver_used'] = Variable<bool>(batterySaverUsed);
+    map['device_id'] = Variable<String>(deviceId);
+    map['created_offline'] = Variable<bool>(createdOffline);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || pausedAt != null) {
+      map['paused_at'] = Variable<DateTime>(pausedAt);
+    }
+    return map;
+  }
+
+  SurveyVisitsCompanion toCompanion(bool nullToAbsent) {
+    return SurveyVisitsCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      transectId: Value(transectId),
+      observerId: Value(observerId),
+      protocolVersion: Value(protocolVersion),
+      surveyMethod: Value(surveyMethod),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      durationSeconds: durationSeconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationSeconds),
+      pausedSeconds: Value(pausedSeconds),
+      distanceWalkedM: distanceWalkedM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(distanceWalkedM),
+      observerCount: Value(observerCount),
+      observerNames: Value(observerNames),
+      temperatureStartC: temperatureStartC == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temperatureStartC),
+      temperatureEndC: temperatureEndC == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temperatureEndC),
+      windBeaufortStart: windBeaufortStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(windBeaufortStart),
+      windBeaufortEnd: windBeaufortEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(windBeaufortEnd),
+      cloudCoverStartPct: cloudCoverStartPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cloudCoverStartPct),
+      cloudCoverEndPct: cloudCoverEndPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cloudCoverEndPct),
+      precipitation: Value(precipitation),
+      weatherSuitable: weatherSuitable == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weatherSuitable),
+      weatherMissingReason: Value(weatherMissingReason),
+      zeroObservationConfirmed: Value(zeroObservationConfirmed),
+      notes: Value(notes),
+      status: Value(status),
+      cancelReason: Value(cancelReason),
+      batterySaverUsed: Value(batterySaverUsed),
+      deviceId: Value(deviceId),
+      createdOffline: Value(createdOffline),
+      createdAt: Value(createdAt),
+      pausedAt: pausedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pausedAt),
+    );
+  }
+
+  factory SurveyVisit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SurveyVisit(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      transectId: serializer.fromJson<String>(json['transectId']),
+      observerId: serializer.fromJson<String>(json['observerId']),
+      protocolVersion: serializer.fromJson<String>(json['protocolVersion']),
+      surveyMethod: serializer.fromJson<String>(json['surveyMethod']),
+      startedAt: serializer.fromJson<DateTime?>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      durationSeconds: serializer.fromJson<int?>(json['durationSeconds']),
+      pausedSeconds: serializer.fromJson<int>(json['pausedSeconds']),
+      distanceWalkedM: serializer.fromJson<double?>(json['distanceWalkedM']),
+      observerCount: serializer.fromJson<int>(json['observerCount']),
+      observerNames: serializer.fromJson<String>(json['observerNames']),
+      temperatureStartC: serializer.fromJson<double?>(
+        json['temperatureStartC'],
+      ),
+      temperatureEndC: serializer.fromJson<double?>(json['temperatureEndC']),
+      windBeaufortStart: serializer.fromJson<int?>(json['windBeaufortStart']),
+      windBeaufortEnd: serializer.fromJson<int?>(json['windBeaufortEnd']),
+      cloudCoverStartPct: serializer.fromJson<int?>(json['cloudCoverStartPct']),
+      cloudCoverEndPct: serializer.fromJson<int?>(json['cloudCoverEndPct']),
+      precipitation: serializer.fromJson<String>(json['precipitation']),
+      weatherSuitable: serializer.fromJson<bool?>(json['weatherSuitable']),
+      weatherMissingReason: serializer.fromJson<String>(
+        json['weatherMissingReason'],
+      ),
+      zeroObservationConfirmed: serializer.fromJson<bool>(
+        json['zeroObservationConfirmed'],
+      ),
+      notes: serializer.fromJson<String>(json['notes']),
+      status: serializer.fromJson<String>(json['status']),
+      cancelReason: serializer.fromJson<String>(json['cancelReason']),
+      batterySaverUsed: serializer.fromJson<bool>(json['batterySaverUsed']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      createdOffline: serializer.fromJson<bool>(json['createdOffline']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'transectId': serializer.toJson<String>(transectId),
+      'observerId': serializer.toJson<String>(observerId),
+      'protocolVersion': serializer.toJson<String>(protocolVersion),
+      'surveyMethod': serializer.toJson<String>(surveyMethod),
+      'startedAt': serializer.toJson<DateTime?>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'durationSeconds': serializer.toJson<int?>(durationSeconds),
+      'pausedSeconds': serializer.toJson<int>(pausedSeconds),
+      'distanceWalkedM': serializer.toJson<double?>(distanceWalkedM),
+      'observerCount': serializer.toJson<int>(observerCount),
+      'observerNames': serializer.toJson<String>(observerNames),
+      'temperatureStartC': serializer.toJson<double?>(temperatureStartC),
+      'temperatureEndC': serializer.toJson<double?>(temperatureEndC),
+      'windBeaufortStart': serializer.toJson<int?>(windBeaufortStart),
+      'windBeaufortEnd': serializer.toJson<int?>(windBeaufortEnd),
+      'cloudCoverStartPct': serializer.toJson<int?>(cloudCoverStartPct),
+      'cloudCoverEndPct': serializer.toJson<int?>(cloudCoverEndPct),
+      'precipitation': serializer.toJson<String>(precipitation),
+      'weatherSuitable': serializer.toJson<bool?>(weatherSuitable),
+      'weatherMissingReason': serializer.toJson<String>(weatherMissingReason),
+      'zeroObservationConfirmed': serializer.toJson<bool>(
+        zeroObservationConfirmed,
+      ),
+      'notes': serializer.toJson<String>(notes),
+      'status': serializer.toJson<String>(status),
+      'cancelReason': serializer.toJson<String>(cancelReason),
+      'batterySaverUsed': serializer.toJson<bool>(batterySaverUsed),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'createdOffline': serializer.toJson<bool>(createdOffline),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'pausedAt': serializer.toJson<DateTime?>(pausedAt),
+    };
+  }
+
+  SurveyVisit copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    String? transectId,
+    String? observerId,
+    String? protocolVersion,
+    String? surveyMethod,
+    Value<DateTime?> startedAt = const Value.absent(),
+    Value<DateTime?> endedAt = const Value.absent(),
+    Value<int?> durationSeconds = const Value.absent(),
+    int? pausedSeconds,
+    Value<double?> distanceWalkedM = const Value.absent(),
+    int? observerCount,
+    String? observerNames,
+    Value<double?> temperatureStartC = const Value.absent(),
+    Value<double?> temperatureEndC = const Value.absent(),
+    Value<int?> windBeaufortStart = const Value.absent(),
+    Value<int?> windBeaufortEnd = const Value.absent(),
+    Value<int?> cloudCoverStartPct = const Value.absent(),
+    Value<int?> cloudCoverEndPct = const Value.absent(),
+    String? precipitation,
+    Value<bool?> weatherSuitable = const Value.absent(),
+    String? weatherMissingReason,
+    bool? zeroObservationConfirmed,
+    String? notes,
+    String? status,
+    String? cancelReason,
+    bool? batterySaverUsed,
+    String? deviceId,
+    bool? createdOffline,
+    DateTime? createdAt,
+    Value<DateTime?> pausedAt = const Value.absent(),
+  }) => SurveyVisit(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    transectId: transectId ?? this.transectId,
+    observerId: observerId ?? this.observerId,
+    protocolVersion: protocolVersion ?? this.protocolVersion,
+    surveyMethod: surveyMethod ?? this.surveyMethod,
+    startedAt: startedAt.present ? startedAt.value : this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    durationSeconds: durationSeconds.present
+        ? durationSeconds.value
+        : this.durationSeconds,
+    pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+    distanceWalkedM: distanceWalkedM.present
+        ? distanceWalkedM.value
+        : this.distanceWalkedM,
+    observerCount: observerCount ?? this.observerCount,
+    observerNames: observerNames ?? this.observerNames,
+    temperatureStartC: temperatureStartC.present
+        ? temperatureStartC.value
+        : this.temperatureStartC,
+    temperatureEndC: temperatureEndC.present
+        ? temperatureEndC.value
+        : this.temperatureEndC,
+    windBeaufortStart: windBeaufortStart.present
+        ? windBeaufortStart.value
+        : this.windBeaufortStart,
+    windBeaufortEnd: windBeaufortEnd.present
+        ? windBeaufortEnd.value
+        : this.windBeaufortEnd,
+    cloudCoverStartPct: cloudCoverStartPct.present
+        ? cloudCoverStartPct.value
+        : this.cloudCoverStartPct,
+    cloudCoverEndPct: cloudCoverEndPct.present
+        ? cloudCoverEndPct.value
+        : this.cloudCoverEndPct,
+    precipitation: precipitation ?? this.precipitation,
+    weatherSuitable: weatherSuitable.present
+        ? weatherSuitable.value
+        : this.weatherSuitable,
+    weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
+    zeroObservationConfirmed:
+        zeroObservationConfirmed ?? this.zeroObservationConfirmed,
+    notes: notes ?? this.notes,
+    status: status ?? this.status,
+    cancelReason: cancelReason ?? this.cancelReason,
+    batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
+    deviceId: deviceId ?? this.deviceId,
+    createdOffline: createdOffline ?? this.createdOffline,
+    createdAt: createdAt ?? this.createdAt,
+    pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
+  );
+  SurveyVisit copyWithCompanion(SurveyVisitsCompanion data) {
+    return SurveyVisit(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      transectId: data.transectId.present
+          ? data.transectId.value
+          : this.transectId,
+      observerId: data.observerId.present
+          ? data.observerId.value
+          : this.observerId,
+      protocolVersion: data.protocolVersion.present
+          ? data.protocolVersion.value
+          : this.protocolVersion,
+      surveyMethod: data.surveyMethod.present
+          ? data.surveyMethod.value
+          : this.surveyMethod,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      durationSeconds: data.durationSeconds.present
+          ? data.durationSeconds.value
+          : this.durationSeconds,
+      pausedSeconds: data.pausedSeconds.present
+          ? data.pausedSeconds.value
+          : this.pausedSeconds,
+      distanceWalkedM: data.distanceWalkedM.present
+          ? data.distanceWalkedM.value
+          : this.distanceWalkedM,
+      observerCount: data.observerCount.present
+          ? data.observerCount.value
+          : this.observerCount,
+      observerNames: data.observerNames.present
+          ? data.observerNames.value
+          : this.observerNames,
+      temperatureStartC: data.temperatureStartC.present
+          ? data.temperatureStartC.value
+          : this.temperatureStartC,
+      temperatureEndC: data.temperatureEndC.present
+          ? data.temperatureEndC.value
+          : this.temperatureEndC,
+      windBeaufortStart: data.windBeaufortStart.present
+          ? data.windBeaufortStart.value
+          : this.windBeaufortStart,
+      windBeaufortEnd: data.windBeaufortEnd.present
+          ? data.windBeaufortEnd.value
+          : this.windBeaufortEnd,
+      cloudCoverStartPct: data.cloudCoverStartPct.present
+          ? data.cloudCoverStartPct.value
+          : this.cloudCoverStartPct,
+      cloudCoverEndPct: data.cloudCoverEndPct.present
+          ? data.cloudCoverEndPct.value
+          : this.cloudCoverEndPct,
+      precipitation: data.precipitation.present
+          ? data.precipitation.value
+          : this.precipitation,
+      weatherSuitable: data.weatherSuitable.present
+          ? data.weatherSuitable.value
+          : this.weatherSuitable,
+      weatherMissingReason: data.weatherMissingReason.present
+          ? data.weatherMissingReason.value
+          : this.weatherMissingReason,
+      zeroObservationConfirmed: data.zeroObservationConfirmed.present
+          ? data.zeroObservationConfirmed.value
+          : this.zeroObservationConfirmed,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      status: data.status.present ? data.status.value : this.status,
+      cancelReason: data.cancelReason.present
+          ? data.cancelReason.value
+          : this.cancelReason,
+      batterySaverUsed: data.batterySaverUsed.present
+          ? data.batterySaverUsed.value
+          : this.batterySaverUsed,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      createdOffline: data.createdOffline.present
+          ? data.createdOffline.value
+          : this.createdOffline,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      pausedAt: data.pausedAt.present ? data.pausedAt.value : this.pausedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyVisit(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('transectId: $transectId, ')
+          ..write('observerId: $observerId, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('surveyMethod: $surveyMethod, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('distanceWalkedM: $distanceWalkedM, ')
+          ..write('observerCount: $observerCount, ')
+          ..write('observerNames: $observerNames, ')
+          ..write('temperatureStartC: $temperatureStartC, ')
+          ..write('temperatureEndC: $temperatureEndC, ')
+          ..write('windBeaufortStart: $windBeaufortStart, ')
+          ..write('windBeaufortEnd: $windBeaufortEnd, ')
+          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
+          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
+          ..write('precipitation: $precipitation, ')
+          ..write('weatherSuitable: $weatherSuitable, ')
+          ..write('weatherMissingReason: $weatherMissingReason, ')
+          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('cancelReason: $cancelReason, ')
+          ..write('batterySaverUsed: $batterySaverUsed, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('createdOffline: $createdOffline, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pausedAt: $pausedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    transectId,
+    observerId,
+    protocolVersion,
+    surveyMethod,
+    startedAt,
+    endedAt,
+    durationSeconds,
+    pausedSeconds,
+    distanceWalkedM,
+    observerCount,
+    observerNames,
+    temperatureStartC,
+    temperatureEndC,
+    windBeaufortStart,
+    windBeaufortEnd,
+    cloudCoverStartPct,
+    cloudCoverEndPct,
+    precipitation,
+    weatherSuitable,
+    weatherMissingReason,
+    zeroObservationConfirmed,
+    notes,
+    status,
+    cancelReason,
+    batterySaverUsed,
+    deviceId,
+    createdOffline,
+    createdAt,
+    pausedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SurveyVisit &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.transectId == this.transectId &&
+          other.observerId == this.observerId &&
+          other.protocolVersion == this.protocolVersion &&
+          other.surveyMethod == this.surveyMethod &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.durationSeconds == this.durationSeconds &&
+          other.pausedSeconds == this.pausedSeconds &&
+          other.distanceWalkedM == this.distanceWalkedM &&
+          other.observerCount == this.observerCount &&
+          other.observerNames == this.observerNames &&
+          other.temperatureStartC == this.temperatureStartC &&
+          other.temperatureEndC == this.temperatureEndC &&
+          other.windBeaufortStart == this.windBeaufortStart &&
+          other.windBeaufortEnd == this.windBeaufortEnd &&
+          other.cloudCoverStartPct == this.cloudCoverStartPct &&
+          other.cloudCoverEndPct == this.cloudCoverEndPct &&
+          other.precipitation == this.precipitation &&
+          other.weatherSuitable == this.weatherSuitable &&
+          other.weatherMissingReason == this.weatherMissingReason &&
+          other.zeroObservationConfirmed == this.zeroObservationConfirmed &&
+          other.notes == this.notes &&
+          other.status == this.status &&
+          other.cancelReason == this.cancelReason &&
+          other.batterySaverUsed == this.batterySaverUsed &&
+          other.deviceId == this.deviceId &&
+          other.createdOffline == this.createdOffline &&
+          other.createdAt == this.createdAt &&
+          other.pausedAt == this.pausedAt);
+}
+
+class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> transectId;
+  final Value<String> observerId;
+  final Value<String> protocolVersion;
+  final Value<String> surveyMethod;
+  final Value<DateTime?> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<int?> durationSeconds;
+  final Value<int> pausedSeconds;
+  final Value<double?> distanceWalkedM;
+  final Value<int> observerCount;
+  final Value<String> observerNames;
+  final Value<double?> temperatureStartC;
+  final Value<double?> temperatureEndC;
+  final Value<int?> windBeaufortStart;
+  final Value<int?> windBeaufortEnd;
+  final Value<int?> cloudCoverStartPct;
+  final Value<int?> cloudCoverEndPct;
+  final Value<String> precipitation;
+  final Value<bool?> weatherSuitable;
+  final Value<String> weatherMissingReason;
+  final Value<bool> zeroObservationConfirmed;
+  final Value<String> notes;
+  final Value<String> status;
+  final Value<String> cancelReason;
+  final Value<bool> batterySaverUsed;
+  final Value<String> deviceId;
+  final Value<bool> createdOffline;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> pausedAt;
+  final Value<int> rowid;
+  const SurveyVisitsCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.transectId = const Value.absent(),
+    this.observerId = const Value.absent(),
+    this.protocolVersion = const Value.absent(),
+    this.surveyMethod = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.distanceWalkedM = const Value.absent(),
+    this.observerCount = const Value.absent(),
+    this.observerNames = const Value.absent(),
+    this.temperatureStartC = const Value.absent(),
+    this.temperatureEndC = const Value.absent(),
+    this.windBeaufortStart = const Value.absent(),
+    this.windBeaufortEnd = const Value.absent(),
+    this.cloudCoverStartPct = const Value.absent(),
+    this.cloudCoverEndPct = const Value.absent(),
+    this.precipitation = const Value.absent(),
+    this.weatherSuitable = const Value.absent(),
+    this.weatherMissingReason = const Value.absent(),
+    this.zeroObservationConfirmed = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.cancelReason = const Value.absent(),
+    this.batterySaverUsed = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.createdOffline = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.pausedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SurveyVisitsCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    required String transectId,
+    required String observerId,
+    required String protocolVersion,
+    this.surveyMethod = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.distanceWalkedM = const Value.absent(),
+    this.observerCount = const Value.absent(),
+    this.observerNames = const Value.absent(),
+    this.temperatureStartC = const Value.absent(),
+    this.temperatureEndC = const Value.absent(),
+    this.windBeaufortStart = const Value.absent(),
+    this.windBeaufortEnd = const Value.absent(),
+    this.cloudCoverStartPct = const Value.absent(),
+    this.cloudCoverEndPct = const Value.absent(),
+    this.precipitation = const Value.absent(),
+    this.weatherSuitable = const Value.absent(),
+    this.weatherMissingReason = const Value.absent(),
+    this.zeroObservationConfirmed = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.cancelReason = const Value.absent(),
+    this.batterySaverUsed = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.createdOffline = const Value.absent(),
+    required DateTime createdAt,
+    this.pausedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       transectId = Value(transectId),
+       observerId = Value(observerId),
+       protocolVersion = Value(protocolVersion),
+       createdAt = Value(createdAt);
+  static Insertable<SurveyVisit> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? transectId,
+    Expression<String>? observerId,
+    Expression<String>? protocolVersion,
+    Expression<String>? surveyMethod,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<int>? durationSeconds,
+    Expression<int>? pausedSeconds,
+    Expression<double>? distanceWalkedM,
+    Expression<int>? observerCount,
+    Expression<String>? observerNames,
+    Expression<double>? temperatureStartC,
+    Expression<double>? temperatureEndC,
+    Expression<int>? windBeaufortStart,
+    Expression<int>? windBeaufortEnd,
+    Expression<int>? cloudCoverStartPct,
+    Expression<int>? cloudCoverEndPct,
+    Expression<String>? precipitation,
+    Expression<bool>? weatherSuitable,
+    Expression<String>? weatherMissingReason,
+    Expression<bool>? zeroObservationConfirmed,
+    Expression<String>? notes,
+    Expression<String>? status,
+    Expression<String>? cancelReason,
+    Expression<bool>? batterySaverUsed,
+    Expression<String>? deviceId,
+    Expression<bool>? createdOffline,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? pausedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (transectId != null) 'transect_id': transectId,
+      if (observerId != null) 'observer_id': observerId,
+      if (protocolVersion != null) 'protocol_version': protocolVersion,
+      if (surveyMethod != null) 'survey_method': surveyMethod,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (durationSeconds != null) 'duration_seconds': durationSeconds,
+      if (pausedSeconds != null) 'paused_seconds': pausedSeconds,
+      if (distanceWalkedM != null) 'distance_walked_m': distanceWalkedM,
+      if (observerCount != null) 'observer_count': observerCount,
+      if (observerNames != null) 'observer_names': observerNames,
+      if (temperatureStartC != null) 'temperature_start_c': temperatureStartC,
+      if (temperatureEndC != null) 'temperature_end_c': temperatureEndC,
+      if (windBeaufortStart != null) 'wind_beaufort_start': windBeaufortStart,
+      if (windBeaufortEnd != null) 'wind_beaufort_end': windBeaufortEnd,
+      if (cloudCoverStartPct != null)
+        'cloud_cover_start_pct': cloudCoverStartPct,
+      if (cloudCoverEndPct != null) 'cloud_cover_end_pct': cloudCoverEndPct,
+      if (precipitation != null) 'precipitation': precipitation,
+      if (weatherSuitable != null) 'weather_suitable': weatherSuitable,
+      if (weatherMissingReason != null)
+        'weather_missing_reason': weatherMissingReason,
+      if (zeroObservationConfirmed != null)
+        'zero_observation_confirmed': zeroObservationConfirmed,
+      if (notes != null) 'notes': notes,
+      if (status != null) 'status': status,
+      if (cancelReason != null) 'cancel_reason': cancelReason,
+      if (batterySaverUsed != null) 'battery_saver_used': batterySaverUsed,
+      if (deviceId != null) 'device_id': deviceId,
+      if (createdOffline != null) 'created_offline': createdOffline,
+      if (createdAt != null) 'created_at': createdAt,
+      if (pausedAt != null) 'paused_at': pausedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SurveyVisitsCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? transectId,
+    Value<String>? observerId,
+    Value<String>? protocolVersion,
+    Value<String>? surveyMethod,
+    Value<DateTime?>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<int?>? durationSeconds,
+    Value<int>? pausedSeconds,
+    Value<double?>? distanceWalkedM,
+    Value<int>? observerCount,
+    Value<String>? observerNames,
+    Value<double?>? temperatureStartC,
+    Value<double?>? temperatureEndC,
+    Value<int?>? windBeaufortStart,
+    Value<int?>? windBeaufortEnd,
+    Value<int?>? cloudCoverStartPct,
+    Value<int?>? cloudCoverEndPct,
+    Value<String>? precipitation,
+    Value<bool?>? weatherSuitable,
+    Value<String>? weatherMissingReason,
+    Value<bool>? zeroObservationConfirmed,
+    Value<String>? notes,
+    Value<String>? status,
+    Value<String>? cancelReason,
+    Value<bool>? batterySaverUsed,
+    Value<String>? deviceId,
+    Value<bool>? createdOffline,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? pausedAt,
+    Value<int>? rowid,
+  }) {
+    return SurveyVisitsCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      transectId: transectId ?? this.transectId,
+      observerId: observerId ?? this.observerId,
+      protocolVersion: protocolVersion ?? this.protocolVersion,
+      surveyMethod: surveyMethod ?? this.surveyMethod,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+      distanceWalkedM: distanceWalkedM ?? this.distanceWalkedM,
+      observerCount: observerCount ?? this.observerCount,
+      observerNames: observerNames ?? this.observerNames,
+      temperatureStartC: temperatureStartC ?? this.temperatureStartC,
+      temperatureEndC: temperatureEndC ?? this.temperatureEndC,
+      windBeaufortStart: windBeaufortStart ?? this.windBeaufortStart,
+      windBeaufortEnd: windBeaufortEnd ?? this.windBeaufortEnd,
+      cloudCoverStartPct: cloudCoverStartPct ?? this.cloudCoverStartPct,
+      cloudCoverEndPct: cloudCoverEndPct ?? this.cloudCoverEndPct,
+      precipitation: precipitation ?? this.precipitation,
+      weatherSuitable: weatherSuitable ?? this.weatherSuitable,
+      weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
+      zeroObservationConfirmed:
+          zeroObservationConfirmed ?? this.zeroObservationConfirmed,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      cancelReason: cancelReason ?? this.cancelReason,
+      batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
+      deviceId: deviceId ?? this.deviceId,
+      createdOffline: createdOffline ?? this.createdOffline,
+      createdAt: createdAt ?? this.createdAt,
+      pausedAt: pausedAt ?? this.pausedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (transectId.present) {
+      map['transect_id'] = Variable<String>(transectId.value);
+    }
+    if (observerId.present) {
+      map['observer_id'] = Variable<String>(observerId.value);
+    }
+    if (protocolVersion.present) {
+      map['protocol_version'] = Variable<String>(protocolVersion.value);
+    }
+    if (surveyMethod.present) {
+      map['survey_method'] = Variable<String>(surveyMethod.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (durationSeconds.present) {
+      map['duration_seconds'] = Variable<int>(durationSeconds.value);
+    }
+    if (pausedSeconds.present) {
+      map['paused_seconds'] = Variable<int>(pausedSeconds.value);
+    }
+    if (distanceWalkedM.present) {
+      map['distance_walked_m'] = Variable<double>(distanceWalkedM.value);
+    }
+    if (observerCount.present) {
+      map['observer_count'] = Variable<int>(observerCount.value);
+    }
+    if (observerNames.present) {
+      map['observer_names'] = Variable<String>(observerNames.value);
+    }
+    if (temperatureStartC.present) {
+      map['temperature_start_c'] = Variable<double>(temperatureStartC.value);
+    }
+    if (temperatureEndC.present) {
+      map['temperature_end_c'] = Variable<double>(temperatureEndC.value);
+    }
+    if (windBeaufortStart.present) {
+      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart.value);
+    }
+    if (windBeaufortEnd.present) {
+      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd.value);
+    }
+    if (cloudCoverStartPct.present) {
+      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct.value);
+    }
+    if (cloudCoverEndPct.present) {
+      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct.value);
+    }
+    if (precipitation.present) {
+      map['precipitation'] = Variable<String>(precipitation.value);
+    }
+    if (weatherSuitable.present) {
+      map['weather_suitable'] = Variable<bool>(weatherSuitable.value);
+    }
+    if (weatherMissingReason.present) {
+      map['weather_missing_reason'] = Variable<String>(
+        weatherMissingReason.value,
+      );
+    }
+    if (zeroObservationConfirmed.present) {
+      map['zero_observation_confirmed'] = Variable<bool>(
+        zeroObservationConfirmed.value,
+      );
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (cancelReason.present) {
+      map['cancel_reason'] = Variable<String>(cancelReason.value);
+    }
+    if (batterySaverUsed.present) {
+      map['battery_saver_used'] = Variable<bool>(batterySaverUsed.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (createdOffline.present) {
+      map['created_offline'] = Variable<bool>(createdOffline.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (pausedAt.present) {
+      map['paused_at'] = Variable<DateTime>(pausedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SurveyVisitsCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('transectId: $transectId, ')
+          ..write('observerId: $observerId, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('surveyMethod: $surveyMethod, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('distanceWalkedM: $distanceWalkedM, ')
+          ..write('observerCount: $observerCount, ')
+          ..write('observerNames: $observerNames, ')
+          ..write('temperatureStartC: $temperatureStartC, ')
+          ..write('temperatureEndC: $temperatureEndC, ')
+          ..write('windBeaufortStart: $windBeaufortStart, ')
+          ..write('windBeaufortEnd: $windBeaufortEnd, ')
+          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
+          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
+          ..write('precipitation: $precipitation, ')
+          ..write('weatherSuitable: $weatherSuitable, ')
+          ..write('weatherMissingReason: $weatherMissingReason, ')
+          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('cancelReason: $cancelReason, ')
+          ..write('batterySaverUsed: $batterySaverUsed, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('createdOffline: $createdOffline, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TaxaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rankMeta = const VerificationMeta('rank');
+  @override
+  late final GeneratedColumn<String> rank = GeneratedColumn<String>(
+    'rank',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _genusMeta = const VerificationMeta('genus');
+  @override
+  late final GeneratedColumn<String> genus = GeneratedColumn<String>(
+    'genus',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _familyMeta = const VerificationMeta('family');
+  @override
+  late final GeneratedColumn<String> family = GeneratedColumn<String>(
+    'family',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _vernacularNameSrMeta = const VerificationMeta(
+    'vernacularNameSr',
+  );
+  @override
+  late final GeneratedColumn<String> vernacularNameSr = GeneratedColumn<String>(
+    'vernacular_name_sr',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _vernacularNameEnMeta = const VerificationMeta(
+    'vernacularNameEn',
+  );
+  @override
+  late final GeneratedColumn<String> vernacularNameEn = GeneratedColumn<String>(
+    'vernacular_name_en',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taxonSourceMeta = const VerificationMeta(
+    'taxonSource',
+  );
+  @override
+  late final GeneratedColumn<String> taxonSource = GeneratedColumn<String>(
+    'taxon_source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taxonSourceIdMeta = const VerificationMeta(
+    'taxonSourceId',
+  );
+  @override
+  late final GeneratedColumn<String> taxonSourceId = GeneratedColumn<String>(
+    'taxon_source_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _photoRequiredMeta = const VerificationMeta(
+    'photoRequired',
+  );
+  @override
+  late final GeneratedColumn<bool> photoRequired = GeneratedColumn<bool>(
+    'photo_required',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("photo_required" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _identificationNotesMeta =
+      const VerificationMeta('identificationNotes');
+  @override
+  late final GeneratedColumn<String> identificationNotes =
+      GeneratedColumn<String>(
+        'identification_notes',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _acceptedNameIdMeta = const VerificationMeta(
+    'acceptedNameId',
+  );
+  @override
+  late final GeneratedColumn<String> acceptedNameId = GeneratedColumn<String>(
+    'accepted_name_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _introducedInIdMeta = const VerificationMeta(
+    'introducedInId',
+  );
+  @override
+  late final GeneratedColumn<String> introducedInId = GeneratedColumn<String>(
+    'introduced_in_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _retiredInIdMeta = const VerificationMeta(
+    'retiredInId',
+  );
+  @override
+  late final GeneratedColumn<String> retiredInId = GeneratedColumn<String>(
+    'retired_in_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scientificNameMeta = const VerificationMeta(
+    'scientificName',
+  );
+  @override
+  late final GeneratedColumn<String> scientificName = GeneratedColumn<String>(
+    'scientific_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    author,
+    rank,
+    genus,
+    family,
+    vernacularNameSr,
+    vernacularNameEn,
+    taxonSource,
+    taxonSourceId,
+    active,
+    photoRequired,
+    identificationNotes,
+    acceptedNameId,
+    introducedInId,
+    retiredInId,
+    scientificName,
+    serverVersion,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'taxon';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Taxon> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_authorMeta);
+    }
+    if (data.containsKey('rank')) {
+      context.handle(
+        _rankMeta,
+        rank.isAcceptableOrUnknown(data['rank']!, _rankMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rankMeta);
+    }
+    if (data.containsKey('genus')) {
+      context.handle(
+        _genusMeta,
+        genus.isAcceptableOrUnknown(data['genus']!, _genusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_genusMeta);
+    }
+    if (data.containsKey('family')) {
+      context.handle(
+        _familyMeta,
+        family.isAcceptableOrUnknown(data['family']!, _familyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_familyMeta);
+    }
+    if (data.containsKey('vernacular_name_sr')) {
+      context.handle(
+        _vernacularNameSrMeta,
+        vernacularNameSr.isAcceptableOrUnknown(
+          data['vernacular_name_sr']!,
+          _vernacularNameSrMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_vernacularNameSrMeta);
+    }
+    if (data.containsKey('vernacular_name_en')) {
+      context.handle(
+        _vernacularNameEnMeta,
+        vernacularNameEn.isAcceptableOrUnknown(
+          data['vernacular_name_en']!,
+          _vernacularNameEnMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_vernacularNameEnMeta);
+    }
+    if (data.containsKey('taxon_source')) {
+      context.handle(
+        _taxonSourceMeta,
+        taxonSource.isAcceptableOrUnknown(
+          data['taxon_source']!,
+          _taxonSourceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_taxonSourceMeta);
+    }
+    if (data.containsKey('taxon_source_id')) {
+      context.handle(
+        _taxonSourceIdMeta,
+        taxonSourceId.isAcceptableOrUnknown(
+          data['taxon_source_id']!,
+          _taxonSourceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_taxonSourceIdMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('photo_required')) {
+      context.handle(
+        _photoRequiredMeta,
+        photoRequired.isAcceptableOrUnknown(
+          data['photo_required']!,
+          _photoRequiredMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_photoRequiredMeta);
+    }
+    if (data.containsKey('identification_notes')) {
+      context.handle(
+        _identificationNotesMeta,
+        identificationNotes.isAcceptableOrUnknown(
+          data['identification_notes']!,
+          _identificationNotesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('accepted_name_id')) {
+      context.handle(
+        _acceptedNameIdMeta,
+        acceptedNameId.isAcceptableOrUnknown(
+          data['accepted_name_id']!,
+          _acceptedNameIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('introduced_in_id')) {
+      context.handle(
+        _introducedInIdMeta,
+        introducedInId.isAcceptableOrUnknown(
+          data['introduced_in_id']!,
+          _introducedInIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_introducedInIdMeta);
+    }
+    if (data.containsKey('retired_in_id')) {
+      context.handle(
+        _retiredInIdMeta,
+        retiredInId.isAcceptableOrUnknown(
+          data['retired_in_id']!,
+          _retiredInIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scientific_name')) {
+      context.handle(
+        _scientificNameMeta,
+        scientificName.isAcceptableOrUnknown(
+          data['scientific_name']!,
+          _scientificNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scientificNameMeta);
+    }
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Taxon map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Taxon(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      )!,
+      rank: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rank'],
+      )!,
+      genus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}genus'],
+      )!,
+      family: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}family'],
+      )!,
+      vernacularNameSr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vernacular_name_sr'],
+      )!,
+      vernacularNameEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vernacular_name_en'],
+      )!,
+      taxonSource: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}taxon_source'],
+      )!,
+      taxonSourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}taxon_source_id'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      photoRequired: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}photo_required'],
+      )!,
+      identificationNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}identification_notes'],
+      ),
+      acceptedNameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}accepted_name_id'],
+      ),
+      introducedInId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}introduced_in_id'],
+      )!,
+      retiredInId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}retired_in_id'],
+      ),
+      scientificName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scientific_name'],
+      )!,
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TaxaTable createAlias(String alias) {
+    return $TaxaTable(attachedDatabase, alias);
+  }
+}
+
+class Taxon extends DataClass implements Insertable<Taxon> {
+  final String id;
+  final String author;
+  final String rank;
+  final String genus;
+  final String family;
+  final String vernacularNameSr;
+  final String vernacularNameEn;
+  final String taxonSource;
+  final String taxonSourceId;
+  final bool active;
+  final bool photoRequired;
+  final String? identificationNotes;
+  final String? acceptedNameId;
+  final String introducedInId;
+  final String? retiredInId;
+  final String scientificName;
+  final int? serverVersion;
+  final DateTime? deletedAt;
+  const Taxon({
+    required this.id,
+    required this.author,
+    required this.rank,
+    required this.genus,
+    required this.family,
+    required this.vernacularNameSr,
+    required this.vernacularNameEn,
+    required this.taxonSource,
+    required this.taxonSourceId,
+    required this.active,
+    required this.photoRequired,
+    this.identificationNotes,
+    this.acceptedNameId,
+    required this.introducedInId,
+    this.retiredInId,
+    required this.scientificName,
+    this.serverVersion,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['author'] = Variable<String>(author);
+    map['rank'] = Variable<String>(rank);
+    map['genus'] = Variable<String>(genus);
+    map['family'] = Variable<String>(family);
+    map['vernacular_name_sr'] = Variable<String>(vernacularNameSr);
+    map['vernacular_name_en'] = Variable<String>(vernacularNameEn);
+    map['taxon_source'] = Variable<String>(taxonSource);
+    map['taxon_source_id'] = Variable<String>(taxonSourceId);
+    map['active'] = Variable<bool>(active);
+    map['photo_required'] = Variable<bool>(photoRequired);
+    if (!nullToAbsent || identificationNotes != null) {
+      map['identification_notes'] = Variable<String>(identificationNotes);
+    }
+    if (!nullToAbsent || acceptedNameId != null) {
+      map['accepted_name_id'] = Variable<String>(acceptedNameId);
+    }
+    map['introduced_in_id'] = Variable<String>(introducedInId);
+    if (!nullToAbsent || retiredInId != null) {
+      map['retired_in_id'] = Variable<String>(retiredInId);
+    }
+    map['scientific_name'] = Variable<String>(scientificName);
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  TaxaCompanion toCompanion(bool nullToAbsent) {
+    return TaxaCompanion(
+      id: Value(id),
+      author: Value(author),
+      rank: Value(rank),
+      genus: Value(genus),
+      family: Value(family),
+      vernacularNameSr: Value(vernacularNameSr),
+      vernacularNameEn: Value(vernacularNameEn),
+      taxonSource: Value(taxonSource),
+      taxonSourceId: Value(taxonSourceId),
+      active: Value(active),
+      photoRequired: Value(photoRequired),
+      identificationNotes: identificationNotes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(identificationNotes),
+      acceptedNameId: acceptedNameId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(acceptedNameId),
+      introducedInId: Value(introducedInId),
+      retiredInId: retiredInId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(retiredInId),
+      scientificName: Value(scientificName),
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory Taxon.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Taxon(
+      id: serializer.fromJson<String>(json['id']),
+      author: serializer.fromJson<String>(json['author']),
+      rank: serializer.fromJson<String>(json['rank']),
+      genus: serializer.fromJson<String>(json['genus']),
+      family: serializer.fromJson<String>(json['family']),
+      vernacularNameSr: serializer.fromJson<String>(json['vernacularNameSr']),
+      vernacularNameEn: serializer.fromJson<String>(json['vernacularNameEn']),
+      taxonSource: serializer.fromJson<String>(json['taxonSource']),
+      taxonSourceId: serializer.fromJson<String>(json['taxonSourceId']),
+      active: serializer.fromJson<bool>(json['active']),
+      photoRequired: serializer.fromJson<bool>(json['photoRequired']),
+      identificationNotes: serializer.fromJson<String?>(
+        json['identificationNotes'],
+      ),
+      acceptedNameId: serializer.fromJson<String?>(json['acceptedNameId']),
+      introducedInId: serializer.fromJson<String>(json['introducedInId']),
+      retiredInId: serializer.fromJson<String?>(json['retiredInId']),
+      scientificName: serializer.fromJson<String>(json['scientificName']),
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'author': serializer.toJson<String>(author),
+      'rank': serializer.toJson<String>(rank),
+      'genus': serializer.toJson<String>(genus),
+      'family': serializer.toJson<String>(family),
+      'vernacularNameSr': serializer.toJson<String>(vernacularNameSr),
+      'vernacularNameEn': serializer.toJson<String>(vernacularNameEn),
+      'taxonSource': serializer.toJson<String>(taxonSource),
+      'taxonSourceId': serializer.toJson<String>(taxonSourceId),
+      'active': serializer.toJson<bool>(active),
+      'photoRequired': serializer.toJson<bool>(photoRequired),
+      'identificationNotes': serializer.toJson<String?>(identificationNotes),
+      'acceptedNameId': serializer.toJson<String?>(acceptedNameId),
+      'introducedInId': serializer.toJson<String>(introducedInId),
+      'retiredInId': serializer.toJson<String?>(retiredInId),
+      'scientificName': serializer.toJson<String>(scientificName),
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  Taxon copyWith({
+    String? id,
+    String? author,
+    String? rank,
+    String? genus,
+    String? family,
+    String? vernacularNameSr,
+    String? vernacularNameEn,
+    String? taxonSource,
+    String? taxonSourceId,
+    bool? active,
+    bool? photoRequired,
+    Value<String?> identificationNotes = const Value.absent(),
+    Value<String?> acceptedNameId = const Value.absent(),
+    String? introducedInId,
+    Value<String?> retiredInId = const Value.absent(),
+    String? scientificName,
+    Value<int?> serverVersion = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => Taxon(
+    id: id ?? this.id,
+    author: author ?? this.author,
+    rank: rank ?? this.rank,
+    genus: genus ?? this.genus,
+    family: family ?? this.family,
+    vernacularNameSr: vernacularNameSr ?? this.vernacularNameSr,
+    vernacularNameEn: vernacularNameEn ?? this.vernacularNameEn,
+    taxonSource: taxonSource ?? this.taxonSource,
+    taxonSourceId: taxonSourceId ?? this.taxonSourceId,
+    active: active ?? this.active,
+    photoRequired: photoRequired ?? this.photoRequired,
+    identificationNotes: identificationNotes.present
+        ? identificationNotes.value
+        : this.identificationNotes,
+    acceptedNameId: acceptedNameId.present
+        ? acceptedNameId.value
+        : this.acceptedNameId,
+    introducedInId: introducedInId ?? this.introducedInId,
+    retiredInId: retiredInId.present ? retiredInId.value : this.retiredInId,
+    scientificName: scientificName ?? this.scientificName,
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  Taxon copyWithCompanion(TaxaCompanion data) {
+    return Taxon(
+      id: data.id.present ? data.id.value : this.id,
+      author: data.author.present ? data.author.value : this.author,
+      rank: data.rank.present ? data.rank.value : this.rank,
+      genus: data.genus.present ? data.genus.value : this.genus,
+      family: data.family.present ? data.family.value : this.family,
+      vernacularNameSr: data.vernacularNameSr.present
+          ? data.vernacularNameSr.value
+          : this.vernacularNameSr,
+      vernacularNameEn: data.vernacularNameEn.present
+          ? data.vernacularNameEn.value
+          : this.vernacularNameEn,
+      taxonSource: data.taxonSource.present
+          ? data.taxonSource.value
+          : this.taxonSource,
+      taxonSourceId: data.taxonSourceId.present
+          ? data.taxonSourceId.value
+          : this.taxonSourceId,
+      active: data.active.present ? data.active.value : this.active,
+      photoRequired: data.photoRequired.present
+          ? data.photoRequired.value
+          : this.photoRequired,
+      identificationNotes: data.identificationNotes.present
+          ? data.identificationNotes.value
+          : this.identificationNotes,
+      acceptedNameId: data.acceptedNameId.present
+          ? data.acceptedNameId.value
+          : this.acceptedNameId,
+      introducedInId: data.introducedInId.present
+          ? data.introducedInId.value
+          : this.introducedInId,
+      retiredInId: data.retiredInId.present
+          ? data.retiredInId.value
+          : this.retiredInId,
+      scientificName: data.scientificName.present
+          ? data.scientificName.value
+          : this.scientificName,
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Taxon(')
+          ..write('id: $id, ')
+          ..write('author: $author, ')
+          ..write('rank: $rank, ')
+          ..write('genus: $genus, ')
+          ..write('family: $family, ')
+          ..write('vernacularNameSr: $vernacularNameSr, ')
+          ..write('vernacularNameEn: $vernacularNameEn, ')
+          ..write('taxonSource: $taxonSource, ')
+          ..write('taxonSourceId: $taxonSourceId, ')
+          ..write('active: $active, ')
+          ..write('photoRequired: $photoRequired, ')
+          ..write('identificationNotes: $identificationNotes, ')
+          ..write('acceptedNameId: $acceptedNameId, ')
+          ..write('introducedInId: $introducedInId, ')
+          ..write('retiredInId: $retiredInId, ')
+          ..write('scientificName: $scientificName, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    author,
+    rank,
+    genus,
+    family,
+    vernacularNameSr,
+    vernacularNameEn,
+    taxonSource,
+    taxonSourceId,
+    active,
+    photoRequired,
+    identificationNotes,
+    acceptedNameId,
+    introducedInId,
+    retiredInId,
+    scientificName,
+    serverVersion,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Taxon &&
+          other.id == this.id &&
+          other.author == this.author &&
+          other.rank == this.rank &&
+          other.genus == this.genus &&
+          other.family == this.family &&
+          other.vernacularNameSr == this.vernacularNameSr &&
+          other.vernacularNameEn == this.vernacularNameEn &&
+          other.taxonSource == this.taxonSource &&
+          other.taxonSourceId == this.taxonSourceId &&
+          other.active == this.active &&
+          other.photoRequired == this.photoRequired &&
+          other.identificationNotes == this.identificationNotes &&
+          other.acceptedNameId == this.acceptedNameId &&
+          other.introducedInId == this.introducedInId &&
+          other.retiredInId == this.retiredInId &&
+          other.scientificName == this.scientificName &&
+          other.serverVersion == this.serverVersion &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TaxaCompanion extends UpdateCompanion<Taxon> {
+  final Value<String> id;
+  final Value<String> author;
+  final Value<String> rank;
+  final Value<String> genus;
+  final Value<String> family;
+  final Value<String> vernacularNameSr;
+  final Value<String> vernacularNameEn;
+  final Value<String> taxonSource;
+  final Value<String> taxonSourceId;
+  final Value<bool> active;
+  final Value<bool> photoRequired;
+  final Value<String?> identificationNotes;
+  final Value<String?> acceptedNameId;
+  final Value<String> introducedInId;
+  final Value<String?> retiredInId;
+  final Value<String> scientificName;
+  final Value<int?> serverVersion;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const TaxaCompanion({
+    this.id = const Value.absent(),
+    this.author = const Value.absent(),
+    this.rank = const Value.absent(),
+    this.genus = const Value.absent(),
+    this.family = const Value.absent(),
+    this.vernacularNameSr = const Value.absent(),
+    this.vernacularNameEn = const Value.absent(),
+    this.taxonSource = const Value.absent(),
+    this.taxonSourceId = const Value.absent(),
+    this.active = const Value.absent(),
+    this.photoRequired = const Value.absent(),
+    this.identificationNotes = const Value.absent(),
+    this.acceptedNameId = const Value.absent(),
+    this.introducedInId = const Value.absent(),
+    this.retiredInId = const Value.absent(),
+    this.scientificName = const Value.absent(),
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TaxaCompanion.insert({
+    required String id,
+    required String author,
+    required String rank,
+    required String genus,
+    required String family,
+    required String vernacularNameSr,
+    required String vernacularNameEn,
+    required String taxonSource,
+    required String taxonSourceId,
+    required bool active,
+    required bool photoRequired,
+    this.identificationNotes = const Value.absent(),
+    this.acceptedNameId = const Value.absent(),
+    required String introducedInId,
+    this.retiredInId = const Value.absent(),
+    required String scientificName,
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       author = Value(author),
+       rank = Value(rank),
+       genus = Value(genus),
+       family = Value(family),
+       vernacularNameSr = Value(vernacularNameSr),
+       vernacularNameEn = Value(vernacularNameEn),
+       taxonSource = Value(taxonSource),
+       taxonSourceId = Value(taxonSourceId),
+       active = Value(active),
+       photoRequired = Value(photoRequired),
+       introducedInId = Value(introducedInId),
+       scientificName = Value(scientificName);
+  static Insertable<Taxon> custom({
+    Expression<String>? id,
+    Expression<String>? author,
+    Expression<String>? rank,
+    Expression<String>? genus,
+    Expression<String>? family,
+    Expression<String>? vernacularNameSr,
+    Expression<String>? vernacularNameEn,
+    Expression<String>? taxonSource,
+    Expression<String>? taxonSourceId,
+    Expression<bool>? active,
+    Expression<bool>? photoRequired,
+    Expression<String>? identificationNotes,
+    Expression<String>? acceptedNameId,
+    Expression<String>? introducedInId,
+    Expression<String>? retiredInId,
+    Expression<String>? scientificName,
+    Expression<int>? serverVersion,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (author != null) 'author': author,
+      if (rank != null) 'rank': rank,
+      if (genus != null) 'genus': genus,
+      if (family != null) 'family': family,
+      if (vernacularNameSr != null) 'vernacular_name_sr': vernacularNameSr,
+      if (vernacularNameEn != null) 'vernacular_name_en': vernacularNameEn,
+      if (taxonSource != null) 'taxon_source': taxonSource,
+      if (taxonSourceId != null) 'taxon_source_id': taxonSourceId,
+      if (active != null) 'active': active,
+      if (photoRequired != null) 'photo_required': photoRequired,
+      if (identificationNotes != null)
+        'identification_notes': identificationNotes,
+      if (acceptedNameId != null) 'accepted_name_id': acceptedNameId,
+      if (introducedInId != null) 'introduced_in_id': introducedInId,
+      if (retiredInId != null) 'retired_in_id': retiredInId,
+      if (scientificName != null) 'scientific_name': scientificName,
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TaxaCompanion copyWith({
+    Value<String>? id,
+    Value<String>? author,
+    Value<String>? rank,
+    Value<String>? genus,
+    Value<String>? family,
+    Value<String>? vernacularNameSr,
+    Value<String>? vernacularNameEn,
+    Value<String>? taxonSource,
+    Value<String>? taxonSourceId,
+    Value<bool>? active,
+    Value<bool>? photoRequired,
+    Value<String?>? identificationNotes,
+    Value<String?>? acceptedNameId,
+    Value<String>? introducedInId,
+    Value<String?>? retiredInId,
+    Value<String>? scientificName,
+    Value<int?>? serverVersion,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return TaxaCompanion(
+      id: id ?? this.id,
+      author: author ?? this.author,
+      rank: rank ?? this.rank,
+      genus: genus ?? this.genus,
+      family: family ?? this.family,
+      vernacularNameSr: vernacularNameSr ?? this.vernacularNameSr,
+      vernacularNameEn: vernacularNameEn ?? this.vernacularNameEn,
+      taxonSource: taxonSource ?? this.taxonSource,
+      taxonSourceId: taxonSourceId ?? this.taxonSourceId,
+      active: active ?? this.active,
+      photoRequired: photoRequired ?? this.photoRequired,
+      identificationNotes: identificationNotes ?? this.identificationNotes,
+      acceptedNameId: acceptedNameId ?? this.acceptedNameId,
+      introducedInId: introducedInId ?? this.introducedInId,
+      retiredInId: retiredInId ?? this.retiredInId,
+      scientificName: scientificName ?? this.scientificName,
+      serverVersion: serverVersion ?? this.serverVersion,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (rank.present) {
+      map['rank'] = Variable<String>(rank.value);
+    }
+    if (genus.present) {
+      map['genus'] = Variable<String>(genus.value);
+    }
+    if (family.present) {
+      map['family'] = Variable<String>(family.value);
+    }
+    if (vernacularNameSr.present) {
+      map['vernacular_name_sr'] = Variable<String>(vernacularNameSr.value);
+    }
+    if (vernacularNameEn.present) {
+      map['vernacular_name_en'] = Variable<String>(vernacularNameEn.value);
+    }
+    if (taxonSource.present) {
+      map['taxon_source'] = Variable<String>(taxonSource.value);
+    }
+    if (taxonSourceId.present) {
+      map['taxon_source_id'] = Variable<String>(taxonSourceId.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (photoRequired.present) {
+      map['photo_required'] = Variable<bool>(photoRequired.value);
+    }
+    if (identificationNotes.present) {
+      map['identification_notes'] = Variable<String>(identificationNotes.value);
+    }
+    if (acceptedNameId.present) {
+      map['accepted_name_id'] = Variable<String>(acceptedNameId.value);
+    }
+    if (introducedInId.present) {
+      map['introduced_in_id'] = Variable<String>(introducedInId.value);
+    }
+    if (retiredInId.present) {
+      map['retired_in_id'] = Variable<String>(retiredInId.value);
+    }
+    if (scientificName.present) {
+      map['scientific_name'] = Variable<String>(scientificName.value);
+    }
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaxaCompanion(')
+          ..write('id: $id, ')
+          ..write('author: $author, ')
+          ..write('rank: $rank, ')
+          ..write('genus: $genus, ')
+          ..write('family: $family, ')
+          ..write('vernacularNameSr: $vernacularNameSr, ')
+          ..write('vernacularNameEn: $vernacularNameEn, ')
+          ..write('taxonSource: $taxonSource, ')
+          ..write('taxonSourceId: $taxonSourceId, ')
+          ..write('active: $active, ')
+          ..write('photoRequired: $photoRequired, ')
+          ..write('identificationNotes: $identificationNotes, ')
+          ..write('acceptedNameId: $acceptedNameId, ')
+          ..write('introducedInId: $introducedInId, ')
+          ..write('retiredInId: $retiredInId, ')
+          ..write('scientificName: $scientificName, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ButterflyObservationsTable extends ButterflyObservations
+    with TableInfo<$ButterflyObservationsTable, ButterflyObservation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ButterflyObservationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>(
+        $ButterflyObservationsTable.$convertersyncStatus,
+      );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _surveyVisitIdMeta = const VerificationMeta(
+    'surveyVisitId',
+  );
+  @override
+  late final GeneratedColumn<String> surveyVisitId = GeneratedColumn<String>(
+    'survey_visit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES survey_visit (id)',
+    ),
+  );
+  static const VerificationMeta _transectSectionIdMeta = const VerificationMeta(
+    'transectSectionId',
+  );
+  @override
+  late final GeneratedColumn<String> transectSectionId =
+      GeneratedColumn<String>(
+        'transect_section_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _observedAtMeta = const VerificationMeta(
+    'observedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> observedAt = GeneratedColumn<DateTime>(
+    'observed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taxonIdMeta = const VerificationMeta(
+    'taxonId',
+  );
+  @override
+  late final GeneratedColumn<String> taxonId = GeneratedColumn<String>(
+    'taxon_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES taxon (id)',
+    ),
+  );
+  static const VerificationMeta _countMeta = const VerificationMeta('count');
+  @override
+  late final GeneratedColumn<int> count = GeneratedColumn<int>(
+    'count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationAccuracyMMeta = const VerificationMeta(
+    'locationAccuracyM',
+  );
+  @override
+  late final GeneratedColumn<double> locationAccuracyM =
+      GeneratedColumn<double>(
+        'location_accuracy_m',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _identificationConfidenceMeta =
+      const VerificationMeta('identificationConfidence');
+  @override
+  late final GeneratedColumn<String> identificationConfidence =
+      GeneratedColumn<String>(
+        'identification_confidence',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _recordedByIdMeta = const VerificationMeta(
+    'recordedById',
+  );
+  @override
+  late final GeneratedColumn<String> recordedById = GeneratedColumn<String>(
+    'recorded_by_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sexMeta = const VerificationMeta('sex');
+  @override
+  late final GeneratedColumn<String> sex = GeneratedColumn<String>(
+    'sex',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('unknown'),
+  );
+  static const VerificationMeta _lifeStageMeta = const VerificationMeta(
+    'lifeStage',
+  );
+  @override
+  late final GeneratedColumn<String> lifeStage = GeneratedColumn<String>(
+    'life_stage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('adult'),
+  );
+  static const VerificationMeta _behaviourMeta = const VerificationMeta(
+    'behaviour',
+  );
+  @override
+  late final GeneratedColumn<String> behaviour = GeneratedColumn<String>(
+    'behaviour',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _microhabitatMeta = const VerificationMeta(
+    'microhabitat',
+  );
+  @override
+  late final GeneratedColumn<String> microhabitat = GeneratedColumn<String>(
+    'microhabitat',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _flightDirectionDegMeta =
+      const VerificationMeta('flightDirectionDeg');
+  @override
+  late final GeneratedColumn<int> flightDirectionDeg = GeneratedColumn<int>(
+    'flight_direction_deg',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('transect'),
+  );
+  static const VerificationMeta _hostPlantRecordIdMeta = const VerificationMeta(
+    'hostPlantRecordId',
+  );
+  @override
+  late final GeneratedColumn<String> hostPlantRecordId =
+      GeneratedColumn<String>(
+        'host_plant_record_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _nectarPlantRecordIdMeta =
+      const VerificationMeta('nectarPlantRecordId');
+  @override
+  late final GeneratedColumn<String> nectarPlantRecordId =
+      GeneratedColumn<String>(
+        'nectar_plant_record_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    transectSectionId,
+    observedAt,
+    taxonId,
+    count,
+    lat,
+    lon,
+    locationAccuracyM,
+    identificationConfidence,
+    recordedById,
+    sex,
+    lifeStage,
+    behaviour,
+    microhabitat,
+    flightDirectionDeg,
+    notes,
+    source,
+    hostPlantRecordId,
+    nectarPlantRecordId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'butterfly_observation';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ButterflyObservation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('survey_visit_id')) {
+      context.handle(
+        _surveyVisitIdMeta,
+        surveyVisitId.isAcceptableOrUnknown(
+          data['survey_visit_id']!,
+          _surveyVisitIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('transect_section_id')) {
+      context.handle(
+        _transectSectionIdMeta,
+        transectSectionId.isAcceptableOrUnknown(
+          data['transect_section_id']!,
+          _transectSectionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observed_at')) {
+      context.handle(
+        _observedAtMeta,
+        observedAt.isAcceptableOrUnknown(data['observed_at']!, _observedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_observedAtMeta);
+    }
+    if (data.containsKey('taxon_id')) {
+      context.handle(
+        _taxonIdMeta,
+        taxonId.isAcceptableOrUnknown(data['taxon_id']!, _taxonIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taxonIdMeta);
+    }
+    if (data.containsKey('count')) {
+      context.handle(
+        _countMeta,
+        count.isAcceptableOrUnknown(data['count']!, _countMeta),
+      );
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('location_accuracy_m')) {
+      context.handle(
+        _locationAccuracyMMeta,
+        locationAccuracyM.isAcceptableOrUnknown(
+          data['location_accuracy_m']!,
+          _locationAccuracyMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('identification_confidence')) {
+      context.handle(
+        _identificationConfidenceMeta,
+        identificationConfidence.isAcceptableOrUnknown(
+          data['identification_confidence']!,
+          _identificationConfidenceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_identificationConfidenceMeta);
+    }
+    if (data.containsKey('recorded_by_id')) {
+      context.handle(
+        _recordedByIdMeta,
+        recordedById.isAcceptableOrUnknown(
+          data['recorded_by_id']!,
+          _recordedByIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedByIdMeta);
+    }
+    if (data.containsKey('sex')) {
+      context.handle(
+        _sexMeta,
+        sex.isAcceptableOrUnknown(data['sex']!, _sexMeta),
+      );
+    }
+    if (data.containsKey('life_stage')) {
+      context.handle(
+        _lifeStageMeta,
+        lifeStage.isAcceptableOrUnknown(data['life_stage']!, _lifeStageMeta),
+      );
+    }
+    if (data.containsKey('behaviour')) {
+      context.handle(
+        _behaviourMeta,
+        behaviour.isAcceptableOrUnknown(data['behaviour']!, _behaviourMeta),
+      );
+    }
+    if (data.containsKey('microhabitat')) {
+      context.handle(
+        _microhabitatMeta,
+        microhabitat.isAcceptableOrUnknown(
+          data['microhabitat']!,
+          _microhabitatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flight_direction_deg')) {
+      context.handle(
+        _flightDirectionDegMeta,
+        flightDirectionDeg.isAcceptableOrUnknown(
+          data['flight_direction_deg']!,
+          _flightDirectionDegMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('host_plant_record_id')) {
+      context.handle(
+        _hostPlantRecordIdMeta,
+        hostPlantRecordId.isAcceptableOrUnknown(
+          data['host_plant_record_id']!,
+          _hostPlantRecordIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('nectar_plant_record_id')) {
+      context.handle(
+        _nectarPlantRecordIdMeta,
+        nectarPlantRecordId.isAcceptableOrUnknown(
+          data['nectar_plant_record_id']!,
+          _nectarPlantRecordIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ButterflyObservation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ButterflyObservation(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $ButterflyObservationsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      surveyVisitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_visit_id'],
+      ),
+      transectSectionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transect_section_id'],
+      ),
+      observedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}observed_at'],
+      )!,
+      taxonId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}taxon_id'],
+      )!,
+      count: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}count'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      locationAccuracyM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}location_accuracy_m'],
+      ),
+      identificationConfidence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}identification_confidence'],
+      )!,
+      recordedById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorded_by_id'],
+      )!,
+      sex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sex'],
+      )!,
+      lifeStage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}life_stage'],
+      )!,
+      behaviour: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}behaviour'],
+      )!,
+      microhabitat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}microhabitat'],
+      )!,
+      flightDirectionDeg: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}flight_direction_deg'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      hostPlantRecordId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}host_plant_record_id'],
+      ),
+      nectarPlantRecordId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nectar_plant_record_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ButterflyObservationsTable createAlias(String alias) {
+    return $ButterflyObservationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class ButterflyObservation extends DataClass
+    implements Insertable<ButterflyObservation> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+
+  /// Null for an observation made outside a visit (source `incidental`, ...).
+  final String? surveyVisitId;
+
+  /// No foreign key: sections are reference data that pull may remove.
+  final String? transectSectionId;
+  final DateTime observedAt;
+  final String taxonId;
+  final int count;
+  final double lat;
+  final double lon;
+  final double? locationAccuracyM;
+  final String identificationConfidence;
+  final String recordedById;
+  final String sex;
+  final String lifeStage;
+  final String behaviour;
+  final String microhabitat;
+  final int? flightDirectionDeg;
+  final String notes;
+  final String source;
+
+  /// T051 will fill these two; the server has no such columns yet.
+  final String? hostPlantRecordId;
+  final String? nectarPlantRecordId;
+  final DateTime createdAt;
+  const ButterflyObservation({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    this.surveyVisitId,
+    this.transectSectionId,
+    required this.observedAt,
+    required this.taxonId,
+    required this.count,
+    required this.lat,
+    required this.lon,
+    this.locationAccuracyM,
+    required this.identificationConfidence,
+    required this.recordedById,
+    required this.sex,
+    required this.lifeStage,
+    required this.behaviour,
+    required this.microhabitat,
+    this.flightDirectionDeg,
+    required this.notes,
+    required this.source,
+    this.hostPlantRecordId,
+    this.nectarPlantRecordId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $ButterflyObservationsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    if (!nullToAbsent || surveyVisitId != null) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId);
+    }
+    if (!nullToAbsent || transectSectionId != null) {
+      map['transect_section_id'] = Variable<String>(transectSectionId);
+    }
+    map['observed_at'] = Variable<DateTime>(observedAt);
+    map['taxon_id'] = Variable<String>(taxonId);
+    map['count'] = Variable<int>(count);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || locationAccuracyM != null) {
+      map['location_accuracy_m'] = Variable<double>(locationAccuracyM);
+    }
+    map['identification_confidence'] = Variable<String>(
+      identificationConfidence,
+    );
+    map['recorded_by_id'] = Variable<String>(recordedById);
+    map['sex'] = Variable<String>(sex);
+    map['life_stage'] = Variable<String>(lifeStage);
+    map['behaviour'] = Variable<String>(behaviour);
+    map['microhabitat'] = Variable<String>(microhabitat);
+    if (!nullToAbsent || flightDirectionDeg != null) {
+      map['flight_direction_deg'] = Variable<int>(flightDirectionDeg);
+    }
+    map['notes'] = Variable<String>(notes);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || hostPlantRecordId != null) {
+      map['host_plant_record_id'] = Variable<String>(hostPlantRecordId);
+    }
+    if (!nullToAbsent || nectarPlantRecordId != null) {
+      map['nectar_plant_record_id'] = Variable<String>(nectarPlantRecordId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ButterflyObservationsCompanion toCompanion(bool nullToAbsent) {
+    return ButterflyObservationsCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      surveyVisitId: surveyVisitId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(surveyVisitId),
+      transectSectionId: transectSectionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transectSectionId),
+      observedAt: Value(observedAt),
+      taxonId: Value(taxonId),
+      count: Value(count),
+      lat: Value(lat),
+      lon: Value(lon),
+      locationAccuracyM: locationAccuracyM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationAccuracyM),
+      identificationConfidence: Value(identificationConfidence),
+      recordedById: Value(recordedById),
+      sex: Value(sex),
+      lifeStage: Value(lifeStage),
+      behaviour: Value(behaviour),
+      microhabitat: Value(microhabitat),
+      flightDirectionDeg: flightDirectionDeg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(flightDirectionDeg),
+      notes: Value(notes),
+      source: Value(source),
+      hostPlantRecordId: hostPlantRecordId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hostPlantRecordId),
+      nectarPlantRecordId: nectarPlantRecordId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nectarPlantRecordId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ButterflyObservation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ButterflyObservation(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $ButterflyObservationsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      surveyVisitId: serializer.fromJson<String?>(json['surveyVisitId']),
+      transectSectionId: serializer.fromJson<String?>(
+        json['transectSectionId'],
+      ),
+      observedAt: serializer.fromJson<DateTime>(json['observedAt']),
+      taxonId: serializer.fromJson<String>(json['taxonId']),
+      count: serializer.fromJson<int>(json['count']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      locationAccuracyM: serializer.fromJson<double?>(
+        json['locationAccuracyM'],
+      ),
+      identificationConfidence: serializer.fromJson<String>(
+        json['identificationConfidence'],
+      ),
+      recordedById: serializer.fromJson<String>(json['recordedById']),
+      sex: serializer.fromJson<String>(json['sex']),
+      lifeStage: serializer.fromJson<String>(json['lifeStage']),
+      behaviour: serializer.fromJson<String>(json['behaviour']),
+      microhabitat: serializer.fromJson<String>(json['microhabitat']),
+      flightDirectionDeg: serializer.fromJson<int?>(json['flightDirectionDeg']),
+      notes: serializer.fromJson<String>(json['notes']),
+      source: serializer.fromJson<String>(json['source']),
+      hostPlantRecordId: serializer.fromJson<String?>(
+        json['hostPlantRecordId'],
+      ),
+      nectarPlantRecordId: serializer.fromJson<String?>(
+        json['nectarPlantRecordId'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $ButterflyObservationsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'surveyVisitId': serializer.toJson<String?>(surveyVisitId),
+      'transectSectionId': serializer.toJson<String?>(transectSectionId),
+      'observedAt': serializer.toJson<DateTime>(observedAt),
+      'taxonId': serializer.toJson<String>(taxonId),
+      'count': serializer.toJson<int>(count),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'locationAccuracyM': serializer.toJson<double?>(locationAccuracyM),
+      'identificationConfidence': serializer.toJson<String>(
+        identificationConfidence,
+      ),
+      'recordedById': serializer.toJson<String>(recordedById),
+      'sex': serializer.toJson<String>(sex),
+      'lifeStage': serializer.toJson<String>(lifeStage),
+      'behaviour': serializer.toJson<String>(behaviour),
+      'microhabitat': serializer.toJson<String>(microhabitat),
+      'flightDirectionDeg': serializer.toJson<int?>(flightDirectionDeg),
+      'notes': serializer.toJson<String>(notes),
+      'source': serializer.toJson<String>(source),
+      'hostPlantRecordId': serializer.toJson<String?>(hostPlantRecordId),
+      'nectarPlantRecordId': serializer.toJson<String?>(nectarPlantRecordId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ButterflyObservation copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    Value<String?> surveyVisitId = const Value.absent(),
+    Value<String?> transectSectionId = const Value.absent(),
+    DateTime? observedAt,
+    String? taxonId,
+    int? count,
+    double? lat,
+    double? lon,
+    Value<double?> locationAccuracyM = const Value.absent(),
+    String? identificationConfidence,
+    String? recordedById,
+    String? sex,
+    String? lifeStage,
+    String? behaviour,
+    String? microhabitat,
+    Value<int?> flightDirectionDeg = const Value.absent(),
+    String? notes,
+    String? source,
+    Value<String?> hostPlantRecordId = const Value.absent(),
+    Value<String?> nectarPlantRecordId = const Value.absent(),
+    DateTime? createdAt,
+  }) => ButterflyObservation(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    surveyVisitId: surveyVisitId.present
+        ? surveyVisitId.value
+        : this.surveyVisitId,
+    transectSectionId: transectSectionId.present
+        ? transectSectionId.value
+        : this.transectSectionId,
+    observedAt: observedAt ?? this.observedAt,
+    taxonId: taxonId ?? this.taxonId,
+    count: count ?? this.count,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    locationAccuracyM: locationAccuracyM.present
+        ? locationAccuracyM.value
+        : this.locationAccuracyM,
+    identificationConfidence:
+        identificationConfidence ?? this.identificationConfidence,
+    recordedById: recordedById ?? this.recordedById,
+    sex: sex ?? this.sex,
+    lifeStage: lifeStage ?? this.lifeStage,
+    behaviour: behaviour ?? this.behaviour,
+    microhabitat: microhabitat ?? this.microhabitat,
+    flightDirectionDeg: flightDirectionDeg.present
+        ? flightDirectionDeg.value
+        : this.flightDirectionDeg,
+    notes: notes ?? this.notes,
+    source: source ?? this.source,
+    hostPlantRecordId: hostPlantRecordId.present
+        ? hostPlantRecordId.value
+        : this.hostPlantRecordId,
+    nectarPlantRecordId: nectarPlantRecordId.present
+        ? nectarPlantRecordId.value
+        : this.nectarPlantRecordId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ButterflyObservation copyWithCompanion(ButterflyObservationsCompanion data) {
+    return ButterflyObservation(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      surveyVisitId: data.surveyVisitId.present
+          ? data.surveyVisitId.value
+          : this.surveyVisitId,
+      transectSectionId: data.transectSectionId.present
+          ? data.transectSectionId.value
+          : this.transectSectionId,
+      observedAt: data.observedAt.present
+          ? data.observedAt.value
+          : this.observedAt,
+      taxonId: data.taxonId.present ? data.taxonId.value : this.taxonId,
+      count: data.count.present ? data.count.value : this.count,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      locationAccuracyM: data.locationAccuracyM.present
+          ? data.locationAccuracyM.value
+          : this.locationAccuracyM,
+      identificationConfidence: data.identificationConfidence.present
+          ? data.identificationConfidence.value
+          : this.identificationConfidence,
+      recordedById: data.recordedById.present
+          ? data.recordedById.value
+          : this.recordedById,
+      sex: data.sex.present ? data.sex.value : this.sex,
+      lifeStage: data.lifeStage.present ? data.lifeStage.value : this.lifeStage,
+      behaviour: data.behaviour.present ? data.behaviour.value : this.behaviour,
+      microhabitat: data.microhabitat.present
+          ? data.microhabitat.value
+          : this.microhabitat,
+      flightDirectionDeg: data.flightDirectionDeg.present
+          ? data.flightDirectionDeg.value
+          : this.flightDirectionDeg,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      source: data.source.present ? data.source.value : this.source,
+      hostPlantRecordId: data.hostPlantRecordId.present
+          ? data.hostPlantRecordId.value
+          : this.hostPlantRecordId,
+      nectarPlantRecordId: data.nectarPlantRecordId.present
+          ? data.nectarPlantRecordId.value
+          : this.nectarPlantRecordId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ButterflyObservation(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('transectSectionId: $transectSectionId, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('taxonId: $taxonId, ')
+          ..write('count: $count, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('locationAccuracyM: $locationAccuracyM, ')
+          ..write('identificationConfidence: $identificationConfidence, ')
+          ..write('recordedById: $recordedById, ')
+          ..write('sex: $sex, ')
+          ..write('lifeStage: $lifeStage, ')
+          ..write('behaviour: $behaviour, ')
+          ..write('microhabitat: $microhabitat, ')
+          ..write('flightDirectionDeg: $flightDirectionDeg, ')
+          ..write('notes: $notes, ')
+          ..write('source: $source, ')
+          ..write('hostPlantRecordId: $hostPlantRecordId, ')
+          ..write('nectarPlantRecordId: $nectarPlantRecordId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    transectSectionId,
+    observedAt,
+    taxonId,
+    count,
+    lat,
+    lon,
+    locationAccuracyM,
+    identificationConfidence,
+    recordedById,
+    sex,
+    lifeStage,
+    behaviour,
+    microhabitat,
+    flightDirectionDeg,
+    notes,
+    source,
+    hostPlantRecordId,
+    nectarPlantRecordId,
+    createdAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ButterflyObservation &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.surveyVisitId == this.surveyVisitId &&
+          other.transectSectionId == this.transectSectionId &&
+          other.observedAt == this.observedAt &&
+          other.taxonId == this.taxonId &&
+          other.count == this.count &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.locationAccuracyM == this.locationAccuracyM &&
+          other.identificationConfidence == this.identificationConfidence &&
+          other.recordedById == this.recordedById &&
+          other.sex == this.sex &&
+          other.lifeStage == this.lifeStage &&
+          other.behaviour == this.behaviour &&
+          other.microhabitat == this.microhabitat &&
+          other.flightDirectionDeg == this.flightDirectionDeg &&
+          other.notes == this.notes &&
+          other.source == this.source &&
+          other.hostPlantRecordId == this.hostPlantRecordId &&
+          other.nectarPlantRecordId == this.nectarPlantRecordId &&
+          other.createdAt == this.createdAt);
+}
+
+class ButterflyObservationsCompanion
+    extends UpdateCompanion<ButterflyObservation> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String?> surveyVisitId;
+  final Value<String?> transectSectionId;
+  final Value<DateTime> observedAt;
+  final Value<String> taxonId;
+  final Value<int> count;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<double?> locationAccuracyM;
+  final Value<String> identificationConfidence;
+  final Value<String> recordedById;
+  final Value<String> sex;
+  final Value<String> lifeStage;
+  final Value<String> behaviour;
+  final Value<String> microhabitat;
+  final Value<int?> flightDirectionDeg;
+  final Value<String> notes;
+  final Value<String> source;
+  final Value<String?> hostPlantRecordId;
+  final Value<String?> nectarPlantRecordId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ButterflyObservationsCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.surveyVisitId = const Value.absent(),
+    this.transectSectionId = const Value.absent(),
+    this.observedAt = const Value.absent(),
+    this.taxonId = const Value.absent(),
+    this.count = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.locationAccuracyM = const Value.absent(),
+    this.identificationConfidence = const Value.absent(),
+    this.recordedById = const Value.absent(),
+    this.sex = const Value.absent(),
+    this.lifeStage = const Value.absent(),
+    this.behaviour = const Value.absent(),
+    this.microhabitat = const Value.absent(),
+    this.flightDirectionDeg = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.source = const Value.absent(),
+    this.hostPlantRecordId = const Value.absent(),
+    this.nectarPlantRecordId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ButterflyObservationsCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    this.surveyVisitId = const Value.absent(),
+    this.transectSectionId = const Value.absent(),
+    required DateTime observedAt,
+    required String taxonId,
+    this.count = const Value.absent(),
+    required double lat,
+    required double lon,
+    this.locationAccuracyM = const Value.absent(),
+    required String identificationConfidence,
+    required String recordedById,
+    this.sex = const Value.absent(),
+    this.lifeStage = const Value.absent(),
+    this.behaviour = const Value.absent(),
+    this.microhabitat = const Value.absent(),
+    this.flightDirectionDeg = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.source = const Value.absent(),
+    this.hostPlantRecordId = const Value.absent(),
+    this.nectarPlantRecordId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       observedAt = Value(observedAt),
+       taxonId = Value(taxonId),
+       lat = Value(lat),
+       lon = Value(lon),
+       identificationConfidence = Value(identificationConfidence),
+       recordedById = Value(recordedById),
+       createdAt = Value(createdAt);
+  static Insertable<ButterflyObservation> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? surveyVisitId,
+    Expression<String>? transectSectionId,
+    Expression<DateTime>? observedAt,
+    Expression<String>? taxonId,
+    Expression<int>? count,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<double>? locationAccuracyM,
+    Expression<String>? identificationConfidence,
+    Expression<String>? recordedById,
+    Expression<String>? sex,
+    Expression<String>? lifeStage,
+    Expression<String>? behaviour,
+    Expression<String>? microhabitat,
+    Expression<int>? flightDirectionDeg,
+    Expression<String>? notes,
+    Expression<String>? source,
+    Expression<String>? hostPlantRecordId,
+    Expression<String>? nectarPlantRecordId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (surveyVisitId != null) 'survey_visit_id': surveyVisitId,
+      if (transectSectionId != null) 'transect_section_id': transectSectionId,
+      if (observedAt != null) 'observed_at': observedAt,
+      if (taxonId != null) 'taxon_id': taxonId,
+      if (count != null) 'count': count,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (locationAccuracyM != null) 'location_accuracy_m': locationAccuracyM,
+      if (identificationConfidence != null)
+        'identification_confidence': identificationConfidence,
+      if (recordedById != null) 'recorded_by_id': recordedById,
+      if (sex != null) 'sex': sex,
+      if (lifeStage != null) 'life_stage': lifeStage,
+      if (behaviour != null) 'behaviour': behaviour,
+      if (microhabitat != null) 'microhabitat': microhabitat,
+      if (flightDirectionDeg != null)
+        'flight_direction_deg': flightDirectionDeg,
+      if (notes != null) 'notes': notes,
+      if (source != null) 'source': source,
+      if (hostPlantRecordId != null) 'host_plant_record_id': hostPlantRecordId,
+      if (nectarPlantRecordId != null)
+        'nectar_plant_record_id': nectarPlantRecordId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ButterflyObservationsCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String?>? surveyVisitId,
+    Value<String?>? transectSectionId,
+    Value<DateTime>? observedAt,
+    Value<String>? taxonId,
+    Value<int>? count,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<double?>? locationAccuracyM,
+    Value<String>? identificationConfidence,
+    Value<String>? recordedById,
+    Value<String>? sex,
+    Value<String>? lifeStage,
+    Value<String>? behaviour,
+    Value<String>? microhabitat,
+    Value<int?>? flightDirectionDeg,
+    Value<String>? notes,
+    Value<String>? source,
+    Value<String?>? hostPlantRecordId,
+    Value<String?>? nectarPlantRecordId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ButterflyObservationsCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      surveyVisitId: surveyVisitId ?? this.surveyVisitId,
+      transectSectionId: transectSectionId ?? this.transectSectionId,
+      observedAt: observedAt ?? this.observedAt,
+      taxonId: taxonId ?? this.taxonId,
+      count: count ?? this.count,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      locationAccuracyM: locationAccuracyM ?? this.locationAccuracyM,
+      identificationConfidence:
+          identificationConfidence ?? this.identificationConfidence,
+      recordedById: recordedById ?? this.recordedById,
+      sex: sex ?? this.sex,
+      lifeStage: lifeStage ?? this.lifeStage,
+      behaviour: behaviour ?? this.behaviour,
+      microhabitat: microhabitat ?? this.microhabitat,
+      flightDirectionDeg: flightDirectionDeg ?? this.flightDirectionDeg,
+      notes: notes ?? this.notes,
+      source: source ?? this.source,
+      hostPlantRecordId: hostPlantRecordId ?? this.hostPlantRecordId,
+      nectarPlantRecordId: nectarPlantRecordId ?? this.nectarPlantRecordId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $ButterflyObservationsTable.$convertersyncStatus.toSql(
+          syncStatus.value,
+        ),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (surveyVisitId.present) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId.value);
+    }
+    if (transectSectionId.present) {
+      map['transect_section_id'] = Variable<String>(transectSectionId.value);
+    }
+    if (observedAt.present) {
+      map['observed_at'] = Variable<DateTime>(observedAt.value);
+    }
+    if (taxonId.present) {
+      map['taxon_id'] = Variable<String>(taxonId.value);
+    }
+    if (count.present) {
+      map['count'] = Variable<int>(count.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (locationAccuracyM.present) {
+      map['location_accuracy_m'] = Variable<double>(locationAccuracyM.value);
+    }
+    if (identificationConfidence.present) {
+      map['identification_confidence'] = Variable<String>(
+        identificationConfidence.value,
+      );
+    }
+    if (recordedById.present) {
+      map['recorded_by_id'] = Variable<String>(recordedById.value);
+    }
+    if (sex.present) {
+      map['sex'] = Variable<String>(sex.value);
+    }
+    if (lifeStage.present) {
+      map['life_stage'] = Variable<String>(lifeStage.value);
+    }
+    if (behaviour.present) {
+      map['behaviour'] = Variable<String>(behaviour.value);
+    }
+    if (microhabitat.present) {
+      map['microhabitat'] = Variable<String>(microhabitat.value);
+    }
+    if (flightDirectionDeg.present) {
+      map['flight_direction_deg'] = Variable<int>(flightDirectionDeg.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (hostPlantRecordId.present) {
+      map['host_plant_record_id'] = Variable<String>(hostPlantRecordId.value);
+    }
+    if (nectarPlantRecordId.present) {
+      map['nectar_plant_record_id'] = Variable<String>(
+        nectarPlantRecordId.value,
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ButterflyObservationsCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('transectSectionId: $transectSectionId, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('taxonId: $taxonId, ')
+          ..write('count: $count, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('locationAccuracyM: $locationAccuracyM, ')
+          ..write('identificationConfidence: $identificationConfidence, ')
+          ..write('recordedById: $recordedById, ')
+          ..write('sex: $sex, ')
+          ..write('lifeStage: $lifeStage, ')
+          ..write('behaviour: $behaviour, ')
+          ..write('microhabitat: $microhabitat, ')
+          ..write('flightDirectionDeg: $flightDirectionDeg, ')
+          ..write('notes: $notes, ')
+          ..write('source: $source, ')
+          ..write('hostPlantRecordId: $hostPlantRecordId, ')
+          ..write('nectarPlantRecordId: $nectarPlantRecordId, ')
+          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6112,2667 +10859,6 @@ class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
   }
 }
 
-class $TransectsTable extends Transects
-    with TableInfo<$TransectsTable, Transect> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TransectsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _projectIdMeta = const VerificationMeta(
-    'projectId',
-  );
-  @override
-  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
-    'project_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES project (id)',
-    ),
-  );
-  static const VerificationMeta _codeMeta = const VerificationMeta('code');
-  @override
-  late final GeneratedColumn<String> code = GeneratedColumn<String>(
-    'code',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta(
-    'description',
-  );
-  @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-    'description',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _targetLengthMMeta = const VerificationMeta(
-    'targetLengthM',
-  );
-  @override
-  late final GeneratedColumn<double> targetLengthM = GeneratedColumn<double>(
-    'target_length_m',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _habitatSummaryMeta = const VerificationMeta(
-    'habitatSummary',
-  );
-  @override
-  late final GeneratedColumn<String> habitatSummary = GeneratedColumn<String>(
-    'habitat_summary',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _activeMeta = const VerificationMeta('active');
-  @override
-  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
-    'active',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("active" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _geometryMeta = const VerificationMeta(
-    'geometry',
-  );
-  @override
-  late final GeneratedColumn<String> geometry = GeneratedColumn<String>(
-    'geometry',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _lengthMMeta = const VerificationMeta(
-    'lengthM',
-  );
-  @override
-  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
-    'length_m',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
-    'serverVersion',
-  );
-  @override
-  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
-    'server_version',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    projectId,
-    code,
-    name,
-    description,
-    targetLengthM,
-    habitatSummary,
-    active,
-    geometry,
-    lengthM,
-    serverVersion,
-    deletedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'transect';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Transect> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('project_id')) {
-      context.handle(
-        _projectIdMeta,
-        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_projectIdMeta);
-    }
-    if (data.containsKey('code')) {
-      context.handle(
-        _codeMeta,
-        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_codeMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('description')) {
-      context.handle(
-        _descriptionMeta,
-        description.isAcceptableOrUnknown(
-          data['description']!,
-          _descriptionMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    if (data.containsKey('target_length_m')) {
-      context.handle(
-        _targetLengthMMeta,
-        targetLengthM.isAcceptableOrUnknown(
-          data['target_length_m']!,
-          _targetLengthMMeta,
-        ),
-      );
-    }
-    if (data.containsKey('habitat_summary')) {
-      context.handle(
-        _habitatSummaryMeta,
-        habitatSummary.isAcceptableOrUnknown(
-          data['habitat_summary']!,
-          _habitatSummaryMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_habitatSummaryMeta);
-    }
-    if (data.containsKey('active')) {
-      context.handle(
-        _activeMeta,
-        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_activeMeta);
-    }
-    if (data.containsKey('geometry')) {
-      context.handle(
-        _geometryMeta,
-        geometry.isAcceptableOrUnknown(data['geometry']!, _geometryMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_geometryMeta);
-    }
-    if (data.containsKey('length_m')) {
-      context.handle(
-        _lengthMMeta,
-        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_lengthMMeta);
-    }
-    if (data.containsKey('server_version')) {
-      context.handle(
-        _serverVersionMeta,
-        serverVersion.isAcceptableOrUnknown(
-          data['server_version']!,
-          _serverVersionMeta,
-        ),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Transect map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Transect(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      projectId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}project_id'],
-      )!,
-      code: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}code'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
-      targetLengthM: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}target_length_m'],
-      ),
-      habitatSummary: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}habitat_summary'],
-      )!,
-      active: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}active'],
-      )!,
-      geometry: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}geometry'],
-      )!,
-      lengthM: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}length_m'],
-      )!,
-      serverVersion: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}server_version'],
-      ),
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-    );
-  }
-
-  @override
-  $TransectsTable createAlias(String alias) {
-    return $TransectsTable(attachedDatabase, alias);
-  }
-}
-
-class Transect extends DataClass implements Insertable<Transect> {
-  final String id;
-  final String projectId;
-  final String code;
-  final String name;
-  final String description;
-  final double? targetLengthM;
-  final String habitatSummary;
-  final bool active;
-  final String geometry;
-  final double lengthM;
-  final int? serverVersion;
-  final DateTime? deletedAt;
-  const Transect({
-    required this.id,
-    required this.projectId,
-    required this.code,
-    required this.name,
-    required this.description,
-    this.targetLengthM,
-    required this.habitatSummary,
-    required this.active,
-    required this.geometry,
-    required this.lengthM,
-    this.serverVersion,
-    this.deletedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['project_id'] = Variable<String>(projectId);
-    map['code'] = Variable<String>(code);
-    map['name'] = Variable<String>(name);
-    map['description'] = Variable<String>(description);
-    if (!nullToAbsent || targetLengthM != null) {
-      map['target_length_m'] = Variable<double>(targetLengthM);
-    }
-    map['habitat_summary'] = Variable<String>(habitatSummary);
-    map['active'] = Variable<bool>(active);
-    map['geometry'] = Variable<String>(geometry);
-    map['length_m'] = Variable<double>(lengthM);
-    if (!nullToAbsent || serverVersion != null) {
-      map['server_version'] = Variable<int>(serverVersion);
-    }
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    return map;
-  }
-
-  TransectsCompanion toCompanion(bool nullToAbsent) {
-    return TransectsCompanion(
-      id: Value(id),
-      projectId: Value(projectId),
-      code: Value(code),
-      name: Value(name),
-      description: Value(description),
-      targetLengthM: targetLengthM == null && nullToAbsent
-          ? const Value.absent()
-          : Value(targetLengthM),
-      habitatSummary: Value(habitatSummary),
-      active: Value(active),
-      geometry: Value(geometry),
-      lengthM: Value(lengthM),
-      serverVersion: serverVersion == null && nullToAbsent
-          ? const Value.absent()
-          : Value(serverVersion),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-    );
-  }
-
-  factory Transect.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Transect(
-      id: serializer.fromJson<String>(json['id']),
-      projectId: serializer.fromJson<String>(json['projectId']),
-      code: serializer.fromJson<String>(json['code']),
-      name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
-      targetLengthM: serializer.fromJson<double?>(json['targetLengthM']),
-      habitatSummary: serializer.fromJson<String>(json['habitatSummary']),
-      active: serializer.fromJson<bool>(json['active']),
-      geometry: serializer.fromJson<String>(json['geometry']),
-      lengthM: serializer.fromJson<double>(json['lengthM']),
-      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'projectId': serializer.toJson<String>(projectId),
-      'code': serializer.toJson<String>(code),
-      'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
-      'targetLengthM': serializer.toJson<double?>(targetLengthM),
-      'habitatSummary': serializer.toJson<String>(habitatSummary),
-      'active': serializer.toJson<bool>(active),
-      'geometry': serializer.toJson<String>(geometry),
-      'lengthM': serializer.toJson<double>(lengthM),
-      'serverVersion': serializer.toJson<int?>(serverVersion),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-    };
-  }
-
-  Transect copyWith({
-    String? id,
-    String? projectId,
-    String? code,
-    String? name,
-    String? description,
-    Value<double?> targetLengthM = const Value.absent(),
-    String? habitatSummary,
-    bool? active,
-    String? geometry,
-    double? lengthM,
-    Value<int?> serverVersion = const Value.absent(),
-    Value<DateTime?> deletedAt = const Value.absent(),
-  }) => Transect(
-    id: id ?? this.id,
-    projectId: projectId ?? this.projectId,
-    code: code ?? this.code,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    targetLengthM: targetLengthM.present
-        ? targetLengthM.value
-        : this.targetLengthM,
-    habitatSummary: habitatSummary ?? this.habitatSummary,
-    active: active ?? this.active,
-    geometry: geometry ?? this.geometry,
-    lengthM: lengthM ?? this.lengthM,
-    serverVersion: serverVersion.present
-        ? serverVersion.value
-        : this.serverVersion,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-  );
-  Transect copyWithCompanion(TransectsCompanion data) {
-    return Transect(
-      id: data.id.present ? data.id.value : this.id,
-      projectId: data.projectId.present ? data.projectId.value : this.projectId,
-      code: data.code.present ? data.code.value : this.code,
-      name: data.name.present ? data.name.value : this.name,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
-      targetLengthM: data.targetLengthM.present
-          ? data.targetLengthM.value
-          : this.targetLengthM,
-      habitatSummary: data.habitatSummary.present
-          ? data.habitatSummary.value
-          : this.habitatSummary,
-      active: data.active.present ? data.active.value : this.active,
-      geometry: data.geometry.present ? data.geometry.value : this.geometry,
-      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
-      serverVersion: data.serverVersion.present
-          ? data.serverVersion.value
-          : this.serverVersion,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Transect(')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('code: $code, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('targetLengthM: $targetLengthM, ')
-          ..write('habitatSummary: $habitatSummary, ')
-          ..write('active: $active, ')
-          ..write('geometry: $geometry, ')
-          ..write('lengthM: $lengthM, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    projectId,
-    code,
-    name,
-    description,
-    targetLengthM,
-    habitatSummary,
-    active,
-    geometry,
-    lengthM,
-    serverVersion,
-    deletedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Transect &&
-          other.id == this.id &&
-          other.projectId == this.projectId &&
-          other.code == this.code &&
-          other.name == this.name &&
-          other.description == this.description &&
-          other.targetLengthM == this.targetLengthM &&
-          other.habitatSummary == this.habitatSummary &&
-          other.active == this.active &&
-          other.geometry == this.geometry &&
-          other.lengthM == this.lengthM &&
-          other.serverVersion == this.serverVersion &&
-          other.deletedAt == this.deletedAt);
-}
-
-class TransectsCompanion extends UpdateCompanion<Transect> {
-  final Value<String> id;
-  final Value<String> projectId;
-  final Value<String> code;
-  final Value<String> name;
-  final Value<String> description;
-  final Value<double?> targetLengthM;
-  final Value<String> habitatSummary;
-  final Value<bool> active;
-  final Value<String> geometry;
-  final Value<double> lengthM;
-  final Value<int?> serverVersion;
-  final Value<DateTime?> deletedAt;
-  final Value<int> rowid;
-  const TransectsCompanion({
-    this.id = const Value.absent(),
-    this.projectId = const Value.absent(),
-    this.code = const Value.absent(),
-    this.name = const Value.absent(),
-    this.description = const Value.absent(),
-    this.targetLengthM = const Value.absent(),
-    this.habitatSummary = const Value.absent(),
-    this.active = const Value.absent(),
-    this.geometry = const Value.absent(),
-    this.lengthM = const Value.absent(),
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  TransectsCompanion.insert({
-    required String id,
-    required String projectId,
-    required String code,
-    required String name,
-    required String description,
-    this.targetLengthM = const Value.absent(),
-    required String habitatSummary,
-    required bool active,
-    required String geometry,
-    required double lengthM,
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       projectId = Value(projectId),
-       code = Value(code),
-       name = Value(name),
-       description = Value(description),
-       habitatSummary = Value(habitatSummary),
-       active = Value(active),
-       geometry = Value(geometry),
-       lengthM = Value(lengthM);
-  static Insertable<Transect> custom({
-    Expression<String>? id,
-    Expression<String>? projectId,
-    Expression<String>? code,
-    Expression<String>? name,
-    Expression<String>? description,
-    Expression<double>? targetLengthM,
-    Expression<String>? habitatSummary,
-    Expression<bool>? active,
-    Expression<String>? geometry,
-    Expression<double>? lengthM,
-    Expression<int>? serverVersion,
-    Expression<DateTime>? deletedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (projectId != null) 'project_id': projectId,
-      if (code != null) 'code': code,
-      if (name != null) 'name': name,
-      if (description != null) 'description': description,
-      if (targetLengthM != null) 'target_length_m': targetLengthM,
-      if (habitatSummary != null) 'habitat_summary': habitatSummary,
-      if (active != null) 'active': active,
-      if (geometry != null) 'geometry': geometry,
-      if (lengthM != null) 'length_m': lengthM,
-      if (serverVersion != null) 'server_version': serverVersion,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  TransectsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? projectId,
-    Value<String>? code,
-    Value<String>? name,
-    Value<String>? description,
-    Value<double?>? targetLengthM,
-    Value<String>? habitatSummary,
-    Value<bool>? active,
-    Value<String>? geometry,
-    Value<double>? lengthM,
-    Value<int?>? serverVersion,
-    Value<DateTime?>? deletedAt,
-    Value<int>? rowid,
-  }) {
-    return TransectsCompanion(
-      id: id ?? this.id,
-      projectId: projectId ?? this.projectId,
-      code: code ?? this.code,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      targetLengthM: targetLengthM ?? this.targetLengthM,
-      habitatSummary: habitatSummary ?? this.habitatSummary,
-      active: active ?? this.active,
-      geometry: geometry ?? this.geometry,
-      lengthM: lengthM ?? this.lengthM,
-      serverVersion: serverVersion ?? this.serverVersion,
-      deletedAt: deletedAt ?? this.deletedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (projectId.present) {
-      map['project_id'] = Variable<String>(projectId.value);
-    }
-    if (code.present) {
-      map['code'] = Variable<String>(code.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
-    }
-    if (targetLengthM.present) {
-      map['target_length_m'] = Variable<double>(targetLengthM.value);
-    }
-    if (habitatSummary.present) {
-      map['habitat_summary'] = Variable<String>(habitatSummary.value);
-    }
-    if (active.present) {
-      map['active'] = Variable<bool>(active.value);
-    }
-    if (geometry.present) {
-      map['geometry'] = Variable<String>(geometry.value);
-    }
-    if (lengthM.present) {
-      map['length_m'] = Variable<double>(lengthM.value);
-    }
-    if (serverVersion.present) {
-      map['server_version'] = Variable<int>(serverVersion.value);
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TransectsCompanion(')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('code: $code, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('targetLengthM: $targetLengthM, ')
-          ..write('habitatSummary: $habitatSummary, ')
-          ..write('active: $active, ')
-          ..write('geometry: $geometry, ')
-          ..write('lengthM: $lengthM, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $SurveyVisitsTable extends SurveyVisits
-    with TableInfo<$SurveyVisitsTable, SurveyVisit> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SurveyVisitsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
-    'serverVersion',
-  );
-  @override
-  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
-    'server_version',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
-      GeneratedColumn<String>(
-        'sync_status',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: Constant(SyncStatus.pending.name),
-      ).withConverter<SyncStatus>($SurveyVisitsTable.$convertersyncStatus);
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _projectIdMeta = const VerificationMeta(
-    'projectId',
-  );
-  @override
-  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
-    'project_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES project (id)',
-    ),
-  );
-  static const VerificationMeta _transectIdMeta = const VerificationMeta(
-    'transectId',
-  );
-  @override
-  late final GeneratedColumn<String> transectId = GeneratedColumn<String>(
-    'transect_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES transect (id)',
-    ),
-  );
-  static const VerificationMeta _observerIdMeta = const VerificationMeta(
-    'observerId',
-  );
-  @override
-  late final GeneratedColumn<String> observerId = GeneratedColumn<String>(
-    'observer_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _protocolVersionMeta = const VerificationMeta(
-    'protocolVersion',
-  );
-  @override
-  late final GeneratedColumn<String> protocolVersion = GeneratedColumn<String>(
-    'protocol_version',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _surveyMethodMeta = const VerificationMeta(
-    'surveyMethod',
-  );
-  @override
-  late final GeneratedColumn<String> surveyMethod = GeneratedColumn<String>(
-    'survey_method',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('pollard_walk'),
-  );
-  static const VerificationMeta _startedAtMeta = const VerificationMeta(
-    'startedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
-    'started_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _endedAtMeta = const VerificationMeta(
-    'endedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
-    'ended_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _durationSecondsMeta = const VerificationMeta(
-    'durationSeconds',
-  );
-  @override
-  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
-    'duration_seconds',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _pausedSecondsMeta = const VerificationMeta(
-    'pausedSeconds',
-  );
-  @override
-  late final GeneratedColumn<int> pausedSeconds = GeneratedColumn<int>(
-    'paused_seconds',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _distanceWalkedMMeta = const VerificationMeta(
-    'distanceWalkedM',
-  );
-  @override
-  late final GeneratedColumn<double> distanceWalkedM = GeneratedColumn<double>(
-    'distance_walked_m',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _observerCountMeta = const VerificationMeta(
-    'observerCount',
-  );
-  @override
-  late final GeneratedColumn<int> observerCount = GeneratedColumn<int>(
-    'observer_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _observerNamesMeta = const VerificationMeta(
-    'observerNames',
-  );
-  @override
-  late final GeneratedColumn<String> observerNames = GeneratedColumn<String>(
-    'observer_names',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _temperatureStartCMeta = const VerificationMeta(
-    'temperatureStartC',
-  );
-  @override
-  late final GeneratedColumn<double> temperatureStartC =
-      GeneratedColumn<double>(
-        'temperature_start_c',
-        aliasedName,
-        true,
-        type: DriftSqlType.double,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _temperatureEndCMeta = const VerificationMeta(
-    'temperatureEndC',
-  );
-  @override
-  late final GeneratedColumn<double> temperatureEndC = GeneratedColumn<double>(
-    'temperature_end_c',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _windBeaufortStartMeta = const VerificationMeta(
-    'windBeaufortStart',
-  );
-  @override
-  late final GeneratedColumn<int> windBeaufortStart = GeneratedColumn<int>(
-    'wind_beaufort_start',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _windBeaufortEndMeta = const VerificationMeta(
-    'windBeaufortEnd',
-  );
-  @override
-  late final GeneratedColumn<int> windBeaufortEnd = GeneratedColumn<int>(
-    'wind_beaufort_end',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _cloudCoverStartPctMeta =
-      const VerificationMeta('cloudCoverStartPct');
-  @override
-  late final GeneratedColumn<int> cloudCoverStartPct = GeneratedColumn<int>(
-    'cloud_cover_start_pct',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _cloudCoverEndPctMeta = const VerificationMeta(
-    'cloudCoverEndPct',
-  );
-  @override
-  late final GeneratedColumn<int> cloudCoverEndPct = GeneratedColumn<int>(
-    'cloud_cover_end_pct',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _precipitationMeta = const VerificationMeta(
-    'precipitation',
-  );
-  @override
-  late final GeneratedColumn<String> precipitation = GeneratedColumn<String>(
-    'precipitation',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('none'),
-  );
-  static const VerificationMeta _weatherSuitableMeta = const VerificationMeta(
-    'weatherSuitable',
-  );
-  @override
-  late final GeneratedColumn<bool> weatherSuitable = GeneratedColumn<bool>(
-    'weather_suitable',
-    aliasedName,
-    true,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("weather_suitable" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _weatherMissingReasonMeta =
-      const VerificationMeta('weatherMissingReason');
-  @override
-  late final GeneratedColumn<String> weatherMissingReason =
-      GeneratedColumn<String>(
-        'weather_missing_reason',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: const Constant(''),
-      );
-  static const VerificationMeta _zeroObservationConfirmedMeta =
-      const VerificationMeta('zeroObservationConfirmed');
-  @override
-  late final GeneratedColumn<bool> zeroObservationConfirmed =
-      GeneratedColumn<bool>(
-        'zero_observation_confirmed',
-        aliasedName,
-        false,
-        type: DriftSqlType.bool,
-        requiredDuringInsert: false,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("zero_observation_confirmed" IN (0, 1))',
-        ),
-        defaultValue: const Constant(false),
-      );
-  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
-  @override
-  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-    'notes',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('draft'),
-  );
-  static const VerificationMeta _cancelReasonMeta = const VerificationMeta(
-    'cancelReason',
-  );
-  @override
-  late final GeneratedColumn<String> cancelReason = GeneratedColumn<String>(
-    'cancel_reason',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _batterySaverUsedMeta = const VerificationMeta(
-    'batterySaverUsed',
-  );
-  @override
-  late final GeneratedColumn<bool> batterySaverUsed = GeneratedColumn<bool>(
-    'battery_saver_used',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("battery_saver_used" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
-  );
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-    'device_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _createdOfflineMeta = const VerificationMeta(
-    'createdOffline',
-  );
-  @override
-  late final GeneratedColumn<bool> createdOffline = GeneratedColumn<bool>(
-    'created_offline',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("created_offline" IN (0, 1))',
-    ),
-    defaultValue: const Constant(true),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _pausedAtMeta = const VerificationMeta(
-    'pausedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> pausedAt = GeneratedColumn<DateTime>(
-    'paused_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    serverVersion,
-    syncStatus,
-    deletedAt,
-    id,
-    projectId,
-    transectId,
-    observerId,
-    protocolVersion,
-    surveyMethod,
-    startedAt,
-    endedAt,
-    durationSeconds,
-    pausedSeconds,
-    distanceWalkedM,
-    observerCount,
-    observerNames,
-    temperatureStartC,
-    temperatureEndC,
-    windBeaufortStart,
-    windBeaufortEnd,
-    cloudCoverStartPct,
-    cloudCoverEndPct,
-    precipitation,
-    weatherSuitable,
-    weatherMissingReason,
-    zeroObservationConfirmed,
-    notes,
-    status,
-    cancelReason,
-    batterySaverUsed,
-    deviceId,
-    createdOffline,
-    createdAt,
-    pausedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'survey_visit';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SurveyVisit> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('server_version')) {
-      context.handle(
-        _serverVersionMeta,
-        serverVersion.isAcceptableOrUnknown(
-          data['server_version']!,
-          _serverVersionMeta,
-        ),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('project_id')) {
-      context.handle(
-        _projectIdMeta,
-        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_projectIdMeta);
-    }
-    if (data.containsKey('transect_id')) {
-      context.handle(
-        _transectIdMeta,
-        transectId.isAcceptableOrUnknown(data['transect_id']!, _transectIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_transectIdMeta);
-    }
-    if (data.containsKey('observer_id')) {
-      context.handle(
-        _observerIdMeta,
-        observerId.isAcceptableOrUnknown(data['observer_id']!, _observerIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_observerIdMeta);
-    }
-    if (data.containsKey('protocol_version')) {
-      context.handle(
-        _protocolVersionMeta,
-        protocolVersion.isAcceptableOrUnknown(
-          data['protocol_version']!,
-          _protocolVersionMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_protocolVersionMeta);
-    }
-    if (data.containsKey('survey_method')) {
-      context.handle(
-        _surveyMethodMeta,
-        surveyMethod.isAcceptableOrUnknown(
-          data['survey_method']!,
-          _surveyMethodMeta,
-        ),
-      );
-    }
-    if (data.containsKey('started_at')) {
-      context.handle(
-        _startedAtMeta,
-        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
-      );
-    }
-    if (data.containsKey('ended_at')) {
-      context.handle(
-        _endedAtMeta,
-        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
-      );
-    }
-    if (data.containsKey('duration_seconds')) {
-      context.handle(
-        _durationSecondsMeta,
-        durationSeconds.isAcceptableOrUnknown(
-          data['duration_seconds']!,
-          _durationSecondsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('paused_seconds')) {
-      context.handle(
-        _pausedSecondsMeta,
-        pausedSeconds.isAcceptableOrUnknown(
-          data['paused_seconds']!,
-          _pausedSecondsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('distance_walked_m')) {
-      context.handle(
-        _distanceWalkedMMeta,
-        distanceWalkedM.isAcceptableOrUnknown(
-          data['distance_walked_m']!,
-          _distanceWalkedMMeta,
-        ),
-      );
-    }
-    if (data.containsKey('observer_count')) {
-      context.handle(
-        _observerCountMeta,
-        observerCount.isAcceptableOrUnknown(
-          data['observer_count']!,
-          _observerCountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('observer_names')) {
-      context.handle(
-        _observerNamesMeta,
-        observerNames.isAcceptableOrUnknown(
-          data['observer_names']!,
-          _observerNamesMeta,
-        ),
-      );
-    }
-    if (data.containsKey('temperature_start_c')) {
-      context.handle(
-        _temperatureStartCMeta,
-        temperatureStartC.isAcceptableOrUnknown(
-          data['temperature_start_c']!,
-          _temperatureStartCMeta,
-        ),
-      );
-    }
-    if (data.containsKey('temperature_end_c')) {
-      context.handle(
-        _temperatureEndCMeta,
-        temperatureEndC.isAcceptableOrUnknown(
-          data['temperature_end_c']!,
-          _temperatureEndCMeta,
-        ),
-      );
-    }
-    if (data.containsKey('wind_beaufort_start')) {
-      context.handle(
-        _windBeaufortStartMeta,
-        windBeaufortStart.isAcceptableOrUnknown(
-          data['wind_beaufort_start']!,
-          _windBeaufortStartMeta,
-        ),
-      );
-    }
-    if (data.containsKey('wind_beaufort_end')) {
-      context.handle(
-        _windBeaufortEndMeta,
-        windBeaufortEnd.isAcceptableOrUnknown(
-          data['wind_beaufort_end']!,
-          _windBeaufortEndMeta,
-        ),
-      );
-    }
-    if (data.containsKey('cloud_cover_start_pct')) {
-      context.handle(
-        _cloudCoverStartPctMeta,
-        cloudCoverStartPct.isAcceptableOrUnknown(
-          data['cloud_cover_start_pct']!,
-          _cloudCoverStartPctMeta,
-        ),
-      );
-    }
-    if (data.containsKey('cloud_cover_end_pct')) {
-      context.handle(
-        _cloudCoverEndPctMeta,
-        cloudCoverEndPct.isAcceptableOrUnknown(
-          data['cloud_cover_end_pct']!,
-          _cloudCoverEndPctMeta,
-        ),
-      );
-    }
-    if (data.containsKey('precipitation')) {
-      context.handle(
-        _precipitationMeta,
-        precipitation.isAcceptableOrUnknown(
-          data['precipitation']!,
-          _precipitationMeta,
-        ),
-      );
-    }
-    if (data.containsKey('weather_suitable')) {
-      context.handle(
-        _weatherSuitableMeta,
-        weatherSuitable.isAcceptableOrUnknown(
-          data['weather_suitable']!,
-          _weatherSuitableMeta,
-        ),
-      );
-    }
-    if (data.containsKey('weather_missing_reason')) {
-      context.handle(
-        _weatherMissingReasonMeta,
-        weatherMissingReason.isAcceptableOrUnknown(
-          data['weather_missing_reason']!,
-          _weatherMissingReasonMeta,
-        ),
-      );
-    }
-    if (data.containsKey('zero_observation_confirmed')) {
-      context.handle(
-        _zeroObservationConfirmedMeta,
-        zeroObservationConfirmed.isAcceptableOrUnknown(
-          data['zero_observation_confirmed']!,
-          _zeroObservationConfirmedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('notes')) {
-      context.handle(
-        _notesMeta,
-        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
-      );
-    }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    }
-    if (data.containsKey('cancel_reason')) {
-      context.handle(
-        _cancelReasonMeta,
-        cancelReason.isAcceptableOrUnknown(
-          data['cancel_reason']!,
-          _cancelReasonMeta,
-        ),
-      );
-    }
-    if (data.containsKey('battery_saver_used')) {
-      context.handle(
-        _batterySaverUsedMeta,
-        batterySaverUsed.isAcceptableOrUnknown(
-          data['battery_saver_used']!,
-          _batterySaverUsedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    if (data.containsKey('created_offline')) {
-      context.handle(
-        _createdOfflineMeta,
-        createdOffline.isAcceptableOrUnknown(
-          data['created_offline']!,
-          _createdOfflineMeta,
-        ),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('paused_at')) {
-      context.handle(
-        _pausedAtMeta,
-        pausedAt.isAcceptableOrUnknown(data['paused_at']!, _pausedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SurveyVisit map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SurveyVisit(
-      serverVersion: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}server_version'],
-      ),
-      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}sync_status'],
-        )!,
-      ),
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      projectId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}project_id'],
-      )!,
-      transectId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}transect_id'],
-      )!,
-      observerId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}observer_id'],
-      )!,
-      protocolVersion: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}protocol_version'],
-      )!,
-      surveyMethod: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}survey_method'],
-      )!,
-      startedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}started_at'],
-      ),
-      endedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}ended_at'],
-      ),
-      durationSeconds: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}duration_seconds'],
-      ),
-      pausedSeconds: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}paused_seconds'],
-      )!,
-      distanceWalkedM: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}distance_walked_m'],
-      ),
-      observerCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}observer_count'],
-      )!,
-      observerNames: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}observer_names'],
-      )!,
-      temperatureStartC: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}temperature_start_c'],
-      ),
-      temperatureEndC: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}temperature_end_c'],
-      ),
-      windBeaufortStart: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}wind_beaufort_start'],
-      ),
-      windBeaufortEnd: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}wind_beaufort_end'],
-      ),
-      cloudCoverStartPct: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}cloud_cover_start_pct'],
-      ),
-      cloudCoverEndPct: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}cloud_cover_end_pct'],
-      ),
-      precipitation: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}precipitation'],
-      )!,
-      weatherSuitable: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}weather_suitable'],
-      ),
-      weatherMissingReason: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}weather_missing_reason'],
-      )!,
-      zeroObservationConfirmed: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}zero_observation_confirmed'],
-      )!,
-      notes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}notes'],
-      )!,
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
-      cancelReason: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}cancel_reason'],
-      )!,
-      batterySaverUsed: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}battery_saver_used'],
-      )!,
-      deviceId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}device_id'],
-      )!,
-      createdOffline: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}created_offline'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      pausedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}paused_at'],
-      ),
-    );
-  }
-
-  @override
-  $SurveyVisitsTable createAlias(String alias) {
-    return $SurveyVisitsTable(attachedDatabase, alias);
-  }
-
-  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
-      const EnumNameConverter<SyncStatus>(SyncStatus.values);
-}
-
-class SurveyVisit extends DataClass implements Insertable<SurveyVisit> {
-  /// Version the server last gave this row; null until pushed.
-  final int? serverVersion;
-  final SyncStatus syncStatus;
-
-  /// Set by a soft delete.
-  final DateTime? deletedAt;
-  final String id;
-  final String projectId;
-  final String transectId;
-  final String observerId;
-  final String protocolVersion;
-  final String surveyMethod;
-  final DateTime? startedAt;
-  final DateTime? endedAt;
-
-  /// Walking time without pauses.
-  final int? durationSeconds;
-  final int pausedSeconds;
-
-  /// The phone's own figure (sent by T040). The server replaces it with the
-  /// distance along the track points when it has at least two usable ones
-  /// (T036), and the next pull brings that back.
-  final double? distanceWalkedM;
-  final int observerCount;
-  final String observerNames;
-  final double? temperatureStartC;
-  final double? temperatureEndC;
-  final int? windBeaufortStart;
-  final int? windBeaufortEnd;
-  final int? cloudCoverStartPct;
-  final int? cloudCoverEndPct;
-  final String precipitation;
-  final bool? weatherSuitable;
-  final String weatherMissingReason;
-  final bool zeroObservationConfirmed;
-  final String notes;
-  final String status;
-
-  /// Set exactly when `status` is `cancelled`, empty otherwise.
-  final String cancelReason;
-  final bool batterySaverUsed;
-  final String deviceId;
-  final bool createdOffline;
-  final DateTime createdAt;
-
-  /// Local only: when the current pause began, null while walking.
-  final DateTime? pausedAt;
-  const SurveyVisit({
-    this.serverVersion,
-    required this.syncStatus,
-    this.deletedAt,
-    required this.id,
-    required this.projectId,
-    required this.transectId,
-    required this.observerId,
-    required this.protocolVersion,
-    required this.surveyMethod,
-    this.startedAt,
-    this.endedAt,
-    this.durationSeconds,
-    required this.pausedSeconds,
-    this.distanceWalkedM,
-    required this.observerCount,
-    required this.observerNames,
-    this.temperatureStartC,
-    this.temperatureEndC,
-    this.windBeaufortStart,
-    this.windBeaufortEnd,
-    this.cloudCoverStartPct,
-    this.cloudCoverEndPct,
-    required this.precipitation,
-    this.weatherSuitable,
-    required this.weatherMissingReason,
-    required this.zeroObservationConfirmed,
-    required this.notes,
-    required this.status,
-    required this.cancelReason,
-    required this.batterySaverUsed,
-    required this.deviceId,
-    required this.createdOffline,
-    required this.createdAt,
-    this.pausedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (!nullToAbsent || serverVersion != null) {
-      map['server_version'] = Variable<int>(serverVersion);
-    }
-    {
-      map['sync_status'] = Variable<String>(
-        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus),
-      );
-    }
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    map['id'] = Variable<String>(id);
-    map['project_id'] = Variable<String>(projectId);
-    map['transect_id'] = Variable<String>(transectId);
-    map['observer_id'] = Variable<String>(observerId);
-    map['protocol_version'] = Variable<String>(protocolVersion);
-    map['survey_method'] = Variable<String>(surveyMethod);
-    if (!nullToAbsent || startedAt != null) {
-      map['started_at'] = Variable<DateTime>(startedAt);
-    }
-    if (!nullToAbsent || endedAt != null) {
-      map['ended_at'] = Variable<DateTime>(endedAt);
-    }
-    if (!nullToAbsent || durationSeconds != null) {
-      map['duration_seconds'] = Variable<int>(durationSeconds);
-    }
-    map['paused_seconds'] = Variable<int>(pausedSeconds);
-    if (!nullToAbsent || distanceWalkedM != null) {
-      map['distance_walked_m'] = Variable<double>(distanceWalkedM);
-    }
-    map['observer_count'] = Variable<int>(observerCount);
-    map['observer_names'] = Variable<String>(observerNames);
-    if (!nullToAbsent || temperatureStartC != null) {
-      map['temperature_start_c'] = Variable<double>(temperatureStartC);
-    }
-    if (!nullToAbsent || temperatureEndC != null) {
-      map['temperature_end_c'] = Variable<double>(temperatureEndC);
-    }
-    if (!nullToAbsent || windBeaufortStart != null) {
-      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart);
-    }
-    if (!nullToAbsent || windBeaufortEnd != null) {
-      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd);
-    }
-    if (!nullToAbsent || cloudCoverStartPct != null) {
-      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct);
-    }
-    if (!nullToAbsent || cloudCoverEndPct != null) {
-      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct);
-    }
-    map['precipitation'] = Variable<String>(precipitation);
-    if (!nullToAbsent || weatherSuitable != null) {
-      map['weather_suitable'] = Variable<bool>(weatherSuitable);
-    }
-    map['weather_missing_reason'] = Variable<String>(weatherMissingReason);
-    map['zero_observation_confirmed'] = Variable<bool>(
-      zeroObservationConfirmed,
-    );
-    map['notes'] = Variable<String>(notes);
-    map['status'] = Variable<String>(status);
-    map['cancel_reason'] = Variable<String>(cancelReason);
-    map['battery_saver_used'] = Variable<bool>(batterySaverUsed);
-    map['device_id'] = Variable<String>(deviceId);
-    map['created_offline'] = Variable<bool>(createdOffline);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    if (!nullToAbsent || pausedAt != null) {
-      map['paused_at'] = Variable<DateTime>(pausedAt);
-    }
-    return map;
-  }
-
-  SurveyVisitsCompanion toCompanion(bool nullToAbsent) {
-    return SurveyVisitsCompanion(
-      serverVersion: serverVersion == null && nullToAbsent
-          ? const Value.absent()
-          : Value(serverVersion),
-      syncStatus: Value(syncStatus),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-      id: Value(id),
-      projectId: Value(projectId),
-      transectId: Value(transectId),
-      observerId: Value(observerId),
-      protocolVersion: Value(protocolVersion),
-      surveyMethod: Value(surveyMethod),
-      startedAt: startedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(startedAt),
-      endedAt: endedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(endedAt),
-      durationSeconds: durationSeconds == null && nullToAbsent
-          ? const Value.absent()
-          : Value(durationSeconds),
-      pausedSeconds: Value(pausedSeconds),
-      distanceWalkedM: distanceWalkedM == null && nullToAbsent
-          ? const Value.absent()
-          : Value(distanceWalkedM),
-      observerCount: Value(observerCount),
-      observerNames: Value(observerNames),
-      temperatureStartC: temperatureStartC == null && nullToAbsent
-          ? const Value.absent()
-          : Value(temperatureStartC),
-      temperatureEndC: temperatureEndC == null && nullToAbsent
-          ? const Value.absent()
-          : Value(temperatureEndC),
-      windBeaufortStart: windBeaufortStart == null && nullToAbsent
-          ? const Value.absent()
-          : Value(windBeaufortStart),
-      windBeaufortEnd: windBeaufortEnd == null && nullToAbsent
-          ? const Value.absent()
-          : Value(windBeaufortEnd),
-      cloudCoverStartPct: cloudCoverStartPct == null && nullToAbsent
-          ? const Value.absent()
-          : Value(cloudCoverStartPct),
-      cloudCoverEndPct: cloudCoverEndPct == null && nullToAbsent
-          ? const Value.absent()
-          : Value(cloudCoverEndPct),
-      precipitation: Value(precipitation),
-      weatherSuitable: weatherSuitable == null && nullToAbsent
-          ? const Value.absent()
-          : Value(weatherSuitable),
-      weatherMissingReason: Value(weatherMissingReason),
-      zeroObservationConfirmed: Value(zeroObservationConfirmed),
-      notes: Value(notes),
-      status: Value(status),
-      cancelReason: Value(cancelReason),
-      batterySaverUsed: Value(batterySaverUsed),
-      deviceId: Value(deviceId),
-      createdOffline: Value(createdOffline),
-      createdAt: Value(createdAt),
-      pausedAt: pausedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(pausedAt),
-    );
-  }
-
-  factory SurveyVisit.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SurveyVisit(
-      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
-      syncStatus: $SurveyVisitsTable.$convertersyncStatus.fromJson(
-        serializer.fromJson<String>(json['syncStatus']),
-      ),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-      id: serializer.fromJson<String>(json['id']),
-      projectId: serializer.fromJson<String>(json['projectId']),
-      transectId: serializer.fromJson<String>(json['transectId']),
-      observerId: serializer.fromJson<String>(json['observerId']),
-      protocolVersion: serializer.fromJson<String>(json['protocolVersion']),
-      surveyMethod: serializer.fromJson<String>(json['surveyMethod']),
-      startedAt: serializer.fromJson<DateTime?>(json['startedAt']),
-      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
-      durationSeconds: serializer.fromJson<int?>(json['durationSeconds']),
-      pausedSeconds: serializer.fromJson<int>(json['pausedSeconds']),
-      distanceWalkedM: serializer.fromJson<double?>(json['distanceWalkedM']),
-      observerCount: serializer.fromJson<int>(json['observerCount']),
-      observerNames: serializer.fromJson<String>(json['observerNames']),
-      temperatureStartC: serializer.fromJson<double?>(
-        json['temperatureStartC'],
-      ),
-      temperatureEndC: serializer.fromJson<double?>(json['temperatureEndC']),
-      windBeaufortStart: serializer.fromJson<int?>(json['windBeaufortStart']),
-      windBeaufortEnd: serializer.fromJson<int?>(json['windBeaufortEnd']),
-      cloudCoverStartPct: serializer.fromJson<int?>(json['cloudCoverStartPct']),
-      cloudCoverEndPct: serializer.fromJson<int?>(json['cloudCoverEndPct']),
-      precipitation: serializer.fromJson<String>(json['precipitation']),
-      weatherSuitable: serializer.fromJson<bool?>(json['weatherSuitable']),
-      weatherMissingReason: serializer.fromJson<String>(
-        json['weatherMissingReason'],
-      ),
-      zeroObservationConfirmed: serializer.fromJson<bool>(
-        json['zeroObservationConfirmed'],
-      ),
-      notes: serializer.fromJson<String>(json['notes']),
-      status: serializer.fromJson<String>(json['status']),
-      cancelReason: serializer.fromJson<String>(json['cancelReason']),
-      batterySaverUsed: serializer.fromJson<bool>(json['batterySaverUsed']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      createdOffline: serializer.fromJson<bool>(json['createdOffline']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'serverVersion': serializer.toJson<int?>(serverVersion),
-      'syncStatus': serializer.toJson<String>(
-        $SurveyVisitsTable.$convertersyncStatus.toJson(syncStatus),
-      ),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-      'id': serializer.toJson<String>(id),
-      'projectId': serializer.toJson<String>(projectId),
-      'transectId': serializer.toJson<String>(transectId),
-      'observerId': serializer.toJson<String>(observerId),
-      'protocolVersion': serializer.toJson<String>(protocolVersion),
-      'surveyMethod': serializer.toJson<String>(surveyMethod),
-      'startedAt': serializer.toJson<DateTime?>(startedAt),
-      'endedAt': serializer.toJson<DateTime?>(endedAt),
-      'durationSeconds': serializer.toJson<int?>(durationSeconds),
-      'pausedSeconds': serializer.toJson<int>(pausedSeconds),
-      'distanceWalkedM': serializer.toJson<double?>(distanceWalkedM),
-      'observerCount': serializer.toJson<int>(observerCount),
-      'observerNames': serializer.toJson<String>(observerNames),
-      'temperatureStartC': serializer.toJson<double?>(temperatureStartC),
-      'temperatureEndC': serializer.toJson<double?>(temperatureEndC),
-      'windBeaufortStart': serializer.toJson<int?>(windBeaufortStart),
-      'windBeaufortEnd': serializer.toJson<int?>(windBeaufortEnd),
-      'cloudCoverStartPct': serializer.toJson<int?>(cloudCoverStartPct),
-      'cloudCoverEndPct': serializer.toJson<int?>(cloudCoverEndPct),
-      'precipitation': serializer.toJson<String>(precipitation),
-      'weatherSuitable': serializer.toJson<bool?>(weatherSuitable),
-      'weatherMissingReason': serializer.toJson<String>(weatherMissingReason),
-      'zeroObservationConfirmed': serializer.toJson<bool>(
-        zeroObservationConfirmed,
-      ),
-      'notes': serializer.toJson<String>(notes),
-      'status': serializer.toJson<String>(status),
-      'cancelReason': serializer.toJson<String>(cancelReason),
-      'batterySaverUsed': serializer.toJson<bool>(batterySaverUsed),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'createdOffline': serializer.toJson<bool>(createdOffline),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'pausedAt': serializer.toJson<DateTime?>(pausedAt),
-    };
-  }
-
-  SurveyVisit copyWith({
-    Value<int?> serverVersion = const Value.absent(),
-    SyncStatus? syncStatus,
-    Value<DateTime?> deletedAt = const Value.absent(),
-    String? id,
-    String? projectId,
-    String? transectId,
-    String? observerId,
-    String? protocolVersion,
-    String? surveyMethod,
-    Value<DateTime?> startedAt = const Value.absent(),
-    Value<DateTime?> endedAt = const Value.absent(),
-    Value<int?> durationSeconds = const Value.absent(),
-    int? pausedSeconds,
-    Value<double?> distanceWalkedM = const Value.absent(),
-    int? observerCount,
-    String? observerNames,
-    Value<double?> temperatureStartC = const Value.absent(),
-    Value<double?> temperatureEndC = const Value.absent(),
-    Value<int?> windBeaufortStart = const Value.absent(),
-    Value<int?> windBeaufortEnd = const Value.absent(),
-    Value<int?> cloudCoverStartPct = const Value.absent(),
-    Value<int?> cloudCoverEndPct = const Value.absent(),
-    String? precipitation,
-    Value<bool?> weatherSuitable = const Value.absent(),
-    String? weatherMissingReason,
-    bool? zeroObservationConfirmed,
-    String? notes,
-    String? status,
-    String? cancelReason,
-    bool? batterySaverUsed,
-    String? deviceId,
-    bool? createdOffline,
-    DateTime? createdAt,
-    Value<DateTime?> pausedAt = const Value.absent(),
-  }) => SurveyVisit(
-    serverVersion: serverVersion.present
-        ? serverVersion.value
-        : this.serverVersion,
-    syncStatus: syncStatus ?? this.syncStatus,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-    id: id ?? this.id,
-    projectId: projectId ?? this.projectId,
-    transectId: transectId ?? this.transectId,
-    observerId: observerId ?? this.observerId,
-    protocolVersion: protocolVersion ?? this.protocolVersion,
-    surveyMethod: surveyMethod ?? this.surveyMethod,
-    startedAt: startedAt.present ? startedAt.value : this.startedAt,
-    endedAt: endedAt.present ? endedAt.value : this.endedAt,
-    durationSeconds: durationSeconds.present
-        ? durationSeconds.value
-        : this.durationSeconds,
-    pausedSeconds: pausedSeconds ?? this.pausedSeconds,
-    distanceWalkedM: distanceWalkedM.present
-        ? distanceWalkedM.value
-        : this.distanceWalkedM,
-    observerCount: observerCount ?? this.observerCount,
-    observerNames: observerNames ?? this.observerNames,
-    temperatureStartC: temperatureStartC.present
-        ? temperatureStartC.value
-        : this.temperatureStartC,
-    temperatureEndC: temperatureEndC.present
-        ? temperatureEndC.value
-        : this.temperatureEndC,
-    windBeaufortStart: windBeaufortStart.present
-        ? windBeaufortStart.value
-        : this.windBeaufortStart,
-    windBeaufortEnd: windBeaufortEnd.present
-        ? windBeaufortEnd.value
-        : this.windBeaufortEnd,
-    cloudCoverStartPct: cloudCoverStartPct.present
-        ? cloudCoverStartPct.value
-        : this.cloudCoverStartPct,
-    cloudCoverEndPct: cloudCoverEndPct.present
-        ? cloudCoverEndPct.value
-        : this.cloudCoverEndPct,
-    precipitation: precipitation ?? this.precipitation,
-    weatherSuitable: weatherSuitable.present
-        ? weatherSuitable.value
-        : this.weatherSuitable,
-    weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
-    zeroObservationConfirmed:
-        zeroObservationConfirmed ?? this.zeroObservationConfirmed,
-    notes: notes ?? this.notes,
-    status: status ?? this.status,
-    cancelReason: cancelReason ?? this.cancelReason,
-    batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
-    deviceId: deviceId ?? this.deviceId,
-    createdOffline: createdOffline ?? this.createdOffline,
-    createdAt: createdAt ?? this.createdAt,
-    pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
-  );
-  SurveyVisit copyWithCompanion(SurveyVisitsCompanion data) {
-    return SurveyVisit(
-      serverVersion: data.serverVersion.present
-          ? data.serverVersion.value
-          : this.serverVersion,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      id: data.id.present ? data.id.value : this.id,
-      projectId: data.projectId.present ? data.projectId.value : this.projectId,
-      transectId: data.transectId.present
-          ? data.transectId.value
-          : this.transectId,
-      observerId: data.observerId.present
-          ? data.observerId.value
-          : this.observerId,
-      protocolVersion: data.protocolVersion.present
-          ? data.protocolVersion.value
-          : this.protocolVersion,
-      surveyMethod: data.surveyMethod.present
-          ? data.surveyMethod.value
-          : this.surveyMethod,
-      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
-      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
-      durationSeconds: data.durationSeconds.present
-          ? data.durationSeconds.value
-          : this.durationSeconds,
-      pausedSeconds: data.pausedSeconds.present
-          ? data.pausedSeconds.value
-          : this.pausedSeconds,
-      distanceWalkedM: data.distanceWalkedM.present
-          ? data.distanceWalkedM.value
-          : this.distanceWalkedM,
-      observerCount: data.observerCount.present
-          ? data.observerCount.value
-          : this.observerCount,
-      observerNames: data.observerNames.present
-          ? data.observerNames.value
-          : this.observerNames,
-      temperatureStartC: data.temperatureStartC.present
-          ? data.temperatureStartC.value
-          : this.temperatureStartC,
-      temperatureEndC: data.temperatureEndC.present
-          ? data.temperatureEndC.value
-          : this.temperatureEndC,
-      windBeaufortStart: data.windBeaufortStart.present
-          ? data.windBeaufortStart.value
-          : this.windBeaufortStart,
-      windBeaufortEnd: data.windBeaufortEnd.present
-          ? data.windBeaufortEnd.value
-          : this.windBeaufortEnd,
-      cloudCoverStartPct: data.cloudCoverStartPct.present
-          ? data.cloudCoverStartPct.value
-          : this.cloudCoverStartPct,
-      cloudCoverEndPct: data.cloudCoverEndPct.present
-          ? data.cloudCoverEndPct.value
-          : this.cloudCoverEndPct,
-      precipitation: data.precipitation.present
-          ? data.precipitation.value
-          : this.precipitation,
-      weatherSuitable: data.weatherSuitable.present
-          ? data.weatherSuitable.value
-          : this.weatherSuitable,
-      weatherMissingReason: data.weatherMissingReason.present
-          ? data.weatherMissingReason.value
-          : this.weatherMissingReason,
-      zeroObservationConfirmed: data.zeroObservationConfirmed.present
-          ? data.zeroObservationConfirmed.value
-          : this.zeroObservationConfirmed,
-      notes: data.notes.present ? data.notes.value : this.notes,
-      status: data.status.present ? data.status.value : this.status,
-      cancelReason: data.cancelReason.present
-          ? data.cancelReason.value
-          : this.cancelReason,
-      batterySaverUsed: data.batterySaverUsed.present
-          ? data.batterySaverUsed.value
-          : this.batterySaverUsed,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      createdOffline: data.createdOffline.present
-          ? data.createdOffline.value
-          : this.createdOffline,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      pausedAt: data.pausedAt.present ? data.pausedAt.value : this.pausedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SurveyVisit(')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('transectId: $transectId, ')
-          ..write('observerId: $observerId, ')
-          ..write('protocolVersion: $protocolVersion, ')
-          ..write('surveyMethod: $surveyMethod, ')
-          ..write('startedAt: $startedAt, ')
-          ..write('endedAt: $endedAt, ')
-          ..write('durationSeconds: $durationSeconds, ')
-          ..write('pausedSeconds: $pausedSeconds, ')
-          ..write('distanceWalkedM: $distanceWalkedM, ')
-          ..write('observerCount: $observerCount, ')
-          ..write('observerNames: $observerNames, ')
-          ..write('temperatureStartC: $temperatureStartC, ')
-          ..write('temperatureEndC: $temperatureEndC, ')
-          ..write('windBeaufortStart: $windBeaufortStart, ')
-          ..write('windBeaufortEnd: $windBeaufortEnd, ')
-          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
-          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
-          ..write('precipitation: $precipitation, ')
-          ..write('weatherSuitable: $weatherSuitable, ')
-          ..write('weatherMissingReason: $weatherMissingReason, ')
-          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
-          ..write('notes: $notes, ')
-          ..write('status: $status, ')
-          ..write('cancelReason: $cancelReason, ')
-          ..write('batterySaverUsed: $batterySaverUsed, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('createdOffline: $createdOffline, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('pausedAt: $pausedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
-    serverVersion,
-    syncStatus,
-    deletedAt,
-    id,
-    projectId,
-    transectId,
-    observerId,
-    protocolVersion,
-    surveyMethod,
-    startedAt,
-    endedAt,
-    durationSeconds,
-    pausedSeconds,
-    distanceWalkedM,
-    observerCount,
-    observerNames,
-    temperatureStartC,
-    temperatureEndC,
-    windBeaufortStart,
-    windBeaufortEnd,
-    cloudCoverStartPct,
-    cloudCoverEndPct,
-    precipitation,
-    weatherSuitable,
-    weatherMissingReason,
-    zeroObservationConfirmed,
-    notes,
-    status,
-    cancelReason,
-    batterySaverUsed,
-    deviceId,
-    createdOffline,
-    createdAt,
-    pausedAt,
-  ]);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SurveyVisit &&
-          other.serverVersion == this.serverVersion &&
-          other.syncStatus == this.syncStatus &&
-          other.deletedAt == this.deletedAt &&
-          other.id == this.id &&
-          other.projectId == this.projectId &&
-          other.transectId == this.transectId &&
-          other.observerId == this.observerId &&
-          other.protocolVersion == this.protocolVersion &&
-          other.surveyMethod == this.surveyMethod &&
-          other.startedAt == this.startedAt &&
-          other.endedAt == this.endedAt &&
-          other.durationSeconds == this.durationSeconds &&
-          other.pausedSeconds == this.pausedSeconds &&
-          other.distanceWalkedM == this.distanceWalkedM &&
-          other.observerCount == this.observerCount &&
-          other.observerNames == this.observerNames &&
-          other.temperatureStartC == this.temperatureStartC &&
-          other.temperatureEndC == this.temperatureEndC &&
-          other.windBeaufortStart == this.windBeaufortStart &&
-          other.windBeaufortEnd == this.windBeaufortEnd &&
-          other.cloudCoverStartPct == this.cloudCoverStartPct &&
-          other.cloudCoverEndPct == this.cloudCoverEndPct &&
-          other.precipitation == this.precipitation &&
-          other.weatherSuitable == this.weatherSuitable &&
-          other.weatherMissingReason == this.weatherMissingReason &&
-          other.zeroObservationConfirmed == this.zeroObservationConfirmed &&
-          other.notes == this.notes &&
-          other.status == this.status &&
-          other.cancelReason == this.cancelReason &&
-          other.batterySaverUsed == this.batterySaverUsed &&
-          other.deviceId == this.deviceId &&
-          other.createdOffline == this.createdOffline &&
-          other.createdAt == this.createdAt &&
-          other.pausedAt == this.pausedAt);
-}
-
-class SurveyVisitsCompanion extends UpdateCompanion<SurveyVisit> {
-  final Value<int?> serverVersion;
-  final Value<SyncStatus> syncStatus;
-  final Value<DateTime?> deletedAt;
-  final Value<String> id;
-  final Value<String> projectId;
-  final Value<String> transectId;
-  final Value<String> observerId;
-  final Value<String> protocolVersion;
-  final Value<String> surveyMethod;
-  final Value<DateTime?> startedAt;
-  final Value<DateTime?> endedAt;
-  final Value<int?> durationSeconds;
-  final Value<int> pausedSeconds;
-  final Value<double?> distanceWalkedM;
-  final Value<int> observerCount;
-  final Value<String> observerNames;
-  final Value<double?> temperatureStartC;
-  final Value<double?> temperatureEndC;
-  final Value<int?> windBeaufortStart;
-  final Value<int?> windBeaufortEnd;
-  final Value<int?> cloudCoverStartPct;
-  final Value<int?> cloudCoverEndPct;
-  final Value<String> precipitation;
-  final Value<bool?> weatherSuitable;
-  final Value<String> weatherMissingReason;
-  final Value<bool> zeroObservationConfirmed;
-  final Value<String> notes;
-  final Value<String> status;
-  final Value<String> cancelReason;
-  final Value<bool> batterySaverUsed;
-  final Value<String> deviceId;
-  final Value<bool> createdOffline;
-  final Value<DateTime> createdAt;
-  final Value<DateTime?> pausedAt;
-  final Value<int> rowid;
-  const SurveyVisitsCompanion({
-    this.serverVersion = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.id = const Value.absent(),
-    this.projectId = const Value.absent(),
-    this.transectId = const Value.absent(),
-    this.observerId = const Value.absent(),
-    this.protocolVersion = const Value.absent(),
-    this.surveyMethod = const Value.absent(),
-    this.startedAt = const Value.absent(),
-    this.endedAt = const Value.absent(),
-    this.durationSeconds = const Value.absent(),
-    this.pausedSeconds = const Value.absent(),
-    this.distanceWalkedM = const Value.absent(),
-    this.observerCount = const Value.absent(),
-    this.observerNames = const Value.absent(),
-    this.temperatureStartC = const Value.absent(),
-    this.temperatureEndC = const Value.absent(),
-    this.windBeaufortStart = const Value.absent(),
-    this.windBeaufortEnd = const Value.absent(),
-    this.cloudCoverStartPct = const Value.absent(),
-    this.cloudCoverEndPct = const Value.absent(),
-    this.precipitation = const Value.absent(),
-    this.weatherSuitable = const Value.absent(),
-    this.weatherMissingReason = const Value.absent(),
-    this.zeroObservationConfirmed = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.status = const Value.absent(),
-    this.cancelReason = const Value.absent(),
-    this.batterySaverUsed = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.createdOffline = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.pausedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  SurveyVisitsCompanion.insert({
-    this.serverVersion = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    required String id,
-    required String projectId,
-    required String transectId,
-    required String observerId,
-    required String protocolVersion,
-    this.surveyMethod = const Value.absent(),
-    this.startedAt = const Value.absent(),
-    this.endedAt = const Value.absent(),
-    this.durationSeconds = const Value.absent(),
-    this.pausedSeconds = const Value.absent(),
-    this.distanceWalkedM = const Value.absent(),
-    this.observerCount = const Value.absent(),
-    this.observerNames = const Value.absent(),
-    this.temperatureStartC = const Value.absent(),
-    this.temperatureEndC = const Value.absent(),
-    this.windBeaufortStart = const Value.absent(),
-    this.windBeaufortEnd = const Value.absent(),
-    this.cloudCoverStartPct = const Value.absent(),
-    this.cloudCoverEndPct = const Value.absent(),
-    this.precipitation = const Value.absent(),
-    this.weatherSuitable = const Value.absent(),
-    this.weatherMissingReason = const Value.absent(),
-    this.zeroObservationConfirmed = const Value.absent(),
-    this.notes = const Value.absent(),
-    this.status = const Value.absent(),
-    this.cancelReason = const Value.absent(),
-    this.batterySaverUsed = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.createdOffline = const Value.absent(),
-    required DateTime createdAt,
-    this.pausedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       projectId = Value(projectId),
-       transectId = Value(transectId),
-       observerId = Value(observerId),
-       protocolVersion = Value(protocolVersion),
-       createdAt = Value(createdAt);
-  static Insertable<SurveyVisit> custom({
-    Expression<int>? serverVersion,
-    Expression<String>? syncStatus,
-    Expression<DateTime>? deletedAt,
-    Expression<String>? id,
-    Expression<String>? projectId,
-    Expression<String>? transectId,
-    Expression<String>? observerId,
-    Expression<String>? protocolVersion,
-    Expression<String>? surveyMethod,
-    Expression<DateTime>? startedAt,
-    Expression<DateTime>? endedAt,
-    Expression<int>? durationSeconds,
-    Expression<int>? pausedSeconds,
-    Expression<double>? distanceWalkedM,
-    Expression<int>? observerCount,
-    Expression<String>? observerNames,
-    Expression<double>? temperatureStartC,
-    Expression<double>? temperatureEndC,
-    Expression<int>? windBeaufortStart,
-    Expression<int>? windBeaufortEnd,
-    Expression<int>? cloudCoverStartPct,
-    Expression<int>? cloudCoverEndPct,
-    Expression<String>? precipitation,
-    Expression<bool>? weatherSuitable,
-    Expression<String>? weatherMissingReason,
-    Expression<bool>? zeroObservationConfirmed,
-    Expression<String>? notes,
-    Expression<String>? status,
-    Expression<String>? cancelReason,
-    Expression<bool>? batterySaverUsed,
-    Expression<String>? deviceId,
-    Expression<bool>? createdOffline,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? pausedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (serverVersion != null) 'server_version': serverVersion,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (id != null) 'id': id,
-      if (projectId != null) 'project_id': projectId,
-      if (transectId != null) 'transect_id': transectId,
-      if (observerId != null) 'observer_id': observerId,
-      if (protocolVersion != null) 'protocol_version': protocolVersion,
-      if (surveyMethod != null) 'survey_method': surveyMethod,
-      if (startedAt != null) 'started_at': startedAt,
-      if (endedAt != null) 'ended_at': endedAt,
-      if (durationSeconds != null) 'duration_seconds': durationSeconds,
-      if (pausedSeconds != null) 'paused_seconds': pausedSeconds,
-      if (distanceWalkedM != null) 'distance_walked_m': distanceWalkedM,
-      if (observerCount != null) 'observer_count': observerCount,
-      if (observerNames != null) 'observer_names': observerNames,
-      if (temperatureStartC != null) 'temperature_start_c': temperatureStartC,
-      if (temperatureEndC != null) 'temperature_end_c': temperatureEndC,
-      if (windBeaufortStart != null) 'wind_beaufort_start': windBeaufortStart,
-      if (windBeaufortEnd != null) 'wind_beaufort_end': windBeaufortEnd,
-      if (cloudCoverStartPct != null)
-        'cloud_cover_start_pct': cloudCoverStartPct,
-      if (cloudCoverEndPct != null) 'cloud_cover_end_pct': cloudCoverEndPct,
-      if (precipitation != null) 'precipitation': precipitation,
-      if (weatherSuitable != null) 'weather_suitable': weatherSuitable,
-      if (weatherMissingReason != null)
-        'weather_missing_reason': weatherMissingReason,
-      if (zeroObservationConfirmed != null)
-        'zero_observation_confirmed': zeroObservationConfirmed,
-      if (notes != null) 'notes': notes,
-      if (status != null) 'status': status,
-      if (cancelReason != null) 'cancel_reason': cancelReason,
-      if (batterySaverUsed != null) 'battery_saver_used': batterySaverUsed,
-      if (deviceId != null) 'device_id': deviceId,
-      if (createdOffline != null) 'created_offline': createdOffline,
-      if (createdAt != null) 'created_at': createdAt,
-      if (pausedAt != null) 'paused_at': pausedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  SurveyVisitsCompanion copyWith({
-    Value<int?>? serverVersion,
-    Value<SyncStatus>? syncStatus,
-    Value<DateTime?>? deletedAt,
-    Value<String>? id,
-    Value<String>? projectId,
-    Value<String>? transectId,
-    Value<String>? observerId,
-    Value<String>? protocolVersion,
-    Value<String>? surveyMethod,
-    Value<DateTime?>? startedAt,
-    Value<DateTime?>? endedAt,
-    Value<int?>? durationSeconds,
-    Value<int>? pausedSeconds,
-    Value<double?>? distanceWalkedM,
-    Value<int>? observerCount,
-    Value<String>? observerNames,
-    Value<double?>? temperatureStartC,
-    Value<double?>? temperatureEndC,
-    Value<int?>? windBeaufortStart,
-    Value<int?>? windBeaufortEnd,
-    Value<int?>? cloudCoverStartPct,
-    Value<int?>? cloudCoverEndPct,
-    Value<String>? precipitation,
-    Value<bool?>? weatherSuitable,
-    Value<String>? weatherMissingReason,
-    Value<bool>? zeroObservationConfirmed,
-    Value<String>? notes,
-    Value<String>? status,
-    Value<String>? cancelReason,
-    Value<bool>? batterySaverUsed,
-    Value<String>? deviceId,
-    Value<bool>? createdOffline,
-    Value<DateTime>? createdAt,
-    Value<DateTime?>? pausedAt,
-    Value<int>? rowid,
-  }) {
-    return SurveyVisitsCompanion(
-      serverVersion: serverVersion ?? this.serverVersion,
-      syncStatus: syncStatus ?? this.syncStatus,
-      deletedAt: deletedAt ?? this.deletedAt,
-      id: id ?? this.id,
-      projectId: projectId ?? this.projectId,
-      transectId: transectId ?? this.transectId,
-      observerId: observerId ?? this.observerId,
-      protocolVersion: protocolVersion ?? this.protocolVersion,
-      surveyMethod: surveyMethod ?? this.surveyMethod,
-      startedAt: startedAt ?? this.startedAt,
-      endedAt: endedAt ?? this.endedAt,
-      durationSeconds: durationSeconds ?? this.durationSeconds,
-      pausedSeconds: pausedSeconds ?? this.pausedSeconds,
-      distanceWalkedM: distanceWalkedM ?? this.distanceWalkedM,
-      observerCount: observerCount ?? this.observerCount,
-      observerNames: observerNames ?? this.observerNames,
-      temperatureStartC: temperatureStartC ?? this.temperatureStartC,
-      temperatureEndC: temperatureEndC ?? this.temperatureEndC,
-      windBeaufortStart: windBeaufortStart ?? this.windBeaufortStart,
-      windBeaufortEnd: windBeaufortEnd ?? this.windBeaufortEnd,
-      cloudCoverStartPct: cloudCoverStartPct ?? this.cloudCoverStartPct,
-      cloudCoverEndPct: cloudCoverEndPct ?? this.cloudCoverEndPct,
-      precipitation: precipitation ?? this.precipitation,
-      weatherSuitable: weatherSuitable ?? this.weatherSuitable,
-      weatherMissingReason: weatherMissingReason ?? this.weatherMissingReason,
-      zeroObservationConfirmed:
-          zeroObservationConfirmed ?? this.zeroObservationConfirmed,
-      notes: notes ?? this.notes,
-      status: status ?? this.status,
-      cancelReason: cancelReason ?? this.cancelReason,
-      batterySaverUsed: batterySaverUsed ?? this.batterySaverUsed,
-      deviceId: deviceId ?? this.deviceId,
-      createdOffline: createdOffline ?? this.createdOffline,
-      createdAt: createdAt ?? this.createdAt,
-      pausedAt: pausedAt ?? this.pausedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (serverVersion.present) {
-      map['server_version'] = Variable<int>(serverVersion.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<String>(
-        $SurveyVisitsTable.$convertersyncStatus.toSql(syncStatus.value),
-      );
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (projectId.present) {
-      map['project_id'] = Variable<String>(projectId.value);
-    }
-    if (transectId.present) {
-      map['transect_id'] = Variable<String>(transectId.value);
-    }
-    if (observerId.present) {
-      map['observer_id'] = Variable<String>(observerId.value);
-    }
-    if (protocolVersion.present) {
-      map['protocol_version'] = Variable<String>(protocolVersion.value);
-    }
-    if (surveyMethod.present) {
-      map['survey_method'] = Variable<String>(surveyMethod.value);
-    }
-    if (startedAt.present) {
-      map['started_at'] = Variable<DateTime>(startedAt.value);
-    }
-    if (endedAt.present) {
-      map['ended_at'] = Variable<DateTime>(endedAt.value);
-    }
-    if (durationSeconds.present) {
-      map['duration_seconds'] = Variable<int>(durationSeconds.value);
-    }
-    if (pausedSeconds.present) {
-      map['paused_seconds'] = Variable<int>(pausedSeconds.value);
-    }
-    if (distanceWalkedM.present) {
-      map['distance_walked_m'] = Variable<double>(distanceWalkedM.value);
-    }
-    if (observerCount.present) {
-      map['observer_count'] = Variable<int>(observerCount.value);
-    }
-    if (observerNames.present) {
-      map['observer_names'] = Variable<String>(observerNames.value);
-    }
-    if (temperatureStartC.present) {
-      map['temperature_start_c'] = Variable<double>(temperatureStartC.value);
-    }
-    if (temperatureEndC.present) {
-      map['temperature_end_c'] = Variable<double>(temperatureEndC.value);
-    }
-    if (windBeaufortStart.present) {
-      map['wind_beaufort_start'] = Variable<int>(windBeaufortStart.value);
-    }
-    if (windBeaufortEnd.present) {
-      map['wind_beaufort_end'] = Variable<int>(windBeaufortEnd.value);
-    }
-    if (cloudCoverStartPct.present) {
-      map['cloud_cover_start_pct'] = Variable<int>(cloudCoverStartPct.value);
-    }
-    if (cloudCoverEndPct.present) {
-      map['cloud_cover_end_pct'] = Variable<int>(cloudCoverEndPct.value);
-    }
-    if (precipitation.present) {
-      map['precipitation'] = Variable<String>(precipitation.value);
-    }
-    if (weatherSuitable.present) {
-      map['weather_suitable'] = Variable<bool>(weatherSuitable.value);
-    }
-    if (weatherMissingReason.present) {
-      map['weather_missing_reason'] = Variable<String>(
-        weatherMissingReason.value,
-      );
-    }
-    if (zeroObservationConfirmed.present) {
-      map['zero_observation_confirmed'] = Variable<bool>(
-        zeroObservationConfirmed.value,
-      );
-    }
-    if (notes.present) {
-      map['notes'] = Variable<String>(notes.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
-    }
-    if (cancelReason.present) {
-      map['cancel_reason'] = Variable<String>(cancelReason.value);
-    }
-    if (batterySaverUsed.present) {
-      map['battery_saver_used'] = Variable<bool>(batterySaverUsed.value);
-    }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (createdOffline.present) {
-      map['created_offline'] = Variable<bool>(createdOffline.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (pausedAt.present) {
-      map['paused_at'] = Variable<DateTime>(pausedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SurveyVisitsCompanion(')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('id: $id, ')
-          ..write('projectId: $projectId, ')
-          ..write('transectId: $transectId, ')
-          ..write('observerId: $observerId, ')
-          ..write('protocolVersion: $protocolVersion, ')
-          ..write('surveyMethod: $surveyMethod, ')
-          ..write('startedAt: $startedAt, ')
-          ..write('endedAt: $endedAt, ')
-          ..write('durationSeconds: $durationSeconds, ')
-          ..write('pausedSeconds: $pausedSeconds, ')
-          ..write('distanceWalkedM: $distanceWalkedM, ')
-          ..write('observerCount: $observerCount, ')
-          ..write('observerNames: $observerNames, ')
-          ..write('temperatureStartC: $temperatureStartC, ')
-          ..write('temperatureEndC: $temperatureEndC, ')
-          ..write('windBeaufortStart: $windBeaufortStart, ')
-          ..write('windBeaufortEnd: $windBeaufortEnd, ')
-          ..write('cloudCoverStartPct: $cloudCoverStartPct, ')
-          ..write('cloudCoverEndPct: $cloudCoverEndPct, ')
-          ..write('precipitation: $precipitation, ')
-          ..write('weatherSuitable: $weatherSuitable, ')
-          ..write('weatherMissingReason: $weatherMissingReason, ')
-          ..write('zeroObservationConfirmed: $zeroObservationConfirmed, ')
-          ..write('notes: $notes, ')
-          ..write('status: $status, ')
-          ..write('cancelReason: $cancelReason, ')
-          ..write('batterySaverUsed: $batterySaverUsed, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('createdOffline: $createdOffline, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('pausedAt: $pausedAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $SurveyTrackPointsTable extends SurveyTrackPoints
     with TableInfo<$SurveyTrackPointsTable, SurveyTrackPoint> {
   @override
@@ -9560,1062 +11646,6 @@ class SurveyTrackPointsCompanion extends UpdateCompanion<SurveyTrackPoint> {
           ..write('sequenceNumber: $sequenceNumber, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('syncStatus: $syncStatus, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $TaxaTable extends Taxa with TableInfo<$TaxaTable, Taxon> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TaxaTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _authorMeta = const VerificationMeta('author');
-  @override
-  late final GeneratedColumn<String> author = GeneratedColumn<String>(
-    'author',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _rankMeta = const VerificationMeta('rank');
-  @override
-  late final GeneratedColumn<String> rank = GeneratedColumn<String>(
-    'rank',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _genusMeta = const VerificationMeta('genus');
-  @override
-  late final GeneratedColumn<String> genus = GeneratedColumn<String>(
-    'genus',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _familyMeta = const VerificationMeta('family');
-  @override
-  late final GeneratedColumn<String> family = GeneratedColumn<String>(
-    'family',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _vernacularNameSrMeta = const VerificationMeta(
-    'vernacularNameSr',
-  );
-  @override
-  late final GeneratedColumn<String> vernacularNameSr = GeneratedColumn<String>(
-    'vernacular_name_sr',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _vernacularNameEnMeta = const VerificationMeta(
-    'vernacularNameEn',
-  );
-  @override
-  late final GeneratedColumn<String> vernacularNameEn = GeneratedColumn<String>(
-    'vernacular_name_en',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _taxonSourceMeta = const VerificationMeta(
-    'taxonSource',
-  );
-  @override
-  late final GeneratedColumn<String> taxonSource = GeneratedColumn<String>(
-    'taxon_source',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _taxonSourceIdMeta = const VerificationMeta(
-    'taxonSourceId',
-  );
-  @override
-  late final GeneratedColumn<String> taxonSourceId = GeneratedColumn<String>(
-    'taxon_source_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _activeMeta = const VerificationMeta('active');
-  @override
-  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
-    'active',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("active" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _photoRequiredMeta = const VerificationMeta(
-    'photoRequired',
-  );
-  @override
-  late final GeneratedColumn<bool> photoRequired = GeneratedColumn<bool>(
-    'photo_required',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("photo_required" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _identificationNotesMeta =
-      const VerificationMeta('identificationNotes');
-  @override
-  late final GeneratedColumn<String> identificationNotes =
-      GeneratedColumn<String>(
-        'identification_notes',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _acceptedNameIdMeta = const VerificationMeta(
-    'acceptedNameId',
-  );
-  @override
-  late final GeneratedColumn<String> acceptedNameId = GeneratedColumn<String>(
-    'accepted_name_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _introducedInIdMeta = const VerificationMeta(
-    'introducedInId',
-  );
-  @override
-  late final GeneratedColumn<String> introducedInId = GeneratedColumn<String>(
-    'introduced_in_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _retiredInIdMeta = const VerificationMeta(
-    'retiredInId',
-  );
-  @override
-  late final GeneratedColumn<String> retiredInId = GeneratedColumn<String>(
-    'retired_in_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _scientificNameMeta = const VerificationMeta(
-    'scientificName',
-  );
-  @override
-  late final GeneratedColumn<String> scientificName = GeneratedColumn<String>(
-    'scientific_name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
-    'serverVersion',
-  );
-  @override
-  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
-    'server_version',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    author,
-    rank,
-    genus,
-    family,
-    vernacularNameSr,
-    vernacularNameEn,
-    taxonSource,
-    taxonSourceId,
-    active,
-    photoRequired,
-    identificationNotes,
-    acceptedNameId,
-    introducedInId,
-    retiredInId,
-    scientificName,
-    serverVersion,
-    deletedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'taxon';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Taxon> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('author')) {
-      context.handle(
-        _authorMeta,
-        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_authorMeta);
-    }
-    if (data.containsKey('rank')) {
-      context.handle(
-        _rankMeta,
-        rank.isAcceptableOrUnknown(data['rank']!, _rankMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_rankMeta);
-    }
-    if (data.containsKey('genus')) {
-      context.handle(
-        _genusMeta,
-        genus.isAcceptableOrUnknown(data['genus']!, _genusMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_genusMeta);
-    }
-    if (data.containsKey('family')) {
-      context.handle(
-        _familyMeta,
-        family.isAcceptableOrUnknown(data['family']!, _familyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_familyMeta);
-    }
-    if (data.containsKey('vernacular_name_sr')) {
-      context.handle(
-        _vernacularNameSrMeta,
-        vernacularNameSr.isAcceptableOrUnknown(
-          data['vernacular_name_sr']!,
-          _vernacularNameSrMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_vernacularNameSrMeta);
-    }
-    if (data.containsKey('vernacular_name_en')) {
-      context.handle(
-        _vernacularNameEnMeta,
-        vernacularNameEn.isAcceptableOrUnknown(
-          data['vernacular_name_en']!,
-          _vernacularNameEnMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_vernacularNameEnMeta);
-    }
-    if (data.containsKey('taxon_source')) {
-      context.handle(
-        _taxonSourceMeta,
-        taxonSource.isAcceptableOrUnknown(
-          data['taxon_source']!,
-          _taxonSourceMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_taxonSourceMeta);
-    }
-    if (data.containsKey('taxon_source_id')) {
-      context.handle(
-        _taxonSourceIdMeta,
-        taxonSourceId.isAcceptableOrUnknown(
-          data['taxon_source_id']!,
-          _taxonSourceIdMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_taxonSourceIdMeta);
-    }
-    if (data.containsKey('active')) {
-      context.handle(
-        _activeMeta,
-        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_activeMeta);
-    }
-    if (data.containsKey('photo_required')) {
-      context.handle(
-        _photoRequiredMeta,
-        photoRequired.isAcceptableOrUnknown(
-          data['photo_required']!,
-          _photoRequiredMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_photoRequiredMeta);
-    }
-    if (data.containsKey('identification_notes')) {
-      context.handle(
-        _identificationNotesMeta,
-        identificationNotes.isAcceptableOrUnknown(
-          data['identification_notes']!,
-          _identificationNotesMeta,
-        ),
-      );
-    }
-    if (data.containsKey('accepted_name_id')) {
-      context.handle(
-        _acceptedNameIdMeta,
-        acceptedNameId.isAcceptableOrUnknown(
-          data['accepted_name_id']!,
-          _acceptedNameIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('introduced_in_id')) {
-      context.handle(
-        _introducedInIdMeta,
-        introducedInId.isAcceptableOrUnknown(
-          data['introduced_in_id']!,
-          _introducedInIdMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_introducedInIdMeta);
-    }
-    if (data.containsKey('retired_in_id')) {
-      context.handle(
-        _retiredInIdMeta,
-        retiredInId.isAcceptableOrUnknown(
-          data['retired_in_id']!,
-          _retiredInIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('scientific_name')) {
-      context.handle(
-        _scientificNameMeta,
-        scientificName.isAcceptableOrUnknown(
-          data['scientific_name']!,
-          _scientificNameMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_scientificNameMeta);
-    }
-    if (data.containsKey('server_version')) {
-      context.handle(
-        _serverVersionMeta,
-        serverVersion.isAcceptableOrUnknown(
-          data['server_version']!,
-          _serverVersionMeta,
-        ),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Taxon map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Taxon(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      author: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}author'],
-      )!,
-      rank: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}rank'],
-      )!,
-      genus: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}genus'],
-      )!,
-      family: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}family'],
-      )!,
-      vernacularNameSr: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vernacular_name_sr'],
-      )!,
-      vernacularNameEn: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vernacular_name_en'],
-      )!,
-      taxonSource: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}taxon_source'],
-      )!,
-      taxonSourceId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}taxon_source_id'],
-      )!,
-      active: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}active'],
-      )!,
-      photoRequired: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}photo_required'],
-      )!,
-      identificationNotes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}identification_notes'],
-      ),
-      acceptedNameId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}accepted_name_id'],
-      ),
-      introducedInId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}introduced_in_id'],
-      )!,
-      retiredInId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}retired_in_id'],
-      ),
-      scientificName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}scientific_name'],
-      )!,
-      serverVersion: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}server_version'],
-      ),
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-    );
-  }
-
-  @override
-  $TaxaTable createAlias(String alias) {
-    return $TaxaTable(attachedDatabase, alias);
-  }
-}
-
-class Taxon extends DataClass implements Insertable<Taxon> {
-  final String id;
-  final String author;
-  final String rank;
-  final String genus;
-  final String family;
-  final String vernacularNameSr;
-  final String vernacularNameEn;
-  final String taxonSource;
-  final String taxonSourceId;
-  final bool active;
-  final bool photoRequired;
-  final String? identificationNotes;
-  final String? acceptedNameId;
-  final String introducedInId;
-  final String? retiredInId;
-  final String scientificName;
-  final int? serverVersion;
-  final DateTime? deletedAt;
-  const Taxon({
-    required this.id,
-    required this.author,
-    required this.rank,
-    required this.genus,
-    required this.family,
-    required this.vernacularNameSr,
-    required this.vernacularNameEn,
-    required this.taxonSource,
-    required this.taxonSourceId,
-    required this.active,
-    required this.photoRequired,
-    this.identificationNotes,
-    this.acceptedNameId,
-    required this.introducedInId,
-    this.retiredInId,
-    required this.scientificName,
-    this.serverVersion,
-    this.deletedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['author'] = Variable<String>(author);
-    map['rank'] = Variable<String>(rank);
-    map['genus'] = Variable<String>(genus);
-    map['family'] = Variable<String>(family);
-    map['vernacular_name_sr'] = Variable<String>(vernacularNameSr);
-    map['vernacular_name_en'] = Variable<String>(vernacularNameEn);
-    map['taxon_source'] = Variable<String>(taxonSource);
-    map['taxon_source_id'] = Variable<String>(taxonSourceId);
-    map['active'] = Variable<bool>(active);
-    map['photo_required'] = Variable<bool>(photoRequired);
-    if (!nullToAbsent || identificationNotes != null) {
-      map['identification_notes'] = Variable<String>(identificationNotes);
-    }
-    if (!nullToAbsent || acceptedNameId != null) {
-      map['accepted_name_id'] = Variable<String>(acceptedNameId);
-    }
-    map['introduced_in_id'] = Variable<String>(introducedInId);
-    if (!nullToAbsent || retiredInId != null) {
-      map['retired_in_id'] = Variable<String>(retiredInId);
-    }
-    map['scientific_name'] = Variable<String>(scientificName);
-    if (!nullToAbsent || serverVersion != null) {
-      map['server_version'] = Variable<int>(serverVersion);
-    }
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    return map;
-  }
-
-  TaxaCompanion toCompanion(bool nullToAbsent) {
-    return TaxaCompanion(
-      id: Value(id),
-      author: Value(author),
-      rank: Value(rank),
-      genus: Value(genus),
-      family: Value(family),
-      vernacularNameSr: Value(vernacularNameSr),
-      vernacularNameEn: Value(vernacularNameEn),
-      taxonSource: Value(taxonSource),
-      taxonSourceId: Value(taxonSourceId),
-      active: Value(active),
-      photoRequired: Value(photoRequired),
-      identificationNotes: identificationNotes == null && nullToAbsent
-          ? const Value.absent()
-          : Value(identificationNotes),
-      acceptedNameId: acceptedNameId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(acceptedNameId),
-      introducedInId: Value(introducedInId),
-      retiredInId: retiredInId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(retiredInId),
-      scientificName: Value(scientificName),
-      serverVersion: serverVersion == null && nullToAbsent
-          ? const Value.absent()
-          : Value(serverVersion),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-    );
-  }
-
-  factory Taxon.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Taxon(
-      id: serializer.fromJson<String>(json['id']),
-      author: serializer.fromJson<String>(json['author']),
-      rank: serializer.fromJson<String>(json['rank']),
-      genus: serializer.fromJson<String>(json['genus']),
-      family: serializer.fromJson<String>(json['family']),
-      vernacularNameSr: serializer.fromJson<String>(json['vernacularNameSr']),
-      vernacularNameEn: serializer.fromJson<String>(json['vernacularNameEn']),
-      taxonSource: serializer.fromJson<String>(json['taxonSource']),
-      taxonSourceId: serializer.fromJson<String>(json['taxonSourceId']),
-      active: serializer.fromJson<bool>(json['active']),
-      photoRequired: serializer.fromJson<bool>(json['photoRequired']),
-      identificationNotes: serializer.fromJson<String?>(
-        json['identificationNotes'],
-      ),
-      acceptedNameId: serializer.fromJson<String?>(json['acceptedNameId']),
-      introducedInId: serializer.fromJson<String>(json['introducedInId']),
-      retiredInId: serializer.fromJson<String?>(json['retiredInId']),
-      scientificName: serializer.fromJson<String>(json['scientificName']),
-      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'author': serializer.toJson<String>(author),
-      'rank': serializer.toJson<String>(rank),
-      'genus': serializer.toJson<String>(genus),
-      'family': serializer.toJson<String>(family),
-      'vernacularNameSr': serializer.toJson<String>(vernacularNameSr),
-      'vernacularNameEn': serializer.toJson<String>(vernacularNameEn),
-      'taxonSource': serializer.toJson<String>(taxonSource),
-      'taxonSourceId': serializer.toJson<String>(taxonSourceId),
-      'active': serializer.toJson<bool>(active),
-      'photoRequired': serializer.toJson<bool>(photoRequired),
-      'identificationNotes': serializer.toJson<String?>(identificationNotes),
-      'acceptedNameId': serializer.toJson<String?>(acceptedNameId),
-      'introducedInId': serializer.toJson<String>(introducedInId),
-      'retiredInId': serializer.toJson<String?>(retiredInId),
-      'scientificName': serializer.toJson<String>(scientificName),
-      'serverVersion': serializer.toJson<int?>(serverVersion),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-    };
-  }
-
-  Taxon copyWith({
-    String? id,
-    String? author,
-    String? rank,
-    String? genus,
-    String? family,
-    String? vernacularNameSr,
-    String? vernacularNameEn,
-    String? taxonSource,
-    String? taxonSourceId,
-    bool? active,
-    bool? photoRequired,
-    Value<String?> identificationNotes = const Value.absent(),
-    Value<String?> acceptedNameId = const Value.absent(),
-    String? introducedInId,
-    Value<String?> retiredInId = const Value.absent(),
-    String? scientificName,
-    Value<int?> serverVersion = const Value.absent(),
-    Value<DateTime?> deletedAt = const Value.absent(),
-  }) => Taxon(
-    id: id ?? this.id,
-    author: author ?? this.author,
-    rank: rank ?? this.rank,
-    genus: genus ?? this.genus,
-    family: family ?? this.family,
-    vernacularNameSr: vernacularNameSr ?? this.vernacularNameSr,
-    vernacularNameEn: vernacularNameEn ?? this.vernacularNameEn,
-    taxonSource: taxonSource ?? this.taxonSource,
-    taxonSourceId: taxonSourceId ?? this.taxonSourceId,
-    active: active ?? this.active,
-    photoRequired: photoRequired ?? this.photoRequired,
-    identificationNotes: identificationNotes.present
-        ? identificationNotes.value
-        : this.identificationNotes,
-    acceptedNameId: acceptedNameId.present
-        ? acceptedNameId.value
-        : this.acceptedNameId,
-    introducedInId: introducedInId ?? this.introducedInId,
-    retiredInId: retiredInId.present ? retiredInId.value : this.retiredInId,
-    scientificName: scientificName ?? this.scientificName,
-    serverVersion: serverVersion.present
-        ? serverVersion.value
-        : this.serverVersion,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-  );
-  Taxon copyWithCompanion(TaxaCompanion data) {
-    return Taxon(
-      id: data.id.present ? data.id.value : this.id,
-      author: data.author.present ? data.author.value : this.author,
-      rank: data.rank.present ? data.rank.value : this.rank,
-      genus: data.genus.present ? data.genus.value : this.genus,
-      family: data.family.present ? data.family.value : this.family,
-      vernacularNameSr: data.vernacularNameSr.present
-          ? data.vernacularNameSr.value
-          : this.vernacularNameSr,
-      vernacularNameEn: data.vernacularNameEn.present
-          ? data.vernacularNameEn.value
-          : this.vernacularNameEn,
-      taxonSource: data.taxonSource.present
-          ? data.taxonSource.value
-          : this.taxonSource,
-      taxonSourceId: data.taxonSourceId.present
-          ? data.taxonSourceId.value
-          : this.taxonSourceId,
-      active: data.active.present ? data.active.value : this.active,
-      photoRequired: data.photoRequired.present
-          ? data.photoRequired.value
-          : this.photoRequired,
-      identificationNotes: data.identificationNotes.present
-          ? data.identificationNotes.value
-          : this.identificationNotes,
-      acceptedNameId: data.acceptedNameId.present
-          ? data.acceptedNameId.value
-          : this.acceptedNameId,
-      introducedInId: data.introducedInId.present
-          ? data.introducedInId.value
-          : this.introducedInId,
-      retiredInId: data.retiredInId.present
-          ? data.retiredInId.value
-          : this.retiredInId,
-      scientificName: data.scientificName.present
-          ? data.scientificName.value
-          : this.scientificName,
-      serverVersion: data.serverVersion.present
-          ? data.serverVersion.value
-          : this.serverVersion,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Taxon(')
-          ..write('id: $id, ')
-          ..write('author: $author, ')
-          ..write('rank: $rank, ')
-          ..write('genus: $genus, ')
-          ..write('family: $family, ')
-          ..write('vernacularNameSr: $vernacularNameSr, ')
-          ..write('vernacularNameEn: $vernacularNameEn, ')
-          ..write('taxonSource: $taxonSource, ')
-          ..write('taxonSourceId: $taxonSourceId, ')
-          ..write('active: $active, ')
-          ..write('photoRequired: $photoRequired, ')
-          ..write('identificationNotes: $identificationNotes, ')
-          ..write('acceptedNameId: $acceptedNameId, ')
-          ..write('introducedInId: $introducedInId, ')
-          ..write('retiredInId: $retiredInId, ')
-          ..write('scientificName: $scientificName, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    author,
-    rank,
-    genus,
-    family,
-    vernacularNameSr,
-    vernacularNameEn,
-    taxonSource,
-    taxonSourceId,
-    active,
-    photoRequired,
-    identificationNotes,
-    acceptedNameId,
-    introducedInId,
-    retiredInId,
-    scientificName,
-    serverVersion,
-    deletedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Taxon &&
-          other.id == this.id &&
-          other.author == this.author &&
-          other.rank == this.rank &&
-          other.genus == this.genus &&
-          other.family == this.family &&
-          other.vernacularNameSr == this.vernacularNameSr &&
-          other.vernacularNameEn == this.vernacularNameEn &&
-          other.taxonSource == this.taxonSource &&
-          other.taxonSourceId == this.taxonSourceId &&
-          other.active == this.active &&
-          other.photoRequired == this.photoRequired &&
-          other.identificationNotes == this.identificationNotes &&
-          other.acceptedNameId == this.acceptedNameId &&
-          other.introducedInId == this.introducedInId &&
-          other.retiredInId == this.retiredInId &&
-          other.scientificName == this.scientificName &&
-          other.serverVersion == this.serverVersion &&
-          other.deletedAt == this.deletedAt);
-}
-
-class TaxaCompanion extends UpdateCompanion<Taxon> {
-  final Value<String> id;
-  final Value<String> author;
-  final Value<String> rank;
-  final Value<String> genus;
-  final Value<String> family;
-  final Value<String> vernacularNameSr;
-  final Value<String> vernacularNameEn;
-  final Value<String> taxonSource;
-  final Value<String> taxonSourceId;
-  final Value<bool> active;
-  final Value<bool> photoRequired;
-  final Value<String?> identificationNotes;
-  final Value<String?> acceptedNameId;
-  final Value<String> introducedInId;
-  final Value<String?> retiredInId;
-  final Value<String> scientificName;
-  final Value<int?> serverVersion;
-  final Value<DateTime?> deletedAt;
-  final Value<int> rowid;
-  const TaxaCompanion({
-    this.id = const Value.absent(),
-    this.author = const Value.absent(),
-    this.rank = const Value.absent(),
-    this.genus = const Value.absent(),
-    this.family = const Value.absent(),
-    this.vernacularNameSr = const Value.absent(),
-    this.vernacularNameEn = const Value.absent(),
-    this.taxonSource = const Value.absent(),
-    this.taxonSourceId = const Value.absent(),
-    this.active = const Value.absent(),
-    this.photoRequired = const Value.absent(),
-    this.identificationNotes = const Value.absent(),
-    this.acceptedNameId = const Value.absent(),
-    this.introducedInId = const Value.absent(),
-    this.retiredInId = const Value.absent(),
-    this.scientificName = const Value.absent(),
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  TaxaCompanion.insert({
-    required String id,
-    required String author,
-    required String rank,
-    required String genus,
-    required String family,
-    required String vernacularNameSr,
-    required String vernacularNameEn,
-    required String taxonSource,
-    required String taxonSourceId,
-    required bool active,
-    required bool photoRequired,
-    this.identificationNotes = const Value.absent(),
-    this.acceptedNameId = const Value.absent(),
-    required String introducedInId,
-    this.retiredInId = const Value.absent(),
-    required String scientificName,
-    this.serverVersion = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       author = Value(author),
-       rank = Value(rank),
-       genus = Value(genus),
-       family = Value(family),
-       vernacularNameSr = Value(vernacularNameSr),
-       vernacularNameEn = Value(vernacularNameEn),
-       taxonSource = Value(taxonSource),
-       taxonSourceId = Value(taxonSourceId),
-       active = Value(active),
-       photoRequired = Value(photoRequired),
-       introducedInId = Value(introducedInId),
-       scientificName = Value(scientificName);
-  static Insertable<Taxon> custom({
-    Expression<String>? id,
-    Expression<String>? author,
-    Expression<String>? rank,
-    Expression<String>? genus,
-    Expression<String>? family,
-    Expression<String>? vernacularNameSr,
-    Expression<String>? vernacularNameEn,
-    Expression<String>? taxonSource,
-    Expression<String>? taxonSourceId,
-    Expression<bool>? active,
-    Expression<bool>? photoRequired,
-    Expression<String>? identificationNotes,
-    Expression<String>? acceptedNameId,
-    Expression<String>? introducedInId,
-    Expression<String>? retiredInId,
-    Expression<String>? scientificName,
-    Expression<int>? serverVersion,
-    Expression<DateTime>? deletedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (author != null) 'author': author,
-      if (rank != null) 'rank': rank,
-      if (genus != null) 'genus': genus,
-      if (family != null) 'family': family,
-      if (vernacularNameSr != null) 'vernacular_name_sr': vernacularNameSr,
-      if (vernacularNameEn != null) 'vernacular_name_en': vernacularNameEn,
-      if (taxonSource != null) 'taxon_source': taxonSource,
-      if (taxonSourceId != null) 'taxon_source_id': taxonSourceId,
-      if (active != null) 'active': active,
-      if (photoRequired != null) 'photo_required': photoRequired,
-      if (identificationNotes != null)
-        'identification_notes': identificationNotes,
-      if (acceptedNameId != null) 'accepted_name_id': acceptedNameId,
-      if (introducedInId != null) 'introduced_in_id': introducedInId,
-      if (retiredInId != null) 'retired_in_id': retiredInId,
-      if (scientificName != null) 'scientific_name': scientificName,
-      if (serverVersion != null) 'server_version': serverVersion,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  TaxaCompanion copyWith({
-    Value<String>? id,
-    Value<String>? author,
-    Value<String>? rank,
-    Value<String>? genus,
-    Value<String>? family,
-    Value<String>? vernacularNameSr,
-    Value<String>? vernacularNameEn,
-    Value<String>? taxonSource,
-    Value<String>? taxonSourceId,
-    Value<bool>? active,
-    Value<bool>? photoRequired,
-    Value<String?>? identificationNotes,
-    Value<String?>? acceptedNameId,
-    Value<String>? introducedInId,
-    Value<String?>? retiredInId,
-    Value<String>? scientificName,
-    Value<int?>? serverVersion,
-    Value<DateTime?>? deletedAt,
-    Value<int>? rowid,
-  }) {
-    return TaxaCompanion(
-      id: id ?? this.id,
-      author: author ?? this.author,
-      rank: rank ?? this.rank,
-      genus: genus ?? this.genus,
-      family: family ?? this.family,
-      vernacularNameSr: vernacularNameSr ?? this.vernacularNameSr,
-      vernacularNameEn: vernacularNameEn ?? this.vernacularNameEn,
-      taxonSource: taxonSource ?? this.taxonSource,
-      taxonSourceId: taxonSourceId ?? this.taxonSourceId,
-      active: active ?? this.active,
-      photoRequired: photoRequired ?? this.photoRequired,
-      identificationNotes: identificationNotes ?? this.identificationNotes,
-      acceptedNameId: acceptedNameId ?? this.acceptedNameId,
-      introducedInId: introducedInId ?? this.introducedInId,
-      retiredInId: retiredInId ?? this.retiredInId,
-      scientificName: scientificName ?? this.scientificName,
-      serverVersion: serverVersion ?? this.serverVersion,
-      deletedAt: deletedAt ?? this.deletedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (author.present) {
-      map['author'] = Variable<String>(author.value);
-    }
-    if (rank.present) {
-      map['rank'] = Variable<String>(rank.value);
-    }
-    if (genus.present) {
-      map['genus'] = Variable<String>(genus.value);
-    }
-    if (family.present) {
-      map['family'] = Variable<String>(family.value);
-    }
-    if (vernacularNameSr.present) {
-      map['vernacular_name_sr'] = Variable<String>(vernacularNameSr.value);
-    }
-    if (vernacularNameEn.present) {
-      map['vernacular_name_en'] = Variable<String>(vernacularNameEn.value);
-    }
-    if (taxonSource.present) {
-      map['taxon_source'] = Variable<String>(taxonSource.value);
-    }
-    if (taxonSourceId.present) {
-      map['taxon_source_id'] = Variable<String>(taxonSourceId.value);
-    }
-    if (active.present) {
-      map['active'] = Variable<bool>(active.value);
-    }
-    if (photoRequired.present) {
-      map['photo_required'] = Variable<bool>(photoRequired.value);
-    }
-    if (identificationNotes.present) {
-      map['identification_notes'] = Variable<String>(identificationNotes.value);
-    }
-    if (acceptedNameId.present) {
-      map['accepted_name_id'] = Variable<String>(acceptedNameId.value);
-    }
-    if (introducedInId.present) {
-      map['introduced_in_id'] = Variable<String>(introducedInId.value);
-    }
-    if (retiredInId.present) {
-      map['retired_in_id'] = Variable<String>(retiredInId.value);
-    }
-    if (scientificName.present) {
-      map['scientific_name'] = Variable<String>(scientificName.value);
-    }
-    if (serverVersion.present) {
-      map['server_version'] = Variable<int>(serverVersion.value);
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TaxaCompanion(')
-          ..write('id: $id, ')
-          ..write('author: $author, ')
-          ..write('rank: $rank, ')
-          ..write('genus: $genus, ')
-          ..write('family: $family, ')
-          ..write('vernacularNameSr: $vernacularNameSr, ')
-          ..write('vernacularNameEn: $vernacularNameEn, ')
-          ..write('taxonSource: $taxonSource, ')
-          ..write('taxonSourceId: $taxonSourceId, ')
-          ..write('active: $active, ')
-          ..write('photoRequired: $photoRequired, ')
-          ..write('identificationNotes: $identificationNotes, ')
-          ..write('acceptedNameId: $acceptedNameId, ')
-          ..write('introducedInId: $introducedInId, ')
-          ..write('retiredInId: $retiredInId, ')
-          ..write('scientificName: $scientificName, ')
-          ..write('serverVersion: $serverVersion, ')
-          ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -11802,8 +12832,12 @@ class TransectSectionsCompanion extends UpdateCompanion<TransectSection> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $SkeletonPingsTable skeletonPings = $SkeletonPingsTable(this);
   late final $ProjectsTable projects = $ProjectsTable(this);
+  late final $TransectsTable transects = $TransectsTable(this);
+  late final $SurveyVisitsTable surveyVisits = $SurveyVisitsTable(this);
+  late final $TaxaTable taxa = $TaxaTable(this);
+  late final $ButterflyObservationsTable butterflyObservations =
+      $ButterflyObservationsTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   late final $SyncStateEntriesTable syncStateEntries = $SyncStateEntriesTable(
     this,
@@ -11817,11 +12851,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $SyncConflictsTable syncConflicts = $SyncConflictsTable(this);
-  late final $TransectsTable transects = $TransectsTable(this);
-  late final $SurveyVisitsTable surveyVisits = $SurveyVisitsTable(this);
   late final $SurveyTrackPointsTable surveyTrackPoints =
       $SurveyTrackPointsTable(this);
-  late final $TaxaTable taxa = $TaxaTable(this);
   late final $TaxonListVersionsTable taxonListVersions =
       $TaxonListVersionsTable(this);
   late final $TransectSectionsTable transectSections = $TransectSectionsTable(
@@ -11836,8 +12867,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    skeletonPings,
     projects,
+    transects,
+    surveyVisits,
+    taxa,
+    butterflyObservations,
     syncQueue,
     syncStateEntries,
     habitatTypes,
@@ -11845,10 +12879,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     plantTaxa,
     projectProtocols,
     syncConflicts,
-    transects,
-    surveyVisits,
     surveyTrackPoints,
-    taxa,
     taxonListVersions,
     transectSections,
     syncQueueEntity,
@@ -11858,236 +12889,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-typedef $$SkeletonPingsTableCreateCompanionBuilder =
-    SkeletonPingsCompanion Function({
-      required String id,
-      required DateTime observedAt,
-      required double lat,
-      required double lon,
-      Value<String> note,
-      Value<DateTime?> sentAt,
-      Value<int> rowid,
-    });
-typedef $$SkeletonPingsTableUpdateCompanionBuilder =
-    SkeletonPingsCompanion Function({
-      Value<String> id,
-      Value<DateTime> observedAt,
-      Value<double> lat,
-      Value<double> lon,
-      Value<String> note,
-      Value<DateTime?> sentAt,
-      Value<int> rowid,
-    });
-
-class $$SkeletonPingsTableFilterComposer
-    extends Composer<_$AppDatabase, $SkeletonPingsTable> {
-  $$SkeletonPingsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get observedAt => $composableBuilder(
-    column: $table.observedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get lat => $composableBuilder(
-    column: $table.lat,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get lon => $composableBuilder(
-    column: $table.lon,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get sentAt => $composableBuilder(
-    column: $table.sentAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$SkeletonPingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $SkeletonPingsTable> {
-  $$SkeletonPingsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get observedAt => $composableBuilder(
-    column: $table.observedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get lat => $composableBuilder(
-    column: $table.lat,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get lon => $composableBuilder(
-    column: $table.lon,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get sentAt => $composableBuilder(
-    column: $table.sentAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$SkeletonPingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SkeletonPingsTable> {
-  $$SkeletonPingsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get observedAt => $composableBuilder(
-    column: $table.observedAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get lat =>
-      $composableBuilder(column: $table.lat, builder: (column) => column);
-
-  GeneratedColumn<double> get lon =>
-      $composableBuilder(column: $table.lon, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get sentAt =>
-      $composableBuilder(column: $table.sentAt, builder: (column) => column);
-}
-
-class $$SkeletonPingsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SkeletonPingsTable,
-          SkeletonPing,
-          $$SkeletonPingsTableFilterComposer,
-          $$SkeletonPingsTableOrderingComposer,
-          $$SkeletonPingsTableAnnotationComposer,
-          $$SkeletonPingsTableCreateCompanionBuilder,
-          $$SkeletonPingsTableUpdateCompanionBuilder,
-          (
-            SkeletonPing,
-            BaseReferences<_$AppDatabase, $SkeletonPingsTable, SkeletonPing>,
-          ),
-          SkeletonPing,
-          PrefetchHooks Function()
-        > {
-  $$SkeletonPingsTableTableManager(_$AppDatabase db, $SkeletonPingsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SkeletonPingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SkeletonPingsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SkeletonPingsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<DateTime> observedAt = const Value.absent(),
-                Value<double> lat = const Value.absent(),
-                Value<double> lon = const Value.absent(),
-                Value<String> note = const Value.absent(),
-                Value<DateTime?> sentAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SkeletonPingsCompanion(
-                id: id,
-                observedAt: observedAt,
-                lat: lat,
-                lon: lon,
-                note: note,
-                sentAt: sentAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required DateTime observedAt,
-                required double lat,
-                required double lon,
-                Value<String> note = const Value.absent(),
-                Value<DateTime?> sentAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SkeletonPingsCompanion.insert(
-                id: id,
-                observedAt: observedAt,
-                lat: lat,
-                lon: lon,
-                note: note,
-                sentAt: sentAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$SkeletonPingsTable, SkeletonPing>(table),
-                  BaseReferences<
-                    _$AppDatabase,
-                    $SkeletonPingsTable,
-                    SkeletonPing
-                  >(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$SkeletonPingsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SkeletonPingsTable,
-      SkeletonPing,
-      $$SkeletonPingsTableFilterComposer,
-      $$SkeletonPingsTableOrderingComposer,
-      $$SkeletonPingsTableAnnotationComposer,
-      $$SkeletonPingsTableCreateCompanionBuilder,
-      $$SkeletonPingsTableUpdateCompanionBuilder,
-      (
-        SkeletonPing,
-        BaseReferences<_$AppDatabase, $SkeletonPingsTable, SkeletonPing>,
-      ),
-      SkeletonPing,
-      PrefetchHooks Function()
-    >;
 typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   required String id,
   required String name,
@@ -12121,26 +12922,6 @@ final class $$ProjectsTableReferences
     extends BaseReferences<_$AppDatabase, $ProjectsTable, Project> {
   $$ProjectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ProjectProtocolsTable, List<ProjectProtocol>>
-  _projectProtocolsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.projectProtocols,
-    aliasName: 'project__id__project_protocol__project_id',
-  );
-
-  $$ProjectProtocolsTableProcessedTableManager get projectProtocolsRefs {
-    final manager = $$ProjectProtocolsTableTableManager(
-      $_db,
-      $_db.projectProtocols,
-    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _projectProtocolsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
   static MultiTypedResultKey<$TransectsTable, List<Transect>>
   _transectsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.transects,
@@ -12172,6 +12953,51 @@ final class $$ProjectsTableReferences
     ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_surveyVisitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ButterflyObservationsTable,
+    List<ButterflyObservation>
+  >
+  _butterflyObservationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.butterflyObservations,
+        aliasName: 'project__id__butterfly_observation__project_id',
+      );
+
+  $$ButterflyObservationsTableProcessedTableManager
+  get butterflyObservationsRefs {
+    final manager = $$ButterflyObservationsTableTableManager(
+      $_db,
+      $_db.butterflyObservations,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _butterflyObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ProjectProtocolsTable, List<ProjectProtocol>>
+  _projectProtocolsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.projectProtocols,
+    aliasName: 'project__id__project_protocol__project_id',
+  );
+
+  $$ProjectProtocolsTableProcessedTableManager get projectProtocolsRefs {
+    final manager = $$ProjectProtocolsTableTableManager(
+      $_db,
+      $_db.projectProtocols,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _projectProtocolsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -12242,31 +13068,6 @@ class $$ProjectsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> projectProtocolsRefs(
-    Expression<bool> Function($$ProjectProtocolsTableFilterComposer f) f,
-  ) {
-    final $$ProjectProtocolsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.projectProtocols,
-      getReferencedColumn: (t) => t.projectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectProtocolsTableFilterComposer(
-            $db: $db,
-            $table: $db.projectProtocols,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
   Expression<bool> transectsRefs(
     Expression<bool> Function($$TransectsTableFilterComposer f) f,
   ) {
@@ -12308,6 +13109,57 @@ class $$ProjectsTableFilterComposer
           }) => $$SurveyVisitsTableFilterComposer(
             $db: $db,
             $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> butterflyObservationsRefs(
+    Expression<bool> Function($$ButterflyObservationsTableFilterComposer f) f,
+  ) {
+    final $$ButterflyObservationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableFilterComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> projectProtocolsRefs(
+    Expression<bool> Function($$ProjectProtocolsTableFilterComposer f) f,
+  ) {
+    final $$ProjectProtocolsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectProtocols,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectProtocolsTableFilterComposer(
+            $db: $db,
+            $table: $db.projectProtocols,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12433,31 +13285,6 @@ class $$ProjectsTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
-  Expression<T> projectProtocolsRefs<T extends Object>(
-    Expression<T> Function($$ProjectProtocolsTableAnnotationComposer a) f,
-  ) {
-    final $$ProjectProtocolsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.projectProtocols,
-      getReferencedColumn: (t) => t.projectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectProtocolsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projectProtocols,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
   Expression<T> transectsRefs<T extends Object>(
     Expression<T> Function($$TransectsTableAnnotationComposer a) f,
   ) {
@@ -12507,6 +13334,57 @@ class $$ProjectsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> butterflyObservationsRefs<T extends Object>(
+    Expression<T> Function($$ButterflyObservationsTableAnnotationComposer a) f,
+  ) {
+    final $$ButterflyObservationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> projectProtocolsRefs<T extends Object>(
+    Expression<T> Function($$ProjectProtocolsTableAnnotationComposer a) f,
+  ) {
+    final $$ProjectProtocolsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectProtocols,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectProtocolsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projectProtocols,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager
@@ -12523,9 +13401,10 @@ class $$ProjectsTableTableManager
           (Project, $$ProjectsTableReferences),
           Project,
           PrefetchHooks Function({
-            bool projectProtocolsRefs,
             bool transectsRefs,
             bool surveyVisitsRefs,
+            bool butterflyObservationsRefs,
+            bool projectProtocolsRefs,
           })
         > {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
@@ -12605,41 +13484,22 @@ class $$ProjectsTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
-                projectProtocolsRefs = false,
                 transectsRefs = false,
                 surveyVisitsRefs = false,
+                butterflyObservationsRefs = false,
+                projectProtocolsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
-                    if (projectProtocolsRefs) db.projectProtocols,
                     if (transectsRefs) db.transects,
                     if (surveyVisitsRefs) db.surveyVisits,
+                    if (butterflyObservationsRefs) db.butterflyObservations,
+                    if (projectProtocolsRefs) db.projectProtocols,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
-                      if (projectProtocolsRefs)
-                        await $_getPrefetchedData<
-                          Project,
-                          $ProjectsTable,
-                          ProjectProtocol
-                        >(
-                          currentTable: table,
-                          referencedTable: $$ProjectsTableReferences
-                              ._projectProtocolsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$ProjectsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).projectProtocolsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.projectId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
                       if (transectsRefs)
                         await $_getPrefetchedData<
                           Project,
@@ -12682,6 +13542,48 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (butterflyObservationsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          ButterflyObservation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._butterflyObservationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).butterflyObservationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (projectProtocolsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          ProjectProtocol
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._projectProtocolsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).projectProtocolsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -12703,10 +13605,3369 @@ typedef $$ProjectsTableProcessedTableManager =
       (Project, $$ProjectsTableReferences),
       Project,
       PrefetchHooks Function({
-        bool projectProtocolsRefs,
         bool transectsRefs,
         bool surveyVisitsRefs,
+        bool butterflyObservationsRefs,
+        bool projectProtocolsRefs,
       })
+    >;
+typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
+  required String id,
+  required String projectId,
+  required String code,
+  required String name,
+  required String description,
+  Value<double?> targetLengthM,
+  required String habitatSummary,
+  required bool active,
+  required String geometry,
+  required double lengthM,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$TransectsTableUpdateCompanionBuilder = TransectsCompanion Function({
+  Value<String> id,
+  Value<String> projectId,
+  Value<String> code,
+  Value<String> name,
+  Value<String> description,
+  Value<double?> targetLengthM,
+  Value<String> habitatSummary,
+  Value<bool> active,
+  Value<String> geometry,
+  Value<double> lengthM,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+final class $$TransectsTableReferences
+    extends BaseReferences<_$AppDatabase, $TransectsTable, Transect> {
+  $$TransectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('transect__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$SurveyVisitsTable, List<SurveyVisit>>
+  _surveyVisitsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.surveyVisits,
+    aliasName: 'transect__id__survey_visit__transect_id',
+  );
+
+  $$SurveyVisitsTableProcessedTableManager get surveyVisitsRefs {
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_surveyVisitsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransectSectionsTable, List<TransectSection>>
+  _transectSectionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transectSections,
+    aliasName: 'transect__id__transect_section__transect_id',
+  );
+
+  $$TransectSectionsTableProcessedTableManager get transectSectionsRefs {
+    final manager = $$TransectSectionsTableTableManager(
+      $_db,
+      $_db.transectSections,
+    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transectSectionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TransectsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geometry => $composableBuilder(
+    column: $table.geometry,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> surveyVisitsRefs(
+    Expression<bool> Function($$SurveyVisitsTableFilterComposer f) f,
+  ) {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transectSectionsRefs(
+    Expression<bool> Function($$TransectSectionsTableFilterComposer f) f,
+  ) {
+    final $$TransectSectionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transectSections,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectSectionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transectSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TransectsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geometry => $composableBuilder(
+    column: $table.geometry,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransectsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransectsTable> {
+  $$TransectsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get targetLengthM => $composableBuilder(
+    column: $table.targetLengthM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get habitatSummary => $composableBuilder(
+    column: $table.habitatSummary,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<String> get geometry =>
+      $composableBuilder(column: $table.geometry, builder: (column) => column);
+
+  GeneratedColumn<double> get lengthM =>
+      $composableBuilder(column: $table.lengthM, builder: (column) => column);
+
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> surveyVisitsRefs<T extends Object>(
+    Expression<T> Function($$SurveyVisitsTableAnnotationComposer a) f,
+  ) {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> transectSectionsRefs<T extends Object>(
+    Expression<T> Function($$TransectSectionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransectSectionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transectSections,
+      getReferencedColumn: (t) => t.transectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectSectionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transectSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TransectsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransectsTable,
+          Transect,
+          $$TransectsTableFilterComposer,
+          $$TransectsTableOrderingComposer,
+          $$TransectsTableAnnotationComposer,
+          $$TransectsTableCreateCompanionBuilder,
+          $$TransectsTableUpdateCompanionBuilder,
+          (Transect, $$TransectsTableReferences),
+          Transect,
+          PrefetchHooks Function({
+            bool projectId,
+            bool surveyVisitsRefs,
+            bool transectSectionsRefs,
+          })
+        > {
+  $$TransectsTableTableManager(_$AppDatabase db, $TransectsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransectsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransectsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransectsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<double?> targetLengthM = const Value.absent(),
+                Value<String> habitatSummary = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<String> geometry = const Value.absent(),
+                Value<double> lengthM = const Value.absent(),
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectsCompanion(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                description: description,
+                targetLengthM: targetLengthM,
+                habitatSummary: habitatSummary,
+                active: active,
+                geometry: geometry,
+                lengthM: lengthM,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String projectId,
+                required String code,
+                required String name,
+                required String description,
+                Value<double?> targetLengthM = const Value.absent(),
+                required String habitatSummary,
+                required bool active,
+                required String geometry,
+                required double lengthM,
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectsCompanion.insert(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                description: description,
+                targetLengthM: targetLengthM,
+                habitatSummary: habitatSummary,
+                active: active,
+                geometry: geometry,
+                lengthM: lengthM,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TransectsTable, Transect>(table),
+                  $$TransectsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                projectId = false,
+                surveyVisitsRefs = false,
+                transectSectionsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (surveyVisitsRefs) db.surveyVisits,
+                    if (transectSectionsRefs) db.transectSections,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable: $$TransectsTableReferences
+                                ._projectIdTable(db),
+                            referencedColumn: $$TransectsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (surveyVisitsRefs)
+                        await $_getPrefetchedData<
+                          Transect,
+                          $TransectsTable,
+                          SurveyVisit
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransectsTableReferences
+                              ._surveyVisitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).surveyVisitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transectSectionsRefs)
+                        await $_getPrefetchedData<
+                          Transect,
+                          $TransectsTable,
+                          TransectSection
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransectsTableReferences
+                              ._transectSectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transectSectionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransectsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransectsTable,
+      Transect,
+      $$TransectsTableFilterComposer,
+      $$TransectsTableOrderingComposer,
+      $$TransectsTableAnnotationComposer,
+      $$TransectsTableCreateCompanionBuilder,
+      $$TransectsTableUpdateCompanionBuilder,
+      (Transect, $$TransectsTableReferences),
+      Transect,
+      PrefetchHooks Function({
+        bool projectId,
+        bool surveyVisitsRefs,
+        bool transectSectionsRefs,
+      })
+    >;
+typedef $$SurveyVisitsTableCreateCompanionBuilder =
+    SurveyVisitsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      required String transectId,
+      required String observerId,
+      required String protocolVersion,
+      Value<String> surveyMethod,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> endedAt,
+      Value<int?> durationSeconds,
+      Value<int> pausedSeconds,
+      Value<double?> distanceWalkedM,
+      Value<int> observerCount,
+      Value<String> observerNames,
+      Value<double?> temperatureStartC,
+      Value<double?> temperatureEndC,
+      Value<int?> windBeaufortStart,
+      Value<int?> windBeaufortEnd,
+      Value<int?> cloudCoverStartPct,
+      Value<int?> cloudCoverEndPct,
+      Value<String> precipitation,
+      Value<bool?> weatherSuitable,
+      Value<String> weatherMissingReason,
+      Value<bool> zeroObservationConfirmed,
+      Value<String> notes,
+      Value<String> status,
+      Value<String> cancelReason,
+      Value<bool> batterySaverUsed,
+      Value<String> deviceId,
+      Value<bool> createdOffline,
+      required DateTime createdAt,
+      Value<DateTime?> pausedAt,
+      Value<int> rowid,
+    });
+typedef $$SurveyVisitsTableUpdateCompanionBuilder =
+    SurveyVisitsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String> transectId,
+      Value<String> observerId,
+      Value<String> protocolVersion,
+      Value<String> surveyMethod,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> endedAt,
+      Value<int?> durationSeconds,
+      Value<int> pausedSeconds,
+      Value<double?> distanceWalkedM,
+      Value<int> observerCount,
+      Value<String> observerNames,
+      Value<double?> temperatureStartC,
+      Value<double?> temperatureEndC,
+      Value<int?> windBeaufortStart,
+      Value<int?> windBeaufortEnd,
+      Value<int?> cloudCoverStartPct,
+      Value<int?> cloudCoverEndPct,
+      Value<String> precipitation,
+      Value<bool?> weatherSuitable,
+      Value<String> weatherMissingReason,
+      Value<bool> zeroObservationConfirmed,
+      Value<String> notes,
+      Value<String> status,
+      Value<String> cancelReason,
+      Value<bool> batterySaverUsed,
+      Value<String> deviceId,
+      Value<bool> createdOffline,
+      Value<DateTime> createdAt,
+      Value<DateTime?> pausedAt,
+      Value<int> rowid,
+    });
+
+final class $$SurveyVisitsTableReferences
+    extends BaseReferences<_$AppDatabase, $SurveyVisitsTable, SurveyVisit> {
+  $$SurveyVisitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('survey_visit__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TransectsTable _transectIdTable(_$AppDatabase db) =>
+      db.transects.createAlias('survey_visit__transect_id__transect__id');
+
+  $$TransectsTableProcessedTableManager get transectId {
+    final $_column = $_itemColumn<String>('transect_id')!;
+
+    final manager = $$TransectsTableTableManager(
+      $_db,
+      $_db.transects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ButterflyObservationsTable,
+    List<ButterflyObservation>
+  >
+  _butterflyObservationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.butterflyObservations,
+        aliasName: 'survey_visit__id__butterfly_observation__survey_visit_id',
+      );
+
+  $$ButterflyObservationsTableProcessedTableManager
+  get butterflyObservationsRefs {
+    final manager = $$ButterflyObservationsTableTableManager(
+      $_db,
+      $_db.butterflyObservations,
+    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _butterflyObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SurveyTrackPointsTable, List<SurveyTrackPoint>>
+  _surveyTrackPointsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.surveyTrackPoints,
+        aliasName: 'survey_visit__id__survey_track_point__survey_visit_id',
+      );
+
+  $$SurveyTrackPointsTableProcessedTableManager get surveyTrackPointsRefs {
+    final manager = $$SurveyTrackPointsTableTableManager(
+      $_db,
+      $_db.surveyTrackPoints,
+    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _surveyTrackPointsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SurveyVisitsTableFilterComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableFilterComposer get transectId {
+    final $$TransectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableFilterComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> butterflyObservationsRefs(
+    Expression<bool> Function($$ButterflyObservationsTableFilterComposer f) f,
+  ) {
+    final $$ButterflyObservationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableFilterComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> surveyTrackPointsRefs(
+    Expression<bool> Function($$SurveyTrackPointsTableFilterComposer f) f,
+  ) {
+    final $$SurveyTrackPointsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.surveyTrackPoints,
+      getReferencedColumn: (t) => t.surveyVisitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyTrackPointsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyTrackPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SurveyVisitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableOrderingComposer get transectId {
+    final $$TransectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SurveyVisitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
+  $$SurveyVisitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get observerId => $composableBuilder(
+    column: $table.observerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get surveyMethod => $composableBuilder(
+    column: $table.surveyMethod,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get distanceWalkedM => $composableBuilder(
+    column: $table.distanceWalkedM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get observerCount => $composableBuilder(
+    column: $table.observerCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observerNames => $composableBuilder(
+    column: $table.observerNames,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get temperatureStartC => $composableBuilder(
+    column: $table.temperatureStartC,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get temperatureEndC => $composableBuilder(
+    column: $table.temperatureEndC,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get windBeaufortStart => $composableBuilder(
+    column: $table.windBeaufortStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get windBeaufortEnd => $composableBuilder(
+    column: $table.windBeaufortEnd,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cloudCoverStartPct => $composableBuilder(
+    column: $table.cloudCoverStartPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cloudCoverEndPct => $composableBuilder(
+    column: $table.cloudCoverEndPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get precipitation => $composableBuilder(
+    column: $table.precipitation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get weatherSuitable => $composableBuilder(
+    column: $table.weatherSuitable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get weatherMissingReason => $composableBuilder(
+    column: $table.weatherMissingReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get zeroObservationConfirmed => $composableBuilder(
+    column: $table.zeroObservationConfirmed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get cancelReason => $composableBuilder(
+    column: $table.cancelReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get batterySaverUsed => $composableBuilder(
+    column: $table.batterySaverUsed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<bool> get createdOffline => $composableBuilder(
+    column: $table.createdOffline,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pausedAt =>
+      $composableBuilder(column: $table.pausedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransectsTableAnnotationComposer get transectId {
+    final $$TransectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transectId,
+      referencedTable: $db.transects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> butterflyObservationsRefs<T extends Object>(
+    Expression<T> Function($$ButterflyObservationsTableAnnotationComposer a) f,
+  ) {
+    final $$ButterflyObservationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> surveyTrackPointsRefs<T extends Object>(
+    Expression<T> Function($$SurveyTrackPointsTableAnnotationComposer a) f,
+  ) {
+    final $$SurveyTrackPointsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.surveyTrackPoints,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SurveyTrackPointsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.surveyTrackPoints,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$SurveyVisitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SurveyVisitsTable,
+          SurveyVisit,
+          $$SurveyVisitsTableFilterComposer,
+          $$SurveyVisitsTableOrderingComposer,
+          $$SurveyVisitsTableAnnotationComposer,
+          $$SurveyVisitsTableCreateCompanionBuilder,
+          $$SurveyVisitsTableUpdateCompanionBuilder,
+          (SurveyVisit, $$SurveyVisitsTableReferences),
+          SurveyVisit,
+          PrefetchHooks Function({
+            bool projectId,
+            bool transectId,
+            bool butterflyObservationsRefs,
+            bool surveyTrackPointsRefs,
+          })
+        > {
+  $$SurveyVisitsTableTableManager(_$AppDatabase db, $SurveyVisitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SurveyVisitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SurveyVisitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SurveyVisitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> transectId = const Value.absent(),
+                Value<String> observerId = const Value.absent(),
+                Value<String> protocolVersion = const Value.absent(),
+                Value<String> surveyMethod = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<double?> distanceWalkedM = const Value.absent(),
+                Value<int> observerCount = const Value.absent(),
+                Value<String> observerNames = const Value.absent(),
+                Value<double?> temperatureStartC = const Value.absent(),
+                Value<double?> temperatureEndC = const Value.absent(),
+                Value<int?> windBeaufortStart = const Value.absent(),
+                Value<int?> windBeaufortEnd = const Value.absent(),
+                Value<int?> cloudCoverStartPct = const Value.absent(),
+                Value<int?> cloudCoverEndPct = const Value.absent(),
+                Value<String> precipitation = const Value.absent(),
+                Value<bool?> weatherSuitable = const Value.absent(),
+                Value<String> weatherMissingReason = const Value.absent(),
+                Value<bool> zeroObservationConfirmed = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> cancelReason = const Value.absent(),
+                Value<bool> batterySaverUsed = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<bool> createdOffline = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyVisitsCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                transectId: transectId,
+                observerId: observerId,
+                protocolVersion: protocolVersion,
+                surveyMethod: surveyMethod,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                durationSeconds: durationSeconds,
+                pausedSeconds: pausedSeconds,
+                distanceWalkedM: distanceWalkedM,
+                observerCount: observerCount,
+                observerNames: observerNames,
+                temperatureStartC: temperatureStartC,
+                temperatureEndC: temperatureEndC,
+                windBeaufortStart: windBeaufortStart,
+                windBeaufortEnd: windBeaufortEnd,
+                cloudCoverStartPct: cloudCoverStartPct,
+                cloudCoverEndPct: cloudCoverEndPct,
+                precipitation: precipitation,
+                weatherSuitable: weatherSuitable,
+                weatherMissingReason: weatherMissingReason,
+                zeroObservationConfirmed: zeroObservationConfirmed,
+                notes: notes,
+                status: status,
+                cancelReason: cancelReason,
+                batterySaverUsed: batterySaverUsed,
+                deviceId: deviceId,
+                createdOffline: createdOffline,
+                createdAt: createdAt,
+                pausedAt: pausedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                required String transectId,
+                required String observerId,
+                required String protocolVersion,
+                Value<String> surveyMethod = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<double?> distanceWalkedM = const Value.absent(),
+                Value<int> observerCount = const Value.absent(),
+                Value<String> observerNames = const Value.absent(),
+                Value<double?> temperatureStartC = const Value.absent(),
+                Value<double?> temperatureEndC = const Value.absent(),
+                Value<int?> windBeaufortStart = const Value.absent(),
+                Value<int?> windBeaufortEnd = const Value.absent(),
+                Value<int?> cloudCoverStartPct = const Value.absent(),
+                Value<int?> cloudCoverEndPct = const Value.absent(),
+                Value<String> precipitation = const Value.absent(),
+                Value<bool?> weatherSuitable = const Value.absent(),
+                Value<String> weatherMissingReason = const Value.absent(),
+                Value<bool> zeroObservationConfirmed = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> cancelReason = const Value.absent(),
+                Value<bool> batterySaverUsed = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<bool> createdOffline = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SurveyVisitsCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                transectId: transectId,
+                observerId: observerId,
+                protocolVersion: protocolVersion,
+                surveyMethod: surveyMethod,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                durationSeconds: durationSeconds,
+                pausedSeconds: pausedSeconds,
+                distanceWalkedM: distanceWalkedM,
+                observerCount: observerCount,
+                observerNames: observerNames,
+                temperatureStartC: temperatureStartC,
+                temperatureEndC: temperatureEndC,
+                windBeaufortStart: windBeaufortStart,
+                windBeaufortEnd: windBeaufortEnd,
+                cloudCoverStartPct: cloudCoverStartPct,
+                cloudCoverEndPct: cloudCoverEndPct,
+                precipitation: precipitation,
+                weatherSuitable: weatherSuitable,
+                weatherMissingReason: weatherMissingReason,
+                zeroObservationConfirmed: zeroObservationConfirmed,
+                notes: notes,
+                status: status,
+                cancelReason: cancelReason,
+                batterySaverUsed: batterySaverUsed,
+                deviceId: deviceId,
+                createdOffline: createdOffline,
+                createdAt: createdAt,
+                pausedAt: pausedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SurveyVisitsTable, SurveyVisit>(table),
+                  $$SurveyVisitsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                projectId = false,
+                transectId = false,
+                butterflyObservationsRefs = false,
+                surveyTrackPointsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (butterflyObservationsRefs) db.butterflyObservations,
+                    if (surveyTrackPointsRefs) db.surveyTrackPoints,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable: $$SurveyVisitsTableReferences
+                                ._projectIdTable(db),
+                            referencedColumn: $$SurveyVisitsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (transectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.transectId,
+                            referencedTable: $$SurveyVisitsTableReferences
+                                ._transectIdTable(db),
+                            referencedColumn: $$SurveyVisitsTableReferences
+                                ._transectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (butterflyObservationsRefs)
+                        await $_getPrefetchedData<
+                          SurveyVisit,
+                          $SurveyVisitsTable,
+                          ButterflyObservation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SurveyVisitsTableReferences
+                              ._butterflyObservationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SurveyVisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).butterflyObservationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.surveyVisitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (surveyTrackPointsRefs)
+                        await $_getPrefetchedData<
+                          SurveyVisit,
+                          $SurveyVisitsTable,
+                          SurveyTrackPoint
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SurveyVisitsTableReferences
+                              ._surveyTrackPointsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SurveyVisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).surveyTrackPointsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.surveyVisitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$SurveyVisitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SurveyVisitsTable,
+      SurveyVisit,
+      $$SurveyVisitsTableFilterComposer,
+      $$SurveyVisitsTableOrderingComposer,
+      $$SurveyVisitsTableAnnotationComposer,
+      $$SurveyVisitsTableCreateCompanionBuilder,
+      $$SurveyVisitsTableUpdateCompanionBuilder,
+      (SurveyVisit, $$SurveyVisitsTableReferences),
+      SurveyVisit,
+      PrefetchHooks Function({
+        bool projectId,
+        bool transectId,
+        bool butterflyObservationsRefs,
+        bool surveyTrackPointsRefs,
+      })
+    >;
+typedef $$TaxaTableCreateCompanionBuilder = TaxaCompanion Function({
+  required String id,
+  required String author,
+  required String rank,
+  required String genus,
+  required String family,
+  required String vernacularNameSr,
+  required String vernacularNameEn,
+  required String taxonSource,
+  required String taxonSourceId,
+  required bool active,
+  required bool photoRequired,
+  Value<String?> identificationNotes,
+  Value<String?> acceptedNameId,
+  required String introducedInId,
+  Value<String?> retiredInId,
+  required String scientificName,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$TaxaTableUpdateCompanionBuilder = TaxaCompanion Function({
+  Value<String> id,
+  Value<String> author,
+  Value<String> rank,
+  Value<String> genus,
+  Value<String> family,
+  Value<String> vernacularNameSr,
+  Value<String> vernacularNameEn,
+  Value<String> taxonSource,
+  Value<String> taxonSourceId,
+  Value<bool> active,
+  Value<bool> photoRequired,
+  Value<String?> identificationNotes,
+  Value<String?> acceptedNameId,
+  Value<String> introducedInId,
+  Value<String?> retiredInId,
+  Value<String> scientificName,
+  Value<int?> serverVersion,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+final class $$TaxaTableReferences
+    extends BaseReferences<_$AppDatabase, $TaxaTable, Taxon> {
+  $$TaxaTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<
+    $ButterflyObservationsTable,
+    List<ButterflyObservation>
+  >
+  _butterflyObservationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.butterflyObservations,
+        aliasName: 'taxon__id__butterfly_observation__taxon_id',
+      );
+
+  $$ButterflyObservationsTableProcessedTableManager
+  get butterflyObservationsRefs {
+    final manager = $$ButterflyObservationsTableTableManager(
+      $_db,
+      $_db.butterflyObservations,
+    ).filter((f) => f.taxonId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _butterflyObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TaxaTableFilterComposer extends Composer<_$AppDatabase, $TaxaTable> {
+  $$TaxaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rank => $composableBuilder(
+    column: $table.rank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get genus => $composableBuilder(
+    column: $table.genus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vernacularNameSr => $composableBuilder(
+    column: $table.vernacularNameSr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vernacularNameEn => $composableBuilder(
+    column: $table.vernacularNameEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taxonSource => $composableBuilder(
+    column: $table.taxonSource,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taxonSourceId => $composableBuilder(
+    column: $table.taxonSourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get photoRequired => $composableBuilder(
+    column: $table.photoRequired,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get identificationNotes => $composableBuilder(
+    column: $table.identificationNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get acceptedNameId => $composableBuilder(
+    column: $table.acceptedNameId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get introducedInId => $composableBuilder(
+    column: $table.introducedInId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get retiredInId => $composableBuilder(
+    column: $table.retiredInId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scientificName => $composableBuilder(
+    column: $table.scientificName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> butterflyObservationsRefs(
+    Expression<bool> Function($$ButterflyObservationsTableFilterComposer f) f,
+  ) {
+    final $$ButterflyObservationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.taxonId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableFilterComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$TaxaTableOrderingComposer extends Composer<_$AppDatabase, $TaxaTable> {
+  $$TaxaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rank => $composableBuilder(
+    column: $table.rank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get genus => $composableBuilder(
+    column: $table.genus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vernacularNameSr => $composableBuilder(
+    column: $table.vernacularNameSr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vernacularNameEn => $composableBuilder(
+    column: $table.vernacularNameEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taxonSource => $composableBuilder(
+    column: $table.taxonSource,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taxonSourceId => $composableBuilder(
+    column: $table.taxonSourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get photoRequired => $composableBuilder(
+    column: $table.photoRequired,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get identificationNotes => $composableBuilder(
+    column: $table.identificationNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get acceptedNameId => $composableBuilder(
+    column: $table.acceptedNameId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get introducedInId => $composableBuilder(
+    column: $table.introducedInId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get retiredInId => $composableBuilder(
+    column: $table.retiredInId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scientificName => $composableBuilder(
+    column: $table.scientificName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TaxaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaxaTable> {
+  $$TaxaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get rank =>
+      $composableBuilder(column: $table.rank, builder: (column) => column);
+
+  GeneratedColumn<String> get genus =>
+      $composableBuilder(column: $table.genus, builder: (column) => column);
+
+  GeneratedColumn<String> get family =>
+      $composableBuilder(column: $table.family, builder: (column) => column);
+
+  GeneratedColumn<String> get vernacularNameSr => $composableBuilder(
+    column: $table.vernacularNameSr,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vernacularNameEn => $composableBuilder(
+    column: $table.vernacularNameEn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get taxonSource => $composableBuilder(
+    column: $table.taxonSource,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get taxonSourceId => $composableBuilder(
+    column: $table.taxonSourceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<bool> get photoRequired => $composableBuilder(
+    column: $table.photoRequired,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get identificationNotes => $composableBuilder(
+    column: $table.identificationNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get acceptedNameId => $composableBuilder(
+    column: $table.acceptedNameId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get introducedInId => $composableBuilder(
+    column: $table.introducedInId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get retiredInId => $composableBuilder(
+    column: $table.retiredInId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get scientificName => $composableBuilder(
+    column: $table.scientificName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> butterflyObservationsRefs<T extends Object>(
+    Expression<T> Function($$ButterflyObservationsTableAnnotationComposer a) f,
+  ) {
+    final $$ButterflyObservationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.butterflyObservations,
+          getReferencedColumn: (t) => t.taxonId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ButterflyObservationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$TaxaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TaxaTable,
+          Taxon,
+          $$TaxaTableFilterComposer,
+          $$TaxaTableOrderingComposer,
+          $$TaxaTableAnnotationComposer,
+          $$TaxaTableCreateCompanionBuilder,
+          $$TaxaTableUpdateCompanionBuilder,
+          (Taxon, $$TaxaTableReferences),
+          Taxon,
+          PrefetchHooks Function({bool butterflyObservationsRefs})
+        > {
+  $$TaxaTableTableManager(_$AppDatabase db, $TaxaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TaxaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaxaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TaxaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> author = const Value.absent(),
+                Value<String> rank = const Value.absent(),
+                Value<String> genus = const Value.absent(),
+                Value<String> family = const Value.absent(),
+                Value<String> vernacularNameSr = const Value.absent(),
+                Value<String> vernacularNameEn = const Value.absent(),
+                Value<String> taxonSource = const Value.absent(),
+                Value<String> taxonSourceId = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<bool> photoRequired = const Value.absent(),
+                Value<String?> identificationNotes = const Value.absent(),
+                Value<String?> acceptedNameId = const Value.absent(),
+                Value<String> introducedInId = const Value.absent(),
+                Value<String?> retiredInId = const Value.absent(),
+                Value<String> scientificName = const Value.absent(),
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaxaCompanion(
+                id: id,
+                author: author,
+                rank: rank,
+                genus: genus,
+                family: family,
+                vernacularNameSr: vernacularNameSr,
+                vernacularNameEn: vernacularNameEn,
+                taxonSource: taxonSource,
+                taxonSourceId: taxonSourceId,
+                active: active,
+                photoRequired: photoRequired,
+                identificationNotes: identificationNotes,
+                acceptedNameId: acceptedNameId,
+                introducedInId: introducedInId,
+                retiredInId: retiredInId,
+                scientificName: scientificName,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String author,
+                required String rank,
+                required String genus,
+                required String family,
+                required String vernacularNameSr,
+                required String vernacularNameEn,
+                required String taxonSource,
+                required String taxonSourceId,
+                required bool active,
+                required bool photoRequired,
+                Value<String?> identificationNotes = const Value.absent(),
+                Value<String?> acceptedNameId = const Value.absent(),
+                required String introducedInId,
+                Value<String?> retiredInId = const Value.absent(),
+                required String scientificName,
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaxaCompanion.insert(
+                id: id,
+                author: author,
+                rank: rank,
+                genus: genus,
+                family: family,
+                vernacularNameSr: vernacularNameSr,
+                vernacularNameEn: vernacularNameEn,
+                taxonSource: taxonSource,
+                taxonSourceId: taxonSourceId,
+                active: active,
+                photoRequired: photoRequired,
+                identificationNotes: identificationNotes,
+                acceptedNameId: acceptedNameId,
+                introducedInId: introducedInId,
+                retiredInId: retiredInId,
+                scientificName: scientificName,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TaxaTable, Taxon>(table),
+                  $$TaxaTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({butterflyObservationsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (butterflyObservationsRefs) db.butterflyObservations,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (butterflyObservationsRefs)
+                    await $_getPrefetchedData<
+                      Taxon,
+                      $TaxaTable,
+                      ButterflyObservation
+                    >(
+                      currentTable: table,
+                      referencedTable: $$TaxaTableReferences
+                          ._butterflyObservationsRefsTable(db),
+                      managerFromTypedResult: (p0) => $$TaxaTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).butterflyObservationsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.taxonId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TaxaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TaxaTable,
+      Taxon,
+      $$TaxaTableFilterComposer,
+      $$TaxaTableOrderingComposer,
+      $$TaxaTableAnnotationComposer,
+      $$TaxaTableCreateCompanionBuilder,
+      $$TaxaTableUpdateCompanionBuilder,
+      (Taxon, $$TaxaTableReferences),
+      Taxon,
+      PrefetchHooks Function({bool butterflyObservationsRefs})
+    >;
+typedef $$ButterflyObservationsTableCreateCompanionBuilder =
+    ButterflyObservationsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      Value<String?> surveyVisitId,
+      Value<String?> transectSectionId,
+      required DateTime observedAt,
+      required String taxonId,
+      Value<int> count,
+      required double lat,
+      required double lon,
+      Value<double?> locationAccuracyM,
+      required String identificationConfidence,
+      required String recordedById,
+      Value<String> sex,
+      Value<String> lifeStage,
+      Value<String> behaviour,
+      Value<String> microhabitat,
+      Value<int?> flightDirectionDeg,
+      Value<String> notes,
+      Value<String> source,
+      Value<String?> hostPlantRecordId,
+      Value<String?> nectarPlantRecordId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ButterflyObservationsTableUpdateCompanionBuilder =
+    ButterflyObservationsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String?> surveyVisitId,
+      Value<String?> transectSectionId,
+      Value<DateTime> observedAt,
+      Value<String> taxonId,
+      Value<int> count,
+      Value<double> lat,
+      Value<double> lon,
+      Value<double?> locationAccuracyM,
+      Value<String> identificationConfidence,
+      Value<String> recordedById,
+      Value<String> sex,
+      Value<String> lifeStage,
+      Value<String> behaviour,
+      Value<String> microhabitat,
+      Value<int?> flightDirectionDeg,
+      Value<String> notes,
+      Value<String> source,
+      Value<String?> hostPlantRecordId,
+      Value<String?> nectarPlantRecordId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$ButterflyObservationsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ButterflyObservationsTable,
+          ButterflyObservation
+        > {
+  $$ButterflyObservationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('butterfly_observation__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SurveyVisitsTable _surveyVisitIdTable(_$AppDatabase db) => db
+      .surveyVisits
+      .createAlias('butterfly_observation__survey_visit_id__survey_visit__id');
+
+  $$SurveyVisitsTableProcessedTableManager? get surveyVisitId {
+    final $_column = $_itemColumn<String>('survey_visit_id');
+    if ($_column == null) return null;
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_surveyVisitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TaxaTable _taxonIdTable(_$AppDatabase db) =>
+      db.taxa.createAlias('butterfly_observation__taxon_id__taxon__id');
+
+  $$TaxaTableProcessedTableManager get taxonId {
+    final $_column = $_itemColumn<String>('taxon_id')!;
+
+    final manager = $$TaxaTableTableManager(
+      $_db,
+      $_db.taxa,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_taxonIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ButterflyObservationsTableFilterComposer
+    extends Composer<_$AppDatabase, $ButterflyObservationsTable> {
+  $$ButterflyObservationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transectSectionId => $composableBuilder(
+    column: $table.transectSectionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get count => $composableBuilder(
+    column: $table.count,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get locationAccuracyM => $composableBuilder(
+    column: $table.locationAccuracyM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recordedById => $composableBuilder(
+    column: $table.recordedById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sex => $composableBuilder(
+    column: $table.sex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lifeStage => $composableBuilder(
+    column: $table.lifeStage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get behaviour => $composableBuilder(
+    column: $table.behaviour,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get microhabitat => $composableBuilder(
+    column: $table.microhabitat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get flightDirectionDeg => $composableBuilder(
+    column: $table.flightDirectionDeg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hostPlantRecordId => $composableBuilder(
+    column: $table.hostPlantRecordId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nectarPlantRecordId => $composableBuilder(
+    column: $table.nectarPlantRecordId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableFilterComposer get surveyVisitId {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TaxaTableFilterComposer get taxonId {
+    final $$TaxaTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taxonId,
+      referencedTable: $db.taxa,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaxaTableFilterComposer(
+            $db: $db,
+            $table: $db.taxa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ButterflyObservationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ButterflyObservationsTable> {
+  $$ButterflyObservationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transectSectionId => $composableBuilder(
+    column: $table.transectSectionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get count => $composableBuilder(
+    column: $table.count,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get locationAccuracyM => $composableBuilder(
+    column: $table.locationAccuracyM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recordedById => $composableBuilder(
+    column: $table.recordedById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sex => $composableBuilder(
+    column: $table.sex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lifeStage => $composableBuilder(
+    column: $table.lifeStage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get behaviour => $composableBuilder(
+    column: $table.behaviour,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get microhabitat => $composableBuilder(
+    column: $table.microhabitat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get flightDirectionDeg => $composableBuilder(
+    column: $table.flightDirectionDeg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hostPlantRecordId => $composableBuilder(
+    column: $table.hostPlantRecordId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nectarPlantRecordId => $composableBuilder(
+    column: $table.nectarPlantRecordId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableOrderingComposer get surveyVisitId {
+    final $$SurveyVisitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TaxaTableOrderingComposer get taxonId {
+    final $$TaxaTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taxonId,
+      referencedTable: $db.taxa,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaxaTableOrderingComposer(
+            $db: $db,
+            $table: $db.taxa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ButterflyObservationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ButterflyObservationsTable> {
+  $$ButterflyObservationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get transectSectionId => $composableBuilder(
+    column: $table.transectSectionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get count =>
+      $composableBuilder(column: $table.count, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<double> get locationAccuracyM => $composableBuilder(
+    column: $table.locationAccuracyM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get identificationConfidence => $composableBuilder(
+    column: $table.identificationConfidence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recordedById => $composableBuilder(
+    column: $table.recordedById,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sex =>
+      $composableBuilder(column: $table.sex, builder: (column) => column);
+
+  GeneratedColumn<String> get lifeStage =>
+      $composableBuilder(column: $table.lifeStage, builder: (column) => column);
+
+  GeneratedColumn<String> get behaviour =>
+      $composableBuilder(column: $table.behaviour, builder: (column) => column);
+
+  GeneratedColumn<String> get microhabitat => $composableBuilder(
+    column: $table.microhabitat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get flightDirectionDeg => $composableBuilder(
+    column: $table.flightDirectionDeg,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get hostPlantRecordId => $composableBuilder(
+    column: $table.hostPlantRecordId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nectarPlantRecordId => $composableBuilder(
+    column: $table.nectarPlantRecordId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableAnnotationComposer get surveyVisitId {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TaxaTableAnnotationComposer get taxonId {
+    final $$TaxaTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taxonId,
+      referencedTable: $db.taxa,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaxaTableAnnotationComposer(
+            $db: $db,
+            $table: $db.taxa,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ButterflyObservationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ButterflyObservationsTable,
+          ButterflyObservation,
+          $$ButterflyObservationsTableFilterComposer,
+          $$ButterflyObservationsTableOrderingComposer,
+          $$ButterflyObservationsTableAnnotationComposer,
+          $$ButterflyObservationsTableCreateCompanionBuilder,
+          $$ButterflyObservationsTableUpdateCompanionBuilder,
+          (ButterflyObservation, $$ButterflyObservationsTableReferences),
+          ButterflyObservation,
+          PrefetchHooks Function({
+            bool projectId,
+            bool surveyVisitId,
+            bool taxonId,
+          })
+        > {
+  $$ButterflyObservationsTableTableManager(
+    _$AppDatabase db,
+    $ButterflyObservationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ButterflyObservationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ButterflyObservationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ButterflyObservationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String?> surveyVisitId = const Value.absent(),
+                Value<String?> transectSectionId = const Value.absent(),
+                Value<DateTime> observedAt = const Value.absent(),
+                Value<String> taxonId = const Value.absent(),
+                Value<int> count = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<double?> locationAccuracyM = const Value.absent(),
+                Value<String> identificationConfidence = const Value.absent(),
+                Value<String> recordedById = const Value.absent(),
+                Value<String> sex = const Value.absent(),
+                Value<String> lifeStage = const Value.absent(),
+                Value<String> behaviour = const Value.absent(),
+                Value<String> microhabitat = const Value.absent(),
+                Value<int?> flightDirectionDeg = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> hostPlantRecordId = const Value.absent(),
+                Value<String?> nectarPlantRecordId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ButterflyObservationsCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                transectSectionId: transectSectionId,
+                observedAt: observedAt,
+                taxonId: taxonId,
+                count: count,
+                lat: lat,
+                lon: lon,
+                locationAccuracyM: locationAccuracyM,
+                identificationConfidence: identificationConfidence,
+                recordedById: recordedById,
+                sex: sex,
+                lifeStage: lifeStage,
+                behaviour: behaviour,
+                microhabitat: microhabitat,
+                flightDirectionDeg: flightDirectionDeg,
+                notes: notes,
+                source: source,
+                hostPlantRecordId: hostPlantRecordId,
+                nectarPlantRecordId: nectarPlantRecordId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                Value<String?> surveyVisitId = const Value.absent(),
+                Value<String?> transectSectionId = const Value.absent(),
+                required DateTime observedAt,
+                required String taxonId,
+                Value<int> count = const Value.absent(),
+                required double lat,
+                required double lon,
+                Value<double?> locationAccuracyM = const Value.absent(),
+                required String identificationConfidence,
+                required String recordedById,
+                Value<String> sex = const Value.absent(),
+                Value<String> lifeStage = const Value.absent(),
+                Value<String> behaviour = const Value.absent(),
+                Value<String> microhabitat = const Value.absent(),
+                Value<int?> flightDirectionDeg = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> hostPlantRecordId = const Value.absent(),
+                Value<String?> nectarPlantRecordId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ButterflyObservationsCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                transectSectionId: transectSectionId,
+                observedAt: observedAt,
+                taxonId: taxonId,
+                count: count,
+                lat: lat,
+                lon: lon,
+                locationAccuracyM: locationAccuracyM,
+                identificationConfidence: identificationConfidence,
+                recordedById: recordedById,
+                sex: sex,
+                lifeStage: lifeStage,
+                behaviour: behaviour,
+                microhabitat: microhabitat,
+                flightDirectionDeg: flightDirectionDeg,
+                notes: notes,
+                source: source,
+                hostPlantRecordId: hostPlantRecordId,
+                nectarPlantRecordId: nectarPlantRecordId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $ButterflyObservationsTable,
+                    ButterflyObservation
+                  >(table),
+                  $$ButterflyObservationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({projectId = false, surveyVisitId = false, taxonId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable:
+                                $$ButterflyObservationsTableReferences
+                                    ._projectIdTable(db),
+                            referencedColumn:
+                                $$ButterflyObservationsTableReferences
+                                    ._projectIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+                        if (surveyVisitId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.surveyVisitId,
+                            referencedTable:
+                                $$ButterflyObservationsTableReferences
+                                    ._surveyVisitIdTable(db),
+                            referencedColumn:
+                                $$ButterflyObservationsTableReferences
+                                    ._surveyVisitIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+                        if (taxonId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.taxonId,
+                            referencedTable:
+                                $$ButterflyObservationsTableReferences
+                                    ._taxonIdTable(db),
+                            referencedColumn:
+                                $$ButterflyObservationsTableReferences
+                                    ._taxonIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ButterflyObservationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ButterflyObservationsTable,
+      ButterflyObservation,
+      $$ButterflyObservationsTableFilterComposer,
+      $$ButterflyObservationsTableOrderingComposer,
+      $$ButterflyObservationsTableAnnotationComposer,
+      $$ButterflyObservationsTableCreateCompanionBuilder,
+      $$ButterflyObservationsTableUpdateCompanionBuilder,
+      (ButterflyObservation, $$ButterflyObservationsTableReferences),
+      ButterflyObservation,
+      PrefetchHooks Function({bool projectId, bool surveyVisitId, bool taxonId})
     >;
 typedef $$SyncQueueTableCreateCompanionBuilder = SyncQueueCompanion Function({
   Value<int> seq,
@@ -15235,1764 +19496,6 @@ typedef $$SyncConflictsTableProcessedTableManager =
       SyncConflict,
       PrefetchHooks Function()
     >;
-typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
-  required String id,
-  required String projectId,
-  required String code,
-  required String name,
-  required String description,
-  Value<double?> targetLengthM,
-  required String habitatSummary,
-  required bool active,
-  required String geometry,
-  required double lengthM,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-typedef $$TransectsTableUpdateCompanionBuilder = TransectsCompanion Function({
-  Value<String> id,
-  Value<String> projectId,
-  Value<String> code,
-  Value<String> name,
-  Value<String> description,
-  Value<double?> targetLengthM,
-  Value<String> habitatSummary,
-  Value<bool> active,
-  Value<String> geometry,
-  Value<double> lengthM,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-
-final class $$TransectsTableReferences
-    extends BaseReferences<_$AppDatabase, $TransectsTable, Transect> {
-  $$TransectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
-      db.projects.createAlias('transect__project_id__project__id');
-
-  $$ProjectsTableProcessedTableManager get projectId {
-    final $_column = $_itemColumn<String>('project_id')!;
-
-    final manager = $$ProjectsTableTableManager(
-      $_db,
-      $_db.projects,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$SurveyVisitsTable, List<SurveyVisit>>
-  _surveyVisitsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.surveyVisits,
-    aliasName: 'transect__id__survey_visit__transect_id',
-  );
-
-  $$SurveyVisitsTableProcessedTableManager get surveyVisitsRefs {
-    final manager = $$SurveyVisitsTableTableManager(
-      $_db,
-      $_db.surveyVisits,
-    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_surveyVisitsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$TransectSectionsTable, List<TransectSection>>
-  _transectSectionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.transectSections,
-    aliasName: 'transect__id__transect_section__transect_id',
-  );
-
-  $$TransectSectionsTableProcessedTableManager get transectSectionsRefs {
-    final manager = $$TransectSectionsTableTableManager(
-      $_db,
-      $_db.transectSections,
-    ).filter((f) => f.transectId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _transectSectionsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$TransectsTableFilterComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get code => $composableBuilder(
-    column: $table.code,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get geometry => $composableBuilder(
-    column: $table.geometry,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get lengthM => $composableBuilder(
-    column: $table.lengthM,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$ProjectsTableFilterComposer get projectId {
-    final $$ProjectsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableFilterComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> surveyVisitsRefs(
-    Expression<bool> Function($$SurveyVisitsTableFilterComposer f) f,
-  ) {
-    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.surveyVisits,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SurveyVisitsTableFilterComposer(
-            $db: $db,
-            $table: $db.surveyVisits,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> transectSectionsRefs(
-    Expression<bool> Function($$TransectSectionsTableFilterComposer f) f,
-  ) {
-    final $$TransectSectionsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transectSections,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectSectionsTableFilterComposer(
-            $db: $db,
-            $table: $db.transectSections,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TransectsTableOrderingComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get code => $composableBuilder(
-    column: $table.code,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get geometry => $composableBuilder(
-    column: $table.geometry,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get lengthM => $composableBuilder(
-    column: $table.lengthM,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$ProjectsTableOrderingComposer get projectId {
-    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableOrderingComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$TransectsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TransectsTable> {
-  $$TransectsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get code =>
-      $composableBuilder(column: $table.code, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get targetLengthM => $composableBuilder(
-    column: $table.targetLengthM,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get habitatSummary => $composableBuilder(
-    column: $table.habitatSummary,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get active =>
-      $composableBuilder(column: $table.active, builder: (column) => column);
-
-  GeneratedColumn<String> get geometry =>
-      $composableBuilder(column: $table.geometry, builder: (column) => column);
-
-  GeneratedColumn<double> get lengthM =>
-      $composableBuilder(column: $table.lengthM, builder: (column) => column);
-
-  GeneratedColumn<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  $$ProjectsTableAnnotationComposer get projectId {
-    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> surveyVisitsRefs<T extends Object>(
-    Expression<T> Function($$SurveyVisitsTableAnnotationComposer a) f,
-  ) {
-    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.surveyVisits,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SurveyVisitsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.surveyVisits,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> transectSectionsRefs<T extends Object>(
-    Expression<T> Function($$TransectSectionsTableAnnotationComposer a) f,
-  ) {
-    final $$TransectSectionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transectSections,
-      getReferencedColumn: (t) => t.transectId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectSectionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transectSections,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TransectsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TransectsTable,
-          Transect,
-          $$TransectsTableFilterComposer,
-          $$TransectsTableOrderingComposer,
-          $$TransectsTableAnnotationComposer,
-          $$TransectsTableCreateCompanionBuilder,
-          $$TransectsTableUpdateCompanionBuilder,
-          (Transect, $$TransectsTableReferences),
-          Transect,
-          PrefetchHooks Function({
-            bool projectId,
-            bool surveyVisitsRefs,
-            bool transectSectionsRefs,
-          })
-        > {
-  $$TransectsTableTableManager(_$AppDatabase db, $TransectsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TransectsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TransectsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TransectsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> projectId = const Value.absent(),
-                Value<String> code = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> description = const Value.absent(),
-                Value<double?> targetLengthM = const Value.absent(),
-                Value<String> habitatSummary = const Value.absent(),
-                Value<bool> active = const Value.absent(),
-                Value<String> geometry = const Value.absent(),
-                Value<double> lengthM = const Value.absent(),
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransectsCompanion(
-                id: id,
-                projectId: projectId,
-                code: code,
-                name: name,
-                description: description,
-                targetLengthM: targetLengthM,
-                habitatSummary: habitatSummary,
-                active: active,
-                geometry: geometry,
-                lengthM: lengthM,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String projectId,
-                required String code,
-                required String name,
-                required String description,
-                Value<double?> targetLengthM = const Value.absent(),
-                required String habitatSummary,
-                required bool active,
-                required String geometry,
-                required double lengthM,
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransectsCompanion.insert(
-                id: id,
-                projectId: projectId,
-                code: code,
-                name: name,
-                description: description,
-                targetLengthM: targetLengthM,
-                habitatSummary: habitatSummary,
-                active: active,
-                geometry: geometry,
-                lengthM: lengthM,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$TransectsTable, Transect>(table),
-                  $$TransectsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({
-                projectId = false,
-                surveyVisitsRefs = false,
-                transectSectionsRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (surveyVisitsRefs) db.surveyVisits,
-                    if (transectSectionsRefs) db.transectSections,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (projectId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.projectId,
-                            referencedTable: $$TransectsTableReferences
-                                ._projectIdTable(db),
-                            referencedColumn: $$TransectsTableReferences
-                                ._projectIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (surveyVisitsRefs)
-                        await $_getPrefetchedData<
-                          Transect,
-                          $TransectsTable,
-                          SurveyVisit
-                        >(
-                          currentTable: table,
-                          referencedTable: $$TransectsTableReferences
-                              ._surveyVisitsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$TransectsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).surveyVisitsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.transectId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (transectSectionsRefs)
-                        await $_getPrefetchedData<
-                          Transect,
-                          $TransectsTable,
-                          TransectSection
-                        >(
-                          currentTable: table,
-                          referencedTable: $$TransectsTableReferences
-                              ._transectSectionsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$TransectsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).transectSectionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.transectId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$TransectsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TransectsTable,
-      Transect,
-      $$TransectsTableFilterComposer,
-      $$TransectsTableOrderingComposer,
-      $$TransectsTableAnnotationComposer,
-      $$TransectsTableCreateCompanionBuilder,
-      $$TransectsTableUpdateCompanionBuilder,
-      (Transect, $$TransectsTableReferences),
-      Transect,
-      PrefetchHooks Function({
-        bool projectId,
-        bool surveyVisitsRefs,
-        bool transectSectionsRefs,
-      })
-    >;
-typedef $$SurveyVisitsTableCreateCompanionBuilder =
-    SurveyVisitsCompanion Function({
-      Value<int?> serverVersion,
-      Value<SyncStatus> syncStatus,
-      Value<DateTime?> deletedAt,
-      required String id,
-      required String projectId,
-      required String transectId,
-      required String observerId,
-      required String protocolVersion,
-      Value<String> surveyMethod,
-      Value<DateTime?> startedAt,
-      Value<DateTime?> endedAt,
-      Value<int?> durationSeconds,
-      Value<int> pausedSeconds,
-      Value<double?> distanceWalkedM,
-      Value<int> observerCount,
-      Value<String> observerNames,
-      Value<double?> temperatureStartC,
-      Value<double?> temperatureEndC,
-      Value<int?> windBeaufortStart,
-      Value<int?> windBeaufortEnd,
-      Value<int?> cloudCoverStartPct,
-      Value<int?> cloudCoverEndPct,
-      Value<String> precipitation,
-      Value<bool?> weatherSuitable,
-      Value<String> weatherMissingReason,
-      Value<bool> zeroObservationConfirmed,
-      Value<String> notes,
-      Value<String> status,
-      Value<String> cancelReason,
-      Value<bool> batterySaverUsed,
-      Value<String> deviceId,
-      Value<bool> createdOffline,
-      required DateTime createdAt,
-      Value<DateTime?> pausedAt,
-      Value<int> rowid,
-    });
-typedef $$SurveyVisitsTableUpdateCompanionBuilder =
-    SurveyVisitsCompanion Function({
-      Value<int?> serverVersion,
-      Value<SyncStatus> syncStatus,
-      Value<DateTime?> deletedAt,
-      Value<String> id,
-      Value<String> projectId,
-      Value<String> transectId,
-      Value<String> observerId,
-      Value<String> protocolVersion,
-      Value<String> surveyMethod,
-      Value<DateTime?> startedAt,
-      Value<DateTime?> endedAt,
-      Value<int?> durationSeconds,
-      Value<int> pausedSeconds,
-      Value<double?> distanceWalkedM,
-      Value<int> observerCount,
-      Value<String> observerNames,
-      Value<double?> temperatureStartC,
-      Value<double?> temperatureEndC,
-      Value<int?> windBeaufortStart,
-      Value<int?> windBeaufortEnd,
-      Value<int?> cloudCoverStartPct,
-      Value<int?> cloudCoverEndPct,
-      Value<String> precipitation,
-      Value<bool?> weatherSuitable,
-      Value<String> weatherMissingReason,
-      Value<bool> zeroObservationConfirmed,
-      Value<String> notes,
-      Value<String> status,
-      Value<String> cancelReason,
-      Value<bool> batterySaverUsed,
-      Value<String> deviceId,
-      Value<bool> createdOffline,
-      Value<DateTime> createdAt,
-      Value<DateTime?> pausedAt,
-      Value<int> rowid,
-    });
-
-final class $$SurveyVisitsTableReferences
-    extends BaseReferences<_$AppDatabase, $SurveyVisitsTable, SurveyVisit> {
-  $$SurveyVisitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
-      db.projects.createAlias('survey_visit__project_id__project__id');
-
-  $$ProjectsTableProcessedTableManager get projectId {
-    final $_column = $_itemColumn<String>('project_id')!;
-
-    final manager = $$ProjectsTableTableManager(
-      $_db,
-      $_db.projects,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static $TransectsTable _transectIdTable(_$AppDatabase db) =>
-      db.transects.createAlias('survey_visit__transect_id__transect__id');
-
-  $$TransectsTableProcessedTableManager get transectId {
-    final $_column = $_itemColumn<String>('transect_id')!;
-
-    final manager = $$TransectsTableTableManager(
-      $_db,
-      $_db.transects,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_transectIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$SurveyTrackPointsTable, List<SurveyTrackPoint>>
-  _surveyTrackPointsRefsTable(_$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(
-        db.surveyTrackPoints,
-        aliasName: 'survey_visit__id__survey_track_point__survey_visit_id',
-      );
-
-  $$SurveyTrackPointsTableProcessedTableManager get surveyTrackPointsRefs {
-    final manager = $$SurveyTrackPointsTableTableManager(
-      $_db,
-      $_db.surveyTrackPoints,
-    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _surveyTrackPointsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$SurveyVisitsTableFilterComposer
-    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
-  $$SurveyVisitsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
-  get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get observerId => $composableBuilder(
-    column: $table.observerId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get protocolVersion => $composableBuilder(
-    column: $table.protocolVersion,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get surveyMethod => $composableBuilder(
-    column: $table.surveyMethod,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get startedAt => $composableBuilder(
-    column: $table.startedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get endedAt => $composableBuilder(
-    column: $table.endedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get durationSeconds => $composableBuilder(
-    column: $table.durationSeconds,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get pausedSeconds => $composableBuilder(
-    column: $table.pausedSeconds,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get distanceWalkedM => $composableBuilder(
-    column: $table.distanceWalkedM,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get observerCount => $composableBuilder(
-    column: $table.observerCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get observerNames => $composableBuilder(
-    column: $table.observerNames,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get temperatureStartC => $composableBuilder(
-    column: $table.temperatureStartC,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get temperatureEndC => $composableBuilder(
-    column: $table.temperatureEndC,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get windBeaufortStart => $composableBuilder(
-    column: $table.windBeaufortStart,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get windBeaufortEnd => $composableBuilder(
-    column: $table.windBeaufortEnd,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get cloudCoverStartPct => $composableBuilder(
-    column: $table.cloudCoverStartPct,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get cloudCoverEndPct => $composableBuilder(
-    column: $table.cloudCoverEndPct,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get precipitation => $composableBuilder(
-    column: $table.precipitation,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get weatherSuitable => $composableBuilder(
-    column: $table.weatherSuitable,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get weatherMissingReason => $composableBuilder(
-    column: $table.weatherMissingReason,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get zeroObservationConfirmed => $composableBuilder(
-    column: $table.zeroObservationConfirmed,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get notes => $composableBuilder(
-    column: $table.notes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get cancelReason => $composableBuilder(
-    column: $table.cancelReason,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get batterySaverUsed => $composableBuilder(
-    column: $table.batterySaverUsed,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get createdOffline => $composableBuilder(
-    column: $table.createdOffline,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get pausedAt => $composableBuilder(
-    column: $table.pausedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$ProjectsTableFilterComposer get projectId {
-    final $$ProjectsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableFilterComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$TransectsTableFilterComposer get transectId {
-    final $$TransectsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.transectId,
-      referencedTable: $db.transects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectsTableFilterComposer(
-            $db: $db,
-            $table: $db.transects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> surveyTrackPointsRefs(
-    Expression<bool> Function($$SurveyTrackPointsTableFilterComposer f) f,
-  ) {
-    final $$SurveyTrackPointsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.surveyTrackPoints,
-      getReferencedColumn: (t) => t.surveyVisitId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SurveyTrackPointsTableFilterComposer(
-            $db: $db,
-            $table: $db.surveyTrackPoints,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$SurveyVisitsTableOrderingComposer
-    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
-  $$SurveyVisitsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get observerId => $composableBuilder(
-    column: $table.observerId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get protocolVersion => $composableBuilder(
-    column: $table.protocolVersion,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get surveyMethod => $composableBuilder(
-    column: $table.surveyMethod,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
-    column: $table.startedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
-    column: $table.endedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get durationSeconds => $composableBuilder(
-    column: $table.durationSeconds,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get pausedSeconds => $composableBuilder(
-    column: $table.pausedSeconds,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get distanceWalkedM => $composableBuilder(
-    column: $table.distanceWalkedM,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get observerCount => $composableBuilder(
-    column: $table.observerCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get observerNames => $composableBuilder(
-    column: $table.observerNames,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get temperatureStartC => $composableBuilder(
-    column: $table.temperatureStartC,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get temperatureEndC => $composableBuilder(
-    column: $table.temperatureEndC,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get windBeaufortStart => $composableBuilder(
-    column: $table.windBeaufortStart,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get windBeaufortEnd => $composableBuilder(
-    column: $table.windBeaufortEnd,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get cloudCoverStartPct => $composableBuilder(
-    column: $table.cloudCoverStartPct,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get cloudCoverEndPct => $composableBuilder(
-    column: $table.cloudCoverEndPct,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get precipitation => $composableBuilder(
-    column: $table.precipitation,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get weatherSuitable => $composableBuilder(
-    column: $table.weatherSuitable,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get weatherMissingReason => $composableBuilder(
-    column: $table.weatherMissingReason,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get zeroObservationConfirmed => $composableBuilder(
-    column: $table.zeroObservationConfirmed,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get notes => $composableBuilder(
-    column: $table.notes,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get cancelReason => $composableBuilder(
-    column: $table.cancelReason,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get batterySaverUsed => $composableBuilder(
-    column: $table.batterySaverUsed,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get createdOffline => $composableBuilder(
-    column: $table.createdOffline,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get pausedAt => $composableBuilder(
-    column: $table.pausedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$ProjectsTableOrderingComposer get projectId {
-    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableOrderingComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$TransectsTableOrderingComposer get transectId {
-    final $$TransectsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.transectId,
-      referencedTable: $db.transects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectsTableOrderingComposer(
-            $db: $db,
-            $table: $db.transects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$SurveyVisitsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SurveyVisitsTable> {
-  $$SurveyVisitsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => column,
-  );
-
-  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
-      $composableBuilder(
-        column: $table.syncStatus,
-        builder: (column) => column,
-      );
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get observerId => $composableBuilder(
-    column: $table.observerId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get protocolVersion => $composableBuilder(
-    column: $table.protocolVersion,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get surveyMethod => $composableBuilder(
-    column: $table.surveyMethod,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get startedAt =>
-      $composableBuilder(column: $table.startedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get endedAt =>
-      $composableBuilder(column: $table.endedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get durationSeconds => $composableBuilder(
-    column: $table.durationSeconds,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get pausedSeconds => $composableBuilder(
-    column: $table.pausedSeconds,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get distanceWalkedM => $composableBuilder(
-    column: $table.distanceWalkedM,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get observerCount => $composableBuilder(
-    column: $table.observerCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get observerNames => $composableBuilder(
-    column: $table.observerNames,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get temperatureStartC => $composableBuilder(
-    column: $table.temperatureStartC,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get temperatureEndC => $composableBuilder(
-    column: $table.temperatureEndC,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get windBeaufortStart => $composableBuilder(
-    column: $table.windBeaufortStart,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get windBeaufortEnd => $composableBuilder(
-    column: $table.windBeaufortEnd,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get cloudCoverStartPct => $composableBuilder(
-    column: $table.cloudCoverStartPct,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get cloudCoverEndPct => $composableBuilder(
-    column: $table.cloudCoverEndPct,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get precipitation => $composableBuilder(
-    column: $table.precipitation,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get weatherSuitable => $composableBuilder(
-    column: $table.weatherSuitable,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get weatherMissingReason => $composableBuilder(
-    column: $table.weatherMissingReason,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get zeroObservationConfirmed => $composableBuilder(
-    column: $table.zeroObservationConfirmed,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get notes =>
-      $composableBuilder(column: $table.notes, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<String> get cancelReason => $composableBuilder(
-    column: $table.cancelReason,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get batterySaverUsed => $composableBuilder(
-    column: $table.batterySaverUsed,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get createdOffline => $composableBuilder(
-    column: $table.createdOffline,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get pausedAt =>
-      $composableBuilder(column: $table.pausedAt, builder: (column) => column);
-
-  $$ProjectsTableAnnotationComposer get projectId {
-    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projectId,
-      referencedTable: $db.projects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjectsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$TransectsTableAnnotationComposer get transectId {
-    final $$TransectsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.transectId,
-      referencedTable: $db.transects,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransectsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transects,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> surveyTrackPointsRefs<T extends Object>(
-    Expression<T> Function($$SurveyTrackPointsTableAnnotationComposer a) f,
-  ) {
-    final $$SurveyTrackPointsTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.surveyTrackPoints,
-          getReferencedColumn: (t) => t.surveyVisitId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$SurveyTrackPointsTableAnnotationComposer(
-                $db: $db,
-                $table: $db.surveyTrackPoints,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-}
-
-class $$SurveyVisitsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SurveyVisitsTable,
-          SurveyVisit,
-          $$SurveyVisitsTableFilterComposer,
-          $$SurveyVisitsTableOrderingComposer,
-          $$SurveyVisitsTableAnnotationComposer,
-          $$SurveyVisitsTableCreateCompanionBuilder,
-          $$SurveyVisitsTableUpdateCompanionBuilder,
-          (SurveyVisit, $$SurveyVisitsTableReferences),
-          SurveyVisit,
-          PrefetchHooks Function({
-            bool projectId,
-            bool transectId,
-            bool surveyTrackPointsRefs,
-          })
-        > {
-  $$SurveyVisitsTableTableManager(_$AppDatabase db, $SurveyVisitsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SurveyVisitsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SurveyVisitsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SurveyVisitsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int?> serverVersion = const Value.absent(),
-                Value<SyncStatus> syncStatus = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<String> id = const Value.absent(),
-                Value<String> projectId = const Value.absent(),
-                Value<String> transectId = const Value.absent(),
-                Value<String> observerId = const Value.absent(),
-                Value<String> protocolVersion = const Value.absent(),
-                Value<String> surveyMethod = const Value.absent(),
-                Value<DateTime?> startedAt = const Value.absent(),
-                Value<DateTime?> endedAt = const Value.absent(),
-                Value<int?> durationSeconds = const Value.absent(),
-                Value<int> pausedSeconds = const Value.absent(),
-                Value<double?> distanceWalkedM = const Value.absent(),
-                Value<int> observerCount = const Value.absent(),
-                Value<String> observerNames = const Value.absent(),
-                Value<double?> temperatureStartC = const Value.absent(),
-                Value<double?> temperatureEndC = const Value.absent(),
-                Value<int?> windBeaufortStart = const Value.absent(),
-                Value<int?> windBeaufortEnd = const Value.absent(),
-                Value<int?> cloudCoverStartPct = const Value.absent(),
-                Value<int?> cloudCoverEndPct = const Value.absent(),
-                Value<String> precipitation = const Value.absent(),
-                Value<bool?> weatherSuitable = const Value.absent(),
-                Value<String> weatherMissingReason = const Value.absent(),
-                Value<bool> zeroObservationConfirmed = const Value.absent(),
-                Value<String> notes = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String> cancelReason = const Value.absent(),
-                Value<bool> batterySaverUsed = const Value.absent(),
-                Value<String> deviceId = const Value.absent(),
-                Value<bool> createdOffline = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime?> pausedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SurveyVisitsCompanion(
-                serverVersion: serverVersion,
-                syncStatus: syncStatus,
-                deletedAt: deletedAt,
-                id: id,
-                projectId: projectId,
-                transectId: transectId,
-                observerId: observerId,
-                protocolVersion: protocolVersion,
-                surveyMethod: surveyMethod,
-                startedAt: startedAt,
-                endedAt: endedAt,
-                durationSeconds: durationSeconds,
-                pausedSeconds: pausedSeconds,
-                distanceWalkedM: distanceWalkedM,
-                observerCount: observerCount,
-                observerNames: observerNames,
-                temperatureStartC: temperatureStartC,
-                temperatureEndC: temperatureEndC,
-                windBeaufortStart: windBeaufortStart,
-                windBeaufortEnd: windBeaufortEnd,
-                cloudCoverStartPct: cloudCoverStartPct,
-                cloudCoverEndPct: cloudCoverEndPct,
-                precipitation: precipitation,
-                weatherSuitable: weatherSuitable,
-                weatherMissingReason: weatherMissingReason,
-                zeroObservationConfirmed: zeroObservationConfirmed,
-                notes: notes,
-                status: status,
-                cancelReason: cancelReason,
-                batterySaverUsed: batterySaverUsed,
-                deviceId: deviceId,
-                createdOffline: createdOffline,
-                createdAt: createdAt,
-                pausedAt: pausedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int?> serverVersion = const Value.absent(),
-                Value<SyncStatus> syncStatus = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                required String id,
-                required String projectId,
-                required String transectId,
-                required String observerId,
-                required String protocolVersion,
-                Value<String> surveyMethod = const Value.absent(),
-                Value<DateTime?> startedAt = const Value.absent(),
-                Value<DateTime?> endedAt = const Value.absent(),
-                Value<int?> durationSeconds = const Value.absent(),
-                Value<int> pausedSeconds = const Value.absent(),
-                Value<double?> distanceWalkedM = const Value.absent(),
-                Value<int> observerCount = const Value.absent(),
-                Value<String> observerNames = const Value.absent(),
-                Value<double?> temperatureStartC = const Value.absent(),
-                Value<double?> temperatureEndC = const Value.absent(),
-                Value<int?> windBeaufortStart = const Value.absent(),
-                Value<int?> windBeaufortEnd = const Value.absent(),
-                Value<int?> cloudCoverStartPct = const Value.absent(),
-                Value<int?> cloudCoverEndPct = const Value.absent(),
-                Value<String> precipitation = const Value.absent(),
-                Value<bool?> weatherSuitable = const Value.absent(),
-                Value<String> weatherMissingReason = const Value.absent(),
-                Value<bool> zeroObservationConfirmed = const Value.absent(),
-                Value<String> notes = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String> cancelReason = const Value.absent(),
-                Value<bool> batterySaverUsed = const Value.absent(),
-                Value<String> deviceId = const Value.absent(),
-                Value<bool> createdOffline = const Value.absent(),
-                required DateTime createdAt,
-                Value<DateTime?> pausedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SurveyVisitsCompanion.insert(
-                serverVersion: serverVersion,
-                syncStatus: syncStatus,
-                deletedAt: deletedAt,
-                id: id,
-                projectId: projectId,
-                transectId: transectId,
-                observerId: observerId,
-                protocolVersion: protocolVersion,
-                surveyMethod: surveyMethod,
-                startedAt: startedAt,
-                endedAt: endedAt,
-                durationSeconds: durationSeconds,
-                pausedSeconds: pausedSeconds,
-                distanceWalkedM: distanceWalkedM,
-                observerCount: observerCount,
-                observerNames: observerNames,
-                temperatureStartC: temperatureStartC,
-                temperatureEndC: temperatureEndC,
-                windBeaufortStart: windBeaufortStart,
-                windBeaufortEnd: windBeaufortEnd,
-                cloudCoverStartPct: cloudCoverStartPct,
-                cloudCoverEndPct: cloudCoverEndPct,
-                precipitation: precipitation,
-                weatherSuitable: weatherSuitable,
-                weatherMissingReason: weatherMissingReason,
-                zeroObservationConfirmed: zeroObservationConfirmed,
-                notes: notes,
-                status: status,
-                cancelReason: cancelReason,
-                batterySaverUsed: batterySaverUsed,
-                deviceId: deviceId,
-                createdOffline: createdOffline,
-                createdAt: createdAt,
-                pausedAt: pausedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$SurveyVisitsTable, SurveyVisit>(table),
-                  $$SurveyVisitsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({
-                projectId = false,
-                transectId = false,
-                surveyTrackPointsRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (surveyTrackPointsRefs) db.surveyTrackPoints,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (projectId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.projectId,
-                            referencedTable: $$SurveyVisitsTableReferences
-                                ._projectIdTable(db),
-                            referencedColumn: $$SurveyVisitsTableReferences
-                                ._projectIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-                        if (transectId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.transectId,
-                            referencedTable: $$SurveyVisitsTableReferences
-                                ._transectIdTable(db),
-                            referencedColumn: $$SurveyVisitsTableReferences
-                                ._transectIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (surveyTrackPointsRefs)
-                        await $_getPrefetchedData<
-                          SurveyVisit,
-                          $SurveyVisitsTable,
-                          SurveyTrackPoint
-                        >(
-                          currentTable: table,
-                          referencedTable: $$SurveyVisitsTableReferences
-                              ._surveyTrackPointsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$SurveyVisitsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).surveyTrackPointsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.surveyVisitId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$SurveyVisitsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SurveyVisitsTable,
-      SurveyVisit,
-      $$SurveyVisitsTableFilterComposer,
-      $$SurveyVisitsTableOrderingComposer,
-      $$SurveyVisitsTableAnnotationComposer,
-      $$SurveyVisitsTableCreateCompanionBuilder,
-      $$SurveyVisitsTableUpdateCompanionBuilder,
-      (SurveyVisit, $$SurveyVisitsTableReferences),
-      SurveyVisit,
-      PrefetchHooks Function({
-        bool projectId,
-        bool transectId,
-        bool surveyTrackPointsRefs,
-      })
-    >;
 typedef $$SurveyTrackPointsTableCreateCompanionBuilder =
     SurveyTrackPointsCompanion Function({
       required String id,
@@ -17486,474 +19989,6 @@ typedef $$SurveyTrackPointsTableProcessedTableManager =
       (SurveyTrackPoint, $$SurveyTrackPointsTableReferences),
       SurveyTrackPoint,
       PrefetchHooks Function({bool surveyVisitId})
-    >;
-typedef $$TaxaTableCreateCompanionBuilder = TaxaCompanion Function({
-  required String id,
-  required String author,
-  required String rank,
-  required String genus,
-  required String family,
-  required String vernacularNameSr,
-  required String vernacularNameEn,
-  required String taxonSource,
-  required String taxonSourceId,
-  required bool active,
-  required bool photoRequired,
-  Value<String?> identificationNotes,
-  Value<String?> acceptedNameId,
-  required String introducedInId,
-  Value<String?> retiredInId,
-  required String scientificName,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-typedef $$TaxaTableUpdateCompanionBuilder = TaxaCompanion Function({
-  Value<String> id,
-  Value<String> author,
-  Value<String> rank,
-  Value<String> genus,
-  Value<String> family,
-  Value<String> vernacularNameSr,
-  Value<String> vernacularNameEn,
-  Value<String> taxonSource,
-  Value<String> taxonSourceId,
-  Value<bool> active,
-  Value<bool> photoRequired,
-  Value<String?> identificationNotes,
-  Value<String?> acceptedNameId,
-  Value<String> introducedInId,
-  Value<String?> retiredInId,
-  Value<String> scientificName,
-  Value<int?> serverVersion,
-  Value<DateTime?> deletedAt,
-  Value<int> rowid,
-});
-
-class $$TaxaTableFilterComposer extends Composer<_$AppDatabase, $TaxaTable> {
-  $$TaxaTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get rank => $composableBuilder(
-    column: $table.rank,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get genus => $composableBuilder(
-    column: $table.genus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get family => $composableBuilder(
-    column: $table.family,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vernacularNameSr => $composableBuilder(
-    column: $table.vernacularNameSr,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vernacularNameEn => $composableBuilder(
-    column: $table.vernacularNameEn,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get taxonSource => $composableBuilder(
-    column: $table.taxonSource,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get taxonSourceId => $composableBuilder(
-    column: $table.taxonSourceId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get photoRequired => $composableBuilder(
-    column: $table.photoRequired,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get identificationNotes => $composableBuilder(
-    column: $table.identificationNotes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get acceptedNameId => $composableBuilder(
-    column: $table.acceptedNameId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get introducedInId => $composableBuilder(
-    column: $table.introducedInId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get retiredInId => $composableBuilder(
-    column: $table.retiredInId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get scientificName => $composableBuilder(
-    column: $table.scientificName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$TaxaTableOrderingComposer extends Composer<_$AppDatabase, $TaxaTable> {
-  $$TaxaTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get rank => $composableBuilder(
-    column: $table.rank,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get genus => $composableBuilder(
-    column: $table.genus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get family => $composableBuilder(
-    column: $table.family,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vernacularNameSr => $composableBuilder(
-    column: $table.vernacularNameSr,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vernacularNameEn => $composableBuilder(
-    column: $table.vernacularNameEn,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get taxonSource => $composableBuilder(
-    column: $table.taxonSource,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get taxonSourceId => $composableBuilder(
-    column: $table.taxonSourceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get photoRequired => $composableBuilder(
-    column: $table.photoRequired,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get identificationNotes => $composableBuilder(
-    column: $table.identificationNotes,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get acceptedNameId => $composableBuilder(
-    column: $table.acceptedNameId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get introducedInId => $composableBuilder(
-    column: $table.introducedInId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get retiredInId => $composableBuilder(
-    column: $table.retiredInId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get scientificName => $composableBuilder(
-    column: $table.scientificName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$TaxaTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TaxaTable> {
-  $$TaxaTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get author =>
-      $composableBuilder(column: $table.author, builder: (column) => column);
-
-  GeneratedColumn<String> get rank =>
-      $composableBuilder(column: $table.rank, builder: (column) => column);
-
-  GeneratedColumn<String> get genus =>
-      $composableBuilder(column: $table.genus, builder: (column) => column);
-
-  GeneratedColumn<String> get family =>
-      $composableBuilder(column: $table.family, builder: (column) => column);
-
-  GeneratedColumn<String> get vernacularNameSr => $composableBuilder(
-    column: $table.vernacularNameSr,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get vernacularNameEn => $composableBuilder(
-    column: $table.vernacularNameEn,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get taxonSource => $composableBuilder(
-    column: $table.taxonSource,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get taxonSourceId => $composableBuilder(
-    column: $table.taxonSourceId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get active =>
-      $composableBuilder(column: $table.active, builder: (column) => column);
-
-  GeneratedColumn<bool> get photoRequired => $composableBuilder(
-    column: $table.photoRequired,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get identificationNotes => $composableBuilder(
-    column: $table.identificationNotes,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get acceptedNameId => $composableBuilder(
-    column: $table.acceptedNameId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get introducedInId => $composableBuilder(
-    column: $table.introducedInId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get retiredInId => $composableBuilder(
-    column: $table.retiredInId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get scientificName => $composableBuilder(
-    column: $table.scientificName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get serverVersion => $composableBuilder(
-    column: $table.serverVersion,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-}
-
-class $$TaxaTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TaxaTable,
-          Taxon,
-          $$TaxaTableFilterComposer,
-          $$TaxaTableOrderingComposer,
-          $$TaxaTableAnnotationComposer,
-          $$TaxaTableCreateCompanionBuilder,
-          $$TaxaTableUpdateCompanionBuilder,
-          (Taxon, BaseReferences<_$AppDatabase, $TaxaTable, Taxon>),
-          Taxon,
-          PrefetchHooks Function()
-        > {
-  $$TaxaTableTableManager(_$AppDatabase db, $TaxaTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TaxaTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TaxaTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TaxaTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> author = const Value.absent(),
-                Value<String> rank = const Value.absent(),
-                Value<String> genus = const Value.absent(),
-                Value<String> family = const Value.absent(),
-                Value<String> vernacularNameSr = const Value.absent(),
-                Value<String> vernacularNameEn = const Value.absent(),
-                Value<String> taxonSource = const Value.absent(),
-                Value<String> taxonSourceId = const Value.absent(),
-                Value<bool> active = const Value.absent(),
-                Value<bool> photoRequired = const Value.absent(),
-                Value<String?> identificationNotes = const Value.absent(),
-                Value<String?> acceptedNameId = const Value.absent(),
-                Value<String> introducedInId = const Value.absent(),
-                Value<String?> retiredInId = const Value.absent(),
-                Value<String> scientificName = const Value.absent(),
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TaxaCompanion(
-                id: id,
-                author: author,
-                rank: rank,
-                genus: genus,
-                family: family,
-                vernacularNameSr: vernacularNameSr,
-                vernacularNameEn: vernacularNameEn,
-                taxonSource: taxonSource,
-                taxonSourceId: taxonSourceId,
-                active: active,
-                photoRequired: photoRequired,
-                identificationNotes: identificationNotes,
-                acceptedNameId: acceptedNameId,
-                introducedInId: introducedInId,
-                retiredInId: retiredInId,
-                scientificName: scientificName,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String author,
-                required String rank,
-                required String genus,
-                required String family,
-                required String vernacularNameSr,
-                required String vernacularNameEn,
-                required String taxonSource,
-                required String taxonSourceId,
-                required bool active,
-                required bool photoRequired,
-                Value<String?> identificationNotes = const Value.absent(),
-                Value<String?> acceptedNameId = const Value.absent(),
-                required String introducedInId,
-                Value<String?> retiredInId = const Value.absent(),
-                required String scientificName,
-                Value<int?> serverVersion = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TaxaCompanion.insert(
-                id: id,
-                author: author,
-                rank: rank,
-                genus: genus,
-                family: family,
-                vernacularNameSr: vernacularNameSr,
-                vernacularNameEn: vernacularNameEn,
-                taxonSource: taxonSource,
-                taxonSourceId: taxonSourceId,
-                active: active,
-                photoRequired: photoRequired,
-                identificationNotes: identificationNotes,
-                acceptedNameId: acceptedNameId,
-                introducedInId: introducedInId,
-                retiredInId: retiredInId,
-                scientificName: scientificName,
-                serverVersion: serverVersion,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$TaxaTable, Taxon>(table),
-                  BaseReferences<_$AppDatabase, $TaxaTable, Taxon>(
-                    db,
-                    table,
-                    e,
-                  ),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$TaxaTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TaxaTable,
-      Taxon,
-      $$TaxaTableFilterComposer,
-      $$TaxaTableOrderingComposer,
-      $$TaxaTableAnnotationComposer,
-      $$TaxaTableCreateCompanionBuilder,
-      $$TaxaTableUpdateCompanionBuilder,
-      (Taxon, BaseReferences<_$AppDatabase, $TaxaTable, Taxon>),
-      Taxon,
-      PrefetchHooks Function()
     >;
 typedef $$TaxonListVersionsTableCreateCompanionBuilder =
     TaxonListVersionsCompanion Function({
@@ -18671,10 +20706,15 @@ typedef $$TransectSectionsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$SkeletonPingsTableTableManager get skeletonPings =>
-      $$SkeletonPingsTableTableManager(_db, _db.skeletonPings);
   $$ProjectsTableTableManager get projects =>
       $$ProjectsTableTableManager(_db, _db.projects);
+  $$TransectsTableTableManager get transects =>
+      $$TransectsTableTableManager(_db, _db.transects);
+  $$SurveyVisitsTableTableManager get surveyVisits =>
+      $$SurveyVisitsTableTableManager(_db, _db.surveyVisits);
+  $$TaxaTableTableManager get taxa => $$TaxaTableTableManager(_db, _db.taxa);
+  $$ButterflyObservationsTableTableManager get butterflyObservations =>
+      $$ButterflyObservationsTableTableManager(_db, _db.butterflyObservations);
   $$SyncQueueTableTableManager get syncQueue =>
       $$SyncQueueTableTableManager(_db, _db.syncQueue);
   $$SyncStateEntriesTableTableManager get syncStateEntries =>
@@ -18689,13 +20729,8 @@ class $AppDatabaseManager {
       $$ProjectProtocolsTableTableManager(_db, _db.projectProtocols);
   $$SyncConflictsTableTableManager get syncConflicts =>
       $$SyncConflictsTableTableManager(_db, _db.syncConflicts);
-  $$TransectsTableTableManager get transects =>
-      $$TransectsTableTableManager(_db, _db.transects);
-  $$SurveyVisitsTableTableManager get surveyVisits =>
-      $$SurveyVisitsTableTableManager(_db, _db.surveyVisits);
   $$SurveyTrackPointsTableTableManager get surveyTrackPoints =>
       $$SurveyTrackPointsTableTableManager(_db, _db.surveyTrackPoints);
-  $$TaxaTableTableManager get taxa => $$TaxaTableTableManager(_db, _db.taxa);
   $$TaxonListVersionsTableTableManager get taxonListVersions =>
       $$TaxonListVersionsTableTableManager(_db, _db.taxonListVersions);
   $$TransectSectionsTableTableManager get transectSections =>
