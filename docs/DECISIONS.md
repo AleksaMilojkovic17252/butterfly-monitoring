@@ -1403,3 +1403,33 @@ T056 sets a flag and needs no change then. **Inline:** `ObservationInline` is a 
 time, with a "View" link to each (Django shows view, not change, for an inline that cannot be changed); the route map was already on the
 page (T036). The inline is shown on a locked visit too. Saving an unlocked visit with the inline present was checked.
 **Shown by hand:** `tmp/t043/smoke.py` (run in the container, not committed, D-021).
+
+## D-071 · Battery saver and GPS gap banner
+2026-10 · accepted · T038, *builds on D-061, D-063, D-068*
+**Mode.** Battery saver records at the protocol's `gps_interval_battery_saver_s` (default 15 when the protocol is not on the phone) with
+`LocationAccuracy.medium`; normal mode keeps `high`. `LocationSource.positions` now takes the accuracy. The per-device interval override
+(Settings, T037) does not apply in saver mode: the observer asked for the saver explicitly. The notification reads "Battery saver:
+recording the route every N s".
+**Remembered across a restart (decided with the developer).** While the mode is on, the visit's id is stored in `SharedPreferences`
+(`battery_saver_visit_id`, `core/location/battery_saver_visit.dart`, same shape as the interval override). `TrackingController._start` starts
+in saver mode when the stored id is the visit's id; turning the mode off removes the key. An id left from an old visit matches no new visit.
+**Switching** restarts the GPS stream through the `_change` chain (`setBatterySaver`), without `resume`, so no "Tracking interrupted"; the
+map dot is gone until the next fix, as after a pause. On a paused visit or with GPS not running only the mode is stored and the next start
+uses it. `survey_visit.battery_saver_used` is queued as an `update` the first time the mode is turned on (`VisitRepository.markBatterySaverUsed`)
+and never cleared: "used" means at any point of the visit. It is written before the mode changes, so a visit that cannot take the write
+keeps the old mode.
+**Automatic switch.** `battery_plus` (A.4) is read when tracking starts and then every 60 s. Below 20 % the mode turns on, once per visit
+in each run of the app (`_autoSwitchedVisitId`), so an observer who turns it off again is not overruled. The screen shows the snackbar
+"Battery below 20 %: battery saver is on" from the `batterySaverAuto` flag, which stays set until the screen has shown it. A phone that
+cannot report its level skips the check.
+**Banner.** `GpsGapBanner` shows "No GPS fix for N s" when more than `gps_gap_s` (default 60) seconds passed since the newest fix arrived (the phone's clock at
+receipt, `TrackingState.fixReceivedAt`, not the fix's own time, which can be old: a cached first fix, a replay), or since
+GPS started (`TrackingState.recordingSince`) when none has come yet. It rebuilds every second, stays quiet while paused or when GPS is not
+running (the "Try again" problem row covers that), and goes with the next fix. It is live feedback only; the stored gaps are the Finish
+warnings (T040, `gps_gaps.dart`, pauses left out) and the server's `gps_gap` flag (T056).
+**Gaps on the visit summary** (criterion 4) was already met by T040; nothing was built for it.
+**Testing the automatic switch.** battery_plus reads `BatteryManager.BATTERY_PROPERTY_CAPACITY` (the real charge), so `adb shell dumpsys battery set
+level 15`, which only changes the battery broadcast, does not trigger it. To try it on a phone, raise `_lowBatteryPercent` above the real level for one run.
+**Found in review.** The "battery below 20 %" listener must not show its snackbar during `initState`, so a flag set before the screen opened is handled after
+the first frame. The snackbar of the toggle is shown after the change, with the interval GPS uses. The automatic switch is skipped when GPS is not running
+(for example after a pause) and sets `_autoSwitchedVisitId` only when it goes ahead. The toggle's state flips at once, before GPS has restarted.

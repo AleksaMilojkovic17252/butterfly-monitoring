@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/location/battery_saver_visit.dart';
 import 'package:mobile/core/location/gps_interval_override.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/location/location_source.dart';
@@ -27,8 +28,12 @@ class TrackingState {
     this.transectCode = '',
     this.intervalS,
     this.recording = false,
+    this.recordingSince,
     this.paused = false,
+    this.batterySaver = false,
+    this.batterySaverAuto = false,
     this.lastFixAt,
+    this.fixReceivedAt,
     this.lastPosition,
     this.interruption,
     this.problem,
@@ -44,12 +49,30 @@ class TrackingState {
   /// True while the GPS stream is running.
   final bool recording;
 
+  /// UTC time the GPS stream last started. The "No GPS fix" banner (T038)
+  /// counts from here until the first fix arrives.
+  final DateTime? recordingSince;
+
   /// True while the visit is paused (T039): GPS is off and nothing is
   /// recorded.
   final bool paused;
 
+  /// True while the visit is recorded in battery-saver mode (T038): a longer
+  /// interval and lower accuracy.
+  final bool batterySaver;
+
+  /// True when the battery saver was switched on by the low battery (T038)
+  /// and the screen has not told the user yet. The screen shows a snackbar
+  /// and calls `acknowledgeBatterySaverAuto`.
+  final bool batterySaverAuto;
+
   /// UTC time of the newest fix, stored or still in the buffer.
   final DateTime? lastFixAt;
+
+  /// UTC time on this phone's clock when the newest fix arrived. The "No GPS
+  /// fix" banner (T038) counts from it, since [lastFixAt] is the fix's own
+  /// time, which can be old.
+  final DateTime? fixReceivedAt;
 
   /// The newest fix (position and accuracy), for the map and the current
   /// section (T039). Kept during a pause, so the map shows where it began;
@@ -72,8 +95,12 @@ class TrackingState {
   /// its `clear...` flag, since passing null means "keep".
   TrackingState copyWith({
     bool? recording,
+    DateTime? recordingSince,
     bool? paused,
+    bool? batterySaver,
+    bool? batterySaverAuto,
     DateTime? lastFixAt,
+    DateTime? fixReceivedAt,
     Position? lastPosition,
     TrackingInterruption? interruption,
     bool clearInterruption = false,
@@ -86,8 +113,12 @@ class TrackingState {
       transectCode: transectCode,
       intervalS: intervalS,
       recording: recording ?? this.recording,
+      recordingSince: recordingSince ?? this.recordingSince,
       paused: paused ?? this.paused,
+      batterySaver: batterySaver ?? this.batterySaver,
+      batterySaverAuto: batterySaverAuto ?? this.batterySaverAuto,
       lastFixAt: lastFixAt ?? this.lastFixAt,
+      fixReceivedAt: fixReceivedAt ?? this.fixReceivedAt,
       lastPosition: lastPosition ?? this.lastPosition,
       interruption: clearInterruption
           ? null
@@ -110,6 +141,13 @@ class TrackingState {
 /// and resuming starts it again. An app start with a paused visit leaves GPS
 /// off until Resume.
 ///
+/// Battery saver (T038): while it is on, GPS runs at the protocol's
+/// `gpsIntervalBatterySaverS` with medium accuracy. The observer turns it on
+/// with [setBatterySaver], and it turns on by itself when the battery falls
+/// below [_lowBatteryPercent] (checked every [_batteryCheckEvery]). The visit
+/// id is kept in `batterySaverVisitProvider`, so the mode survives a restart
+/// of the app.
+///
 /// Fixes are buffered and written to Drift every [_flushPoints] points or
 /// every [_flushEvery], whichever comes first. A buffered fix is lost if the
 /// app is killed; the next start resumes and shows the gap.
@@ -120,6 +158,14 @@ class TrackingController extends Notifier<TrackingState> {
   /// Used when the project protocol is not on the phone: the server's
   /// default `gps_interval_s`.
   static const _defaultIntervalS = 5;
+
+  /// Used in battery-saver mode when the protocol is not on the phone: the
+  /// server's default `gps_interval_battery_saver_s`.
+  static const _defaultBatterySaverIntervalS = 15;
+
+  /// Below this battery level (percent) the battery saver turns on by itself.
+  static const _lowBatteryPercent = 20;
+  static const _batteryCheckEvery = Duration(seconds: 60);
 
   /// When this controller was created, i.e. when the app started. A visit
   /// that started before it began in an earlier run of the app, so picking
@@ -142,6 +188,7 @@ class TrackingController extends Notifier<TrackingState> {
   SurveyVisit? _visit;
   StreamSubscription<Position>? _subscription;
   Timer? _flushTimer;
+  Timer? _batteryTimer;
   final _buffer = <NewTrackPoint>[];
   int _nextSequenceNumber = 1;
 
@@ -149,6 +196,10 @@ class TrackingController extends Notifier<TrackingState> {
   /// cached position some phones deliver first) is dropped, so points stay in
   /// time order.
   DateTime? _lastFixAt;
+
+  /// The visit the low battery already switched to battery saver in this run
+  /// of the app. If the observer turns the mode off again, it stays off.
+  String? _autoSwitchedVisitId;
 
   /// Start of the interruption on a resume, until the first fix arrives.
   DateTime? _interruptedFrom;
@@ -191,6 +242,7 @@ class TrackingController extends Notifier<TrackingState> {
     ref.onDispose(() {
       _subscription?.cancel();
       _flushTimer?.cancel();
+      _batteryTimer?.cancel();
     });
     return const TrackingState();
   }
@@ -239,6 +291,23 @@ class TrackingController extends Notifier<TrackingState> {
     });
   }
 
+  /// Turns battery-saver mode on or off for the visit being tracked (T038).
+  /// Does nothing without a visit or after [stop]. Turning it on also queues
+  /// `battery_saver_used = true` on the visit. When GPS is running it is
+  /// restarted with the new interval and accuracy, without a "Tracking
+  /// interrupted" message; the dot on the map disappears until the next fix,
+  /// as after a pause. When the visit is paused or GPS is not running, only
+  /// the mode is stored, and the next start uses it.
+  Future<void> setBatterySaver(bool on) {
+    _change(() => _setBatterySaver(on));
+    return _changes;
+  }
+
+  /// Hides the battery-saver snackbar flag once the screen has shown it.
+  void acknowledgeBatterySaverAuto() {
+    state = state.copyWith(batterySaverAuto: false);
+  }
+
   /// Hides the "Tracking interrupted" message.
   void dismissInterruption() {
     state = state.copyWith(clearInterruption: true);
@@ -256,6 +325,56 @@ class TrackingController extends Notifier<TrackingState> {
     });
   }
 
+  /// The work of [setBatterySaver]; runs inside the [_change] chain. With
+  /// [auto] the low battery asked for it, and the screen is told.
+  Future<void> _setBatterySaver(bool on, {bool auto = false}) async {
+    final visit = ref.read(deviceVisitInProgressProvider).value;
+    if (visit == null || visit.id != _handledVisitId || _stopped) return;
+    if (auto) {
+      // The check ran a moment ago; GPS may have stopped (a pause) or the
+      // mode may have changed since. Then there is nothing to switch.
+      if (_subscription == null || state.batterySaver) return;
+      if (_autoSwitchedVisitId == visit.id) return;
+      _autoSwitchedVisitId = visit.id;
+    }
+
+    // First, so a visit that cannot take the write leaves the mode as it was.
+    if (on) {
+      await ref.read(visitRepositoryProvider).markBatterySaverUsed(visit.id);
+    }
+    await ref
+        .read(batterySaverVisitProvider.notifier)
+        .save(on ? visit.id : null);
+    // At once, so the toggle changes before GPS has restarted.
+    state = state.copyWith(batterySaver: on);
+
+    if (_subscription != null) {
+      await _stopTracking();
+      await _start(visit);
+    } else {
+      state = state.copyWith(batterySaver: on);
+    }
+    if (auto) state = state.copyWith(batterySaverAuto: true);
+  }
+
+  /// Switches to battery saver when the battery is below
+  /// [_lowBatteryPercent], once per visit in this run of the app. A phone
+  /// that cannot tell its level skips the check.
+  Future<void> _checkBattery(SurveyVisit visit) async {
+    if (state.batterySaver || _autoSwitchedVisitId == visit.id) return;
+    final int level;
+    try {
+      level = await ref.read(batteryProvider).batteryLevel;
+    } catch (_) {
+      return;
+    }
+    // The mode or the visit may have changed while the level was read.
+    if (level >= _lowBatteryPercent) return;
+    if (state.batterySaver || _autoSwitchedVisitId == visit.id) return;
+    if (state.visitId != visit.id) return;
+    _change(() => _setBatterySaver(true, auto: true));
+  }
+
   /// Starts tracking [visit].
   ///
   /// With [resume] (the first time the visit is picked up), a visit that
@@ -271,10 +390,13 @@ class TrackingController extends Notifier<TrackingState> {
     final transects = ref.read(transectRepositoryProvider);
     final transect = await transects.watchTransect(visit.transectId).first;
     final protocol = await transects.watchProtocol(visit.projectId).first;
-    final intervalS =
-        ref.read(gpsIntervalOverrideProvider) ??
-        protocol?.gpsIntervalS ??
-        _defaultIntervalS;
+    final saver = ref.read(batterySaverVisitProvider) == visit.id;
+    // The per-device override does not apply in battery-saver mode.
+    final intervalS = saver
+        ? protocol?.gpsIntervalBatterySaverS ?? _defaultBatterySaverIntervalS
+        : ref.read(gpsIntervalOverrideProvider) ??
+              protocol?.gpsIntervalS ??
+              _defaultIntervalS;
     final code = transect?.code ?? '';
     final sameVisit = state.visitId == visit.id;
     // No `lastPosition`: after a pause or a retry the observer may have
@@ -284,6 +406,9 @@ class TrackingController extends Notifier<TrackingState> {
       visitId: visit.id,
       transectCode: code,
       intervalS: intervalS,
+      batterySaver: saver,
+      // Kept until the screen has shown it, also across a restart.
+      batterySaverAuto: sameVisit && state.batterySaverAuto,
       // Kept across a retry or a pause, until the user closes it.
       interruption: sameVisit ? state.interruption : null,
       // Lost points stay lost: kept for the rest of the visit.
@@ -312,12 +437,23 @@ class TrackingController extends Notifier<TrackingState> {
         .read(locationSourceProvider)
         .positions(
           intervalS: intervalS,
+          accuracy: saver ? LocationAccuracy.medium : LocationAccuracy.high,
           title: 'Visit in progress: $code',
-          text: 'Recording the route every $intervalS s',
+          text: saver
+              ? 'Battery saver: recording the route every $intervalS s'
+              : 'Recording the route every $intervalS s',
         )
         .listen(_onFix, onError: _onFixError, onDone: _onFixesEnded);
     _flushTimer = Timer.periodic(_flushEvery, (_) => _flush());
-    state = state.copyWith(recording: true);
+    _batteryTimer = Timer.periodic(
+      _batteryCheckEvery,
+      (_) => _checkBattery(visit),
+    );
+    _checkBattery(visit);
+    state = state.copyWith(
+      recording: true,
+      recordingSince: DateTime.now().toUtc(),
+    );
   }
 
   /// Shows [visit] as paused (T039). GPS is already stopped. The newest
@@ -340,6 +476,7 @@ class TrackingController extends Notifier<TrackingState> {
       visitId: visit.id,
       transectCode: transect?.code ?? '',
       paused: true,
+      batterySaver: ref.read(batterySaverVisitProvider) == visit.id,
     );
   }
 
@@ -360,6 +497,7 @@ class TrackingController extends Notifier<TrackingState> {
     _interruptedFrom = null;
     state = state.copyWith(
       lastFixAt: at,
+      fixReceivedAt: DateTime.now().toUtc(),
       lastPosition: position,
       interruption: from == null
           ? null
@@ -420,6 +558,8 @@ class TrackingController extends Notifier<TrackingState> {
     _subscription = null;
     _flushTimer?.cancel();
     _flushTimer = null;
+    _batteryTimer?.cancel();
+    _batteryTimer = null;
     await _flush();
     _visit = null;
     _lastFixAt = null;

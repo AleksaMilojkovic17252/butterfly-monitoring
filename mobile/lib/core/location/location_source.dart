@@ -5,10 +5,12 @@ import 'package:mobile/core/location/location_provider.dart';
 /// Where the GPS tracker (T037) gets its fixes. [GeolocatorSource] is the
 /// phone's GPS; T072 adds a replay of a GPX file for demos and tests.
 abstract class LocationSource {
-  /// Fixes every [intervalS] seconds until the subscription is cancelled.
+  /// Fixes every [intervalS] seconds until the subscription is cancelled,
+  /// with the given [accuracy] (battery saver, T038, asks for less).
   /// While it runs, Android shows a notification with [title] and [text].
   Stream<Position> positions({
     required int intervalS,
+    required LocationAccuracy accuracy,
     required String title,
     required String text,
   });
@@ -25,12 +27,13 @@ class GeolocatorSource implements LocationSource {
   @override
   Stream<Position> positions({
     required int intervalS,
+    required LocationAccuracy accuracy,
     required String title,
     required String text,
   }) {
     return _geo.getPositionStream(
       locationSettings: AndroidSettings(
-        accuracy: LocationAccuracy.high,
+        accuracy: accuracy,
         intervalDuration: Duration(seconds: intervalS),
         // Every fix, also when standing still: the interval decides.
         distanceFilter: 0,

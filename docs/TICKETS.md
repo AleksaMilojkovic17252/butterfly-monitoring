@@ -73,7 +73,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T035 | [#52](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/52) | App start-visit form | P1 | must | T016, T033, T034 | 1.5 d | done |
 | T036 | [#53](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/53) | Track points: model, batch sync and walked distance | P1 | must | T026, T034 | 1.5 d | done |
 | T037 | [#54](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/54) | App GPS tracking with an Android foreground service | P1 | must | T035, T036 | 3 d | done |
-| T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | todo |
+| T038 | [#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) | Battery-saving mode and GPS gap detection | P1 | must | T037 | 1 d | done |
 | T039 | [#56](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/56) | App active visit screen | P1 | must | T037 | 2.5 d | done |
 | T040 | [#57](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/57) | Finish visit: summary, warnings and end weather | P1 | must | T039, T055 | 2 d | done |
 | T041 | [#58](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/58) | True-zero confirmation and cancelled-visit reasons | P1 | must | T040 | 1 d | done |
@@ -775,7 +775,9 @@ Depends on: T035, T036
 - [ ] 60 minutes with the screen off at a 5 s interval produce about 720 points with no gaps longer than 30 s on the test phone (measured in T074).
 
 ### T038 · Battery-saving mode and GPS gap detection
-[#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) · E05 · P1 · must · labels: `mobile`, `must` · implements F87 · est. 1 d · **todo**
+[#55](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/55) · E05 · P1 · must · labels: `mobile`, `must` · implements F87 · est. 1 d · **done**
+
+Checked by hand (2026-10-29) on a Samsung Galaxy S24 (SM-S921B): the toggle (notification "Battery saver: recording the route every 15 s", `every 15 s (battery saver)` on the tracking card, fewer points), `battery_saver_used = true` on the server after a sync, the "No GPS fix for N s" banner (also hidden while paused), the mode surviving `am force-stop`, and the gaps on the Finish screen (criterion 4, built by T040) all worked in the developer's run of `tmp/t038/UI_TESTS.md`. The automatic switch could not be tried with `adb shell dumpsys battery set level 15`: battery_plus reads `BATTERY_PROPERTY_CAPACITY`, which that command does not change, so the phone still reported its real level (about 40 %). With the threshold raised to 101 % for one run it worked: the switch, the snackbar "Battery below 20 %: battery saver is on" (shown when the screen opened) and the notification changed, turning it off by hand stayed off for two minutes (two checks), and the app log had no exceptions. The real 20 % comparison was not tried on a low battery. The `/code-review` findings that were bugs were fixed (see D-071).
 
 From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. Decide here how to tell them apart (for example, store the pause intervals).
 

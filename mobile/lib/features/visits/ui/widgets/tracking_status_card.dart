@@ -28,7 +28,8 @@ class TrackingStatusCard extends ConsumerWidget {
       if (tracking.paused)
         'paused'
       else if (tracking.intervalS != null)
-        'every ${tracking.intervalS} s',
+        'every ${tracking.intervalS} s'
+            '${tracking.batterySaver ? ' (battery saver)' : ''}',
       '$count points',
       if (lastFix != null) 'last fix ${trackingTime(lastFix)}',
     ].join(' · ');

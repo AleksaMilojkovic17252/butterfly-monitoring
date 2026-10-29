@@ -242,6 +242,33 @@ class VisitRepository {
     });
   }
 
+  /// Marks the visit as recorded partly in battery-saver mode (T038):
+  /// queues an `update` with `battery_saver_used = true`. It is never set
+  /// back to false, since "used" means at any point of the visit. Does
+  /// nothing when it is already true.
+  Future<void> markBatterySaverUsed(String visitId) {
+    return _db.transaction(() async {
+      final current = await _inProgressRow(visitId);
+      if (current.batterySaverUsed) return;
+
+      await _sync.write(
+        projectId: current.projectId,
+        entityType: _entityType,
+        entityId: current.id,
+        operation: SyncOperation.update,
+        payload: {'battery_saver_used': true},
+        baseVersion: current.serverVersion,
+        writeRow: () {
+          final query = _db.update(_db.surveyVisits)
+            ..where((v) => v.id.equals(visitId));
+          return query.write(
+            const SurveyVisitsCompanion(batterySaverUsed: Value(true)),
+          );
+        },
+      );
+    });
+  }
+
   /// Finishes the visit (T040): `status = completed`, `ended_at`, the walking
   /// time, the end weather and the true-zero confirmation, in one `update`
   /// that sends only the fields that changed (D-054).

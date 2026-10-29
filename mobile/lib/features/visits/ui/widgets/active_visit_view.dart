@@ -16,6 +16,7 @@ import 'package:mobile/features/visits/domain/current_section.dart';
 import 'package:mobile/features/visits/domain/keep_screen_on.dart';
 import 'package:mobile/features/visits/domain/route_length.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
+import 'package:mobile/features/visits/ui/widgets/gps_gap_banner.dart';
 import 'package:mobile/features/visits/ui/widgets/paused_banner.dart';
 import 'package:mobile/features/visits/ui/widgets/tracking_messages.dart';
 import 'package:mobile/features/visits/ui/widgets/visit_buttons.dart';
@@ -25,6 +26,16 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 /// Used when the project protocol is not on the phone: the server's default
 /// `gps_accuracy_warning_m`.
 const _defaultAccuracyWarningM = 25.0;
+
+/// Used when the project protocol is not on the phone: the server's default
+/// `gps_gap_s`.
+const _defaultGpsGapS = 60;
+
+/// Used for the battery-saver snackbar when the protocol is not on the phone:
+/// the server's defaults for `gps_interval_s` and
+/// `gps_interval_battery_saver_s` (the tracker uses the same).
+const _defaultIntervalS = 5;
+const _defaultBatterySaverIntervalS = 15;
 
 /// The screen of a visit in progress, shown by `ActiveVisitScreen` once the
 /// visit is loaded.
@@ -49,6 +60,28 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
       (_, on) => WakelockPlus.toggle(enable: on),
       fireImmediately: true,
     );
+    // The low battery can switch the battery saver on while this screen is
+    // open, or before it was opened. The flag stays until it was shown.
+    ref.listenManual(
+      trackingControllerProvider.select((t) => t.batterySaverAuto),
+      (_, auto) {
+        if (auto) _showBatterySaverAuto();
+      },
+    );
+    // A snackbar cannot be shown while the screen is still being built, so
+    // the flag set before the screen opened is handled after the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && ref.read(trackingControllerProvider).batterySaverAuto) {
+        _showBatterySaverAuto();
+      }
+    });
+  }
+
+  /// Tells the observer that the low battery turned the battery saver on,
+  /// then clears the flag so it is shown once.
+  void _showBatterySaverAuto() {
+    _showMessage('Battery below 20 %: battery saver is on');
+    ref.read(trackingControllerProvider.notifier).acknowledgeBatterySaverAuto();
   }
 
   @override
@@ -164,6 +197,37 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     );
   }
 
+  /// Turns battery-saver mode off when it [wasOn], otherwise on, and says
+  /// which, with the interval GPS now uses. Says so too when the mode could
+  /// not be changed (the tracker then shows why).
+  Future<void> _toggleBatterySaver(bool wasOn) async {
+    final controller = ref.read(trackingControllerProvider.notifier);
+    await controller.setBatterySaver(!wasOn);
+    if (!mounted) return;
+
+    final tracking = ref.read(trackingControllerProvider);
+    if (tracking.batterySaver == wasOn) {
+      _showMessage('Could not change the battery saver');
+      return;
+    }
+    // No interval while the visit is paused: GPS is off until Resume.
+    final protocol = ref
+        .read(projectProtocolProvider(widget.visit.projectId))
+        .value;
+    final intervalS =
+        tracking.intervalS ??
+        (tracking.batterySaver
+            ? protocol?.gpsIntervalBatterySaverS ??
+                  _defaultBatterySaverIntervalS
+            : protocol?.gpsIntervalS ?? _defaultIntervalS);
+    _showMessage(
+      tracking.batterySaver
+          ? 'Battery saver on: a point every $intervalS s, lower accuracy'
+          : 'Battery saver off: a point every $intervalS s',
+      duration: const Duration(seconds: 2),
+    );
+  }
+
   void _showMessage(
     String text, {
     Duration duration = const Duration(seconds: 4),
@@ -214,6 +278,17 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
         title: Text('Visit · ${transect?.code ?? ''}'),
         actions: [
           IconButton(
+            tooltip: 'Battery saver',
+            isSelected: tracking.batterySaver,
+            // Off: a plain battery. On: the saver battery on a tinted
+            // background, so the two states are easy to tell apart.
+            icon: const Icon(Icons.battery_std),
+            selectedIcon: const Icon(Icons.battery_saver),
+            onPressed: tracked
+                ? () => _toggleBatterySaver(tracking.batterySaver)
+                : null,
+          ),
+          IconButton(
             // Kept for TalkBack, which reads the tooltip as the label.
             tooltip: 'Keep the screen on',
             isSelected: keepScreenOn,
@@ -238,6 +313,8 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
               title: Text('The route of this visit is not recorded here.'),
             ),
           const TrackingMessages(),
+          if (tracked)
+            GpsGapBanner(gpsGapS: protocol?.gpsGapS ?? _defaultGpsGapS),
           Expanded(
             // The buttons below keep clear of the system navigation bar.
             // Without this the map's attribution leaves room for it too, and
