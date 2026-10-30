@@ -10,6 +10,7 @@ import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/ui/widgets/protocol_summary.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/beaufort.dart';
+import 'package:mobile/features/visits/domain/local_time.dart';
 import 'package:mobile/features/visits/domain/visit_start_values.dart';
 import 'package:mobile/features/visits/ui/temperature_input.dart';
 import 'package:mobile/features/visits/ui/tracking_permissions.dart';
@@ -325,7 +326,7 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
                 leading: const Icon(Icons.edit_note),
                 title: Text(
                   'Carrying on with your draft from '
-                  '${_dateTime(draft.createdAt)}',
+                  '${formatLocalDateTime(draft.createdAt)}',
                 ),
               ),
             ),
@@ -515,11 +516,4 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
       ),
     );
   }
-}
-
-/// Local date and time, "26.10.2026. 10:05"
-String _dateTime(DateTime d) {
-  final l = d.toLocal();
-  final mm = l.minute.toString().padLeft(2, '0');
-  return '${l.day}.${l.month}.${l.year}. ${l.hour}:$mm';
 }

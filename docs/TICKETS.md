@@ -141,7 +141,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
-| T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | todo |
+| T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 
@@ -1907,7 +1907,7 @@ Note (2026-10-30, agreed with the developer): a visit in progress in a *differen
 visit is walked at a time. This goes beyond "a visit of this project" above. See D-073.
 
 ### T106 · App visit detail and observation detail
-[#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) · E05 · added 2026-10-30 · P1 · must · labels: `mobile`, `must` · est. 1.5 d · **todo**
+[#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) · E05 · added 2026-10-30 · P1 · must · labels: `mobile`, `must` · est. 1.5 d · **done**
 
 Depends on: T033, T040, T041, T045
 

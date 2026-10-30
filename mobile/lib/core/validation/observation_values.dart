@@ -41,3 +41,11 @@ const confidenceValues = [
   'unknown',
   'expert_review_required',
 ];
+
+/// A codelist value as the screens show it: "mud_puddling" becomes
+/// "Mud puddling". Used for sex, life stage, behaviour, source and confidence.
+String observationValueLabel(String value) {
+  if (value.isEmpty) return value;
+  final words = value.replaceAll('_', ' ');
+  return words[0].toUpperCase() + words.substring(1);
+}

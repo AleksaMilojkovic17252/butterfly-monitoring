@@ -1505,3 +1505,21 @@ transect is a disabled row ("This transect is inactive"), as the detail view dis
 **Unbuilt tiles are disabled**, not silent: a `ProjectHomeTile` without `onTap` is greyed, has no ripple and shows "Coming
 later". The ticket that builds a screen gives its tile an `onTap` (Free observation T047, Plants & habitat T052, Map T059,
 Statistics T062). The "coming in a later version" snackbars on the active visit screen are untouched.
+
+## D-074 · Visit and observation detail: routes, route stats from local points, extended fields when set
+**Two read-only screens (T106), Drift only.** *Visit detail* is `/projects/:id/transects/:transectId/visits/:visitId`, nested
+under the transect detail route and not under the active visit route, so Back returns to transect detail even when it is opened
+with `go`. *Observation detail* is `/projects/:id/observations/:observationId`, under the project and not the visit, so the map
+popup (T059) and observations without a visit (T047) can open it too; the visit's list opens it with `push`, so Back returns to
+the visit detail. A My visits row opens: `draft` the start form (never listed today, `watchListedVisits` leaves drafts out; the
+arm is there for completeness), `in_progress` the active visit screen, any other status the visit detail.
+**Route stats and the route map need at least 2 track points on this phone** (D-060: points are not pulled). Without them the
+map shows the transect and "Route not on this phone", and coverage shows "–". The distance falls back to
+`distanceWalkedM`. `visitRouteStatsProvider` (`features/visits/domain/visit_route_stats.dart`) computes `RouteStats` once and
+Riverpod caches it, so the slow coverage runs again only when the visit, its points, the transect or the protocol change.
+A visit that never started ("not conducted") shows no summary, coverage or map.
+**"Extended fields when set" means different from what a quick entry leaves**: sex other than `unknown`, life stage other than
+`adult`, a non-empty behaviour list, non-empty notes. Microhabitat and flight direction are not shown (the ticket lists four
+fields). Codelist values are shown by `observationValueLabel` (`snake_case` to sentence case), not a label table.
+The visit summary card draws its divider only when it has section counts; the visit detail passes none, because its
+observation list is already grouped by section.

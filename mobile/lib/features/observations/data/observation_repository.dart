@@ -28,6 +28,14 @@ class ObservationRepository {
     return query.watch();
   }
 
+  /// Live row of one observation, or null when it is not on this phone (or
+  /// was deleted), for the observation detail (T106).
+  Stream<ButterflyObservation?> watchObservation(String id) {
+    final query = _db.select(_db.butterflyObservations)
+      ..where((o) => o.id.equals(id) & o.deletedAt.isNull());
+    return query.watchSingleOrNull();
+  }
+
   /// Saves a quick entry of [count] butterflies of [taxonId] seen on [visit] at
   /// ([lat], [lon]), now, and returns the new observation's id. The server
   /// fills in the fields that are not sent (sex, life stage, ...).
@@ -199,4 +207,12 @@ final visitObservationsProvider = StreamProvider.autoDispose
       (ref, visitId) => ref
           .watch(observationRepositoryProvider)
           .watchVisitObservations(visitId),
+    );
+
+/// One observation, live, or null when it is not on this phone (T106).
+/// `autoDispose`: the query stops when the detail screen closes.
+final observationProvider = StreamProvider.autoDispose
+    .family<ButterflyObservation?, String>(
+      (ref, id) =>
+          ref.watch(observationRepositoryProvider).watchObservation(id),
     );

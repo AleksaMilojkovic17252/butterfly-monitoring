@@ -13,10 +13,13 @@ class TransectVisitStats {
 /// One of the caller's visits, as the transect detail lists them.
 class VisitSummary {
   const VisitSummary({
+    required this.id,
     required this.date,
     required this.status,
     required this.cancelReason,
   });
+
+  final String id;
 
   /// When the visit started, or when it was created for a visit that never
   /// started (not conducted, T041). UTC; shown in local time.
@@ -63,6 +66,7 @@ final transectVisitsProvider =
         (listedVisits) => [
           for (final visit in listedVisits)
             VisitSummary(
+              id: visit.id,
               date: visit.startedAt ?? visit.createdAt,
               status: visit.status,
               cancelReason: visit.cancelReason,

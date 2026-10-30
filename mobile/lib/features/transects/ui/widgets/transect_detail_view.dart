@@ -13,6 +13,7 @@ import 'package:mobile/features/transects/ui/widgets/habitat_summary.dart';
 import 'package:mobile/features/transects/ui/widgets/protocol_summary.dart';
 import 'package:mobile/features/transects/ui/widgets/transect_map.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
+import 'package:mobile/features/visits/domain/local_time.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:mobile/features/visits/ui/widgets/tracking_status_card.dart';
 
@@ -37,6 +38,27 @@ class TransectDetailView extends ConsumerWidget {
       return;
     }
     await context.push('/projects/$projectId/transects/${transect.id}/start');
+  }
+
+  /// Opens a row of My visits (T106): a draft goes on in the start form, a
+  /// visit in progress in the active visit screen, any other visit in its
+  /// read-only detail. The detail is not under the active visit route, so
+  /// back returns here.
+  void _openVisit(
+    BuildContext context,
+    ProjectProtocol? protocol,
+    VisitSummary visit,
+  ) {
+    switch (visit.status) {
+      case 'draft':
+        _startVisit(context, protocol);
+      case 'in_progress':
+        context.push('/projects/$projectId/visits/${visit.id}');
+      default:
+        context.push(
+          '/projects/$projectId/transects/${transect.id}/visits/${visit.id}',
+        );
+    }
   }
 
   @override
@@ -129,12 +151,14 @@ class TransectDetailView extends ConsumerWidget {
                           ? Icons.lock_outline
                           : Icons.event_outlined,
                     ),
-                    title: Text(_dateTime(v.date)),
+                    title: Text(formatLocalDateTime(v.date)),
                     subtitle: Text(
                       v.status == 'cancelled'
                           ? 'Cancelled · ${cancelReasonLabel(v.cancelReason)}'
                           : visitStatusLabel(v.status),
                     ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _openVisit(context, protocol, v),
                   ),
               ],
             ),
@@ -173,11 +197,4 @@ class TransectDetailView extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Local date and time, "26.10.2026. 10:05"
-String _dateTime(DateTime d) {
-  final l = d.toLocal();
-  final mm = l.minute.toString().padLeft(2, '0');
-  return '${l.day}.${l.month}.${l.year}. ${l.hour}:$mm';
 }

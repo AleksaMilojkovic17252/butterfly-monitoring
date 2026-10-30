@@ -5,6 +5,7 @@ import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/ui/login_screen.dart';
 import 'package:mobile/features/auth/ui/splash_screen.dart';
+import 'package:mobile/features/observations/ui/observation_detail_screen.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
@@ -15,6 +16,7 @@ import 'package:mobile/features/transects/ui/transect_list_screen.dart';
 import 'package:mobile/features/visits/ui/active_visit_screen.dart';
 import 'package:mobile/features/visits/ui/finish_visit_screen.dart';
 import 'package:mobile/features/visits/ui/start_visit_screen.dart';
+import 'package:mobile/features/visits/ui/visit_detail_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -70,6 +72,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
+              // One observation, read-only (T106). Under the project and not
+              // the visit, so the map popup (T059) and observations without a
+              // visit can open it; back returns to where it was opened from.
+              GoRoute(
+                path: 'observations/:observationId',
+                builder: (_, state) => ObservationDetailScreen(
+                  observationId: state.pathParameters['observationId']!,
+                ),
+              ),
               GoRoute(
                 path: 'transects',
                 builder: (_, state) => TransectListScreen(
@@ -95,6 +106,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                         builder: (_, state) => StartVisitScreen(
                           projectId: state.pathParameters['id']!,
                           transectId: state.pathParameters['transectId']!,
+                        ),
+                      ),
+                      // The detail of a finished or cancelled visit (T106).
+                      // Not under the active visit route, so back returns to
+                      // the transect detail.
+                      GoRoute(
+                        path: 'visits/:visitId',
+                        builder: (_, state) => VisitDetailScreen(
+                          visitId: state.pathParameters['visitId']!,
                         ),
                       ),
                     ],

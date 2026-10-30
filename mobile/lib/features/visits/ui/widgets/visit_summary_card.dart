@@ -53,7 +53,7 @@ class VisitSummaryCard extends StatelessWidget {
             subtitle: Text('${summary.observationCount} observations'),
             trailing: Text('${summary.individuals}'),
           ),
-          const Divider(),
+          if (sectionCounts.isNotEmpty) const Divider(),
           for (final (label, count) in sectionCounts)
             ListTile(dense: true, title: Text(label), trailing: Text('$count')),
         ],
