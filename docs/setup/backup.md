@@ -14,7 +14,7 @@ Creates `butterfly-<UTC time>/` in the target folder:
 | File | What |
 |---|---|
 | `butterfly.dump` | `pg_dump -Fc` of the `butterfly` database (`frost.dump` too once FROST exists) |
-| `photos/` | mirror of the MinIO `photos` bucket (empty until T049 creates photos) |
+| `photos/` | mirror of the MinIO `photos` bucket (originals under `photos/`, thumbnails under `thumbs/`) |
 | `manifest.json` | time, git commit (`-dirty` if uncommitted changes), newest applied migration per app, encrypted yes/no |
 
 The newest 7 `butterfly-*` folders are kept; older ones in the same target are deleted. Nothing else in
@@ -35,7 +35,8 @@ scripts/restore.sh /path/to/disk/butterfly-backups/butterfly-<time>
 ```
 
 **This deletes the current data** (`docker compose down -v`) after you type `restore`. It then starts `db`
-and `minio`, restores the database and the bucket, and starts the whole stack. Encrypted backups are
+and `minio`, restores the database and the bucket, recreates Django's MinIO user
+(`scripts/minio-setup.sh`, [minio.md](minio.md): `down -v` wiped it), and starts the whole stack. Encrypted backups are
 decrypted with your gpg private key (gpg asks for the passphrase).
 
 Restoring MobilityDB data in Phase 2 needs the same MobilityDB version (1.3) in the target image.
@@ -44,13 +45,14 @@ Restoring MobilityDB data in Phase 2 needs the same MobilityDB version (1.3) in 
 
 1. Note row counts:
    `docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml exec db psql -U postgres -d butterfly -c "select (select count(*) from django_migrations) m, (select count(*) from survey_visit) p, (select count(*) from accounts_user) u"`
-2. Make sure a photo exists: before T049, upload any file to the `photos` bucket in the MinIO console
-   (`http://localhost:9001`); afterwards, use a photo created through the API.
+2. Make sure an uploaded photo exists (it comes from the API: init, PUT, complete).
 3. `scripts/backup.sh ~/backups`
 4. `scripts/restore.sh ~/backups/butterfly-<time>` (this is the wipe).
 5. Run the count query again: the numbers must match.
-6. The photo is in the bucket again (MinIO console). From T049 on, also open it from the Django admin.
+6. The photo is in the bucket again (MinIO console) and opens from the Django admin
+   (`/admin/observations/photo/`: the thumbnail links to the original).
 7. `http://localhost:8080/api/v1/health/` returns `{"status":"ok",...}` and you can log in to `/admin/`.
 
 Last run (2026-10-15): plain and encrypted backup, pruning, and a full wipe-and-restore all worked.
-The photo-in-admin check waits for T049.
+The photo-in-admin check could not be done then (no photo model); T049 made it possible, and `restore.sh`
+now ends with `scripts/minio-setup.sh`. Run the test again to see it.

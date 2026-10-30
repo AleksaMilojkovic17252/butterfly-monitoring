@@ -84,7 +84,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | todo |
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | todo |
-| T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | todo |
+| T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
 | T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049 | 2.5 d | todo |
 | T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | todo |
 | T052 | [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) | App plant entry with point and polygon drawing | P1 | should | T050, T051 | 2.5 d | todo |
@@ -282,7 +282,8 @@ Depends on: T002, T006
 ### T010 · Backup and restore scripts
 [#27](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/27) · E01 · P1 · must · labels: `infra`, `must` · implements F46 · est. 1 d · **done**
 
-Note: the "photo opens in admin" check waits for T049 (no photo model yet); the object was checked in the MinIO bucket instead. The sandbox could not run the wipe, so the developer ran backup and restore by hand.
+Note (T049): the photo-in-admin check is now possible: run the restore test in `docs/setup/backup.md` again and open the photo at `/admin/observations/photo/`.
+Note: the "photo opens in admin" check waited for T049 (no photo model yet); the object was checked in the MinIO bucket instead. The sandbox could not run the wipe, so the developer ran backup and restore by hand.
 
 Depends on: T002
 
@@ -971,7 +972,10 @@ Depends on: T044
 - [ ] Tests with the seeded demo transects.
 
 ### T049 · Photo model and upload API with SHA-256 deduplication
-[#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) · E06 · P1 · must · labels: `backend`, `database`, `sync`, `must` · implements F27, F16 · est. 2.5 d · **todo**
+[#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) · E06 · P1 · must · labels: `backend`, `database`, `sync`, `must` · implements F27, F16 · est. 2.5 d · **done**
+
+Note: beyond the criteria, the push also has `update` and `delete` for photos, there is a read-only Photo admin, and Django uses its own MinIO user (`scripts/minio-setup.sh`); see D-072.
+Note: criterion 9 ("tested") is shown by the hand-run smoke script (`tmp/t049/smoke.py`, not committed) and curl through `:8080`, not an automated test (D-021).
 
 Depends on: T003, T044
 

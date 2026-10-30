@@ -57,6 +57,9 @@ $DC logs -f django
 # Backup and restore (T010; restore deletes current data). See docs/setup/backup.md.
 scripts/backup.sh <target-dir>
 scripts/restore.sh <backup-dir>
+
+# MinIO user for Django (T049; docs/setup/minio.md). Rerun after a fresh volume; restore.sh does it.
+scripts/minio-setup.sh
 ```
 
 ## Code style and conventions

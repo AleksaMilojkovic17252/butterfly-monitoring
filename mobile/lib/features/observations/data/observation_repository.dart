@@ -160,7 +160,7 @@ class ObservationRepository {
       toleranceMin: protocol.observationTimeToleranceMin,
       accuracyWarningM: protocol.gpsAccuracyWarningM,
       taxonPhotoRequired: taxon.photoRequired,
-      photoCount: 0, // TODO(T049): count the observation's photos
+      photoCount: 0, // TODO(T050): count the observation's photos
     );
   }
 

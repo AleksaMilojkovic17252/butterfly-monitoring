@@ -19,7 +19,7 @@ from apps.catalogues.serializers import (
     TaxonSyncSerializer,
 )
 from apps.observations import services as observations
-from apps.observations.serializers import ButterflyObservationSyncSerializer
+from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
 from apps.surveys import services as surveys
@@ -114,8 +114,23 @@ ENTITIES = [
             guard=observations.guard_observation,
         ),
     ),
+    # Scoped to created_by = user. The upload fields are the server's own (the three upload steps
+    # set them, not the phone); the bytes never travel through push (T049).
+    SyncEntity(
+        "photo",
+        PhotoSyncSerializer,
+        observations.pull_photos,
+        push=PushHandlers(
+            create=observations.push_create_photo,
+            update=observations.push_update_photo,
+            delete=observations.push_delete_photo,
+            project_of=observations.photo_project_of,
+            guard=observations.guard_photo,
+        ),
+        server_owned=frozenset({"storage_key", "upload_status", "uploaded_at", "metadata_json"}),
+    ),
 ]
-# More user data arrives with T049, registering `push=PushHandlers(...)`.
+# T051 and T053 add more user data here, each registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 

@@ -67,9 +67,9 @@ services:
       DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:?set in .env}
       AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL:-http://minio:9000}
       AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:-photos}
-      # Dev shortcut: until a MinIO service account exists (T049), fall back to the root user.
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-${MINIO_ROOT_USER}}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-${MINIO_ROOT_PASSWORD}}
+      # Django's own MinIO user, created by scripts/minio-setup.sh (T049); never the root user.
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?set in .env (scripts/minio-setup.sh)}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?set in .env (scripts/minio-setup.sh)}
     volumes:
       - staticfiles:/app/staticfiles
     depends_on:

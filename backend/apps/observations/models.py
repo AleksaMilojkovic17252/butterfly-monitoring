@@ -70,8 +70,8 @@ class ValidationStatus(models.TextChoices):
 class ButterflyObservation(SyncableModel):
     """What was seen, how many, where, when, how sure, and in which context (T044).
 
-    `photo_count` is not a column: it is computed (`observations.services.photo_count`) once
-    photos exist (T049). `host_plant_record` and `nectar_plant_record` are added in T051. The
+    `photo_count` is not a column: it is computed (`observations.services.photo_count`).
+    `host_plant_record` and `nectar_plant_record` are added in T051. The
     `validation_*` fields and `quality_flags` belong to the server (T055-T057); a client never
     sets them.
     """
@@ -175,3 +175,83 @@ class ButterflyObservation(SyncableModel):
 
     def __str__(self):
         return f"{self.taxon.scientific_name} × {self.count} @ {self.observed_at:%Y-%m-%d %H:%M}"
+
+
+# Photo limits (T049). The services and the CHECK constraints both read them.
+MAX_PHOTO_BYTES = 15 * 1024 * 1024
+PHOTO_MIME_TYPES = {"image/jpeg": "jpg", "image/png": "png"}  # mime type -> file extension
+
+
+class UploadStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    UPLOADED = "uploaded", "Uploaded"
+
+
+class Photo(SyncableModel):
+    """A photo's metadata row (T049). It syncs like any record; the bytes follow in the three
+    upload steps (`observations.services.init_upload`, `store_content`, `complete_upload`).
+
+    The phone owns the metadata, including `sha256`, `mime_type` and `file_size`, which cannot
+    change after the create. The server owns `storage_key`, `upload_status`, `uploaded_at` and
+    `metadata_json` (`server_owned` in the sync registry). Photos with the same `sha256` share
+    one stored object. A plant record becomes the second possible parent in T051, with a CHECK
+    that a photo has exactly one; until then the observation is required by the service.
+    """
+
+    observation = models.ForeignKey(
+        ButterflyObservation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="photos",
+    )
+    local_path = models.CharField(max_length=500, blank=True)  # informational, from the phone
+    storage_key = models.CharField(max_length=200, blank=True)
+    mime_type = models.CharField(max_length=50)
+    file_size = models.PositiveIntegerField()
+    sha256 = models.CharField(max_length=64)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    captured_at = models.DateTimeField()
+    uploaded_at = models.DateTimeField(null=True, blank=True)
+    upload_status = models.CharField(
+        max_length=10, choices=UploadStatus.choices, default=UploadStatus.PENDING
+    )
+    is_primary = models.BooleanField(default=False)
+    metadata_json = models.JSONField(default=dict, blank=True)
+    history = HistoricalRecords(table_name="historical_photo")
+
+    class Meta:
+        db_table = "photo"
+        indexes = [
+            models.Index(fields=["sha256"], name="photo_sha256_idx"),
+            models.Index(fields=["upload_status"], name="photo_upload_status_idx"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(sha256__regex=r"^[0-9a-f]{64}$"), name="photo_sha256_format"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(mime_type__in=list(PHOTO_MIME_TYPES)), name="photo_mime_valid"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(file_size__lte=MAX_PHOTO_BYTES), name="photo_size_max"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(upload_status__in=UploadStatus.values),
+                name="photo_upload_status_valid",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(upload_status=UploadStatus.UPLOADED)
+                | ~models.Q(storage_key=""),
+                name="photo_uploaded_has_key",
+            ),
+            models.UniqueConstraint(
+                fields=["observation"],
+                condition=models.Q(is_primary=True, deleted_at__isnull=True),
+                name="photo_one_primary_per_observation",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.sha256[:12]} ({self.upload_status})"

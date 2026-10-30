@@ -18,7 +18,11 @@ def check_db():
 
 
 def _ensure_bucket():
-    """Create the bucket on first use (MinIO starts empty)."""
+    """Check the bucket, and create it when it is missing (MinIO starts empty).
+
+    `scripts/minio-setup.sh` creates the bucket (T049), because Django's own MinIO user may not
+    create buckets: `create_bucket` only works with the root credentials of a fresh dev stack.
+    """
     client = boto3.client(
         "s3",
         endpoint_url=settings.AWS_S3_ENDPOINT_URL,

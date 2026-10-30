@@ -1,11 +1,13 @@
 from django import forms
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin, add_validation_errors
 from apps.observations import services
-from apps.observations.models import Behaviour, ButterflyObservation
+from apps.observations.models import Behaviour, ButterflyObservation, Photo, UploadStatus
 from apps.surveys.state import VisitLocked
 
 
@@ -62,6 +64,84 @@ class ButterflyObservationAdminForm(forms.ModelForm):
         return cleaned_data
 
 
+def _thumbnail_link(photo):
+    """The thumbnail of an uploaded photo, linking to the original. Both load through the API
+    views, which accept the admin's session login."""
+    if photo.upload_status != UploadStatus.UPLOADED:
+        return "-"
+    return format_html(
+        '<a href="{}"><img src="{}" style="max-width:400px"></a>',
+        reverse("photo-content", args=[photo.pk]),
+        reverse("photo-thumbnail", args=[photo.pk]),
+    )
+
+
+class PhotoInline(admin.TabularInline):
+    """The observation's live photos as a read-only summary."""
+
+    model = Photo
+    fields = ["preview", "upload_status", "is_primary"]
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(deleted_at__isnull=True).order_by("created_at")
+
+    @admin.display(description=_("Photo"))
+    def preview(self, photo):
+        return _thumbnail_link(photo)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Photo)
+class PhotoAdmin(HistoryAdmin, SyncableAdmin):
+    """Photos are recorded on the phone and uploaded through the API, so this page only shows
+    them (T049): the thumbnail opens the original."""
+
+    list_display = [
+        "preview",
+        "observation",
+        "upload_status",
+        "mime_type",
+        "file_size",
+        "captured_at",
+        "uploaded_at",
+        "is_primary",
+    ]
+    list_filter = ["upload_status", "mime_type"]
+    list_select_related = ["observation__taxon"]
+    ordering = ["-captured_at"]
+
+    def get_fields(self, request, obj=None):
+        # Model order; the preview comes first, and the sha256 and key are shown as text.
+        return ["preview", *[field.name for field in Photo._meta.fields]]
+
+    def get_readonly_fields(self, request, obj=None):
+        return [*self.get_fields(request, obj)]
+
+    @admin.display(description=_("Photo"))
+    def preview(self, photo):
+        return _thumbnail_link(photo)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        return {}
+
+
 @admin.register(ButterflyObservation)
 class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     """Observations are recorded on the phone. An admin may correct one of an unlocked visit
@@ -69,6 +149,7 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     until T057, and an observation of a locked visit opens read-only (T042)."""
 
     form = ButterflyObservationAdminForm
+    inlines = [PhotoInline]
     # Never edited in the admin: the project and visit cannot change (T044), the validation fields
     # and flags belong to T055-T057.
     fixed_fields = [

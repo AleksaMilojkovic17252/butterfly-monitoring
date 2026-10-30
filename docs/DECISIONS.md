@@ -1433,3 +1433,57 @@ level 15`, which only changes the battery broadcast, does not trigger it. To try
 **Found in review.** The "battery below 20 %" listener must not show its snackbar during `initState`, so a flag set before the screen opened is handled after
 the first frame. The snackbar of the toggle is shown after the change, with the interval GPS uses. The automatic switch is skipped when GPS is not running
 (for example after a pause) and sets `_autoSwitchedVisitId` only when it goes ahead. The toggle's state flips at once, before GPS has restarted.
+
+## D-072 · Photos: upload steps, dedup by SHA-256, relative upload_url, no lock on upload, MinIO user
+2026-10-29 · accepted · T049, T050, *the T049 part of D-026 is done*
+**Scope.** The ticket asks for push `create` only. T049 also registers `update` and `delete` (plus a read-only
+Photo admin and a photo inline on the observation admin): a resent `create` of an existing row becomes an update in
+`_merge` (D-052), which fails with a 500 when there is no `update` handler, and T050 needs delete and "mark primary" to
+sync. `sha256`, `mime_type`, `file_size` and `observation` cannot change after the create (400 "Cannot be changed.");
+`is_primary`, `local_path`, `captured_at`, `width` and `height` can. `observation` is required until T051 adds the plant
+parent and the "exactly one parent" CHECK.
+**Server-owned fields.** `storage_key`, `upload_status`, `uploaded_at` and `metadata_json` are `server_owned` in the
+registry (a push never sets them, and the server's own upload saves never cause a merge conflict). The pull has no
+`storage_key` and no `metadata_json`.
+**Upload steps.** `init` checks that `sha256`, `file_size` and `mime_type` equal the pushed record (422
+`upload_mismatch`; the record is the truth). If a photo with the same SHA-256 and type is already `uploaded` (live or
+deleted), the new photo is linked to its `storage_key` at once (`exists`); else `upload_required` with a **relative**
+`upload_url` (`/api/v1/attachments/<id>/content`, for the reason of D-013: the phone sees the laptop under different
+host names; dio resolves it against its base URL). `PUT` streams `request.stream` in 64 KiB chunks to a temp file,
+hashing as it goes, and checks Content-Type (415), a Content-Length (411), the size limit (413), size and hash (422),
+the magic bytes, that Pillow can open the file and that it has at most 100 million pixels (422), then stores it. A PUT
+with a Content-Length of 0 is a 422 too. `init` links to an existing object only if that object is still in storage. It does not touch the database and may be
+repeated until `complete`; after that it is 409. `complete` makes the thumbnail (EXIF orientation applied, 400 px on
+the long edge, JPEG quality 85) and sets `storage_key`, `upload_status` and `uploaded_at`; it is idempotent.
+**`server_version` in the responses.** `init` (when it links) and `complete` save the row, which bumps
+`server_version`. A stale `delete` is always a `SyncConflict` (D-052), so both responses return the new
+`server_version`: T050 must store it, or a later delete of an uploaded photo would be a conflict.
+**For T050.** `upload_url` is a root-relative path that already starts with `/api/v1`: resolve it against the host (the
+base URL's origin), not by appending it to a base URL that ends in `/api/v1`. The one-primary rule is a plain unique
+index checked per mutation, so a push that moves "primary" from one photo to another must send the unset first.
+**Keys.** `photos/<aa>/<bb>/<sha256>.<ext>` with `.jpg` for JPEG and `.png` for PNG (the ticket says `.jpg`; the object's
+name matches its type). `thumbs/<sha256>.jpg`. `put_original` checks `exists()` before `save()` because
+`AWS_S3_FILE_OVERWRITE = False` makes django-storages rename a second copy; if a parallel PUT still wins the race, the
+suffixed copy is deleted. **Stored objects are never deleted**: several records can share one, and a soft delete keeps its
+row; cleaning up orphans is out of scope. Deduplication works across users: anyone who sends the exact bytes' SHA-256
+for their own photo record is linked to the object without uploading. That reveals nothing they do not already hold
+(they know the hash of the bytes), and they can only reach it through their own record.
+**Locked visits.** `init`, `PUT` and `complete` do not call `ensure_unlocked` (D-062). The metadata was accepted before the
+lock, and the bytes only fulfil a record whose `sha256` is frozen; refusing them would leave the photo `pending` for
+ever. Create, update and delete of the record do call it (`build_new_photo`, `apply_photo_changes`, the push guard).
+**`DATA_UPLOAD_MAX_MEMORY_SIZE` is left alone.** Django checks it only when it reads `request.body` or the POST data, and
+the PUT view reads `request.stream` (and has `parser_classes = []`). A 14 MB PUT through nginx got through to the hash
+check (422 on the random bytes) with the default of 2.5 MB; a 16 MB body gets Django's 413 JSON error and a 21 MB body
+nginx's own 413 (`client_max_body_size 20m`).
+**Downloads.** `GET /photos/<id>/content` and `/thumbnail` accept JWT or the session login, so the admin pages can show
+the images; session auth enforces CSRF only on unsafe methods. Only an `uploaded` photo in `photos_for(user)` (the owner,
+or an admin) is served; anything else is 404.
+**MinIO user.** Django no longer uses the root user. `scripts/minio-setup.sh` (idempotent; docs/setup/minio.md) creates the
+bucket, the policy `butterfly-django` (list the bucket; get, put, delete and multipart on its objects) and the user from
+`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`; compose requires both. `restore.sh` runs it after the bucket mirror
+(`down -v` wipes MinIO's users). Checked: `create_bucket` with the user's credentials is `AccessDenied`.
+**Verification (D-021, no automated tests).** `tmp/t049/smoke.py` (not committed) covers push create, update, resend,
+primary rule and pull; init, PUT, complete, GET and thumbnail (200x400 from an 800x400 JPEG with orientation 6); the
+dedup of MVP criterion 9 (one stored object for two records); PNG; the limits; a locked visit; and soft delete. The
+size paths and a full round trip were run with curl through `:8080`.
+

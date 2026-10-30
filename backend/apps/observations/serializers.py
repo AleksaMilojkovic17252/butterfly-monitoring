@@ -1,7 +1,8 @@
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from apps.core.serializers import UTCDateTimeField, WritableGeoJSONField
-from apps.observations.models import Behaviour, ButterflyObservation
+from apps.observations.models import Behaviour, ButterflyObservation, Photo
 
 # Never sent to or read from the phone: who saved it, and the validation data the server owns
 # (T055-T057). The phone learns the outcome of validation from the REST output only.
@@ -54,6 +55,27 @@ class ButterflyObservationSyncSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("V07")
         # Repeated values are dropped, the order is kept.
         return list(dict.fromkeys(value))
+
+
+class PhotoSyncSerializer(serializers.ModelSerializer):
+    """A photo row as pulled to the phone and pushed from it (T049).
+
+    No `storage_key` (internal) and no `metadata_json` (the phone has neither column). The upload
+    fields are the server's: the phone learns `upload_status` and `uploaded_at` from the pull and
+    from the upload responses. `sha256`, `mime_type` and `file_size` are checked against the
+    limits by `observations.services`, so a bad value is a field error and not a database one.
+    """
+
+    created_at = UTCDateTimeField(required=False)
+    captured_at = UTCDateTimeField()
+    sha256 = serializers.CharField(
+        validators=[RegexValidator(r"^[0-9a-f]{64}$", "Must be 64 lowercase hex digits.")]
+    )
+
+    class Meta:
+        model = Photo
+        exclude = ["created_by", "updated_by", "storage_key", "metadata_json"]
+        read_only_fields = ["deleted_at", "upload_status", "uploaded_at"]
 
 
 class ButterflyObservationSerializer(serializers.ModelSerializer):

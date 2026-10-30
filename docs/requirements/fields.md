@@ -86,6 +86,9 @@ Server-owned: `validation_status`, `validated_taxon`, `validated_by`, `validated
 Mandatory: `mime_type`, `file_size`, `sha256`, `captured_at`, and exactly one parent
 (`observation` or `plant_resource`). Optional: `local_path`, `width`, `height`, `is_primary`,
 `metadata_json`. Server-owned: `storage_key`, `uploaded_at`, `upload_status`.
+Limits (T049): at most 15 MB (`file_size`), `mime_type` `image/jpeg` or `image/png`; `sha256` is 64 lowercase
+hex digits. `observation`, `sha256`, `mime_type` and `file_size` cannot change after the create. The phone has
+no `storage_key` or `metadata_json` column.
 
 ## PlantResourceObservation ⟳ (T051)
 Mandatory: `project`, `resource_type`, `observed_at`, `geometry` (Point or Polygon).

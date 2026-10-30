@@ -51,6 +51,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | django-storages[s3] + boto3 | 1.14.x | |
 | psycopg | 3.2.x | |
 | requests | 2.34.x | GBIF calls of the seed commands (T024); approved for T024 |
+| Pillow | 12.3.0 | thumbnails of uploaded photos (T049); approved for T049 |
 | pygeoapi | 0.24.x | 0.24.0 released mid-2026 |
 | PostgreSQL / PostGIS / MobilityDB | 17 / 3.5 / 1.3 | image `mobilitydb/mobilitydb:17-3.5-1.3` (built on `postgis/postgis`) |
 | FROST-Server (P2) | 2.x latest | VERIFY current tag (2.7.x/2.8.x seen) |

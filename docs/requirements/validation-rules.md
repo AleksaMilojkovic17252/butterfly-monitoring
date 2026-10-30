@@ -64,8 +64,8 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
   `identification_confidence`. Visit: `status`, `survey_method`, `precipitation`, `cancel_reason` (blank is
   allowed). The app keeps the same lists in `lib/core/validation/observation_values.dart`,
   `lib/core/validation/visit_values.dart`.
-- **W01.** Applied on create only (D-065). Re-checking when a photo arrives belongs to T049/T057.
-  `photo_count` is always 0 until T049.
+- **W01.** Applied on create only (D-065). Re-checking when a photo arrives belongs to T057.
+  `photo_count` counts the observation's live photos, uploaded or not (T049), so it is 0 at the create.
 - **W03, W04.** Until the host-plant link exists (T051) there is no link, so they always fire on
   `oviposition` and on `life_stage = larva`. Both are `TODO(T051)` in the code.
 - **W07.** The season is compared by local calendar date (both end days are inside), the daily window by

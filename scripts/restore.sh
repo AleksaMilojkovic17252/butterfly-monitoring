@@ -66,5 +66,8 @@ echo "Restoring bucket $bucket ..."
 MC_DOCKER= mc mb --ignore-existing "local/$bucket"
 MC_DOCKER="-v $photos:/in:ro" mc mirror --quiet /in "local/$bucket"
 
+# down -v also wiped MinIO's users, so Django's user must exist before the stack starts (T049).
+scripts/minio-setup.sh
+
 dc up -d --build --wait
 echo "Restore finished. Check row counts and open a photo in admin (docs/setup/backup.md)."
