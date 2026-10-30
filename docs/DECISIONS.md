@@ -1596,3 +1596,33 @@ category, not millimetres.
 cloud are all null (the weather is missing, see `weather_missing_reason`): a row of nulls carries no data.
 **No backfill.** Visits finished before T063 get their snapshots on their next save. Not a signal, so the table stays derived data
 that `save_visit` owns; no trigger and no history (not a `SyncableModel`).
+
+## D-077 · Exports: ORM querysets, help_text dictionary, `format` bypass
+2026-10-30 · accepted · T064
+**One module.** `apps/exports/` holds `datasets.py` (a `Dataset` per table: queryset, columns, time and project fields), `writers.py`
+(CSV, GeoJSON and JSON as generators of text chunks) and `service.py` (`export`, `bundle`, `metadata`, `parse_filters`). The API calls
+the service; the admin actions (T065) and the GeoPackage export (T066) will call it too. Querysets are ORM `.values_list()`
+over the existing scoping helpers (`visits_for`, `observations_for`, `transects_for`, `sections_for`), read with `.iterator(chunk_size=2000)`,
+not raw SQL: the scoping and the live-rows-only rule stay in one place. Rows of soft-deleted visits (and their track points) are not exported.
+**Data dictionary.** Every exported model field has a `help_text` (units included); the migrations are `AlterField` only and generate no SQL.
+Computed columns (lon, lat, outcome, effective taxon, codes from foreign keys) and the common `SyncableModel` columns (`id`, `created_at`,
+`updated_at`) are described in `datasets.py`, so the base model does not change every app's migration. `metadata.json` reads both.
+**Outcome.** `surveys.models.visit_outcome(status, cancel_reason, zero_observation_confirmed)` is the single definition (D-069); the
+`SurveyVisit.outcome` property and the export row both call it. A draft or in-progress visit has no outcome (`NA`).
+**`?format=` bypass.** DRF reads `?format=` as its own renderer override, so `format=csv` would be a 404. The export views use a
+`content_negotiation_class` that always picks the JSON renderer (error bodies only); the global `REST_FRAMEWORK` settings are unchanged.
+**Values.** CSV: `None` is the missing-value code (`EXPORT_MISSING_VALUE = "NA"`, `?na=` overrides, may be empty), booleans `true`/`false`,
+times ISO 8601 in UTC (`+00:00`), decimals as strings, lists joined with `;`, JSON columns as JSON text. JSON and GeoJSON use `null` and
+write decimals as numbers. GeoJSON has no `crs` member (RFC 7946, lon/lat); a dataset without geometry (visits, snapshots) has
+`"geometry": null`. Points are `lon`/`lat` columns and lines `geometry_wkt` in CSV and JSON; `metadata.json` says `EPSG:4326`.
+**Filters.** `project` matches the dataset's project path. `from` and `to` are inclusive UTC days (`>= from 00:00Z`, `< to+1 day 00:00Z`) on
+`started_at`, `observed_at`, `phenomenon_time_start` and `recorded_at`; transects and sections ignore them, and `metadata.json` says so.
+**Bundle.** `exports/bundle?project=` (required) writes the five CSV files plus `metadata.json` into a spooled temporary file and returns
+it. It is not streamed: exports run in the request (D-014). Track points are large and only included with `track_points=1`.
+**CSV formulas.** Text cells are written as stored. A note that starts with `=`, `+`, `-` or `@` is read as a formula by Excel and LibreOffice.
+Not escaped, because a prefix would change the data and break the round trip; the exports are admin-only and the data comes from known
+researchers. Open untrusted exports as text.
+**Version columns are text.** `protocol_version` and `taxon_list_version` are strings (`1.0`, `2026.1 (GBIF RS)`). pandas and readr guess a number for
+`1.0`, and `1.10` would become `1.1`, so analysts read them as text (`dtype=str`, `col_types`). The round-trip script shows the guess.
+**Deferred.** `plant_resources`, `habitat_features` and `validation_history` have no tables yet (T051, T053, T058): 404 "Not available until
+T0xx", and listed under `not_included` in `metadata.json`.

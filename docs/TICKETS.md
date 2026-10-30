@@ -99,7 +99,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | todo |
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | todo |
 | T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
-| T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | todo |
+| T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | done |
 | T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | todo |
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | todo |
@@ -1024,6 +1024,7 @@ dependency). Photos whose file is not on this phone (taken on another phone, or 
 [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should` · implements F20 · est. 1.5 d · **todo**
 
 Depends on: T020, T044, T049
+From T064: add the `plant_resources` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
 
 - [ ] Model, push and pull registration, and REST (outline §14):
   - `POST /api/v1/plant-resources`
@@ -1063,6 +1064,7 @@ role, date, and the visit date when linked. A row opens its edit form. This tick
 [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should`, `p2-compat` · implements F21 · est. 1.5 d · **todo**
 
 Depends on: T020, T026
+From T064: add the `habitat_features` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
 
 - [ ] Model, push and pull registration, and REST (outline §14):
   - `POST /api/v1/habitat-features`
@@ -1148,7 +1150,7 @@ Depends on: T044
 
 - [ ] The `ValidationEvent` model is written only by validation services (T057).
 - [ ] A read-only inline on the observation admin, newest first.
-- [ ] Included in exports as `validation_history.csv` (T064).
+- [ ] Included in exports as `validation_history.csv` (T064): add the dataset in `apps/exports/datasets.py` and remove it from `DEFERRED`.
 
 ### T059 · App map screen with layers and filters
 [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) · E09 · P1 · must · labels: `mobile`, `must` · implements F34 · est. 2.5 d · **todo**
@@ -1204,7 +1206,7 @@ Depends on: T041, T044
 [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) · E09 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F74 · est. 1 d · **done**
 
 Depends on: T034, T044
-Deferred: `environmental_snapshots.csv` export → T064 (the export service is not built yet; T064 already lists it).
+Deferred: `environmental_snapshots.csv` export → T064 (the export service is not built yet; T064 already lists it). T064 adds the `environmental_snapshots` dataset, so this is met there.
 Found during T063 (2026-10-30): the new model's permissions did not reach the `admin` group until a second `migrate`, so the demo admin did not see the inline. Fixed in T109, not here.
 
 - [ ] When a visit reaches `completed`, the server creates two snapshots (start and end) with `source_type = manual`.
@@ -1215,11 +1217,15 @@ Found during T063 (2026-10-30): the new model's permissions did not reach the `a
 - [ ] Read-only inline on the visit admin.
 
 ### T064 · Export service and admin-only export API
-[#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) · E09 · P1 · must · labels: `backend`, `must` · implements F36 · est. 2.5 d · **todo**
+[#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) · E09 · P1 · must · labels: `backend`, `must` · implements F36 · est. 2.5 d · **done**
 
 Depends on: T044, T063
 From T041: the visit outcome is `SurveyVisit.outcome` (D-069).
 Notes: plant, habitat and validation datasets added when T051/T053/T058 are done
+Deferred: `plant_resources`, `habitat_features`, `validation_history` → T051 / T053 / T058 (no models yet). The API answers 404 "Not available until T0xx" and `metadata.json` lists them under `not_included`. Add each to `apps/exports/datasets.py` (and drop it from `DEFERRED`) when its ticket is done.
+Skipped (D-021): the automated round-trip test and the "403 (tested)" test. Checked by hand instead (`tmp/t064/MANUAL_CHECKLIST.md`, curl as researcher). R (`readr`) is not installed: not checked.
+Checked by hand (2026-10-30): Swagger (parameters, downloads, 400, researcher 403), QGIS (GeoJSON and CSV layers, EPSG:4326, counts), LibreOffice (BOM and plain, Serbian letters), pandas round trip (both bundles), `metadata.json`. Not tested: Excel, and a fresh phone visit (checklist item 0); the Serbian letters were checked with a file from the CSV writer, and snapshots on the Niš project's rows.
+Found while checking: the demo data has one observation stored at lon 0.0002, lat 0.0004 and five at Niš coordinates in the Fruška Gora project (test data, not an export problem).
 
 - [ ] **Datasets:**
   - `survey_visits`

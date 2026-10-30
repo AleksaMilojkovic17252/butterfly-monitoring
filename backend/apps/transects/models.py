@@ -13,15 +13,24 @@ class Transect(SyncableModel):
     """
 
     project = models.ForeignKey(
-        "projects.Project", on_delete=models.PROTECT, related_name="transects"
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="transects",
+        help_text="Project the transect belongs to",
     )
-    code = models.CharField(max_length=20)
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    target_length_m = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
-    habitat_summary = models.TextField(blank=True)
-    active = models.BooleanField(default=True)
-    geometry = gis_models.LineStringField(srid=4326)
+    code = models.CharField(max_length=20, help_text="Short transect code, unique in the project")
+    name = models.CharField(max_length=200, help_text="Transect name")
+    description = models.TextField(blank=True, help_text="Free-text description of the route")
+    target_length_m = models.DecimalField(
+        max_digits=8,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Planned length, metres",
+    )
+    habitat_summary = models.TextField(blank=True, help_text="Short summary of the habitats")
+    active = models.BooleanField(default=True, help_text="Whether the transect is still walked")
+    geometry = gis_models.LineStringField(srid=4326, help_text="Route of the transect, WGS 84")
     history = HistoricalRecords(table_name="historical_transect")
 
     class Meta:
@@ -37,17 +46,34 @@ class Transect(SyncableModel):
 class TransectSection(SyncableModel):
     """One numbered stretch of a transect. Its line must lie along the transect (5 m)."""
 
-    transect = models.ForeignKey(Transect, on_delete=models.PROTECT, related_name="sections")
-    section_code = models.CharField(max_length=20)
-    sequence_number = models.PositiveSmallIntegerField()
+    transect = models.ForeignKey(
+        Transect,
+        on_delete=models.PROTECT,
+        related_name="sections",
+        help_text="Transect the section belongs to",
+    )
+    section_code = models.CharField(
+        max_length=20, help_text="Section code, unique within the transect"
+    )
+    sequence_number = models.PositiveSmallIntegerField(
+        help_text="Order of the section along the transect, from 1"
+    )
     habitat_type = models.ForeignKey(
-        "catalogues.HabitatType", on_delete=models.PROTECT, null=True, blank=True
+        "catalogues.HabitatType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="Habitat type of the section",
     )
     management_type = models.ForeignKey(
-        "catalogues.ManagementType", on_delete=models.PROTECT, null=True, blank=True
+        "catalogues.ManagementType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="Management of the section, e.g. mowing or grazing",
     )
-    notes = models.TextField(blank=True)
-    geometry = gis_models.LineStringField(srid=4326)
+    notes = models.TextField(blank=True, help_text="Free-text notes on the section")
+    geometry = gis_models.LineStringField(srid=4326, help_text="Line of the section, WGS 84")
     history = HistoricalRecords(table_name="historical_transect_section")
 
     class Meta:

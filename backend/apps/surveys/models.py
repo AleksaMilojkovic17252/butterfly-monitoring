@@ -35,6 +35,20 @@ class Precipitation(models.TextChoices):
     RAIN = "rain", "Rain"
 
 
+def visit_outcome(status, cancel_reason, zero_observation_confirmed):
+    """What a visit came to, for exports (T064) and the admin: `completed_with_records`,
+    `true_zero`, `cancelled:<reason>`, or "" while it is a draft or in progress.
+
+    A finished visit is told apart by the true-zero flag, not by counting observations: the
+    app enforces V06 both ways on Finish (D-067), and an export costs no query per row.
+    """
+    if status == VisitStatus.CANCELLED:
+        return f"cancelled:{cancel_reason}"
+    if status in (VisitStatus.DRAFT, VisitStatus.IN_PROGRESS):
+        return ""
+    return "true_zero" if zero_observation_confirmed else "completed_with_records"
+
+
 class SurveyVisit(SyncableModel):
     """One standardised walk of a transect: who, when, conditions, effort and status (T034).
 
@@ -42,53 +56,134 @@ class SurveyVisit(SyncableModel):
     walked is a `cancelled` row with `cancel_reason = not_conducted`.
     """
 
-    project = models.ForeignKey("projects.Project", on_delete=models.PROTECT, related_name="visits")
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="visits",
+        help_text="Project the visit belongs to",
+    )
     transect = models.ForeignKey(
-        "transects.Transect", on_delete=models.PROTECT, related_name="visits"
+        "transects.Transect",
+        on_delete=models.PROTECT,
+        related_name="visits",
+        help_text="Transect that was walked",
     )
     observer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="visits"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="visits",
+        help_text="Lead observer who recorded the visit",
     )
-    protocol_version = models.CharField(max_length=20)
+    protocol_version = models.CharField(
+        max_length=20, help_text="Protocol version the visit followed"
+    )
     survey_method = models.CharField(
-        max_length=20, choices=SurveyMethod.choices, default=SurveyMethod.POLLARD_WALK
+        max_length=20,
+        choices=SurveyMethod.choices,
+        default=SurveyMethod.POLLARD_WALK,
+        help_text="Survey method, e.g. pollard_walk",
     )
-    started_at = models.DateTimeField(null=True, blank=True)
-    ended_at = models.DateTimeField(null=True, blank=True)
-    duration_seconds = models.PositiveIntegerField(null=True, blank=True)  # excludes pauses
-    paused_seconds = models.PositiveIntegerField(default=0)
+    started_at = models.DateTimeField(
+        null=True, blank=True, help_text="When the walk started (UTC, ISO 8601)"
+    )
+    ended_at = models.DateTimeField(
+        null=True, blank=True, help_text="When the walk ended (UTC, ISO 8601)"
+    )
+    duration_seconds = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Walking time in seconds, pauses excluded"
+    )
+    paused_seconds = models.PositiveIntegerField(
+        default=0, help_text="Total time paused during the walk, seconds"
+    )
     # The visit's pauses as [{"started_at", "ended_at"}, ...] in UTC, sent by the phone on resume
     # and finish (T040, D-068). Lets T056's gps_gap tell a pause from a GPS gap.
     pauses = models.JSONField(default=list, blank=True)
     # How many track points the phone recorded, sent when it finishes the visit (T040). T043's
     # Lock compares it with the points the server has (D-062). Null for a visit finished before
     # T040 or through REST.
-    track_point_count = models.PositiveIntegerField(null=True, blank=True)
+    track_point_count = models.PositiveIntegerField(
+        null=True, blank=True, help_text="GPS track points the phone recorded for the visit"
+    )
     # The phone sends its own figure; the server replaces it with the one from the track points
     # when it has at least two usable points (T036, surveys.services.set_distance_if_finished).
-    distance_walked_m = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
-    observer_count = models.PositiveSmallIntegerField(default=1)
-    observer_names = models.CharField(max_length=300, blank=True)
-    temperature_start_c = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
-    temperature_end_c = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
-    wind_beaufort_start = models.PositiveSmallIntegerField(null=True, blank=True)
-    wind_beaufort_end = models.PositiveSmallIntegerField(null=True, blank=True)
-    cloud_cover_start_pct = models.PositiveSmallIntegerField(null=True, blank=True)
-    cloud_cover_end_pct = models.PositiveSmallIntegerField(null=True, blank=True)
-    precipitation = models.CharField(
-        max_length=12, choices=Precipitation.choices, default=Precipitation.NONE
+    distance_walked_m = models.DecimalField(
+        max_digits=8,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Distance walked in metres, from the GPS track",
     )
-    weather_suitable = models.BooleanField(null=True)
-    weather_missing_reason = models.CharField(max_length=200, blank=True)
-    zero_observation_confirmed = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-    status = models.CharField(max_length=12, choices=VisitStatus.choices, default=VisitStatus.DRAFT)
-    cancel_reason = models.CharField(max_length=20, choices=CancelReason.choices, blank=True)
-    battery_saver_used = models.BooleanField(default=False)
+    observer_count = models.PositiveSmallIntegerField(
+        default=1, help_text="Number of observers on the walk"
+    )
+    observer_names = models.CharField(
+        max_length=300, blank=True, help_text="Names of the observers, free text"
+    )
+    temperature_start_c = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Air temperature at the start, °C",
+    )
+    temperature_end_c = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Air temperature at the end, °C",
+    )
+    wind_beaufort_start = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="Wind force at the start, Beaufort 0-12"
+    )
+    wind_beaufort_end = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="Wind force at the end, Beaufort 0-12"
+    )
+    cloud_cover_start_pct = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="Cloud cover at the start, %"
+    )
+    cloud_cover_end_pct = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="Cloud cover at the end, %"
+    )
+    precipitation = models.CharField(
+        max_length=12,
+        choices=Precipitation.choices,
+        default=Precipitation.NONE,
+        help_text="Precipitation during the walk: none, drizzle, light_rain or rain",
+    )
+    weather_suitable = models.BooleanField(
+        null=True, help_text="Whether the weather met the protocol limits; empty if not judged"
+    )
+    weather_missing_reason = models.CharField(
+        max_length=200, blank=True, help_text="Why the weather was not recorded, if it was not"
+    )
+    zero_observation_confirmed = models.BooleanField(
+        default=False,
+        help_text="Observer confirmed a finished visit with no butterflies (a true zero)",
+    )
+    notes = models.TextField(blank=True, help_text="Free-text notes on the visit")
+    status = models.CharField(
+        max_length=12,
+        choices=VisitStatus.choices,
+        default=VisitStatus.DRAFT,
+        help_text="Visit status: draft, in_progress, completed, synced, reviewed, locked "
+        "or cancelled",
+    )
+    cancel_reason = models.CharField(
+        max_length=20,
+        choices=CancelReason.choices,
+        blank=True,
+        help_text="Why a cancelled visit was cancelled; empty for other statuses",
+    )
+    battery_saver_used = models.BooleanField(
+        default=False, help_text="The phone used battery-saver GPS during the walk"
+    )
     device_id = models.CharField(max_length=64, blank=True)
     created_offline = models.BooleanField(default=True)
     # Set by surveys.state.transition() on lock (admin, T043). Server-owned.
-    locked_at = models.DateTimeField(null=True, blank=True)
+    locked_at = models.DateTimeField(
+        null=True, blank=True, help_text="When an admin locked the visit (UTC, ISO 8601)"
+    )
     locked_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -97,7 +192,13 @@ class SurveyVisit(SyncableModel):
         related_name="+",
     )
     lock_reason = models.TextField(blank=True)
-    quality_flags = ArrayField(models.CharField(max_length=40), default=list, blank=True)  # T056
+    # Set by the server's quality checks (T056).
+    quality_flags = ArrayField(
+        models.CharField(max_length=40),
+        default=list,
+        blank=True,
+        help_text="Quality flags raised by the server's checks, e.g. gps_gap",
+    )
     history = HistoricalRecords(table_name="historical_survey_visit")
 
     class Meta:
@@ -164,17 +265,8 @@ class SurveyVisit(SyncableModel):
 
     @property
     def outcome(self):
-        """What the visit came to, for exports (T064) and the admin: `completed_with_records`,
-        `true_zero`, `cancelled:<reason>`, or "" while it is a draft or in progress.
-
-        A finished visit is told apart by the true-zero flag, not by counting observations: the
-        app enforces V06 both ways on Finish (D-067), and an export costs no query per row.
-        """
-        if self.status == VisitStatus.CANCELLED:
-            return f"cancelled:{self.cancel_reason}"
-        if self.status in (VisitStatus.DRAFT, VisitStatus.IN_PROGRESS):
-            return ""
-        return "true_zero" if self.zero_observation_confirmed else "completed_with_records"
+        """What the visit came to: see `visit_outcome`."""
+        return visit_outcome(self.status, self.cancel_reason, self.zero_observation_confirmed)
 
     def __str__(self):
         start = self.started_at.strftime("%Y-%m-%d %H:%M") if self.started_at else "not started"
@@ -196,18 +288,50 @@ class SurveyTrackPoint(SyncableModel):
     """
 
     survey_visit = models.ForeignKey(
-        SurveyVisit, on_delete=models.CASCADE, related_name="track_points"
+        SurveyVisit,
+        on_delete=models.CASCADE,
+        related_name="track_points",
+        help_text="Visit the fix belongs to",
     )
-    recorded_at = models.DateTimeField()
-    geometry = gis_models.PointField(srid=4326)
-    accuracy_m = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
-    altitude_m = models.DecimalField(max_digits=7, decimal_places=1, null=True, blank=True)
-    speed_m_s = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    heading_deg = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    recorded_at = models.DateTimeField(help_text="When the phone took the fix (UTC, ISO 8601)")
+    geometry = gis_models.PointField(srid=4326, help_text="Position of the fix, WGS 84")
+    accuracy_m = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Horizontal accuracy of the fix, metres",
+    )
+    altitude_m = models.DecimalField(
+        max_digits=7,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Altitude of the fix, metres",
+    )
+    speed_m_s = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Ground speed at the fix, m/s",
+    )
+    heading_deg = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Direction of travel, degrees clockwise from north (0-360)",
+    )
     provider = models.CharField(
-        max_length=10, choices=LocationProvider.choices, default=LocationProvider.GPS
+        max_length=10,
+        choices=LocationProvider.choices,
+        default=LocationProvider.GPS,
+        help_text="Location source: gps, fused, network or simulated",
     )
-    sequence_number = models.PositiveIntegerField()
+    sequence_number = models.PositiveIntegerField(
+        help_text="Order of the fix within the visit, from 1"
+    )
 
     class Meta:
         db_table = "survey_track_point"

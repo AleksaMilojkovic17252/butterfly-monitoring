@@ -77,7 +77,10 @@ class ButterflyObservation(SyncableModel):
     """
 
     project = models.ForeignKey(
-        "projects.Project", on_delete=models.PROTECT, related_name="observations"
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="observations",
+        help_text="Project the observation belongs to",
     )
     survey_visit = models.ForeignKey(
         "surveys.SurveyVisit",
@@ -85,6 +88,7 @@ class ButterflyObservation(SyncableModel):
         null=True,
         blank=True,
         related_name="observations",
+        help_text="Visit the observation was made on; empty for incidental records",
     )
     transect_section = models.ForeignKey(
         "transects.TransectSection",
@@ -92,43 +96,103 @@ class ButterflyObservation(SyncableModel):
         null=True,
         blank=True,
         related_name="observations",
+        help_text="Transect section the observation falls in, when known",
     )
-    observed_at = models.DateTimeField()
+    observed_at = models.DateTimeField(help_text="When the butterfly was seen (UTC, ISO 8601)")
     taxon = models.ForeignKey(
-        "catalogues.Taxon", on_delete=models.PROTECT, related_name="observations"
+        "catalogues.Taxon",
+        on_delete=models.PROTECT,
+        related_name="observations",
+        help_text="Taxon as identified by the observer",
     )
-    count = models.PositiveIntegerField(default=1)
-    geometry = gis_models.PointField(srid=4326)
-    location_accuracy_m = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
+    count = models.PositiveIntegerField(default=1, help_text="Number of individuals seen")
+    geometry = gis_models.PointField(srid=4326, help_text="Where it was seen, WGS 84")
+    location_accuracy_m = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Horizontal accuracy of the position, metres",
+    )
     identification_confidence = models.CharField(
-        max_length=30, choices=Confidence.choices, default=Confidence.CONFIRMED_IN_FIELD
+        max_length=30,
+        choices=Confidence.choices,
+        default=Confidence.CONFIRMED_IN_FIELD,
+        help_text="Observer's confidence in the identification, e.g. confirmed_in_field, probable",
     )
     recorded_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="observations"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="observations",
+        help_text="User who recorded the observation",
     )
-    sex = models.CharField(max_length=15, choices=Sex.choices, default=Sex.UNKNOWN)
-    life_stage = models.CharField(max_length=10, choices=LifeStage.choices, default=LifeStage.ADULT)
+    sex = models.CharField(
+        max_length=15,
+        choices=Sex.choices,
+        default=Sex.UNKNOWN,
+        help_text="Sex: male, female, mixed, unknown or not_applicable",
+    )
+    life_stage = models.CharField(
+        max_length=10,
+        choices=LifeStage.choices,
+        default=LifeStage.ADULT,
+        help_text="Life stage: egg, larva, pupa, adult or unknown",
+    )
     behaviour = ArrayField(
-        models.CharField(max_length=20, choices=Behaviour.choices), default=list, blank=True
+        models.CharField(max_length=20, choices=Behaviour.choices),
+        default=list,
+        blank=True,
+        help_text="Behaviours seen, joined with ';' in CSV, e.g. flying;nectaring",
     )
-    microhabitat = models.CharField(max_length=100, blank=True)
-    flight_direction_deg = models.PositiveSmallIntegerField(null=True, blank=True)
-    notes = models.TextField(blank=True)
+    microhabitat = models.CharField(
+        max_length=100, blank=True, help_text="Short free-text description of the microhabitat"
+    )
+    flight_direction_deg = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Flight direction, degrees clockwise from north (0-359)",
+    )
+    notes = models.TextField(blank=True, help_text="Free-text notes on the observation")
     source = models.CharField(
-        max_length=20, choices=ObservationSource.choices, default=ObservationSource.TRANSECT
+        max_length=20,
+        choices=ObservationSource.choices,
+        default=ObservationSource.TRANSECT,
+        help_text="How the record was made: transect, incidental, larval_search, ...",
     )
     validation_status = models.CharField(
-        max_length=15, choices=ValidationStatus.choices, default=ValidationStatus.NOT_REQUIRED
+        max_length=15,
+        choices=ValidationStatus.choices,
+        default=ValidationStatus.NOT_REQUIRED,
+        help_text="Expert validation: not_required, pending, confirmed, unconfirmed or "
+        "undeterminable",
     )
     validated_taxon = models.ForeignKey(
-        "catalogues.Taxon", on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+        "catalogues.Taxon",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Taxon set by the validator when it differs from the observer's",
     )
     validated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="User who validated the observation",
     )
-    validated_at = models.DateTimeField(null=True, blank=True)
-    validation_comment = models.TextField(blank=True)
-    quality_flags = ArrayField(models.CharField(max_length=40), default=list, blank=True)  # T056
+    validated_at = models.DateTimeField(
+        null=True, blank=True, help_text="When it was validated (UTC, ISO 8601)"
+    )
+    validation_comment = models.TextField(blank=True, help_text="Validator's comment")
+    # Set by the server's quality checks (T056).
+    quality_flags = ArrayField(
+        models.CharField(max_length=40),
+        default=list,
+        blank=True,
+        help_text="Quality flags raised by the server's checks, joined with ';' in CSV",
+    )
     history = HistoricalRecords(table_name="historical_butterfly_observation")
 
     class Meta:

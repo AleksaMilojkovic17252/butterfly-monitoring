@@ -47,6 +47,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   and a rejection is `{"<field>": ["V04"]}` (the message is the rule ID).
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
   `save_visit` calls for a finished visit (D-076).
+- `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the
+  CSV/GeoJSON/JSON streams, `service.py` is the single implementation (`export`, `bundle`) that the API views and T065's admin
+  actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all
   call these service functions; they do not hold rules themselves. Visibility goes through
   `projects.services.projects_for(user)`.

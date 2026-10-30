@@ -148,6 +148,9 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
 }
 
+# What a CSV export writes for a missing value; `?na=` overrides it per request (T064).
+EXPORT_MISSING_VALUE = "NA"
+
 # Failed-login counter (apps.accounts.services). Per process: exact with one worker (D-032).
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 LOGIN_MAX_FAILURES = 5
