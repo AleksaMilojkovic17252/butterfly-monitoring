@@ -45,6 +45,8 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `apps/observations/rules.py` and `apps/surveys/rules.py`; `save_observation` and `save_visit` call the hard rules (the warning
   functions are not called by the services),
   and a rejection is `{"<field>": ["V04"]}` (the message is the rule ID).
+- `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
+  `save_visit` calls for a finished visit (D-076).
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all
   call these service functions; they do not hold rules themselves. Visibility goes through
   `projects.services.projects_for(user)`.

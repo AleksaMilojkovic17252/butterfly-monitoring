@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -98,7 +98,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | todo |
 | T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | todo |
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | todo |
-| T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | todo |
+| T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
 | T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | todo |
 | T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | todo |
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
@@ -144,6 +144,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
+| T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | todo |
 
 ## Acceptance criteria
 
@@ -1200,9 +1201,11 @@ Depends on: T041, T044
 - [ ] Uses the same definitions as T061; a Dart unit test uses the same fixture numbers as T061's test.
 
 ### T063 · EnvironmentalSnapshot model with manual source
-[#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) · E09 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F74 · est. 1 d · **todo**
+[#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) · E09 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F74 · est. 1 d · **done**
 
 Depends on: T034, T044
+Deferred: `environmental_snapshots.csv` export → T064 (the export service is not built yet; T064 already lists it).
+Found during T063 (2026-10-30): the new model's permissions did not reach the `admin` group until a second `migrate`, so the demo admin did not see the inline. Fixed in T109, not here.
 
 - [ ] When a visit reaches `completed`, the server creates two snapshots (start and end) with `source_type = manual`.
   - Wind Beaufort is converted to m/s using the midpoint of the Beaufort range.
@@ -1990,3 +1993,25 @@ researcher walked on the real route and cancelled as `invalid_protocol` with a n
 
 Out of scope: section drawing on the phone; proposals in exports and the OGC views; editing the line of a pending proposal on the
 phone (discard and record again).
+
+### T109 · Admin group gets a new model's permissions on the same migrate
+[#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) · E02 · added 2026-10-30 as a follow-up to T013, found in T063 · P1 · should · labels: `backend`, `admin`, `security`, `should` · est. 0.5 d · **todo**
+
+Depends on: T013
+Notes: placed just before T051, the first fill-list ticket that adds a model
+
+Why: `sync_admin_group_permissions()` (T013) runs from a `post_migrate` receiver that acts only when the sender is `apps.accounts`.
+Django creates each app's permissions in that app's own `post_migrate`, and `accounts` comes before apps such as `environment`, so on
+the migrate that adds a model in a later app the grant runs before its permissions exist and misses them. A second `migrate` picks
+them up. Until then a staff user in the `admin` group (not a superuser) gets 403 on the model, or does not see an inline for it,
+with no error anywhere. Seen with T063: `admin@demo` did not see the Environmental snapshots inline while the superuser did.
+
+- [ ] After one `migrate` that adds a model (new database, or an existing one), the `admin` group holds every permission of the
+  project's apps, including the new model's. Shown by hand: add or reset a model's permissions, run `migrate` once, and read
+  `Group.objects.get(name="admin").permissions` against `Permission.objects.filter(content_type__app_label__in=<project apps>)`.
+- [ ] A fresh database (`migrate` from empty) also ends with the group complete after the first run.
+- [ ] A later `migrate` with nothing to apply changes nothing.
+- [ ] The comment on `sync_admin_group_permissions` and the "admin group holds all model permissions" line in CONVENTIONS.md still
+  describe what happens. A DECISIONS.md entry records the chosen hook (for example, run after the last project app's `post_migrate`).
+
+Out of scope: a custom permission framework (CLAUDE.md); changing which permissions the group holds; tests (D-021).

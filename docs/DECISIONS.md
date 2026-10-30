@@ -1575,3 +1575,24 @@ phone with `upload_status` pending are counted as "waiting" on the sync screen t
 the activity is not recovered (`retrieveLostData` is not used). A pulled photo from another phone has a `local_path` with no
 file: the detail shows "Photo not on this phone" (T107 downloads it). The pull cursors are reset in the v12 migration, so photo
 rows already on the server are pulled once.
+
+## D-076 · Manual environmental snapshots: refreshed in save_visit, Beaufort midpoints
+2026-10-30 · accepted · T063
+**Hook.** `save_visit` (the one place REST, push, admin edits, Mark reviewed, Lock, Unlock and `refresh_distance` all save through)
+calls `environment.services.refresh_manual_snapshots(visit)` after the save when the status is `completed`, `synced` or `reviewed`
+(`SNAPSHOT_STATUSES`). Push turns `completed` into `synced` in the same save, so the rows exist once the push returns. `locked` is
+left out because a locked visit cannot change; Unlock moves it to `reviewed`, which refreshes the rows with no change.
+**Update in place.** `refresh_manual_snapshots` works out the wanted start and end rows from the visit, then creates a missing
+row, rewrites a row only when a value changed (with a new `retrieved_at`), and deletes a row whose moment no longer has weather.
+A save that changes nothing (Mark as reviewed, Unlock, a new distance from `refresh_distance`) leaves the rows, their ids and
+`retrieved_at` alone, so a later export or Phase 2 reference to a snapshot id stays valid. The partial unique constraint
+(visit, source, moment) is the second guard against duplicates. Every way a visit changes ends in `save_visit`, including the
+conflict resolution "keep client" (`push_update`), so no other hook is needed.
+**Values.** Start uses `started_at` and the `_start` weather fields, end uses `ended_at` and the `_end` ones. Wind m/s is the midpoint of
+the WMO Beaufort range (0 to 11), and force 12, which has no upper bound, takes its lower bound 32.7. The Beaufort value goes to
+`raw_payload_json` as `{"wind_beaufort": n, "precipitation": "<category>"}`; `precipitation_mm` stays null because the visit stores a
+category, not millimetres.
+**Skipped moments.** A moment is not written when its time is null (`phenomenon_time_start` is NOT NULL) or when temperature, wind and
+cloud are all null (the weather is missing, see `weather_missing_reason`): a row of nulls carries no data.
+**No backfill.** Visits finished before T063 get their snapshots on their next save. Not a signal, so the table stays derived data
+that `save_visit` owns; no trigger and no history (not a `SyncableModel`).

@@ -18,6 +18,7 @@ from rest_framework import exceptions, serializers
 
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
+from apps.environment import services as environment_services
 from apps.projects.services import is_member, projects_for
 from apps.surveys import rules
 from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, VisitStatus
@@ -29,6 +30,9 @@ REST_REASON = "REST API"  # history_change_reason of changes made through /surve
 
 # Statuses in which the walk is over, so the server works out distance_walked_m (T036).
 FINISHED_STATUSES = [VisitStatus.COMPLETED, VisitStatus.SYNCED]
+# A visit in these has its manual weather copied to environmental snapshots (T063, D-076).
+# `locked` is left out: a locked visit cannot change, and Unlock moves it to `reviewed`.
+SNAPSHOT_STATUSES = [VisitStatus.COMPLETED, VisitStatus.SYNCED, VisitStatus.REVIEWED]
 
 # Statuses that count as a walked visit in the transect stats: not a draft, not cancelled.
 COUNTED_STATUSES = [
@@ -158,6 +162,8 @@ def save_visit(visit, user, history_reason, check_rules=True):
     save_with_reason(visit, user, history_reason)
     # The trigger wrote a new server_version; the instance still holds the old one (D-029).
     visit.refresh_from_db(fields=["server_version"])
+    if visit.status in SNAPSHOT_STATUSES:
+        environment_services.refresh_manual_snapshots(visit)
     return visit
 
 

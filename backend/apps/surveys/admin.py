@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
 from apps.core.admin import _RULE_ID, HistoryAdmin, SyncableAdmin, add_validation_errors
+from apps.environment.models import EnvironmentalSnapshot
 from apps.observations.models import ButterflyObservation
 from apps.surveys import services
 from apps.surveys.models import CancelReason, SurveyVisit
@@ -194,13 +195,47 @@ class ObservationInline(admin.TabularInline):
         return False
 
 
+class EnvironmentalSnapshotInline(admin.TabularInline):
+    """The visit's environmental snapshots (T063), read-only: they are derived from the visit's
+    weather when it is saved, so they are never edited by hand."""
+
+    model = EnvironmentalSnapshot
+    fk_name = "survey_visit"
+    fields = [
+        "moment",
+        "source_type",
+        "phenomenon_time_start",
+        "temperature_c",
+        "wind_speed_m_s",
+        "cloud_cover_pct",
+        "raw_payload_json",
+        "is_simulated",
+        "retrieved_at",
+    ]
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("phenomenon_time_start")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(SurveyVisit)
 class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     """Visits are recorded on the phone. An admin may correct an unlocked visit (saved through
     `services.admin_save_visit`, T042); its status moves only through actions: Mark as reviewed,
     and Lock and Unlock, which ask for a reason (T043). A locked visit opens read-only with a
-    banner saying who locked it and why. The page lists the visit's observations and ends with
-    the route drawn from the track points (T036).
+    banner saying who locked it and why. The page lists the visit's observations and its
+    environmental snapshots (T063) and ends with the route drawn from the track points (T036).
     """
 
     form = SurveyVisitAdminForm
@@ -251,7 +286,7 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     search_fields = ["transect__code", "transect__name", "observer__email", "notes"]
     ordering = ["-started_at"]
     list_select_related = ["transect", "observer", "project"]
-    inlines = [ObservationInline]
+    inlines = [ObservationInline, EnvironmentalSnapshotInline]
     actions = ["mark_reviewed_selected", "lock_selected", "unlock_selected"]
 
     def get_queryset(self, request):
