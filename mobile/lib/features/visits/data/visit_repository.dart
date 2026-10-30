@@ -4,8 +4,8 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
-import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/core/validation/visit_rules.dart';
+import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/visits/domain/finish_values.dart';
@@ -87,6 +87,40 @@ class VisitRepository {
       ..orderBy([(visit) => OrderingTerm.desc(visit.createdAt)])
       ..limit(1);
     return query.watchSingleOrNull();
+  }
+
+  /// The drafts of [observerId] in a project, newest first, each with its
+  /// transect (T105): one per transect, the newest, because the start form
+  /// carries on with that one ([watchDraft]). A one-off read for the Start
+  /// visit tile. Filtered by
+  /// observer because logout keeps the local data (as in [watchDraft]), so
+  /// another user's drafts can still be on the phone.
+  Future<List<({SurveyVisit visit, Transect transect})>> projectDrafts(
+    String projectId,
+    String observerId,
+  ) async {
+    final visits = _db.surveyVisits;
+    final transects = _db.transects;
+    final query =
+        _db.select(visits).join([
+            innerJoin(transects, transects.id.equalsExp(visits.transectId)),
+          ])
+          ..where(
+            visits.projectId.equals(projectId) &
+                visits.observerId.equals(observerId) &
+                visits.status.equals('draft') &
+                visits.deletedAt.isNull() &
+                transects.deletedAt.isNull(),
+          )
+          ..orderBy([OrderingTerm.desc(visits.createdAt)]);
+    final rows = await query.get();
+    final seenTransects = <String>{};
+    return [
+      for (final row in rows)
+        // Newest first, so the first draft of a transect is the one to keep.
+        if (seenTransects.add(row.readTable(transects).id))
+          (visit: row.readTable(visits), transect: row.readTable(transects)),
+    ];
   }
 
   /// Live visit in progress of [observerId], on any transect, or null. Only

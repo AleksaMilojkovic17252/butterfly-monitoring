@@ -72,8 +72,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: 'transects',
-                builder: (_, state) =>
-                    TransectListScreen(projectId: state.pathParameters['id']!),
+                builder: (_, state) => TransectListScreen(
+                  projectId: state.pathParameters['id']!,
+                  // The Start visit tile asks for the nearest transect first
+                  // (T105).
+                  sortByDistance:
+                      state.uri.queryParameters['sort'] == 'distance',
+                ),
                 routes: [
                   // Back returns to the transect list.
                   GoRoute(

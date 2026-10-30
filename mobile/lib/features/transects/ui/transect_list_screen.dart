@@ -26,8 +26,16 @@ class _TransectRow {
 /// they are standing next to (outline §11.2 D). Search by name or code, sort
 /// by code or by distance from the last known position.
 class TransectListScreen extends ConsumerStatefulWidget {
-  const TransectListScreen({super.key, required this.projectId});
+  const TransectListScreen({
+    super.key,
+    required this.projectId,
+    this.sortByDistance = false,
+  });
   final String projectId;
+
+  /// Start in distance order, so the nearest transect is on top (the Start
+  /// visit tile, T105). Without a position this is the same as code order.
+  final bool sortByDistance;
 
   @override
   ConsumerState<TransectListScreen> createState() => _TransectListScreenState();
@@ -35,7 +43,13 @@ class TransectListScreen extends ConsumerStatefulWidget {
 
 class _TransectListScreenState extends ConsumerState<TransectListScreen> {
   String _search = '';
-  _Sort _sort = _Sort.code;
+  late _Sort _sort;
+
+  @override
+  void initState() {
+    super.initState();
+    _sort = widget.sortByDistance ? _Sort.distance : _Sort.code;
+  }
 
   /// A fix taken with the refresh button. It wins over the last known
   /// position, which Android may not have updated yet.

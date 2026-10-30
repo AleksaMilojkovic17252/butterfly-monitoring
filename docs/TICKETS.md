@@ -140,7 +140,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
-| T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | todo |
+| T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | todo |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
@@ -1884,7 +1884,7 @@ Why: the season dates and the daily window are local times at the study site. T0
 Needs a new dependency, the `timezone` package (Dart has no IANA database in the core library): ask the developer when the ticket is built. An unknown zone name falls back to the phone's zone.
 
 ### T105 · Project home: the Start visit tile, and tiles not built yet
-[#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) · E02 · added 2026-10-30 as a follow-up to T017 · P1 · must · labels: `mobile`, `must` · est. 0.5 d · **todo**
+[#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) · E02 · added 2026-10-30 as a follow-up to T017 · P1 · must · labels: `mobile`, `must` · est. 0.5 d · **done**
 
 Depends on: T017, T033, T035, T039
 
@@ -1892,16 +1892,19 @@ Why: T017 asked for the tile grid, but no ticket gives the **Start visit** tile 
 only be started through Transects → transect detail → Start visit. Free observation, Plants & habitat, Map and Statistics also do
 nothing on tap until T047, T052, T059 and T062 land, and three of those are Should, so they may stay that way in the Phase 1 build.
 
-- [ ] **Start visit** tile, reading Drift only (works offline):
+- [x] **Start visit** tile, reading Drift only (works offline):
   - a visit of this project is `in_progress` → open its active visit screen (T039)
   - else the user has drafts in this project → a bottom sheet with one row per draft ("Continue draft · transect code · date",
     opening the start form) and **Choose a transect**
   - else (or Choose a transect) → the transect list (T033) sorted by distance when a fix is known, so the nearest is on top
-- [ ] The start form still opens only from transect detail, so the inactive-transect, season and time-window checks stay in one place.
-- [ ] Tiles whose screen does not exist yet are drawn disabled (greyed, no ripple) with a short "Coming later" line, instead of doing
+- [x] The start form still opens only from transect detail, so the inactive-transect, season and time-window checks stay in one place.
+- [x] Tiles whose screen does not exist yet are drawn disabled (greyed, no ripple) with a short "Coming later" line, instead of doing
   nothing on tap. The ticket that builds each screen enables its tile (T047, T052, T059, T062).
 
 Out of scope: closed projects (T099 disables the tile).
+
+Note (2026-10-30, agreed with the developer): a visit in progress in a *different* project also opens from the tile, since only one
+visit is walked at a time. This goes beyond "a visit of this project" above. See D-073.
 
 ### T106 · App visit detail and observation detail
 [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) · E05 · added 2026-10-30 · P1 · must · labels: `mobile`, `must` · est. 1.5 d · **todo**

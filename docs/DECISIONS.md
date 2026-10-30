@@ -1487,3 +1487,21 @@ primary rule and pull; init, PUT, complete, GET and thumbnail (200x400 from an 8
 dedup of MVP criterion 9 (one stored object for two records); PNG; the limits; a locked visit; and soft delete. The
 size paths and a full round trip were run with curl through `:8080`.
 
+## D-073 · Start visit tile: visit in progress, drafts sheet, list by distance; unbuilt tiles disabled
+The **Start visit** tile on project home (T105) reads Drift only and decides in this order: (1) a visit in progress opens
+its active visit screen; (2) else the user's drafts in the project are listed in a bottom sheet ("Continue draft · code ·
+date", plus "Choose a transect"); (3) else, or on "Choose a transect", the transect list opens in distance order
+(`/projects/:id/transects?sort=distance`; without a fix this equals code order, so the nearest is on top only when a
+position is known). The code is `openStartVisit` and `StartVisitDraftSheet`. The sheet lists one draft per transect (the
+newest), because the start form carries on with that one (`watchDraft`). `openStartVisit` reads the repositories' streams
+with `.first`, not a provider's `.future`: Riverpod pauses a provider nobody listens to, so the `.future` never completes.
+**A visit in progress in another project still opens** (the path uses the visit's own `projectId`). Only one visit is
+walked and tracked at a time (T037), so sending the user to a drafts sheet while a walk is running would be wrong. This
+goes beyond the ticket's "of this project".
+**The start form is still reached only through the transect's checks.** A draft row runs `confirmProtocolWindow` (the
+season/time-window dialog, moved out of `TransectDetailView` so both share it) and then `context.go(.../start)`. `go`
+builds the whole stack (list, transect detail, form), so Back from the form lands on transect detail. A draft on an inactive
+transect is a disabled row ("This transect is inactive"), as the detail view disables its button.
+**Unbuilt tiles are disabled**, not silent: a `ProjectHomeTile` without `onTap` is greyed, has no ripple and shows "Coming
+later". The ticket that builds a screen gives its tile an `onTap` (Free observation T047, Plants & habitat T052, Map T059,
+Statistics T062). The "coming in a later version" snackbars on the active visit screen are untouched.

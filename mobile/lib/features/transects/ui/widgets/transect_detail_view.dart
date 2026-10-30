@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
-import 'package:mobile/core/validation/protocol_window.dart';
 import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/domain/visit_stats.dart';
+import 'package:mobile/features/transects/ui/protocol_window_dialog.dart';
 import 'package:mobile/features/transects/ui/widgets/detail_section_title.dart';
 import 'package:mobile/features/transects/ui/widgets/habitat_summary.dart';
 import 'package:mobile/features/transects/ui/widgets/protocol_summary.dart';
@@ -33,37 +33,9 @@ class TransectDetailView extends ConsumerWidget {
     BuildContext context,
     ProjectProtocol? protocol,
   ) async {
-    final now = DateTime.now();
-    final warnings = protocol == null
-        ? <String>[]
-        : [
-            seasonWarning(protocol, now),
-            timeWindowWarning(protocol, now),
-          ].nonNulls.toList();
-
-    if (warnings.isNotEmpty) {
-      final goOn = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(Icons.warning_amber_rounded),
-          title: const Text('Outside the protocol window'),
-          content: Text(warnings.join('\n')),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
-              child: const Text('Start anyway'),
-            ),
-          ],
-        ),
-      );
-      if (goOn != true || !context.mounted) return;
+    if (!await confirmProtocolWindow(context, protocol) || !context.mounted) {
+      return;
     }
-
     await context.push('/projects/$projectId/transects/${transect.id}/start');
   }
 
