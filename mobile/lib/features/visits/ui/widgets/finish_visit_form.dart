@@ -247,6 +247,10 @@ class _FinishVisitFormState extends ConsumerState<FinishVisitForm> {
             for (final row in observations.value!) row.taxonId,
           }.toList()..sort()).join(',');
     final taxa = ref.watch(taxaByIdsProvider(taxonIds));
+    // Like the taxon names, only for the warnings, so it does not hold the
+    // screen back.
+    final missingPhotos =
+        ref.watch(missingPhotosProvider(visit.id)).value ?? <String>{};
 
     // Taxon names are only for the warning lines, so they do not hold the
     // screen back (a new taxon would otherwise flash a spinner).
@@ -320,6 +324,7 @@ class _FinishVisitFormState extends ConsumerState<FinishVisitForm> {
             ],
             observations: observations.requireValue,
             taxonNames: taxonNames,
+            missingPhotoIds: missingPhotos,
             temperatureEndC: temperature,
             windBeaufortEnd: _wind,
             cloudCoverEndPct: _cloud,

@@ -4,17 +4,20 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/validation/observation_rules.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
+import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
+import 'package:mobile/features/observations/domain/draft_photo.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
 /// The caller's butterfly observations on this phone (T045). Writes go through
 /// [SyncRepository.write], so each one is queued for push.
 class ObservationRepository {
-  ObservationRepository(this._db, this._sync, this._taxa);
+  ObservationRepository(this._db, this._sync, this._taxa, this._photos);
   final AppDatabase _db;
   final SyncRepository _sync;
   final TaxonRepository _taxa;
+  final PhotoRepository _photos;
 
   /// The server's entity type and the local table name.
   static const _entityType = 'butterfly_observation';
@@ -36,9 +39,38 @@ class ObservationRepository {
     return query.watchSingleOrNull();
   }
 
+  /// Ids of the visit's live observations that still need a photo (rule W01):
+  /// the species has `photo_required` and the observation has no live photo.
+  /// For the Finish screen's "Photos missing" tile (T050); it updates as photos
+  /// are added.
+  Stream<Set<String>> watchMissingPhotos(String visitId) {
+    final observations = _db.butterflyObservations;
+    final query = _db.select(observations).join([
+      innerJoin(_db.taxa, _db.taxa.id.equalsExp(observations.taxonId)),
+    ]);
+    final livePhotos = _db.select(_db.photos)
+      ..where(
+        (p) =>
+            p.observationId.equalsExp(observations.id) & p.deletedAt.isNull(),
+      );
+    query.where(
+      observations.surveyVisitId.equals(visitId) &
+          observations.deletedAt.isNull() &
+          _db.taxa.photoRequired.equals(true) &
+          notExistsQuery(livePhotos),
+    );
+    return query.watch().map(
+      (rows) => {for (final row in rows) row.readTable(observations).id},
+    );
+  }
+
   /// Saves a quick entry of [count] butterflies of [taxonId] seen on [visit] at
   /// ([lat], [lon]), now, and returns the new observation's id. The server
   /// fills in the fields that are not sent (sex, life stage, ...).
+  ///
+  /// [photos] are saved with the observation in the same transaction, the first
+  /// one as the primary photo. A species that needs a photo (W01) is saved
+  /// without one too: the rule only warns.
   ///
   /// Throws a [StateError] when the visit is gone, no longer in progress or
   /// locked, or when a rule of `core/validation` (V01-V08) refuses the entry;
@@ -52,6 +84,7 @@ class ObservationRepository {
     required double? accuracyM,
     required String? sectionId,
     required String recordedById,
+    List<DraftPhoto> photos = const [],
   }) {
     return _db.transaction(() async {
       final current = await _checkVisit(visit.id);
@@ -71,7 +104,7 @@ class ObservationRepository {
           lon: lon,
           accuracyM: accuracy,
         ),
-        await _ruleContext(current, taxonId),
+        await _ruleContext(current, taxonId, photos.length),
       );
       if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
 
@@ -117,6 +150,12 @@ class ObservationRepository {
               ),
             ),
       );
+      await _photos.addDrafts(
+        projectId: visit.projectId,
+        observationId: id,
+        drafts: photos,
+        firstIsPrimary: true,
+      );
       await _taxa.recordUse(visit.projectId, taxonId);
       return id;
     });
@@ -124,20 +163,27 @@ class ObservationRepository {
 
   /// Takes back an observation: a create the server never saw disappears
   /// with its queue item, otherwise the row is soft-deleted and a `delete` is
-  /// queued. Does nothing when it is already gone.
+  /// queued. Its photos are deleted first (and their files, when the server
+  /// never saw them). Does nothing when it is already gone.
   Future<void> undo(String observationId) async {
     final row = await (_db.select(
       _db.butterflyObservations,
     )..where((o) => o.id.equals(observationId))).getSingleOrNull();
     if (row == null || row.deletedAt != null) return;
-    await _sync.write(
-      projectId: row.projectId,
-      entityType: _entityType,
-      entityId: row.id,
-      operation: SyncOperation.delete,
-      payload: {},
-      baseVersion: row.serverVersion,
-    );
+    final files = await _db.transaction(() async {
+      final paths = await _photos.deleteObservationPhotos(row.id);
+      await _sync.write(
+        projectId: row.projectId,
+        entityType: _entityType,
+        entityId: row.id,
+        operation: SyncOperation.delete,
+        payload: {},
+        baseVersion: row.serverVersion,
+      );
+      return paths;
+    });
+    // After the commit: a rollback must not leave rows without their files.
+    await _photos.deleteFiles(files);
   }
 
   /// What the rules need to know besides the observation: the visit as it is
@@ -145,6 +191,7 @@ class ObservationRepository {
   Future<ObservationRuleContext> _ruleContext(
     SurveyVisit visit,
     String taxonId,
+    int photoCount,
   ) async {
     final protocol = await (_db.select(
       _db.projectProtocols,
@@ -168,7 +215,7 @@ class ObservationRepository {
       toleranceMin: protocol.observationTimeToleranceMin,
       accuracyWarningM: protocol.gpsAccuracyWarningM,
       taxonPhotoRequired: taxon.photoRequired,
-      photoCount: 0, // TODO(T050): count the observation's photos
+      photoCount: photoCount,
     );
   }
 
@@ -197,6 +244,7 @@ final observationRepositoryProvider = Provider<ObservationRepository>(
     ref.watch(appDatabaseProvider),
     ref.watch(syncRepositoryProvider),
     ref.watch(taxonRepositoryProvider),
+    ref.watch(photoRepositoryProvider),
   ),
 );
 
@@ -215,4 +263,12 @@ final observationProvider = StreamProvider.autoDispose
     .family<ButterflyObservation?, String>(
       (ref, id) =>
           ref.watch(observationRepositoryProvider).watchObservation(id),
+    );
+
+/// Ids of a visit's observations that still need a photo (W01), live, for the
+/// Finish screen (T050). `autoDispose`: the query stops when it closes.
+final missingPhotosProvider = StreamProvider.autoDispose
+    .family<Set<String>, String>(
+      (ref, visitId) =>
+          ref.watch(observationRepositoryProvider).watchMissingPhotos(visitId),
     );

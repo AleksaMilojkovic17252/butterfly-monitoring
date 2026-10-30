@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/config/photo_wifi_only.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
@@ -204,6 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final lastSync = ref.watch(lastSyncProvider);
     final pending = ref.watch(pendingChangesProvider).value ?? 0;
     final gpsInterval = ref.watch(gpsIntervalOverrideProvider);
+    final photoWifiOnly = ref.watch(photoWifiOnlyProvider);
     final localizations = MaterialLocalizations.of(context);
     final lastSyncText = lastSync == null
         ? 'Never synced'
@@ -286,6 +288,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Photos wait in the app until Wi-Fi is there (T050).
+                  Card(
+                    child: SwitchListTile(
+                      secondary: const Icon(Icons.wifi),
+                      title: const Text('Upload photos on Wi-Fi only'),
+                      subtitle: const Text(
+                        'Photos wait on the phone until Wi-Fi is connected',
+                      ),
+                      value: photoWifiOnly,
+                      onChanged: (value) =>
+                          ref.read(photoWifiOnlyProvider.notifier).save(value),
                     ),
                   ),
                   const SizedBox(height: 8),

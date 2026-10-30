@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
@@ -8,9 +9,12 @@ import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
+import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
+import 'package:mobile/features/observations/domain/draft_photo.dart';
 import 'package:mobile/features/observations/domain/taxon_search.dart';
 import 'package:mobile/features/observations/ui/widgets/count_stepper.dart';
+import 'package:mobile/features/observations/ui/widgets/draft_photo_strip.dart';
 import 'package:mobile/features/observations/ui/widgets/position_line.dart';
 import 'package:mobile/features/observations/ui/widgets/sheet_list_title.dart';
 import 'package:mobile/features/observations/ui/widgets/taxon_tile.dart';
@@ -68,10 +72,70 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   bool _saving = false;
   String? _error;
 
+  /// Photos taken in this sheet, not saved yet (T050). The first is primary.
+  var _drafts = <DraftPhoto>[];
+
+  /// True while a photo is being taken, shrunk and hashed.
+  bool _capturing = false;
+
+  /// Set once the observation and its photos are written, so [dispose] keeps
+  /// the files.
+  bool _saved = false;
+
+  /// Read in [initState]: `ref` is not safe to use inside [dispose], and a
+  /// lazy `late final` would first run there when no photo was taken.
+  late final PhotoRepository _photos;
+
+  @override
+  void initState() {
+    super.initState();
+    _photos = ref.read(photoRepositoryProvider);
+  }
+
+  /// The sheet can be closed in several ways (swipe down, Back, tapping
+  /// outside), and all of them end here, so this is where unsaved drafts are
+  /// thrown away. A saved sheet keeps its files.
   @override
   void dispose() {
     _search.dispose();
+    if (!_saved) _photos.discardDrafts(_drafts);
     super.dispose();
+  }
+
+  /// Opens the camera or the gallery and adds the result to the drafts.
+  /// Cancelling adds nothing.
+  Future<void> _addPhoto(ImageSource source) async {
+    setState(() {
+      _capturing = true;
+      _error = null;
+    });
+    try {
+      final draft = await _photos.capture(source);
+      if (draft == null) return;
+      // The sheet was closed while the photo was processed: nobody will save it.
+      if (!mounted) {
+        await _photos.discardDrafts([draft]);
+        return;
+      }
+      setState(() => _drafts = [..._drafts, draft]);
+    } on StateError catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } catch (error) {
+      if (mounted) setState(() => _error = 'Could not add the photo: $error');
+    } finally {
+      if (mounted) setState(() => _capturing = false);
+    }
+  }
+
+  /// Takes a draft out of the list and deletes its file.
+  void _removePhoto(DraftPhoto draft) {
+    setState(
+      () => _drafts = [
+        for (final d in _drafts)
+          if (d.id != draft.id) d,
+      ],
+    );
+    _photos.discardDrafts([draft]);
   }
 
   /// The newest fix when GPS is running for this visit, otherwise null. A
@@ -126,7 +190,9 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
             accuracyM: position.accuracy,
             sectionId: sectionId,
             recordedById: recordedById,
+            photos: _drafts,
           );
+      _saved = true;
       if (!mounted) return;
       Navigator.pop(context, (id: id, label: '${taxonTitle(taxon)} × $_count'));
     } on LocationException catch (error) {
@@ -253,9 +319,11 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                             ),
                           ),
                         ),
-                      // W01. TODO(T046): show the W03/W04 prompts in the extended
-                      // entry.
-                      if (_selected?.photoRequired ?? false)
+                      // W01 only warns: Save works without a photo, because the
+                      // butterfly may have flown off. TODO(T046): show the
+                      // W03/W04 prompts in the extended entry.
+                      if ((_selected?.photoRequired ?? false) &&
+                          _drafts.isEmpty)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
@@ -266,6 +334,46 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                             ],
                           ),
                         ),
+                      if (_drafts.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: DraftPhotoStrip(
+                            drafts: _drafts,
+                            onRemove: _saving ? (_) {} : _removePhoto,
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: _saving || _capturing
+                                  ? null
+                                  : () => _addPhoto(ImageSource.camera),
+                              icon: const Icon(Icons.photo_camera_outlined),
+                              label: const Text('Photo'),
+                            ),
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: _saving || _capturing
+                                  ? null
+                                  : () => _addPhoto(ImageSource.gallery),
+                              icon: const Icon(Icons.photo_library_outlined),
+                              label: const Text('Gallery'),
+                            ),
+                            if (_capturing) ...[
+                              const SizedBox(width: 12),
+                              const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                       Row(
                         children: [
                           Expanded(

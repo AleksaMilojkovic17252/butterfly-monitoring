@@ -80,6 +80,7 @@ String entityTypeLabel(String type) {
     'butterfly_observation' => 'Butterfly observations',
     'habitat_type' => 'Habitat types',
     'management_type' => 'Management types',
+    'photo' => 'Photo records',
     'plant_taxon' => 'Plants',
     'survey_visit' => 'Visits',
     'survey_track_point' => 'Track points',

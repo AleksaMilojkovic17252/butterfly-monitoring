@@ -44,7 +44,10 @@ class SyncRepository {
   /// a create the server never saw: then the row is removed.
   ///
   /// [payload] has server field names and UTC ISO dates. [baseVersion] is the
-  /// row's `serverVersion`, null for a create.
+  /// row's `serverVersion`, null for a create. With [mergeUpdate] false an
+  /// update is always queued as its own item and never merged into an unsent
+  /// one, so it keeps its place in the queue (a photo that becomes primary must
+  /// be sent after the old primary's unset, D-072).
   Future<void> write({
     required String projectId,
     required String entityType,
@@ -52,6 +55,7 @@ class SyncRepository {
     required SyncOperation operation,
     required Map<String, Object?> payload,
     int? baseVersion,
+    bool mergeUpdate = true,
     Future<void> Function()? writeRow,
   }) {
     if (operation == SyncOperation.createBatch) {
@@ -69,6 +73,7 @@ class SyncRepository {
         operation: operation,
         payload: payload,
         baseVersion: baseVersion,
+        mergeUpdate: mergeUpdate,
       );
 
       if (operation == SyncOperation.delete) {
@@ -308,7 +313,8 @@ class SyncRepository {
   }
 
   /// Queues the change, merging into the entity's last item when allowed.
-  /// Returns true when a delete cancelled a queued create.
+  /// Returns true when a delete cancelled a queued create (and the queue items
+  /// that followed it).
   Future<bool> _enqueue({
     required String projectId,
     required String entityType,
@@ -316,7 +322,33 @@ class SyncRepository {
     required SyncOperation operation,
     required Map<String, Object?> payload,
     required int? baseVersion,
+    required bool mergeUpdate,
   }) async {
+    // A delete cancels a create the server never saw, together with every
+    // later update of it (a photo made primary before its first push has an
+    // update item of its own, see `mergeUpdate`). Nothing of the entity may
+    // have been sent: a sent item may already be applied.
+    if (operation == SyncOperation.delete) {
+      final items =
+          await (_db.select(_db.syncQueue)..where(
+                (t) =>
+                    t.entityType.equals(entityType) &
+                    t.entityId.equals(entityId),
+              ))
+              .get();
+      final hasUnsentCreate = items.any(
+        (i) => i.operation == SyncOperation.create.wireName && _isUnsent(i),
+      );
+      if (hasUnsentCreate && items.every(_isUnsent)) {
+        await (_db.delete(_db.syncQueue)..where(
+              (t) =>
+                  t.entityType.equals(entityType) & t.entityId.equals(entityId),
+            ))
+            .go();
+        return true;
+      }
+    }
+
     final latest = await _latestItem(entityType, entityId);
 
     // Merge only into an unsent item. A sent one may already be applied under
@@ -326,7 +358,8 @@ class SyncRepository {
       final latestIsUpdate = latest.operation == SyncOperation.update.wireName;
 
       if ((latestIsCreate || latestIsUpdate) &&
-          operation == SyncOperation.update) {
+          operation == SyncOperation.update &&
+          mergeUpdate) {
         // Keeps seq, mutationId and baseVersion; the seq keeps queue order.
         final old = jsonDecode(latest.payload) as Map<String, dynamic>;
         await (_db.update(
@@ -335,13 +368,6 @@ class SyncRepository {
           SyncQueueCompanion(payload: Value(jsonEncode({...old, ...payload}))),
         );
         return false;
-      }
-
-      if (latestIsCreate && operation == SyncOperation.delete) {
-        await (_db.delete(
-          _db.syncQueue,
-        )..where((t) => t.seq.equals(latest.seq))).go();
-        return true;
       }
     }
 

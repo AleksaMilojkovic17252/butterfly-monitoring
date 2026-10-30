@@ -58,6 +58,9 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('http://example.test:9000'), findsOneWidget);
 
+    // The settings list is longer than the test screen: scroll to the preset.
+    await tester.ensureVisible(find.text(ServerPreset.usb.label));
+    await tester.pump();
     await tester.tap(find.text(ServerPreset.usb.label));
     await tester.pump();
 

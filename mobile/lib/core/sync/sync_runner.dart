@@ -1,8 +1,11 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:mobile/core/config/photo_wifi_only.dart';
 import 'package:mobile/core/http/transfer_counter.dart';
+import 'package:mobile/core/sync/photo_uploader.dart';
 import 'package:mobile/core/sync/pull_applier.dart';
 import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
@@ -10,8 +13,8 @@ import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 
-/// Which half of a sync run is in progress.
-enum SyncPhase { pushing, pulling }
+/// Which part of a sync run is in progress.
+enum SyncPhase { pushing, uploading, pulling }
 
 /// What one finished sync run did.
 /// [ok] is true when there was no error and nothing sendable
@@ -73,7 +76,8 @@ class SyncRunState {
   final int sent;
 }
 
-/// Runs the sync: pushes the queue, then pulls every downloaded project. Also
+/// Runs the sync: pushes the queue, uploads photo files (T050), then pulls every
+/// downloaded project. Also
 /// downloads one project on request ([download]). Only one run or download
 /// goes at a time. The state tells the UI whether one is in progress and how
 /// the last one ended.
@@ -137,6 +141,7 @@ class SyncRunner extends Notifier<SyncRunState> {
     var pushed = 0;
     var pulled = 0;
     String? error;
+    String? photoError;
 
     try {
       transferCounter.reset();
@@ -179,7 +184,19 @@ class SyncRunner extends Notifier<SyncRunState> {
         );
         await syncRepository.applyPushResults(sending, pushResults);
       }
-      // TODO(T050): upload photos here, after push and before pull.
+      // Photo files go after the push (the server needs the photo rows first)
+      // and before the pull.
+      if (error == null && await _mayUploadPhotos()) {
+        state = SyncRunState(
+          running: true,
+          last: state.last,
+          phase: SyncPhase.uploading,
+          sent: pushed,
+        );
+        // A failing upload does not hold the pull back: the phone should
+        // still receive other people's data. The run ends with the error.
+        photoError = await ref.read(photoUploaderProvider).uploadPending();
+      }
       if (error == null) {
         try {
           await projectRepository.refreshFromServer();
@@ -223,6 +240,7 @@ class SyncRunner extends Notifier<SyncRunState> {
           }
         }
       }
+      error ??= photoError;
       final leftover = await syncRepository.nextBatch(
         ignoreBackoff: true,
         max: 1,
@@ -265,6 +283,21 @@ class SyncRunner extends Notifier<SyncRunState> {
       state = SyncRunState(running: false, last: result);
     }
     return result;
+  }
+
+  /// False when the "Upload photos on Wi-Fi only" setting is on and the phone
+  /// is not on Wi-Fi (or ethernet, or a VPN that hides the network). Photos then wait; that is not an error.
+  Future<bool> _mayUploadPhotos() async {
+    if (!ref.read(photoWifiOnlyProvider)) return true;
+    final connections = await Connectivity().checkConnectivity();
+    if (connections.contains(ConnectivityResult.wifi) ||
+        connections.contains(ConnectivityResult.ethernet)) {
+      return true;
+    }
+    // Over a VPN (Tailscale) the phone may report only `vpn`, with no sign of
+    // what it runs on. Allow that; block it when mobile data is listed.
+    return connections.contains(ConnectivityResult.vpn) &&
+        !connections.contains(ConnectivityResult.mobile);
   }
 
   /// Pulls one project page by page from its saved cursor (0 if never pulled)

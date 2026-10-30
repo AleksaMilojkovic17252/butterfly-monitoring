@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/observation_values.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
+import 'package:mobile/features/observations/ui/widgets/observation_photo_section.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/ui/widgets/detail_section_title.dart';
@@ -73,89 +74,96 @@ class ObservationDetailView extends ConsumerWidget {
         // TODO(T046): an Edit button in `actions`, hidden when the visit is
         // locked (T042).
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.bug_report_outlined),
-                  title: Text(taxon?.scientificName ?? '…'),
-                  subtitle: localNames.isEmpty
-                      ? null
-                      : Text(localNames.join(' · ')),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.numbers),
-                  title: const Text('Count'),
-                  trailing: Text('${o.count}'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.schedule),
-                  title: Text(formatLocalDateTime(o.observedAt)),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.place_outlined),
-                  title: Text(
-                    '${o.lat.toStringAsFixed(5)}, ${o.lon.toStringAsFixed(5)}',
-                  ),
-                  subtitle: Text(_accuracy()),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.route_outlined),
-                  title: const Text('Section'),
-                  trailing: Text(sectionCode),
-                ),
-                ListTile(
-                  title: const Text('Source'),
-                  trailing: Text(observationValueLabel(o.source)),
-                ),
-                ListTile(
-                  title: const Text('Confidence'),
-                  trailing: Text(
-                    observationValueLabel(o.identificationConfidence),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (o.sex != 'unknown' ||
-              o.lifeStage != 'adult' ||
-              behaviours.isNotEmpty ||
-              o.notes.isNotEmpty) ...[
-            const DetailSectionTitle('Details'),
+      // The app bar covers the top; SafeArea keeps the list above the system
+      // navigation buttons.
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children: [
             Card(
               child: Column(
                 children: [
-                  if (o.sex != 'unknown')
-                    ListTile(
-                      title: const Text('Sex'),
-                      trailing: Text(observationValueLabel(o.sex)),
+                  ListTile(
+                    leading: const Icon(Icons.bug_report_outlined),
+                    title: Text(taxon?.scientificName ?? '…'),
+                    subtitle: localNames.isEmpty
+                        ? null
+                        : Text(localNames.join(' · ')),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.numbers),
+                    title: const Text('Count'),
+                    trailing: Text('${o.count}'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.schedule),
+                    title: Text(formatLocalDateTime(o.observedAt)),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.place_outlined),
+                    title: Text(
+                      '${o.lat.toStringAsFixed(5)}, ${o.lon.toStringAsFixed(5)}',
                     ),
-                  if (o.lifeStage != 'adult')
-                    ListTile(
-                      title: const Text('Life stage'),
-                      trailing: Text(observationValueLabel(o.lifeStage)),
+                    subtitle: Text(_accuracy()),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.route_outlined),
+                    title: const Text('Section'),
+                    trailing: Text(sectionCode),
+                  ),
+                  ListTile(
+                    title: const Text('Source'),
+                    trailing: Text(observationValueLabel(o.source)),
+                  ),
+                  ListTile(
+                    title: const Text('Confidence'),
+                    trailing: Text(
+                      observationValueLabel(o.identificationConfidence),
                     ),
-                  if (behaviours.isNotEmpty)
-                    ListTile(
-                      title: const Text('Behaviour'),
-                      subtitle: Text(behaviours.join(', ')),
-                    ),
-                  if (o.notes.isNotEmpty)
-                    ListTile(
-                      title: const Text('Notes'),
-                      subtitle: Text(o.notes),
-                    ),
+                  ),
                 ],
               ),
             ),
+            if (o.sex != 'unknown' ||
+                o.lifeStage != 'adult' ||
+                behaviours.isNotEmpty ||
+                o.notes.isNotEmpty) ...[
+              const DetailSectionTitle('Details'),
+              Card(
+                child: Column(
+                  children: [
+                    if (o.sex != 'unknown')
+                      ListTile(
+                        title: const Text('Sex'),
+                        trailing: Text(observationValueLabel(o.sex)),
+                      ),
+                    if (o.lifeStage != 'adult')
+                      ListTile(
+                        title: const Text('Life stage'),
+                        trailing: Text(observationValueLabel(o.lifeStage)),
+                      ),
+                    if (behaviours.isNotEmpty)
+                      ListTile(
+                        title: const Text('Behaviour'),
+                        subtitle: Text(behaviours.join(', ')),
+                      ),
+                    if (o.notes.isNotEmpty)
+                      ListTile(
+                        title: const Text('Notes'),
+                        subtitle: Text(o.notes),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+            const DetailSectionTitle('Photos'),
+            ObservationPhotoSection(
+              observation: o,
+              photoRequired: taxon?.photoRequired ?? false,
+            ),
           ],
-          const DetailSectionTitle('Photos'),
-          // TODO(T050): show the observation's thumbnails here.
-          const Card(child: ListTile(title: Text('No photos'))),
-        ],
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:mobile/core/db/app_database.steps.dart';
 import 'package:mobile/core/db/butterfly_observations.dart';
 import 'package:mobile/core/db/habitat_types.dart';
 import 'package:mobile/core/db/management_types.dart';
+import 'package:mobile/core/db/photos.dart';
 import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
@@ -32,6 +33,7 @@ part 'app_database.g.dart';
     HabitatTypes,
     ManagementTypes,
     PlantTaxa,
+    Photos,
     ProjectProtocols,
     SyncConflicts,
     SurveyTrackPoints,
@@ -47,7 +49,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -135,6 +137,14 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(
           schema.surveyVisit,
           schema.surveyVisit.trackPointCount,
+        );
+      },
+      from11To12: (m, schema) async {
+        // Photos arrive through pull only after this version, so every
+        // project's photo rows need a full pull: start from the beginning.
+        await m.createTable(schema.photo);
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );
       },
     ),

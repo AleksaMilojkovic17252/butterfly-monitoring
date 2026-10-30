@@ -11,6 +11,7 @@ class SyncNowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = switch (run.phase) {
       SyncPhase.pushing => 'Sending changes… ${run.sent} sent',
+      SyncPhase.uploading => 'Uploading photos…',
       SyncPhase.pulling => 'Receiving… ${run.received} rows',
       null => 'Working…',
     };

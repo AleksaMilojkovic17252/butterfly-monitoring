@@ -55,6 +55,39 @@ class SyncStatusRepository {
     );
   }
 
+  /// Photos the server refused for good (T050): they wait for the user to
+  /// retry or delete them. Newest first.
+  Stream<List<Photo>> watchFailedPhotos() {
+    final query = _db.select(_db.photos)
+      ..where(
+        (p) =>
+            p.uploadStatus.equals('pending') &
+            p.uploadError.isNotNull() &
+            p.deletedAt.isNull(),
+      )
+      ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]);
+    return query.watch();
+  }
+
+  /// Photos waiting for their file to be uploaded (T050): how many, and their
+  /// total size in bytes. A deleted photo is not counted, and neither is one
+  /// the server refused (see [watchFailedPhotos]). Photos are not
+  /// tied to a project here, so this covers the whole phone.
+  Stream<({int count, int bytes})> watchPendingPhotos() {
+    final count = countAll();
+    final bytes = _db.photos.fileSize.sum();
+    final query = _db.selectOnly(_db.photos)
+      ..addColumns([count, bytes])
+      ..where(
+        _db.photos.uploadStatus.equals('pending') &
+            _db.photos.uploadError.isNull() &
+            _db.photos.deletedAt.isNull(),
+      );
+    return query.watchSingle().map(
+      (row) => (count: row.read(count)!, bytes: row.read(bytes) ?? 0),
+    );
+  }
+
   /// The project's conflicts that are not deleted: open ones first, then
   /// newest first.
   Stream<List<SyncConflict>> watchConflicts(String projectId) {

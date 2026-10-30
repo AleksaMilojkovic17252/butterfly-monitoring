@@ -1523,3 +1523,55 @@ A visit that never started ("not conducted") shows no summary, coverage or map.
 fields). Codelist values are shown by `observationValueLabel` (`snake_case` to sentence case), not a label table.
 The visit summary card draws its divider only when it has section counts; the visit detail passes none, because its
 observation list is already grouped by section.
+
+## D-075 · Photos: in the quick sheet and added later, W01 warns but never blocks, upload after push
+2026-10-30 · accepted · T050, T046, T107
+**Where photos are added (the developer's choice).** In the quick butterfly sheet before Save (its buttons move to T046's
+extended section later), and from the observation detail ("Take photo", "From gallery") until the visit is locked. A completed
+but unlocked visit still gets photos; the server refuses photo changes only on a locked visit (D-072). The sheet holds
+`DraftPhoto`s (a compressed file, no row); Save writes the observation and one `photo` create per draft in one transaction, the
+observation first, so the queue sends it first. The first photo is primary. Closing the sheet without Save deletes the draft
+files (`dispose` of the sheet state, which every way of closing ends in).
+**W01 warns, never blocks.** For a species with `photo_required` Save and Finish work without a photo, because the butterfly may
+have flown off and the count must not be lost. The warning shows in the sheet (until a photo is attached), in the observation
+detail, and as the Finish screen's "Photos missing" tile with one tappable line per observation (it opens the detail; `push`, so
+Back keeps what was typed). `ObservationRepository.watchMissingPhotos` is one query: live observations of the visit, species
+`photo_required`, no live photo. The server keeps such observations `pending` validation (D-065). A species without
+`photo_required` gets no warning anywhere.
+**Compression.** JPEG quality 85, 2048 px on the long edge, EXIF applied (`autoCorrectionAngle`), EXIF dropped. The plugin
+shrinks by `max(1, min(srcW / minWidth, srcH / minHeight))` of the raw picture, so asking for 2048 x 2048 would leave the long edge above
+2048. The app passes the same `m = shortEdge * 2048 / longEdge` (floored) for both, so the scale is `longEdge / 2048` whichever way the
+source size is reported (EXIF orientation may swap width and height), and a picture within 2048 gets `m = shortEdge`, scale 1. Width and height are read from the output file, because a rotation swaps them. The file the picker returns
+is its own copy in the app cache, never the gallery original, so it is deleted after compression. The SHA-256 is computed in an
+isolate. No `CAMERA` permission: the system camera app takes the picture.
+**Upload (`PhotoUploader`), after push and before pull.** Only photos that are `pending`, not deleted, have a file on this phone
+and have **no queue item**: a queue item means the server may not have the row yet, or a change is waiting. `init`, then `PUT`
+(only for `upload_required`), then `complete`; the new `server_version` of `init` (exists) or `complete` is stored, or a later
+delete would be a conflict (D-072). `upload_url` is resolved against the server origin. A 409 on the `PUT` goes on to `complete`.
+A network error (no response) stops the loop and is the run's error, but the pull still runs and the run ends with that error
+(a photo that times out must not stop the phone receiving data). Any other failure of one photo (a 5xx, an unreadable file) is
+logged and the photo stays `pending` for the next run (as D-054).
+**Refused uploads.** A 4xx that a repeat cannot fix (422 the file does not match its record, 415, 413, 404, ...) is permanent;
+401, 408, 409, 429 and every 5xx are not. For a permanent one the uploader stores the server's error in the local-only column
+`photo.upload_error` (the `[{code, detail, fields}]` JSON that `syncErrorMessage` already reads) and skips the photo from then
+on. The sync screen's Errors section shows a `FailedPhotoCard` per such photo with **Try again** (`retryUpload` clears the error
+and syncs) and **Delete photo**; the observation detail says "upload failed" under it. The column is not the server's `failed`
+status, which the server owns and a pull would overwrite. A failed photo is not counted as "waiting". "Upload photos on Wi-Fi only" (Settings, default off) skips the step when the phone is
+not on Wi-Fi or ethernet; that is not an error (a connection reported only as `vpn`, such as Tailscale, counts as allowed; `vpn`
+with `mobile` does not), and the sync screen says why photos are waiting. The bytes are not in the sync screen's "data of the last sync" (the transfer
+counter measures JSON bodies only).
+**Primary changes.** `makePrimary` unsets the old primary and then sets the new one, as two queue items in that order (the
+server's unique index is checked per mutation). `SyncRepository.write` got `mergeUpdate`: with false an update is never merged
+into an unsent item, so "set primary" keeps its place after the unset (merged into an unsent create it could be sent first, and
+the server would refuse the create). A deleted primary promotes the oldest remaining photo. A delete now cancels an unsent create **with** its later unsent updates
+(`SyncRepository._enqueue`), not only when the create is the last item.
+**Delete.** Soft delete through the queue; a create the server never saw is removed with its file. A soft-deleted, synced row
+keeps its file until "Remove all local data", which now also deletes the `photos/` folder. Files are deleted after the outermost
+transaction commits (`deleteFiles`), so a rolled-back undo never leaves rows without files. `makePrimary` and `delete` read the
+row again inside the transaction instead of trusting the object the screen holds.
+**Not handled.** Discarding a rejected observation (or visit) create does not clean up its photo rows, queue items and files: the photo
+creates are then rejected by the server ("observation not found") and show as errors, and the files stay. Photos pulled from another
+phone with `upload_status` pending are counted as "waiting" on the sync screen though this phone cannot upload them (T107). Files left over from an app killed during capture are not cleaned up. A camera result lost when Android kills
+the activity is not recovered (`retrieveLostData` is not used). A pulled photo from another phone has a `local_path` with no
+file: the detail shows "Photo not on this phone" (T107 downloads it). The pull cursors are reset in the v12 migration, so photo
+rows already on the server are pulled once.

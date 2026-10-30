@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/config/photo_wifi_only.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
+import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/sync/domain/sync_error_message.dart';
 import 'package:mobile/features/sync/domain/sync_status_providers.dart';
 import 'package:mobile/features/sync/ui/widgets/conflict_card.dart';
+import 'package:mobile/features/sync/ui/widgets/failed_photo_card.dart';
 import 'package:mobile/features/sync/ui/widgets/rejected_card.dart';
 import 'package:mobile/features/sync/ui/widgets/sync_now_card.dart';
 import 'package:mobile/features/sync/ui/widgets/sync_section_title.dart';
@@ -43,6 +46,44 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
   Future<void> _retry(SyncQueueItem item) async {
     await ref.read(syncRepositoryProvider).retry(item);
     await _syncNow();
+  }
+
+  /// Lets the uploader try a photo the server refused again, and syncs at
+  /// once.
+  Future<void> _retryPhoto(Photo photo) async {
+    await ref.read(photoRepositoryProvider).retryUpload(photo);
+    await _syncNow();
+  }
+
+  /// Asks first, then deletes a photo the server refused. The delete syncs
+  /// like any other.
+  Future<void> _deletePhoto(Photo photo) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this photo?'),
+        content: const Text(
+          'The photo is removed from the observation. The observation stays.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(photoRepositoryProvider).delete(photo);
+    } on StateError catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 
   /// Asks first, then removes the local change. The server version comes back
@@ -104,7 +145,11 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
         ref.watch(lockedVisitIdsProvider(projectId)).value ?? {};
     final lastSync = ref.watch(lastSyncProvider);
     final lastBytes = ref.watch(lastSyncBytesProvider).value;
-    final photos = ref.watch(pendingPhotosProvider);
+    final photos =
+        ref.watch(pendingPhotosProvider).value ?? (count: 0, bytes: 0);
+    final photoStorage = ref.watch(photoStorageProvider).value;
+    final failedPhotos = ref.watch(failedPhotosProvider).value ?? [];
+    final photoWifiOnly = ref.watch(photoWifiOnlyProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Unsynced data')),
@@ -134,9 +179,37 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
                   ListTile(
                     title: const Text('Photos'),
                     trailing: Text(
-                      '${photos.count} · ${_formatBytes(photos.bytes)}',
+                      '${photos.count} waiting · ${_formatBytes(photos.bytes)}',
                     ),
                   ),
+                  ListTile(
+                    dense: true,
+                    title: const Text('Photos on this phone'),
+                    trailing: Text(
+                      photoStorage == null ? '-' : _formatBytes(photoStorage),
+                    ),
+                  ),
+                  if (photos.count > 0 && photoWifiOnly)
+                    const ListTile(
+                      dense: true,
+                      leading: Icon(Icons.wifi),
+                      title: Text(
+                        'Wi-Fi only is on: photos upload when Wi-Fi is '
+                        'connected.',
+                      ),
+                    ),
+                  if (photos.count > 0)
+                    ListTile(
+                      dense: true,
+                      leading: Icon(
+                        Icons.warning_amber_outlined,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      title: const Text(
+                        'Photos that are not uploaded are lost if you clear '
+                        "the app's data.",
+                      ),
+                    ),
                   ListTile(
                     title: const Text('Last successful sync'),
                     trailing: Text(
@@ -154,9 +227,16 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
             ),
             const SizedBox(height: 16),
             const SyncSectionTitle('Errors'),
-            if (rejected.isEmpty)
+            if (rejected.isEmpty && failedPhotos.isEmpty)
               const Card(child: ListTile(title: Text('No errors')))
-            else
+            else ...[
+              for (final photo in failedPhotos)
+                FailedPhotoCard(
+                  photo: photo,
+                  busy: run.running,
+                  onRetry: () => _retryPhoto(photo),
+                  onDelete: () => _deletePhoto(photo),
+                ),
               for (final item in rejected)
                 RejectedCard(
                   item: item,
@@ -168,6 +248,7 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
                   onRetry: () => _retry(item),
                   onDiscard: () => _discard(item),
                 ),
+            ],
             const SizedBox(height: 16),
             const SyncSectionTitle('Conflicts'),
             if (conflicts.isEmpty)

@@ -37,41 +37,46 @@ class VisitDetailView extends ConsumerWidget {
       appBar: AppBar(
         title: Text(transect == null ? 'Visit' : '${transect.code} · visit'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          VisitDetailHeader(visit: visit, transect: transect),
-          if (started) ...[
-            const DetailSectionTitle('Summary'),
-            VisitSummaryCard(
-              walked: storedSeconds == null
-                  ? walkingTime(visit, visit.endedAt ?? DateTime.now())
-                  : Duration(seconds: storedSeconds),
-              distanceM: stats?.distanceM ?? visit.distanceWalkedM,
-              summary: VisitSummary.fromObservations(observations),
-              // The list below already groups the observations by section.
-              sectionCounts: const [],
-            ),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.route),
-                title: const Text('Route coverage'),
-                // Null when the route has too few usable points.
-                trailing: Text(
-                  coverage == null ? '–' : '${coverage.floor()} %',
+      // The app bar covers the top; SafeArea keeps the list above the system
+      // navigation buttons.
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children: [
+            VisitDetailHeader(visit: visit, transect: transect),
+            if (started) ...[
+              const DetailSectionTitle('Summary'),
+              VisitSummaryCard(
+                walked: storedSeconds == null
+                    ? walkingTime(visit, visit.endedAt ?? DateTime.now())
+                    : Duration(seconds: storedSeconds),
+                distanceM: stats?.distanceM ?? visit.distanceWalkedM,
+                summary: VisitSummary.fromObservations(observations),
+                // The list below already groups the observations by section.
+                sectionCounts: const [],
+              ),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.route),
+                  title: const Text('Route coverage'),
+                  // Null when the route has too few usable points.
+                  trailing: Text(
+                    coverage == null ? '–' : '${coverage.floor()} %',
+                  ),
                 ),
               ),
-            ),
+            ],
+            const DetailSectionTitle('Weather'),
+            VisitWeatherCard(visit: visit),
+            if (started) ...[
+              const DetailSectionTitle('Map'),
+              VisitRouteMap(visit: visit),
+            ],
+            const DetailSectionTitle('Observations'),
+            VisitObservationList(visit: visit, observations: observations),
           ],
-          const DetailSectionTitle('Weather'),
-          VisitWeatherCard(visit: visit),
-          if (started) ...[
-            const DetailSectionTitle('Map'),
-            VisitRouteMap(visit: visit),
-          ],
-          const DetailSectionTitle('Observations'),
-          VisitObservationList(visit: visit, observations: observations),
-        ],
+        ),
       ),
     );
   }

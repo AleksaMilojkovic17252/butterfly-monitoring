@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/observation_rules.dart';
 import 'package:mobile/core/validation/protocol_window.dart';
@@ -31,6 +32,7 @@ class FinishWarnings extends StatelessWidget {
     required this.pauses,
     required this.observations,
     required this.taxonNames,
+    required this.missingPhotoIds,
     required this.temperatureEndC,
     required this.windBeaufortEnd,
     required this.cloudCoverEndPct,
@@ -53,6 +55,10 @@ class FinishWarnings extends StatelessWidget {
 
   /// Taxon id to the name shown in the observation lines.
   final Map<String, String> taxonNames;
+
+  /// Ids of the observations whose species needs a photo and that have none
+  /// (W01, T050).
+  final Set<String> missingPhotoIds;
   final double? temperatureEndC;
   final int? windBeaufortEnd;
   final int cloudCoverEndPct;
@@ -69,7 +75,15 @@ class FinishWarnings extends StatelessWidget {
       ..._windowWarnings(),
       ..._observationWarnings(),
     ];
-    if (warnings.isEmpty) return const SizedBox.shrink();
+    // The observations missing a photo, in the order they were seen. Each gets
+    // its own tappable line below.
+    final missingPhoto = [
+      for (final row in observations)
+        if (missingPhotoIds.contains(row.id)) row,
+    ];
+    if (warnings.isEmpty && missingPhoto.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -83,11 +97,41 @@ class FinishWarnings extends StatelessWidget {
                   leading: const Icon(Icons.warning_amber_rounded),
                   title: Text(warning),
                 ),
+              if (missingPhoto.isNotEmpty) ..._photoTile(context, missingPhoto),
             ],
           ),
         ),
       ],
     );
+  }
+
+  /// The "Photos missing" tile (W01): the rule's sentence, then one line per
+  /// observation. A line opens that observation, where the photo can be added;
+  /// Back returns here with what was typed kept. It never blocks Finish.
+  List<Widget> _photoTile(
+    BuildContext context,
+    List<ButterflyObservation> rows,
+  ) {
+    return [
+      ListTile(
+        leading: const Icon(Icons.photo_camera_outlined),
+        title: const Text('Photos missing'),
+        subtitle: Text('${ruleMessage('W01')}.'),
+      ),
+      for (final row in rows)
+        ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.only(left: 72, right: 16),
+          title: Text(
+            '${taxonNames[row.taxonId] ?? 'A butterfly'} at '
+            '${_hhmm(row.observedAt)}',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(
+            '/projects/${visit.projectId}/observations/${row.id}',
+          ),
+        ),
+    ];
   }
 
   /// The end weather: missing (V05) or outside the protocol (W06).
@@ -178,7 +222,8 @@ class FinishWarnings extends StatelessWidget {
     ].nonNulls.toList();
   }
 
-  /// Observations a hard rule would refuse today, one line each.
+  /// Observations a hard rule would refuse today, one line each. W01 is not
+  /// here: a missing photo is the "Photos missing" tile.
   List<String> _observationWarnings() {
     final context = ObservationRuleContext(
       visitStatus: 'completed',

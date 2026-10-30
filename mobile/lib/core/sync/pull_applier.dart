@@ -42,6 +42,7 @@ class PullApplier {
     'survey_visit': (rows) => _store(_db.surveyVisits, rows, _surveyVisit),
     'butterfly_observation': (rows) =>
         _store(_db.butterflyObservations, rows, _butterflyObservation),
+    'photo': (rows) => _store(_db.photos, rows, _photo),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -541,6 +542,30 @@ class PullApplier {
       flightDirectionDeg: Value(json['flight_direction_deg'] as int?),
       notes: Value(json['notes'] as String),
       source: Value(json['source'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// A photo's metadata (T050). `local_path` is the path on the phone that took
+  /// it, so a row from another phone has no file here (T107). The server's
+  /// `storage_key` and `metadata_json` are not in the pull.
+  static PhotosCompanion _photo(_Json json) {
+    return PhotosCompanion.insert(
+      id: json['id'] as String,
+      observationId: Value(json['observation'] as String?),
+      localPath: json['local_path'] as String,
+      mimeType: json['mime_type'] as String,
+      fileSize: json['file_size'] as int,
+      sha256: json['sha256'] as String,
+      width: Value(json['width'] as int?),
+      height: Value(json['height'] as int?),
+      capturedAt: DateTime.parse(json['captured_at'] as String),
+      uploadStatus: Value(json['upload_status'] as String),
+      uploadedAt: Value(_dateOrNull(json['uploaded_at'])),
+      isPrimary: Value(json['is_primary'] as bool),
       createdAt: DateTime.parse(json['created_at'] as String),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),

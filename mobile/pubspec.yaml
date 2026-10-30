@@ -50,6 +50,10 @@ dependencies:
   permission_handler: ^13.0.2
   wakelock_plus: ^1.8.0
   battery_plus: 7.1.2
+  image_picker: ^1.2.4
+  flutter_image_compress: ^2.5.1
+  crypto: ^3.0.8
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
