@@ -25,8 +25,8 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **3 · Sync core:** T025, T026, T029, T030, T027, T028, T031, T032
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
+- **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094

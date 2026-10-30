@@ -13,9 +13,10 @@ Start work on a ticket. Requested ticket (may be empty): $ARGUMENTS
      and stop.
    - If a ticket is already `in progress`, offer to resume it instead of starting a new one.
    - Otherwise take the **first ready ticket in the "Build order" list**, reading the stages top to
-     bottom. Skip the "Should/Could fill" stage and the Phase 2 stages until every Phase 1 Must
-     ticket is done (study tickets T076/T082/T086 only if the user asks). Mobile (Flutter) tickets are
-   picked like any other; never skip one because it is Flutter.
+     bottom. The "Should/Could fill" stage (5b) is worked in its place, before stage 6. Skip the
+     Phase 2 stages until every Phase 1 ticket is done (study tickets T076/T082/T086 only if the
+     user asks). Mobile (Flutter) tickets are picked like any other; never skip one because it
+     is Flutter.
 3. Read the ticket in full: its section in `docs/TICKET_DETAILS.md` (search `### T0xx ·`). Read the
    dependencies' sections only as far as needed to know what they built. Read the parts of
    `docs/CONVENTIONS.md` and `docs/DECISIONS.md` the ticket touches, and any outline section it cites
