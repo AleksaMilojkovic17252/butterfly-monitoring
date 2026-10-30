@@ -24,9 +24,9 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **2b · Catalogues and transects:** T019, T020, T021, T022, T024
 - **3 · Sync core:** T025, T026, T029, T030, T027, T028, T031, T032
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
-- **5 · Photos, environment, export, OGC:** T049, T050, T063, T064, T067, T068, T069, T059
+- **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -85,7 +85,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | todo |
 | T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
-| T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049 | 2.5 d | todo |
+| T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049, T106 | 2.5 d | todo |
 | T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | todo |
 | T052 | [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) | App plant entry with point and polygon drawing | P1 | should | T050, T051 | 2.5 d | todo |
 | T053 | [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) | HabitatFeature model and API | P1 | should | T020, T026 | 1.5 d | todo |
@@ -140,6 +140,9 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
+| T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | todo |
+| T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | todo |
+| T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
 
 ## Acceptance criteria
 
@@ -951,6 +954,9 @@ Depends on: T045
 - [ ] Selecting confidence `photo_required` prompts for a photo.
 - [ ] Editing a synced observation creates an `update` mutation with `baseVersion` (T029).
 
+From T106 (added 2026-10-30): "editing an existing observation" starts from the **Edit** button on T106's observation detail. This
+ticket enables that button (hidden until then, and on locked visits).
+
 ### T047 · Incidental and other-source observations
 [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) · E06 · P1 · should · labels: `mobile`, `backend`, `should` · implements F17 · est. 1 d · **todo**
 
@@ -959,6 +965,9 @@ Depends on: T045
 - [ ] The **Free observation** tile (project home) and a map long-press open the same entry sheet with a **source** picker: `incidental`, `larval_search`, `host_plant_search`.
 - [ ] No visit is needed (`survey_visit_id = null`). Position comes from GPS, or from the long-pressed or dragged map position, with accuracy set to `null` when placed manually.
 - [ ] These records are excluded from per-km and per-hour indicators (T061, T062) but included in species lists and exports.
+
+From T106 (added 2026-10-30): free observations have no visit, so T106's visit detail does not list them. They are reached from the
+map popup (T059) and open T106's observation detail.
 
 ### T048 · Automatic section assignment
 [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) · E06 · P1 · should · labels: `backend`, `should` · implements F19 · est. 1 d · **todo**
@@ -992,8 +1001,11 @@ Depends on: T003, T044
 ### T050 · App photo capture, compression and upload
 [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) · E06 · P1 · must · labels: `mobile`, `must` · implements F16, F27 · est. 2.5 d · **todo**
 
-Depends on: T030, T045, T049
+Depends on: T030, T045, T049, T106
 Notes: photo button moves into T046's extended section once that exists
+
+From T106 (added 2026-10-30): "the observation detail" below is T106's screen; this ticket fills its photo area (T106 is now a
+dependency). Photos whose file is not on this phone (taken on another phone, or before a reinstall) are T107.
 
 - [ ] Capture with `image_picker` (camera) or pick from the gallery. Several photos per observation, one marked primary.
 - [ ] Compress to max 2048 px on the long edge, JPEG quality 85 (`flutter_image_compress`), with EXIF orientation applied. The original camera file is deleted after compression.
@@ -1038,6 +1050,10 @@ Depends on: T050, T051
 - [ ] The reusable widget `GeometryCaptureWidget(modes: {point, line, polygon})` is shared with T054.
 - [ ] Reachable from the active visit (linked to the visit), from the project home "Plants & habitat" tile (not linked), and from T046's plant link.
 
+Added 2026-10-30 (the tile's screen was not specified; est. + 0.25 d): the **Plants & habitat** tile opens a screen with **Add plant**,
+**Add habitat** (enabled by T054) and the user's own plant records of this project, newest first: species (or "Unidentified"),
+role, date, and the visit date when linked. A row opens its edit form. This ticket enables the tile (T105 leaves it disabled until then).
+
 ### T053 · HabitatFeature model and API
 [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should`, `p2-compat` · implements F21 · est. 1.5 d · **todo**
 
@@ -1058,6 +1074,9 @@ Depends on: T052, T053
 - [ ] Habitat type and management pickers (from codelists), vegetation height (cm), cover sliders (shrub, tree, bare ground; 0–100 in steps of 5), flower abundance, grazing, mowing, disturbance and notes.
 - [ ] Point, line and polygon capture via `GeometryCaptureWidget` (T052).
 - [ ] Reachable from the active visit and from "Plants & habitat" on project home.
+
+Added 2026-10-30: habitat features join the list on T052's Plants & habitat screen (habitat type, date), with a filter chip
+All / Plants / Habitat, and this ticket enables its **Add habitat** button.
 
 ### T055 · Input validation rules (shared by app and server)
 [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) · E08 · P1 · must · labels: `backend`, `mobile`, `must` · implements F30 · est. 2 d · **done**
@@ -1135,6 +1154,9 @@ Notes: plant/habitat layers added when T051/T053 are done
 - [ ] **Layers** (toggle sheet): transects, sections, own observations (clustered with `flutter_map_marker_cluster`), plants, habitats, a selected visit's route, and the basemap.
 - [ ] **Filters:** visit, species, date range, life stage, behaviour, habitat type. The validation-status filter is dropped because the app doesn't store it.
 - [ ] Tapping a feature shows a popup with key fields and an "Open" link to its detail or edit screen.
+
+From T106 (added 2026-10-30): "Open" on an observation goes to T106's observation detail; on a plant or habitat feature it goes to
+its edit form (T052, T054); on a visit route it goes to T106's visit detail.
 - [ ] 5,000 observation markers render and pan smoothly on the test phone (timed in T074).
 - [ ] The online basemap uses OSM tiles with a correct `User-Agent` (`rs.<you>.butterfly`) and the attribution shown. Viewed tiles are cached (flutter_map tile caching). There is **no bulk prefetch** (OSM tile usage policy forbids it).
 
@@ -1856,3 +1878,67 @@ Why: the season dates and the daily window are local times at the study site. T0
 - [ ] `validation-rules.md` (W07 note) and D-067 updated.
 
 Needs a new dependency, the `timezone` package (Dart has no IANA database in the core library): ask the developer when the ticket is built. An unknown zone name falls back to the phone's zone.
+
+### T105 · Project home: the Start visit tile, and tiles not built yet
+[#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) · E02 · added 2026-10-30 as a follow-up to T017 · P1 · must · labels: `mobile`, `must` · est. 0.5 d · **todo**
+
+Depends on: T017, T033, T035, T039
+
+Why: T017 asked for the tile grid, but no ticket gives the **Start visit** tile a target, so tapping it does nothing. A visit can
+only be started through Transects → transect detail → Start visit. Free observation, Plants & habitat, Map and Statistics also do
+nothing on tap until T047, T052, T059 and T062 land, and three of those are Should, so they may stay that way in the Phase 1 build.
+
+- [ ] **Start visit** tile, reading Drift only (works offline):
+  - a visit of this project is `in_progress` → open its active visit screen (T039)
+  - else the user has drafts in this project → a bottom sheet with one row per draft ("Continue draft · transect code · date",
+    opening the start form) and **Choose a transect**
+  - else (or Choose a transect) → the transect list (T033) sorted by distance when a fix is known, so the nearest is on top
+- [ ] The start form still opens only from transect detail, so the inactive-transect, season and time-window checks stay in one place.
+- [ ] Tiles whose screen does not exist yet are drawn disabled (greyed, no ripple) with a short "Coming later" line, instead of doing
+  nothing on tap. The ticket that builds each screen enables its tile (T047, T052, T059, T062).
+
+Out of scope: closed projects (T099 disables the tile).
+
+### T106 · App visit detail and observation detail
+[#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) · E05 · added 2026-10-30 · P1 · must · labels: `mobile`, `must` · est. 1.5 d · **todo**
+
+Depends on: T033, T040, T041, T045
+
+Why: after a walk a researcher cannot look at what they recorded. The **My visits** rows on transect detail (T033) cannot be tapped,
+nothing lists a visit's observations, and no screen shows one observation. T050 puts thumbnails "in the observation detail", T059's
+map popup has an "Open" link and T046 edits "an existing observation", but no ticket builds that screen.
+
+- [ ] Tapping a row in **My visits**: `draft` opens the start form (T035), `in_progress` the active visit screen (T039), any other
+  status the new **visit detail**. Its route is not nested under the active visit route, so Back returns to transect detail.
+- [ ] **Visit detail** (read-only):
+  - transect, date, start and end in local time, observers, status (lock icon when locked, the reason when cancelled)
+  - walking time without pauses, distance and route coverage, reusing the T040 summary code
+  - start and end weather, the weather-suitable flag, the true-zero flag, notes
+  - a map with the transect, the sections and the walked route when the track points are on this phone. Track points are not
+    pulled (D-060), so on another phone the map shows the transect and "Route not on this phone".
+  - the visit's observations grouped by section (species, count, time); a row opens observation detail
+- [ ] **Observation detail** (read-only, its own route): species (scientific and local name), count, time, position and accuracy,
+  section, source, confidence, and the extended fields when set (sex, life stage, behaviour, notes). A photo area that T050 fills.
+  An **Edit** button that T046 enables (hidden until then, and on locked visits, T042).
+- [ ] Both screens read Drift only, work offline, and follow changes from a pull (`StreamProvider`). Soft-deleted rows are not shown.
+
+Out of scope: editing (T046), photos (T050), a project-wide list of all observations (the map, T059, covers it; free observations
+have no visit and are reached from the map popup).
+
+### T107 · App shows photos that are not on this phone
+[#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) · E06 · added 2026-10-30 as a follow-up to T050 · P1 · should · labels: `mobile`, `should` · est. 0.5 d · **todo**
+
+Depends on: T050, T106
+
+Why: pull brings the photo rows of the user's observations, but not the files, which live only on the phone that took them. After a
+reinstall or on a second phone, observation detail would show empty photos. The server already serves
+`GET /api/v1/photos/{id}/thumbnail` and `/content` to the owner (T049, D-072).
+
+- [ ] A photo row with no local file shows the server thumbnail when online. It is fetched through dio with the JWT (a path
+  relative to the server, D-013) and cached as `<app documents>/photo_cache/<photoId>_thumb.jpg`.
+- [ ] Tapping it opens the full image (`/content`), downloaded on demand and not kept.
+- [ ] Offline, or when the server has no uploaded file yet (404): a placeholder, "Photo is on the server" or "Not uploaded yet".
+- [ ] The cache is deleted on logout, and its size is included in the photo storage figure on the sync screen (T050).
+- [ ] No new dependency (dio and `Image.file`).
+
+Out of scope: downloading every photo ahead of time; seeing other phones' photos offline.
