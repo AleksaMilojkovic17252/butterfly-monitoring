@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
-- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
+- **P1 Should/Could fill (only if the velocity checkpoint allows):** T046, T107, T048, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -143,6 +143,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | todo |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | todo |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
+| T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 
 ## Acceptance criteria
 
@@ -968,6 +969,9 @@ Depends on: T045
 
 From T106 (added 2026-10-30): free observations have no visit, so T106's visit detail does not list them. They are reached from the
 map popup (T059) and open T106's observation detail.
+
+From T108 (added 2026-10-30): the route-recording screen of T108 reuses this entry sheet (source `incidental`), so butterflies seen
+while proposing a route are kept but are not a standardised count.
 
 ### T048 · Automatic section assignment
 [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) · E06 · P1 · should · labels: `backend`, `should` · implements F19 · est. 1 d · **todo**
@@ -1942,3 +1946,44 @@ reinstall or on a second phone, observation detail would show empty photos. The 
 - [ ] No new dependency (dio and `Image.file`).
 
 Out of scope: downloading every photo ahead of time; seeing other phones' photos offline.
+
+### T108 · Route proposals from the field
+[#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) · E03 · added 2026-10-30 · P1 · should · labels: `backend`, `mobile`, `admin`, `sync`, `should` · est. 2 d · **todo**
+
+Depends on: T022, T026, T037
+Notes: the Free observation button on the recording screen needs T047; without it the screen has no button
+
+Why: transects are drawn in Django admin, often without anyone having walked them. In the field a route can turn out to cross
+private land, a cliff or impassable vegetation. Today the researcher can only cancel the visit (`invalid_protocol`) and tell the
+admin. A transect created on the phone during a walk would not fit the method: a Pollard walk repeats a fixed route, a visit needs
+a transect with sections (T048, coverage in T040 and T100, indicators in T061), and transects are reference data written only by
+pull. So the researcher records a **proposal**, and an admin turns it into a transect; standardised visits start on it afterwards.
+
+- [ ] **Model** `TransectProposal` (`transect_proposal`, syncable, audited): project, proposer (set by the server from the
+  request), name, reason (`private_property`, `unsafe`, `impassable`, `better_route`, `other`), optional `replaces_transect` (same
+  project), notes, `geometry` (LineString 4326, valid, at least 2 points, rule V08), `recorded_from` and `recorded_to`, and
+  `length_m` computed by the server. Server-owned: `status` (`pending` | `accepted` | `rejected`), `review_note`, `reviewed_by`,
+  `reviewed_at`, `created_transect`. Push `create`, plus `update` and `delete` (soft) while `pending`; pull of the user's own
+  proposals. Django migration and Drift table.
+- [ ] **App, recording:** **Propose a route** on the transect list, and **Propose a replacement** on transect detail (fills in
+  `replaces_transect`). A recording screen with a map (the project's transects for reference, the recorded line), length, time,
+  Pause/Resume and Finish. Fixes come from `LocationSource` (foreground service, T037), use the accuracy rule of D-060, and are kept
+  in a local-only Drift table, so a killed app resumes the recording. Not available while a visit is in progress (one GPS stream).
+- [ ] **App, saving:** Finish asks for the name, reason and notes, builds the line from the usable fixes and queues the create.
+  **Discard** deletes the recording. If T047 is done, the recording screen has a **Free observation** button (source `incidental`).
+- [ ] **App, status:** a **My proposals** list on the transect list shows each proposal with its status, the review note, and the
+  new transect's code once accepted.
+- [ ] **Admin:** a proposal list (filters: project, status, reason) and a change view with the line on a map, the replaced
+  transect dashed beside it. Action **Create transect** (one proposal, intermediate form: code, name, "deactivate the replaced
+  transect"): creates a `Transect` with the proposal's line and `active = false`, sets `accepted` and `created_transect`, and
+  links to the new transect, where the admin cuts sections (T022) and then activates it. Action **Reject** with a required
+  reason (at least 10 characters).
+- [ ] Accepting changes no existing visit. A replaced transect is deactivated, never redrawn, so its past visits keep their line.
+- [ ] `docs/requirements/protocol.md` §9 step 0 says how routes are proposed (after the biologist confirms the method), and a
+  DECISIONS.md entry records why a proposal is not a visit.
+
+If time is short (0.5 d instead): an admin action **Create transect from this visit's route** on the visit admin, for a visit the
+researcher walked on the real route and cancelled as `invalid_protocol` with a note. No app work.
+
+Out of scope: section drawing on the phone; proposals in exports and the OGC views; editing the line of a pending proposal on the
+phone (discard and record again).
