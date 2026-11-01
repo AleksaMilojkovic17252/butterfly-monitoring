@@ -1626,3 +1626,20 @@ researchers. Open untrusted exports as text.
 `1.0`, and `1.10` would become `1.1`, so analysts read them as text (`dtype=str`, `col_types`). The round-trip script shows the guess.
 **Deferred.** `plant_resources`, `habitat_features` and `validation_history` have no tables yet (T051, T053, T058): 404 "Not available until
 T0xx", and listed under `not_included` in `metadata.json`.
+
+## D-078 · geo views: one migration per owning app, soft-deleted parents hidden
+2026-11-01 · accepted · T067
+**Three views now, two later.** `geo.transects`, `geo.transect_sections` and `geo.butterfly_observations` exist. `plant_resources` and
+`habitat_features` have no tables yet (T051, T053), so their views are added by those tickets, as T067's own note says. T068 configures only the three.
+**Migrations live in the app that owns the main table:** `transects/0005_geo_views` (two views) and `observations/0004_geo_views`. T051 and T053
+add theirs in `resources`. Dropping a column a view uses, or changing its type, also needs the view dropped and recreated (PostgreSQL refuses otherwise).
+**Soft-deleted parents are hidden too.** A view row needs its own `deleted_at IS NULL` and a live project (and a live transect for sections), the
+same rule as `projects_for` / `observations_for` behind the exports (D-077). Otherwise the transects of a deleted project would be published.
+**Labels.** Sections also expose `management_type_name_en`, because the criterion asks for codelist labels. Arrays (`behaviour`, `quality_flags`)
+are comma-separated text. `recorded_by_name` is on observations because pygeoapi is admin-only (T069); remove it if pygeoapi is ever made public.
+**No explicit `GRANT`.** `core/0001_schemas` sets default privileges for every view `django_app` creates in `geo`, and `core/0004` already relies on it.
+**PostGIS objects.** `pygeoapi_ro` can read `geometry_columns`, `geography_columns` and `spatial_ref_sys` in `public`: PostGIS grants them to `PUBLIC`,
+we grant nothing, and they hold no project data. That is what "cannot read any `public` table" means in practice.
+**Spatial indexes.** A view cannot hold an index. Bbox filters (`ST_Intersects(ST_MakeEnvelope(...), geometry)`, as pygeoapi 0.24 builds them) use the
+GiST indexes on the source tables through the view, so the views expose `geometry` unchanged: no cast, transform or wrapper. T102 measures it.
+**No automated check (D-021).** The "select one row from every view" test is shown by hand, with `SET ROLE pygeoapi_ro`.

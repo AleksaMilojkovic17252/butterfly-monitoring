@@ -45,7 +45,21 @@ operations = [
 
 The reverse migration drops the view. The migration autodetector does not see views, so renaming a
 column that a view uses needs a hand-written migration that drops and recreates the dependent views.
-T067 adds a check that selects from every view to catch this.
+There is no automated check that selects from every view (D-021); after a change to a model that a view
+reads, select one row from each view as `pygeoapi_ro` by hand (D-078).
+
+The current views and the migration that creates each:
+
+| View | Migration |
+|---|---|
+| `geo.transects`, `geo.transect_sections` | `transects/0005_geo_views` |
+| `geo.butterfly_observations` | `observations/0004_geo_views` |
+
+`geo.plant_resources` and `geo.habitat_features` follow with T051 and T053. A view's migration lives in the
+app that owns its main table. Views hide soft-deleted rows and the rows of soft-deleted parents (D-078).
+
+PostGIS's own `geometry_columns`, `geography_columns` and `spatial_ref_sys` in `public` are readable by
+`PUBLIC`, so `pygeoapi_ro` can read them. That is not a grant of ours, and they hold no project data.
 
 ## Schemas from the outline that are not used in Phase 1
 

@@ -102,7 +102,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | done |
 | T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | todo |
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
-| T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | todo |
+| T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | todo |
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | todo |
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
@@ -1025,6 +1025,7 @@ dependency). Photos whose file is not on this phone (taken on another phone, or 
 
 Depends on: T020, T044, T049
 From T064: add the `plant_resources` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
+From T067: add `geo.plant_resources` with `CreateView` in a `resources` migration (columns in TICKET_DETAILS T067; also hide rows of soft-deleted projects, D-078; the table keeps GeoDjango's GiST index on `geometry` and the view exposes that column unchanged), and its pygeoapi collection if T068 is done.
 
 - [ ] Model, push and pull registration, and REST (outline §14):
   - `POST /api/v1/plant-resources`
@@ -1065,6 +1066,7 @@ role, date, and the visit date when linked. A row opens its edit form. This tick
 
 Depends on: T020, T026
 From T064: add the `habitat_features` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
+From T067: add `geo.habitat_features` with `CreateView` in a `resources` migration (columns in TICKET_DETAILS T067; also hide rows of soft-deleted projects, D-078; the table keeps GeoDjango's GiST index on `geometry` and the view exposes that column unchanged), and its pygeoapi collection if T068 is done.
 
 - [ ] Model, push and pull registration, and REST (outline §14):
   - `POST /api/v1/habitat-features`
@@ -1272,10 +1274,12 @@ Depends on: T064, T067
 - [ ] Opens in QGIS with correct CRS and attribute types (checked manually; screenshot in docs).
 
 ### T067 · `geo` views for the five collections
-[#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) · E10 · P1 · must · labels: `database`, `ogc`, `must` · implements F40, F45 · est. 2 d · **todo**
+[#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) · E10 · P1 · must · labels: `database`, `ogc`, `must` · implements F40, F45 · est. 2 d · **done**
 
 Depends on: T004, T021, T044
 Notes: plant/habitat views added when T051/T053 are done
+Note: `geo.plant_resources` and `geo.habitat_features` are added by T051/T053 (the ticket's own note). The two "test" criteria are shown by hand with `SET ROLE` (D-021). See D-078.
+Deferred: `geo.plant_resources` (to T051) and `geo.habitat_features` (to T053), because their tables do not exist yet.
 
 - [ ] The views `geo.transects`, `geo.transect_sections`, `geo.butterfly_observations`, `geo.plant_resources` and `geo.habitat_features` are created by migration (`CreateView` from T004).
 - [ ] Arrays become comma-separated text (`behaviour`, `quality_flags`), because array attributes are poorly supported in OGC API Features clients and QGIS.
@@ -1289,6 +1293,7 @@ Notes: plant/habitat views added when T051/T053 are done
 Depends on: T007, T067
 
 Note: skeleton collection already removed in T044.
+From T067: only `transects`, `transect-sections` and `butterfly-observations` have views until T051/T053. Configure those three: pygeoapi does not start if a configured view is missing.
 
 - [ ] `pygeoapi/config/pygeoapi-config.yml`:
   - server `url: http://localhost:8080/ogc` (set it to the Tailscale URL if you browse it from elsewhere)
@@ -1845,6 +1850,7 @@ Out of scope: statistics (GLMs) in the system; analysis in R uses the export. GP
 
 Depends on: T048, T056, T071
 Notes: + T100 and T101 queries if done
+From T067: add the OGC bbox queries to the fixed SQL files: `SELECT * FROM geo.<view> WHERE ST_Intersects(ST_MakeEnvelope(<bbox>, 4326), geometry)` for each `geo` view that exists, which is the filter pygeoapi 0.24 generates. Include `geo.transects`: on the dev data the planner used its `project_id` index rather than GiST, so check which index it picks at scale.
 
 Why: the code already casts geometry to `geography` (`surveys/services.py`, `transects/services.py`), and a geography cast in a filter or
 in KNN cannot use the GiST index on `geometry`. Nothing measures whether the spatial queries use their indexes. T096 reuses this method in Phase 2.

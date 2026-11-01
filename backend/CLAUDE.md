@@ -69,8 +69,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   on audited models (it skips history); save instances, with `save_with_reason` when a reason is
   required.
 - **`geo` views** for pygeoapi are created with `CreateView("geo.<name>", "<select>")` in a
-  migration. The autodetector does not see them: renaming or dropping a column a view uses needs
-  a hand-written migration that drops and recreates the view. Never set `security_invoker` and
+  migration in the app that owns the view's main table. The autodetector does not see them:
+  renaming or dropping a column a view uses, or changing its type, needs a hand-written migration
+  that drops and recreates the view (PostgreSQL refuses otherwise). Never set `security_invoker` and
   never grant `pygeoapi_ro` anything on `public` (D-004).
 - Always read a generated migration before applying it. Never edit an applied migration.
 
