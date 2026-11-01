@@ -60,6 +60,9 @@ scripts/restore.sh <backup-dir>
 
 # MinIO user for Django (T049; docs/setup/minio.md). Rerun after a fresh volume; restore.sh does it.
 scripts/minio-setup.sh
+
+# OGC collections, filters and paging (T068)
+scripts/ogc-smoke.sh [base-url]
 ```
 
 ## Code style and conventions

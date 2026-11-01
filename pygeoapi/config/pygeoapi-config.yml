@@ -1,4 +1,4 @@
-# Minimal pygeoapi configuration (T002). Collections come with T067/T068.
+# pygeoapi configuration (T068): read-only collections over the geo views (T067).
 server:
   bind:
     host: 0.0.0.0
@@ -25,6 +25,8 @@ metadata:
     keywords:
       - butterflies
       - monitoring
+      - transects
+      - pollard walk
     keywords_type: theme
     terms_of_service: https://creativecommons.org/licenses/by/4.0/
     url: http://localhost:8080
@@ -38,4 +40,67 @@ metadata:
     name: Project maintainer
     email: kolica@live.com
 
-resources: {}  # collections arrive with T068
+resources:
+  transects:
+    type: collection
+    title: Transects
+    description: Monitored butterfly transect routes, one line per transect
+    keywords: [transects, monitoring]
+    extents:
+      # Static and deliberately wide: all of Europe, so a project abroad needs no config change (T068,
+      # D-079). Metadata only: it does not filter anything.
+      spatial: &spatial_extent
+        bbox: [-25, 34, 45, 72]
+        crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+    providers:
+      - type: feature
+        name: PostgreSQL
+        # The read-only role (D-004). The views are in geo; PostGIS's types are in public.
+        data: &database
+          host: db
+          port: 5432
+          dbname: ${POSTGRES_DB}
+          user: ${PYGEOAPI_DB_USER}
+          password: ${PYGEOAPI_DB_PASSWORD}
+          search_path: [geo, public]
+        id_field: id
+        table: transects
+        geom_field: geometry
+        title_field: name
+
+  transect-sections:
+    type: collection
+    title: Transect sections
+    description: Numbered sections of each transect, with habitat and management type
+    keywords: [transects, sections, habitat]
+    extents:
+      spatial: *spatial_extent
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data: *database
+        id_field: id
+        table: transect_sections
+        geom_field: geometry
+        title_field: section_code
+
+  butterfly-observations:
+    type: collection
+    title: Butterfly observations
+    description: Butterfly records with the taxon as recorded (taxon_*) and as validated (effective_*)
+    keywords: [butterflies, observations]
+    extents:
+      spatial: *spatial_extent
+      # Static: the earliest start and latest end of the live projects' seasons (T068, D-079).
+      temporal:
+        begin: 2026-03-01T00:00:00Z
+        end: 2026-12-31T23:59:59Z
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data: *database
+        id_field: id
+        table: butterfly_observations
+        geom_field: geometry
+        time_field: observed_at
+        title_field: effective_scientific_name

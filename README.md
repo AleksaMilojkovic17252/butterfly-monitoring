@@ -35,7 +35,16 @@ Run from the repository root:
 
 ```bash
 DC="docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml"
-$DC up -d --build      # first start builds the django image and pulls the others
+# First start on an empty database: pygeoapi does not start until migrate has created its views.
+$DC up -d --build db minio django
+$DC exec django python manage.py migrate
+$DC up -d
+```
+
+Day to day:
+
+```bash
+$DC up -d --build      # builds the django image and pulls the others
 $DC ps                 # all five services should become "healthy"
 $DC logs -f django
 $DC down               # stops the stack; data volumes are kept
@@ -51,7 +60,7 @@ Never run `$DC down -v`: it deletes the database and the stored photos.
 | `http://localhost:9001` | MinIO console (this machine only) |
 | `localhost:5432` | PostgreSQL, for `psql` and QGIS (this machine only) |
 
-Check the stack with `curl localhost:8080/api/v1/health/` (`{"status":"ok","db":true,"storage":true}`). API docs: `http://localhost:8080/api/v1/docs/`.
+Check the stack with `curl localhost:8080/api/v1/health/` (`{"status":"ok","db":true,"storage":true}`); browse the OGC collections at `http://localhost:8080/ogc/collections`. API docs: `http://localhost:8080/api/v1/docs/`.
 
 ### Data
 

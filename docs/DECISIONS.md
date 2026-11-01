@@ -1643,3 +1643,26 @@ we grant nothing, and they hold no project data. That is what "cannot read any `
 **Spatial indexes.** A view cannot hold an index. Bbox filters (`ST_Intersects(ST_MakeEnvelope(...), geometry)`, as pygeoapi 0.24 builds them) use the
 GiST indexes on the source tables through the view, so the views expose `geometry` unchanged: no cast, transform or wrapper. T102 measures it.
 **No automated check (D-021).** The "select one row from every view" test is shown by hand, with `SET ROLE pygeoapi_ro`.
+
+## D-079 · pygeoapi collections: three now, static extents, known limits
+2026-11-01 · accepted · T068
+**Three collections now, two later.** `transects`, `transect-sections` and `butterfly-observations` read the `geo` views from T067. `plant-resources` and
+`habitat-features` have no views yet (T051, T053), and the image's entrypoint runs pygeoapi with `--fail-on-invalid-collection` and exits if a configured
+collection is invalid, which would leave nginx waiting for a healthy pygeoapi. T051 and T053 add their collections with their views.
+**VERIFY results (pygeoapi 0.24.0).** `time_field` works on a view: `datetime=` filters, queryables report `observed_at` as `date-time`, output is ISO 8601.
+CQL2 `filter=` works (`cql2-text`, the default language). The container port is 5000, as compose and nginx already say. The OpenAPI document is regenerated on
+every start by the image's `/entrypoint.sh` (`pygeoapi openapi generate`), so no code. There is no `editable`: create and delete answer 400, and `pygeoapi_ro` has no write rights anyway.
+**`search_path: [geo, public]`.** The views are in `geo`; PostGIS's `geometry` type is in `public`. The role still has no grant on any `public` table (D-004, D-078).
+The connection block is written once as a YAML anchor (`&database`) and reused; the extent as `&spatial_extent`. The anchors sit on the first collection, not in a top-level `x-` key.
+**Extents are static metadata and filter nothing.** Spatial: all of Europe (`-25, 34, 45, 72`), chosen on purpose over a box fitted to Serbia (`19.7, 43.32, 21.96, 45.18`): the spatial extent is metadata only (pygeoapi never compares a query with it), so a project abroad would only misplace the initial map, and a wide box needs no edit. The cost is that the collection map and QGIS start zoomed out. A computed extent was rejected for T068 (start-up dependency, empty-view failure). Temporal: the earliest start to the
+latest end of the live projects' seasons (2026-03-01 to 2026-12-31), on observations only, since the other two collections have no time field. Widen the temporal one when a season outside it is added.
+**Known limits, recorded and not fixed (seven).**
+1. `datetime=` on a collection without `time_field` (`transects`, `transect-sections`) answers 500 ("time_field not enabled"): provider behaviour. T070's CITE run may report it.
+2. An unknown query property (`?nonsense=1`) is silently ignored and returns everything, so a typo looks like "no filter".
+3. Without `sortby` there is no `ORDER BY`, so `OFFSET` paging is not guaranteed stable. Clients paging large data send `sortby=id`; the smoke script does.
+4. On a fresh database pygeoapi does not start until `migrate` has created the views, and nginx waits for a healthy pygeoapi. The README's first-start order changed for that. `restore.sh` is unaffected: it restores the database first.
+5. pygeoapi reads a view's columns and generates OpenAPI at start, so a migration that changes a view needs a pygeoapi restart afterwards.
+6. A `datetime` window wholly outside the collection's temporal extent answers 400 "datetime parameter out of range" (`validate_datetime`), not an empty result. The extent is static, so
+   observations dated outside 2026-03-01 to 2026-12-31 (a 2027 season) cannot be queried by `datetime` until the extent in the config is widened. Found by the smoke script's first run.
+7. Harmless log noise: `int() argument ... NoneType` at `itemtypes.py:283` when `offset` is absent, and `unknown locale 'bbox'` (and `crs`, `host`, ...) on `f=html`. Only key names are logged.
+**`server.url` stays `http://localhost:8080/ogc`**, the ticket's accepted limit: `next`/`prev` links and the HTML pages use it, so they only work from the laptop itself until it is changed (Tailscale name).

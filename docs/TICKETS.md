@@ -103,7 +103,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | todo |
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
-| T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | todo |
+| T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | todo |
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | todo |
@@ -1025,6 +1025,7 @@ dependency). Photos whose file is not on this phone (taken on another phone, or 
 
 Depends on: T020, T044, T049
 From T064: add the `plant_resources` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
+From T068: add the `plant-resources` collection to `pygeoapi/config/pygeoapi-config.yml` (same pattern, `time_field: observed_at`, `title_field: plant_scientific_name`) and to `scripts/ogc-smoke.sh`. Run `migrate` before restarting pygeoapi: it does not start if a configured view is missing.
 From T067: add `geo.plant_resources` with `CreateView` in a `resources` migration (columns in TICKET_DETAILS T067; also hide rows of soft-deleted projects, D-078; the table keeps GeoDjango's GiST index on `geometry` and the view exposes that column unchanged), and its pygeoapi collection if T068 is done.
 
 - [ ] Model, push and pull registration, and REST (outline §14):
@@ -1066,6 +1067,7 @@ role, date, and the visit date when linked. A row opens its edit form. This tick
 
 Depends on: T020, T026
 From T064: add the `habitat_features` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
+From T068: add the `habitat-features` collection to `pygeoapi/config/pygeoapi-config.yml` (same pattern, `title_field: habitat_type_name_en`) and to `scripts/ogc-smoke.sh`. Run `migrate` before restarting pygeoapi: it does not start if a configured view is missing.
 From T067: add `geo.habitat_features` with `CreateView` in a `resources` migration (columns in TICKET_DETAILS T067; also hide rows of soft-deleted projects, D-078; the table keeps GeoDjango's GiST index on `geometry` and the view exposes that column unchanged), and its pygeoapi collection if T068 is done.
 
 - [ ] Model, push and pull registration, and REST (outline §14):
@@ -1288,12 +1290,14 @@ Deferred: `geo.plant_resources` (to T051) and `geo.habitat_features` (to T053), 
 - [ ] A test selects one row from every view after migrations (catches view breakage when models change).
 
 ### T068 · pygeoapi collections, filtering and paging
-[#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) · E10 · P1 · must · labels: `ogc`, `infra`, `must` · implements F39, F40, F41 · est. 1.5 d · **todo**
+[#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) · E10 · P1 · must · labels: `ogc`, `infra`, `must` · implements F39, F40, F41 · est. 1.5 d · **done**
 
 Depends on: T007, T067
 
 Note: skeleton collection already removed in T044.
 From T067: only `transects`, `transect-sections` and `butterfly-observations` have views until T051/T053. Configure those three: pygeoapi does not start if a configured view is missing.
+Note: only three collections, because the plant and habitat views do not exist yet (T051/T053). OpenAPI regeneration is the image's entrypoint, so no code. Skeleton collection already removed in T044. VERIFY: time_field on a view and CQL2 filter= both work on pygeoapi 0.24.0; see D-079. The T044 smoke observation near 0°N 0°E was soft-deleted by hand from the dev database at the developer's request.
+Deferred: the `plant-resources` and `habitat-features` collections, to T051 and T053.
 
 - [ ] `pygeoapi/config/pygeoapi-config.yml`:
   - server `url: http://localhost:8080/ogc` (set it to the Tailscale URL if you browse it from elsewhere)
@@ -1321,6 +1325,7 @@ From T067: only `transects`, `transect-sections` and `butterfly-observations` ha
 [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) · E10 · P1 · must · labels: `ogc`, `security`, `infra`, `must` · implements F68 · est. 1.5 d · **todo**
 
 Depends on: T011, T013, T068
+From T068: `infrastructure/nginx/default.conf` has an exact `location = /ogc` block as well as `location /ogc/`: both need the auth_request, or the landing page stays open. Keep `proxy_pass http://pygeoapi;` with no URI: the container listens on 5000 under SCRIPT_NAME=/ogc, so the ticket's `http://pygeoapi:80/` is wrong here. `scripts/ogc-smoke.sh` sends no credentials, so give it an auth header.
 
 - [ ] Django `GET /api/v1/auth/verify/` (called only by nginx) returns:
   - **204** when the request carries a valid `Authorization: Bearer <JWT>`, `Authorization: Token <personal token>` or (fallback) `Basic <email:password>`, **and** the user is active and in `admin`
@@ -1369,6 +1374,7 @@ location = /_auth {
 [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) · E10 · P1 · must · labels: `ogc`, `evaluation`, `must` · implements F43 · est. 1.5 d · **todo**
 
 Depends on: T069, T071
+From T068: `datetime=` on `transects` and `transect-sections` answers 500 (no time_field; provider behaviour), and unknown query parameters are ignored rather than rejected: expect CITE to comment on both, and explain them in the results. A `datetime` window outside a collection's temporal extent answers 400, not an empty result (D-079). Page with `sortby=id`: without it there is no ORDER BY, so OFFSET paging is not guaranteed stable.
 
 - [ ] **QGIS** (version recorded): add an OGC API – Features connection with the token, load all 5 collections, check attribute types and geometry, and use the Temporal Controller on observations. Screenshots go in `evaluation/interop/`.
 - [ ] **Python notebook:** reads each collection with `geopandas.read_file(url)` (or requests plus `GeoDataFrame.from_features`) with the token, and pages through more than 1000 features of simulated data.
