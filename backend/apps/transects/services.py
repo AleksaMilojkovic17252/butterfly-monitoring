@@ -225,3 +225,19 @@ def section_length_mismatch(transect):
     if abs(sections_m - transect_m) > LENGTH_MISMATCH_TOLERANCE * transect_m:
         return sections_m, transect_m
     return None
+
+
+def nearest_section_id(transect_id, point, max_distance_m):
+    """Id of the live section of the transect nearest to `point` within `max_distance_m` metres,
+    or None. On a tie (a shared end point) the lower sequence number wins."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT id FROM transect_section"
+            " WHERE transect_id = %s AND deleted_at IS NULL"
+            " AND ST_DWithin(geometry::geography, ST_GeomFromEWKT(%s)::geography, %s)"
+            " ORDER BY geometry::geography <-> ST_GeomFromEWKT(%s)::geography, sequence_number"
+            " LIMIT 1",
+            [transect_id, point.ewkt, float(max_distance_m), point.ewkt],
+        )
+        row = cursor.fetchone()
+    return row[0] if row else None

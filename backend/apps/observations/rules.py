@@ -139,15 +139,20 @@ def _v08_geometry(data, errors):
     geometry = data.get("geometry")
     if geometry is None:
         return
-    valid = (
-        geometry.geom_type == "Point"
+    if not is_valid_point(geometry):
+        _add(errors, "geometry", "V08")
+
+
+def is_valid_point(geometry):
+    """True for a non-empty, valid point inside the longitude and latitude limits (V08's test)."""
+    return (
+        geometry is not None
+        and geometry.geom_type == "Point"
         and not geometry.empty
         and geometry.valid
         and MIN_LONGITUDE <= geometry.x <= MAX_LONGITUDE
         and MIN_LATITUDE <= geometry.y <= MAX_LATITUDE
     )
-    if not valid:
-        _add(errors, "geometry", "V08")
 
 
 def _w02_poor_accuracy(data, context):

@@ -35,8 +35,10 @@ from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
 from apps.sync.handlers import current_push_reason, soft_delete_pushed
+from apps.transects.services import nearest_section_id
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /observations
+REASSIGN_REASON = "reassign sections"  # history_change_reason of the admin action (T048)
 UPLOAD_REASON = "photo upload"  # history_change_reason of the server's own upload saves
 CHUNK_BYTES = 64 * 1024
 MAX_PHOTO_PIXELS = (
@@ -98,6 +100,8 @@ def build_new_observation(user, observation_id, data):
     observation = ButterflyObservation(id=observation_id, created_by=user, **values)
     _check_context(user, observation)
     _check_recorder(user, observation)
+    if observation.transect_section_id is None:
+        observation.transect_section_id = _nearest_section_id(observation)
     observation.validation_status = initial_validation_status(
         observation.identification_confidence, observation.taxon
     )
@@ -125,6 +129,8 @@ def apply_observation_changes(user, observation, data):
         _check_context(user, observation)
     if "recorded_by" in changes:
         _check_recorder(user, observation)
+    if changes.get("transect_section", "absent") is None:
+        observation.transect_section_id = _nearest_section_id(observation)
     return observation
 
 
@@ -223,6 +229,31 @@ def check_admin_edit(admin_user, observation, changed_fields):
 def admin_save_observation(observation, admin_user, reason, changed_fields):
     check_admin_edit(admin_user, observation, changed_fields)
     return save_observation(observation, admin_user, reason or "admin edit")
+
+
+def reassign_section(observation, admin_user):
+    """Admin action: recompute from the position. Replaces any section, or clears it when the
+    point is too far. True when it changed. Saved per row, so history applies. Refuses a locked
+    visit."""
+    _lock_visit(observation)
+    section_id = _nearest_section_id(observation)
+    if section_id == observation.transect_section_id:
+        return False
+    observation.transect_section_id = section_id
+    save_observation(observation, admin_user, REASSIGN_REASON)
+    return True
+
+
+def _nearest_section_id(observation):
+    """The section the server works out, or None: no visit, an invalid point (V08 rejects it on
+    save) or nothing within the protocol's distance. The visit's transect is the one that counts."""
+    if observation.survey_visit_id is None or not rules.is_valid_point(observation.geometry):
+        return None
+    return nearest_section_id(
+        observation.survey_visit.transect_id,
+        observation.geometry,
+        observation.project.protocol.max_distance_from_transect_m,
+    )
 
 
 def _rule_data(observation):

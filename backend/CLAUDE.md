@@ -45,6 +45,8 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `apps/observations/rules.py` and `apps/surveys/rules.py`; `save_observation` and `save_visit` call the hard rules (the warning
   functions are not called by the services),
   and a rejection is `{"<field>": ["V04"]}` (the message is the rule ID).
+- Section assignment (T048, D-084): `transects.services.nearest_section_id` finds the section; `observations.services`
+  calls it on create, and `SyncEntity.server_fills_null` makes a pushed null section mean "server fills it in".
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
   `save_visit` calls for a finished visit (D-076).
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the

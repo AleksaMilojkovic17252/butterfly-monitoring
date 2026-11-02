@@ -83,7 +83,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | done |
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | done |
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
-| T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | todo |
+| T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | done |
 | T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
 | T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049, T106 | 2.5 d | done |
 | T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | todo |
@@ -979,9 +979,11 @@ From T108 (added 2026-10-30): the route-recording screen of T108 reuses this ent
 while proposing a route are kept but are not a standardised count.
 
 ### T048 · Automatic section assignment
-[#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) · E06 · P1 · should · labels: `backend`, `should` · implements F19 · est. 1 d · **todo**
+[#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) · E06 · P1 · should · labels: `backend`, `should` · implements F19 · est. 1 d · **done**
 
 Depends on: T044
+Deferred: the `far_from_transect` flag of the third criterion goes to T056 (agreed 2026-11-02); T048 only leaves the section empty.
+Notes: shown by hand on the demo transect NI1 (14 smoke cases, `tmp/t048/smoke.py`): push create with a null section gets the nearest one, the phone's guess is kept, a section of another transect is rejected, a far point gets no section, a resent create changes nothing, REST PATCH with null assigns, an admin's clearing stays, and **Reassign sections** fixes, clears and skips as expected with `reassign sections` history rows. "Tests with the seeded demo transects" is skipped as test-only (D-021) and run by hand on the demo transects instead. The `far_from_transect` flag is deferred to T056 (agreed 2026-11-02): T048 only leaves the section empty; see D-084. Beyond the criteria, the Transect filter was removed from the Transect section list in the admin (it listed every transect; the search box still finds them).
 
 - [ ] The app sends its current-section guess (T039). If the client sends `null`, the server assigns the nearest section of the visit's transect within `max_distance_from_transect_m`.
 - [ ] A client-sent section is kept unless it belongs to a different transect, which is rejected.

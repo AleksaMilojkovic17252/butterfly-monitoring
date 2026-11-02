@@ -40,6 +40,8 @@ class SyncEntity:
     push: PushHandlers | None = None
     # Fields of this type that clients may not set, on top of the common ones (sync.services).
     server_owned: frozenset[str] = frozenset()
+    # Fields where a null in a push create means "the server fills this in", not "clear it" (T048).
+    server_fills_null: frozenset[str] = frozenset()
     # True for reference data (read-only for the phone); the offline package status (T031) is
     # the max `server_version` over these.
     reference: bool = False
@@ -113,6 +115,7 @@ ENTITIES = [
             project_of=observations.project_of,
             guard=observations.guard_observation,
         ),
+        server_fills_null=frozenset({"transect_section"}),
     ),
     # Scoped to created_by = user. The upload fields are the server's own (the three upload steps
     # set them, not the phone); the bytes never travel through push (T049).

@@ -68,6 +68,16 @@ snapshot (T063).
   `far_from_transect` (T056, `max_distance_from_transect_m`). It is never rejected.
 - Observations outside the project's study area get `outside_project_area`.
 
+**Section of an observation** (T048, D-084). A transect observation is linked to the section it was seen in.
+The phone's guess is kept (it must be a live section of the visit's transect). When the phone sends none, the server
+takes the nearest live section of the visit's transect within the same distance (`max_distance_from_transect_m`);
+farther than that, the observation has no section. An observation with no visit has none either. An admin's
+**Reassign sections** action recomputes it from the position.
+
+**Known limitation.** Phone GPS error of 5–15 m can put an observation in the neighbouring section when it is near a
+section boundary. At the shared end of two sections the lower-numbered one is chosen. Section analysis is therefore
+approximate near boundaries.
+
 ## 6. Valid visit
 
 A visit counts as **valid** for analysis when all of these hold:

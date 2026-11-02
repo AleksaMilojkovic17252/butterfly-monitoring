@@ -1,11 +1,18 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.db import transaction
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin, add_validation_errors
+from apps.core.admin import (
+    _RULE_ID,
+    HistoryAdmin,
+    MapAdmin,
+    SyncableAdmin,
+    add_validation_errors,
+)
 from apps.observations import services
 from apps.observations.models import Behaviour, ButterflyObservation, Photo, UploadStatus
 from apps.surveys.state import VisitLocked
@@ -38,6 +45,21 @@ def _explain_rule(observation, field, rule_id):
     }
     default = _("'{label}' is not one of the allowed choices.").format(label=label)
     return field, texts.get(rule_id, default)
+
+
+def _refusal_text(observation, error):
+    """What the action says when it refused `observation`: a rule ID becomes its sentence."""
+    if not isinstance(error.detail, dict):
+        return str(error.detail)
+    sentences = []
+    for field, messages_ in error.detail.items():
+        if isinstance(messages_, str):  # DRF keeps a lone string as it is
+            messages_ = [messages_]
+        for message in messages_:
+            if _RULE_ID.match(str(message)):
+                message = _explain_rule(observation, field, str(message))[1]
+            sentences.append(str(message))
+    return " ".join(sentences)
 
 
 class ButterflyObservationAdminForm(forms.ModelForm):
@@ -181,6 +203,7 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
     raw_id_fields = ["taxon", "transect_section"]
+    actions = [*SyncableAdmin.actions, "reassign_sections"]
 
     def get_fields(self, request, obj=None):
         # Model order, editable or not; photo_count is computed, so it is added by name.
@@ -202,6 +225,47 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     @admin.display(description=_("Photos"))
     def photo_count(self, observation):
         return services.photo_count(observation)
+
+    @admin.action(description=_("Reassign sections"), permissions=["change"])
+    def reassign_sections(self, request, queryset):
+        """Recompute each selected observation's section from its position (T048). Each one is
+        saved on its own, so history applies and a refused one is named, not fatal to the rest."""
+        changed = unchanged = skipped = 0
+        refused = []
+        for observation_id in list(
+            queryset.filter(deleted_at__isnull=True).values_list("pk", flat=True)
+        ):
+            try:
+                with transaction.atomic():
+                    # Load it again, locked: a push may have changed it since the list was shown.
+                    observation = (
+                        ButterflyObservation.objects.alive()
+                        .select_for_update()
+                        .filter(pk=observation_id)
+                        .first()
+                    )
+                    if observation is None:
+                        continue  # deleted in the meantime
+                    if observation.survey_visit_id is None:
+                        skipped += 1
+                        continue
+                    if services.reassign_section(observation, request.user):
+                        changed += 1
+                    else:
+                        unchanged += 1
+            except APIException as error:
+                refused.append(f"{observation} ({_refusal_text(observation, error)})")
+        self.message_user(
+            request,
+            _("Reassigned %(changed)d, unchanged %(unchanged)d, without a visit %(skipped)d.")
+            % {"changed": changed, "unchanged": unchanged, "skipped": skipped},
+        )
+        if refused:
+            self.message_user(
+                request,
+                _("Not changed: %(observations)s") % {"observations": "; ".join(refused)},
+                messages.ERROR,
+            )
 
     def has_add_permission(self, request):
         return False

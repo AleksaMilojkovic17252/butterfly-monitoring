@@ -340,6 +340,16 @@ def _apply(user, mutation):
     operation = mutation["operation"]
     entity_id = mutation["entity_id"]
     data = _strip(mutation["payload"], entity)
+    # In a create (or a resent create) a null here is not a client change: the server fills it in
+    # (T048). An update keeps its null, so the phone can still clear the field. Not done in
+    # `_strip`, which `_merge` also runs on the current row, where a cleared value is a server
+    # change.
+    if operation == "create":
+        data = {
+            key: value
+            for key, value in data.items()
+            if not (key in entity.server_fills_null and value is None)
+        }
 
     if operation == "create_batch":
         _require(entity, "create_batch")

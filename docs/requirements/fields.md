@@ -76,7 +76,7 @@ Server-owned: `locked_at`, `locked_by`, `lock_reason`, `quality_flags`.
 ## ButterflyObservation ⟳ (T044)
 Mandatory: `project`, `observed_at`, `taxon`, `count` (≥ 1), `geometry` (Point), `recorded_by`,
 `identification_confidence` (D confirmed_in_field). `survey_visit` M when `source = transect`.
-Optional: `transect_section` (set by T048 or by hand), `location_accuracy_m`, `sex` (D unknown),
+Optional: `transect_section` (the phone's guess, else nearest by the server (T048), or by hand), `location_accuracy_m`, `sex` (D unknown),
 `life_stage` (D adult), `behaviour` (list), `microhabitat`, `flight_direction_deg` (0–359), `notes`,
 `host_plant_record`, `nectar_plant_record` (T051). `source` D transect.
 Server-owned: `validation_status`, `validated_taxon`, `validated_by`, `validated_at`,

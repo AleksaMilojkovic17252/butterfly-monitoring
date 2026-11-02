@@ -262,7 +262,7 @@ class TransectSectionAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
         "active_transect",
     ]
     list_select_related = ["transect", "habitat_type"]
-    list_filter = ["transect__project", "transect", "habitat_type"]
+    list_filter = ["transect__project", "habitat_type"]
     search_fields = ["section_code", "transect__code", "transect__name"]
     autocomplete_fields = ["transect", "habitat_type", "management_type"]
     exclude = ["deleted_at"]
