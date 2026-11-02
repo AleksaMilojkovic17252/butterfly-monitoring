@@ -25,7 +25,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **3 · Sync core:** T025, T026, T029, T030, T027, T028, T031, T032
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
-- **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
+- **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T110, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
@@ -145,6 +145,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | todo |
+| T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | todo |
 
 ## Acceptance criteria
 
@@ -2048,3 +2049,46 @@ with no error anywhere. Seen with T063: `admin@demo` did not see the Environment
   describe what happens. A DECISIONS.md entry records the chosen hook (for example, run after the last project app's `post_migrate`).
 
 Out of scope: a custom permission framework (CLAUDE.md); changing which permissions the group holds; tests (D-021).
+
+### T110 · App adds an observation to a finished visit
+[#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) · E06 · added 2026-11-02 as a follow-up to T045 and T106 · P1 · should · labels: `mobile`, `should` · est. 1.5 d · **todo**
+
+Depends on: T045, T046, T106
+Notes: draft; the open questions below are to be settled with the developer before building. The GitHub issue #127 is not created yet.
+
+Why: Add butterfly exists only on the active visit screen, and `ObservationRepository._checkVisit` refuses any visit that is not `in_progress`
+("The visit is no longer in progress."). A researcher who finishes a visit and then remembers a butterfly, or finishes too early, cannot add it.
+The visit never goes back to `in_progress` (visit-states.json), Django admin has no add for observations (D-065, "No add"), and T047's free
+observation has no visit, so it would drop out of the visit's counts and the per-km and per-hour indicators (T061, T062). The server already
+accepts the record: rule V03 lists `in_progress`, `completed`, `synced` and `reviewed` as statuses an observation may be recorded on
+(`apps/observations/rules.py:17`), and V04 only requires `observed_at` between the visit's start and end, within a tolerance. So this is an
+app-only change.
+
+- [ ] **Entry:** the visit detail (T106) has an **Add observation** button for the user's own visit in status `completed`, `synced` or
+  `reviewed`. It is hidden for `locked` (unlock first, T043), `cancelled` and `draft`, and for other users' visits. It opens the same sheet as
+  Add butterfly (`QuickButterflySheet`, with Details and photos), plus a **time** and a **position** field (next two points).
+- [ ] **Time:** the user picks when it was seen, defaulting to the visit's end time. The picker refuses a time outside the visit's start and
+  end (V04) and says so. Times are UTC in the database and local only in the UI.
+- [ ] **Position and section:** the user taps the position on a map of the visit's transect and route. `accuracy_m` is `null` (placed by hand,
+  as in T047). The section is the one nearest to that point, found as the active visit does (`current_section.dart`). Nothing is taken from the
+  current GPS fix, since the user may be anywhere.
+- [ ] **Write:** one transaction through `SyncRepository.write`, with rules V01-V04 and V06-V08 checked before the write and the W rules as in the
+  quick entry. `_checkVisit` allows the finished statuses for this path only; the active screen keeps requiring `in_progress`, and a locked
+  visit is still refused.
+- [ ] **Shown:** the new observation appears at once in the visit's list (T106), the map (T059) and the observation detail, can be edited until
+  the visit is locked (T046), and syncs. Shown by hand: finish a visit, add one, Sync now, and read the row on the server (`psql`) with the same
+  visit, the picked time and `source = transect`.
+- [ ] **Recognisable:** an observation added after the visit ended can be told apart. Its `created_at` (the time of writing, already stored) is
+  after the visit's `ended_at`; the visit detail list shows "added after the visit" on it.
+- [ ] No new dependency; no Drift or Django migration unless an open question below says otherwise.
+
+Open questions (to settle before building):
+1. **Visit's zero flag.** A visit finished as "no butterflies" has `zero_observation_confirmed = true`, and rule V06 rejects that flag when the
+   visit has transect observations, so the visit's next update would fail. Clear the flag in the same write, or refuse and tell the user?
+2. **Counts the researcher sees.** Route coverage, the summary and the indicators are worked out from the points and the visit window; does
+   a late observation change any figure that was shown on the Finish screen? (It should not change coverage.)
+3. **Quality flag.** Should a late entry get an automatic flag (T056), or is the `created_at` difference enough?
+4. **Admin.** Should the Django admin also be able to add an observation to a visit? It is out of scope here; say if it should be its own ticket.
+
+Out of scope: reopening a visit (`completed` back to `in_progress`); free observations without a visit (T047); a locked visit; changing the
+time, position or section of an existing observation (T046 left them out); Django admin add; tests (D-021).
