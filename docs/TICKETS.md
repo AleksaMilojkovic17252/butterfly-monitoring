@@ -2054,7 +2054,7 @@ Out of scope: a custom permission framework (CLAUDE.md); changing which permissi
 [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) · E06 · added 2026-11-02 as a follow-up to T045 and T106 · P1 · should · labels: `mobile`, `should` · est. 1.5 d · **todo**
 
 Depends on: T045, T046, T106
-Notes: draft; the open questions below are to be settled with the developer before building. The GitHub issue #127 is not created yet.
+Notes: draft; the open questions below are to be settled with the developer before building.
 
 Why: Add butterfly exists only on the active visit screen, and `ObservationRepository._checkVisit` refuses any visit that is not `in_progress`
 ("The visit is no longer in progress."). A researcher who finishes a visit and then remembers a butterfly, or finishes too early, cannot add it.
