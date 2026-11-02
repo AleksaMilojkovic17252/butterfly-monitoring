@@ -53,6 +53,41 @@ class TransectRepository {
     );
   }
 
+  /// Every section of the project's live transects, for the map (T059): like
+  /// [watchSections] plus an inner join on the transect. Ordered by transect
+  /// code, then walking order.
+  Stream<List<SectionWithHabitat>> watchProjectSections(String projectId) {
+    final sections = _db.transectSections;
+    final habitats = _db.habitatTypes;
+    final transects = _db.transects;
+    final query =
+        _db.select(sections).join([
+            innerJoin(transects, transects.id.equalsExp(sections.transectId)),
+            leftOuterJoin(
+              habitats,
+              habitats.id.equalsExp(sections.habitatTypeId),
+            ),
+          ])
+          ..where(
+            transects.projectId.equals(projectId) &
+                transects.deletedAt.isNull() &
+                sections.deletedAt.isNull(),
+          )
+          ..orderBy([
+            OrderingTerm.asc(transects.code),
+            OrderingTerm.asc(sections.sequenceNumber),
+          ]);
+    return query.watch().map(
+      (rows) => [
+        for (final row in rows)
+          SectionWithHabitat(
+            row.readTable(sections),
+            row.readTableOrNull(habitats),
+          ),
+      ],
+    );
+  }
+
   /// The project's protocol, or null before the project is downloaded.
   Stream<ProjectProtocol?> watchProtocol(String projectId) {
     final query = _db.select(_db.projectProtocols)
@@ -79,6 +114,14 @@ final transectSectionsProvider =
     StreamProvider.family<List<SectionWithHabitat>, String>(
       (ref, transectId) =>
           ref.watch(transectRepositoryProvider).watchSections(transectId),
+    );
+
+/// All sections of a project's transects, live, for the map (T059).
+/// `autoDispose`: the query stops when the map closes.
+final projectSectionsProvider = StreamProvider.autoDispose
+    .family<List<SectionWithHabitat>, String>(
+      (ref, projectId) =>
+          ref.watch(transectRepositoryProvider).watchProjectSections(projectId),
     );
 
 final projectProtocolProvider = StreamProvider.family<ProjectProtocol?, String>(

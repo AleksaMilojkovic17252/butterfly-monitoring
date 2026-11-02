@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/validation/observation_rules.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
@@ -27,6 +29,24 @@ class ObservationRepository {
   Stream<List<ButterflyObservation>> watchVisitObservations(String visitId) {
     final query = _db.select(_db.butterflyObservations)
       ..where((o) => o.surveyVisitId.equals(visitId) & o.deletedAt.isNull())
+      ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
+    return query.watch();
+  }
+
+  /// Live observations of a project on this phone that [recordedById] made, by
+  /// the time they were seen, for the map (T059). Filtered by user because
+  /// logout keeps the local data, so another user's rows can still be here.
+  Stream<List<ButterflyObservation>> watchProjectObservations(
+    String projectId,
+    String recordedById,
+  ) {
+    final query = _db.select(_db.butterflyObservations)
+      ..where(
+        (o) =>
+            o.projectId.equals(projectId) &
+            o.recordedById.equals(recordedById) &
+            o.deletedAt.isNull(),
+      )
       ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
     return query.watch();
   }
@@ -256,6 +276,17 @@ final visitObservationsProvider = StreamProvider.autoDispose
           .watch(observationRepositoryProvider)
           .watchVisitObservations(visitId),
     );
+
+/// The logged-in user's observations of a project, live, for the map (T059).
+/// `autoDispose`: the query stops when the map closes.
+final projectObservationsProvider = StreamProvider.autoDispose
+    .family<List<ButterflyObservation>, String>((ref, projectId) {
+      final userId = ref.watch(authControllerProvider).profile?.id;
+      if (userId == null) return Stream.value(const []);
+      return ref
+          .watch(observationRepositoryProvider)
+          .watchProjectObservations(projectId, userId);
+    });
 
 /// One observation, live, or null when it is not on this phone (T106).
 /// `autoDispose`: the query stops when the detail screen closes.

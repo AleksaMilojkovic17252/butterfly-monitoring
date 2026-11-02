@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/observation_values.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
+import 'package:mobile/features/observations/domain/behaviour_json.dart';
 import 'package:mobile/features/observations/ui/widgets/observation_photo_section.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
@@ -18,18 +17,6 @@ import 'package:mobile/features/visits/domain/local_time.dart';
 class ObservationDetailView extends ConsumerWidget {
   const ObservationDetailView({super.key, required this.observation});
   final ButterflyObservation observation;
-
-  /// The behaviour labels from the JSON text (`["flying","resting"]`). Bad
-  /// JSON counts as no behaviour.
-  List<String> _behaviours() {
-    try {
-      final decoded = jsonDecode(observation.behaviour);
-      if (decoded is! List) return [];
-      return [for (final b in decoded) observationValueLabel('$b')];
-    } on FormatException {
-      return [];
-    }
-  }
 
   /// "± 5 m" or "accuracy unknown".
   String _accuracy() {
@@ -66,7 +53,10 @@ class ObservationDetailView extends ConsumerWidget {
           taxon.vernacularNameEn != taxon.vernacularNameSr)
         taxon.vernacularNameEn,
     ];
-    final behaviours = _behaviours();
+    final behaviours = [
+      for (final value in behaviourValuesFromJson(o.behaviour))
+        observationValueLabel(value),
+    ];
 
     return Scaffold(
       appBar: AppBar(

@@ -43,8 +43,11 @@ class ProjectHomeView extends ConsumerWidget {
         icon: Icons.local_florist_outlined,
         label: 'Plants & habitat',
       ),
-      // Map: enabled by T059.
-      const ProjectHomeTile(icon: Icons.map_outlined, label: 'Map'),
+      ProjectHomeTile(
+        icon: Icons.map_outlined,
+        label: 'Map',
+        onTap: () => context.push('/projects/${project.id}/map'),
+      ),
       ProjectHomeTile(
         icon: Icons.sync_outlined,
         label: 'Unsynced data',

@@ -57,7 +57,8 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | FROST-Server (P2) | 2.x latest | VERIFY current tag (2.7.x/2.8.x seen) |
 | Flutter | current stable | VERIFY |
 | drift / drift_flutter | 2.x | |
-| flutter_map + latlong2 | 8.3.2 / 0.10.1 | transect map (T033); approved for T033 |
+| flutter_map + latlong2 | 8.3.2 / 0.9.1 | transect map (T033); approved for T033. latlong2 stepped down from 0.10.1 in T059 because flutter_map_marker_cluster 8.2.2 requires `^0.9.1` (D-081); go back to 0.10 when the cluster package allows it |
+| flutter_map_marker_cluster | 8.2.2 (exact) | clustered observation markers on the project map (T059); approved for T059. Brings flutter_map_marker_popup, animated_stack_widget, provider and nested as transitive packages; the app does not use `provider` |
 | geolocator | latest | Android foreground service via `foregroundNotificationConfig` (VERIFY API) |
 | flutter_riverpod, go_router, dio, uuid, flutter_secure_storage, image_picker, flutter_image_compress, crypto | latest | |
 | connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |

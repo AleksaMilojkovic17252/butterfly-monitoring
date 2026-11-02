@@ -94,7 +94,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | todo |
 | T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | todo |
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | todo |
-| T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | todo |
+| T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | done |
 | T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | todo |
 | T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | todo |
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | todo |
@@ -1040,6 +1040,7 @@ From T067: add `geo.plant_resources` with `CreateView` in a `resources` migratio
 [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) · E07 · P1 · should · labels: `mobile`, `should` · implements F20 · est. 2.5 d · **todo**
 
 Depends on: T050, T051
+From T059 (added 2026-11-02): add a "Plants" layer to the project map (`lib/features/map/`, D-081) and an "Open" in its popup that goes to the plant's edit form.
 
 - [ ] Form fields:
   - plant species (search, same mechanism as taxa)
@@ -1081,6 +1082,7 @@ From T067: add `geo.habitat_features` with `CreateView` in a `resources` migrati
 [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) · E07 · P1 · should · labels: `mobile`, `should` · implements F21 · est. 1.5 d · **todo**
 
 Depends on: T052, T053
+From T059 (added 2026-11-02): add a "Habitats" layer to the project map (`lib/features/map/`, D-081) and an "Open" in its popup that goes to the habitat feature's edit form.
 
 - [ ] Habitat type and management pickers (from codelists), vegetation height (cm), cover sliders (shrub, tree, bare ground; 0–100 in steps of 5), flower abundance, grazing, mowing, disturbance and notes.
 - [ ] Point, line and polygon capture via `GeometryCaptureWidget` (T052).
@@ -1157,10 +1159,11 @@ Depends on: T044
 - [ ] Included in exports as `validation_history.csv` (T064): add the dataset in `apps/exports/datasets.py` and remove it from `DEFERRED`.
 
 ### T059 · App map screen with layers and filters
-[#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) · E09 · P1 · must · labels: `mobile`, `must` · implements F34 · est. 2.5 d · **todo**
+[#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) · E09 · P1 · must · labels: `mobile`, `must` · implements F34 · est. 2.5 d · **done**
 
 Depends on: T036, T044
 Notes: plant/habitat layers added when T051/T053 are done
+Deferred: the plants and habitats layers (T052 and T054 add them, see their `From T059` notes); the 5,000-marker timing is a rough check here (markers rebuilt in about 92 ms in a profile build) and is formally timed in T074. Decisions: D-081.
 
 - [ ] **Layers** (toggle sheet): transects, sections, own observations (clustered with `flutter_map_marker_cluster`), plants, habitats, a selected visit's route, and the basemap.
 - [ ] **Filters:** visit, species, date range, life stage, behaviour, habitat type. The validation-status filter is dropped because the app doesn't store it.

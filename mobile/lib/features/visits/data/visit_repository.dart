@@ -71,6 +71,29 @@ class VisitRepository {
     return query.watch();
   }
 
+  /// Live visits of [observerId] in a project, for the map's visit filter
+  /// (T059): the same ones and the same order as [watchListedVisits] (a draft
+  /// is left out), over all the project's transects. Filtered by observer
+  /// because logout keeps the local data.
+  Stream<List<SurveyVisit>> watchProjectVisits(
+    String projectId,
+    String observerId,
+  ) {
+    final query = _db.select(_db.surveyVisits)
+      ..where(
+        (visit) =>
+            visit.projectId.equals(projectId) &
+            visit.observerId.equals(observerId) &
+            visit.deletedAt.isNull() &
+            (visit.startedAt.isNotNull() | visit.status.equals('cancelled')),
+      )
+      ..orderBy([
+        (visit) =>
+            OrderingTerm.desc(coalesce([visit.startedAt, visit.createdAt])),
+      ]);
+    return query.watch();
+  }
+
   /// Live newest draft of the transect by [observerId], or null. The
   /// start-visit form carries on with it, so a transect has at most one draft
   /// from this form. Filtered by observer because logout keeps the local
@@ -948,6 +971,17 @@ final transectDraftProvider = StreamProvider.family<SurveyVisit?, String>((
   if (userId == null) return Stream.value(null);
   return ref.watch(visitRepositoryProvider).watchDraft(transectId, userId);
 });
+
+/// The logged-in user's visits of a project, for the map (T059).
+/// `autoDispose`: the query stops when the map closes.
+final projectVisitsProvider = StreamProvider.autoDispose
+    .family<List<SurveyVisit>, String>((ref, projectId) {
+      final userId = ref.watch(authControllerProvider).profile?.id;
+      if (userId == null) return Stream.value(const []);
+      return ref
+          .watch(visitRepositoryProvider)
+          .watchProjectVisits(projectId, userId);
+    });
 
 /// The logged-in user's visit in progress on any transect, or null (T035).
 final visitInProgressProvider = StreamProvider<SurveyVisit?>((ref) {

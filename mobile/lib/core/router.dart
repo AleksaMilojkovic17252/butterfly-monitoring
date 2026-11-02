@@ -5,6 +5,7 @@ import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/ui/login_screen.dart';
 import 'package:mobile/features/auth/ui/splash_screen.dart';
+import 'package:mobile/features/map/ui/project_map_screen.dart';
 import 'package:mobile/features/observations/ui/observation_detail_screen.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
@@ -53,6 +54,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'sync',
                 builder: (_, state) =>
                     SyncStatusScreen(projectId: state.pathParameters['id']!),
+              ),
+              // The project map (T059); back returns to project home.
+              GoRoute(
+                path: 'map',
+                builder: (_, state) =>
+                    ProjectMapScreen(projectId: state.pathParameters['id']!),
               ),
               // The active visit screen (T039); back returns to the screen
               // it was opened from.
