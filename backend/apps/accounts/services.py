@@ -37,7 +37,8 @@ def sync_admin_group_permissions():
     """Grant the `admin` group every permission of this project's apps (T013) and of the
     personal API tokens (`authtoken`, T069), so non-superuser admins can manage tokens.
 
-    Run from `post_migrate`, so models added by later migrations are picked up.
+    Run from `post_migrate` once every app's permissions exist (signals.py), so
+    a model added by a migration is in the group after that same `migrate`.
     """
     from django.apps import apps
     from django.contrib.auth.models import Group, Permission

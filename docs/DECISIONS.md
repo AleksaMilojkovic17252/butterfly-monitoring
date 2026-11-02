@@ -226,6 +226,7 @@ planned: a new account would have no group or project anyway.
 Migration `accounts.0003_groups` creates `researcher` and `admin`. Django creates permission rows only
 after all migrations, so `sync_admin_group_permissions()` (accounts/services.py) runs from `post_migrate`
 and gives `admin` every permission of the `apps.*` models; new models are picked up on the next `migrate`.
+**Superseded in part by D-085 (T109):** the grant now runs on the last app's `post_migrate`, so a new model is picked up on the same `migrate`.
 `is_staff` follows `admin` membership through `m2m_changed` (superusers keep `is_staff`). Admins may edit
 any record (`IsOwnerOrAdmin`). `IsProjectMember` admits only admins until `ProjectMembership` exists
 (T015, marked TODO there). `GET /api/v1/auth/admin-check` was a small admin-only endpoint that showed the
@@ -930,7 +931,7 @@ run in the container; it soft-deletes its visits. The Drift v6 → v7 step was c
 `status: completed` after the server moved the visit on (for example to `reviewed`) would be a conflict on `status`.
 **Found on the way (not fixed, for a later ticket):** the admin group's permissions are granted on accounts' `post_migrate`
 (D-034), which runs before Django creates the permissions of apps listed after `accounts`. A new app's permissions reach the group only on
-the next `migrate`. Here a second `migrate` fixed it; a fresh database would need the same.
+the next `migrate`. Here a second `migrate` fixed it; a fresh database would need the same. Fixed in T109 (D-085).
 
 ## D-059 · Start-visit form: one draft per transect, what Start needs, one visit in progress, changed-fields updates
 2026-10 · accepted · T035
@@ -1742,3 +1743,9 @@ the per-device GPS interval override (`gps_interval_override.dart`) and the batt
 **The `far_from_transect` flag is deferred to T056 (agreed 2026-11-02).** T048 only leaves the section empty. T056's distance is to the transect *line*, not to sections, so where sections do not cover the whole line an observation near the line can have no section without being flagged.
 **No KNN index.** A transect has a few sections, so the query filters by `transect_id` and orders the handful of rows; the GiST index on `geometry` is enough.
 **Known limitation:** see `docs/requirements/protocol.md` §5 (GPS error near section boundaries).
+
+## D-085 · Admin group permissions are granted on the last app's post_migrate
+2026-11-02 · accepted · T109, *refines D-034, fixes the gap noted in D-058*
+`grant_admin_permissions` acts when the sender is the last installed app with a models module, worked out on each call. Django makes each app's permissions in that app's own `post_migrate`, so acting on `accounts` missed every app listed after it until a second `migrate`.
+**Why not a named app.** Apps with no `models.py` never send the signal (`reports`, listed last, today), and the last sender changes when one of them gets a model. **Why not every signal.** It would work, but would rebuild the group about 18 times per `migrate` for no benefit.
+**Does not rely on signal order.** Before the sync the receiver calls Django's `create_permissions` for every app with models (idempotent), so the result does not depend on `django.contrib.auth` being listed before `apps.accounts` or on the order of the receivers. A `migrate` with nothing to apply still sends the signal, but `set()` writes nothing.

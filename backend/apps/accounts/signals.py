@@ -1,4 +1,7 @@
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.contrib.auth.management import create_permissions
+from django.db import DEFAULT_DB_ALIAS
 from django.db.models.signals import m2m_changed, post_migrate
 from django.dispatch import receiver
 
@@ -7,9 +10,25 @@ from apps.accounts.services import ADMIN_GROUP, sync_admin_group_permissions
 
 @receiver(post_migrate)
 def grant_admin_permissions(sender, **kwargs):
-    # Fires once per app; only act after the accounts app, whose migration creates the groups.
-    if sender.name == "apps.accounts":
-        sync_admin_group_permissions()
+    # Django sends this once per app that has a models module, in INSTALLED_APPS order, and makes
+    # each app's permissions in that app's own signal. So act on the last such app, when every
+    # app's permissions can exist, including a model added by this migrate.
+    # Apps with no models module are skipped (Django sends them no signal), so the last sender is
+    # not always the last entry in INSTALLED_APPS: work it out here instead of naming an app.
+    with_models = [c for c in apps.get_app_configs() if c.models_module is not None]
+    if sender.label != with_models[-1].label:
+        return
+    # create_permissions is idempotent. Calling it here for every app means the grant does not
+    # depend on the order of INSTALLED_APPS or on the order Django's own receivers run in.
+    for config in with_models:
+        create_permissions(
+            config,
+            verbosity=0,
+            interactive=False,
+            using=kwargs.get("using", DEFAULT_DB_ALIAS),
+            apps=kwargs.get("apps", apps),
+        )
+    sync_admin_group_permissions()
 
 
 def _set_staff(user_ids):

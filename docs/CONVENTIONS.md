@@ -16,7 +16,7 @@ Shared decisions every ticket refers to ("Part A" in the tickets). Copied from G
 | `researcher` | yes | **no** (`is_staff = False`) | projects where they are a member; in the app, only their own visits and observations |
 | `admin` | yes (same as researcher) | yes, all models | all projects; only admins validate, resolve conflicts, lock/unlock, export, and use pygeoapi |
 
-There is no custom permission framework. The `admin` group holds all model permissions through a data migration (T013). DRF permission classes check either project membership or admin-group membership.
+There is no custom permission framework. The `admin` group holds all model permissions, granted from `post_migrate` at the end of every `migrate` (T013, T109). DRF permission classes check either project membership or admin-group membership.
 
 ## A.3 Runtime layout (all on your CachyOS laptop)
 

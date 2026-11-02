@@ -144,7 +144,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
-| T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | todo |
+| T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | done |
 | T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | todo |
 
 ## Acceptance criteria
@@ -338,7 +338,7 @@ Depends on: T011
 
 Note: skipped the "(tested)" parts (D-021); checked by hand. Admin-as-researcher scoping (own records) is a queryset filter in later endpoint tickets. See D-034.
 
-- [ ] A data migration creates groups `researcher` (no model permissions; app only) and `admin` (all permissions of this project's apps). A later migration helper `sync_admin_group_permissions()` re-grants after new models are added. It runs in a `post_migrate` signal.
+- [ ] A data migration creates groups `researcher` (no model permissions; app only) and `admin` (all permissions of this project's apps). A later migration helper `sync_admin_group_permissions()` re-grants after new models are added. It runs in a `post_migrate` signal. (Since T109, D-085, it acts on the last app's signal, so a new model is granted on the same `migrate`.)
 - [ ] Adding a user to `admin` sets `is_staff=True`, and removing them sets it back to `False` (`m2m_changed` signal). Researchers cannot log into `/admin/` (tested).
 - [ ] DRF permission classes:
   - `IsAdminGroup`
@@ -2031,7 +2031,9 @@ Out of scope: section drawing on the phone; proposals in exports and the OGC vie
 phone (discard and record again).
 
 ### T109 · Admin group gets a new model's permissions on the same migrate
-[#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) · E02 · added 2026-10-30 as a follow-up to T013, found in T063 · P1 · should · labels: `backend`, `admin`, `security`, `should` · est. 0.5 d · **todo**
+[#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) · E02 · added 2026-10-30 as a follow-up to T013, found in T063 · P1 · should · labels: `backend`, `admin`, `security`, `should` · est. 0.5 d · **done**
+
+Note: checked by hand (D-021); no test or CI criteria were skipped, the ticket has none. Before the fix, after deleting 16 permission rows (`sync`, `environment`), one `migrate` left `want=136 have=120 missing=16` and a second one `missing=0`. After the fix one `migrate` gives `missing=0 extra=0`, a second `migrate` (nothing to apply) gives the same counts and the same hash of the group's rows, and `migrate` on an empty throwaway database gives `want=132 have=132 missing=0 extra=0` (the dev database has 4 stale `core.skeletonping` rows more). With `django.contrib.auth` listed after `apps.accounts`, a fresh `migrate` gives `missing=0`; with the explicit `create_permissions` call disabled it gives `missing=4`. See D-085.
 
 Depends on: T013
 Notes: placed just before T051, the first fill-list ticket that adds a model
