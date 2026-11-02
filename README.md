@@ -56,11 +56,11 @@ Never run `$DC down -v`: it deletes the database and the stored photos.
 
 | Address | Service |
 |---|---|
-| `http://localhost:8080` | nginx: `/api/`, `/admin/`, `/static/` (Django) and `/ogc/` (pygeoapi) |
+| `http://localhost:8080` | nginx: `/api/`, `/admin/`, `/static/` (Django) and `/ogc/` (pygeoapi; admins only, [how to log in](docs/setup/ogc-access.md)) |
 | `http://localhost:9001` | MinIO console (this machine only) |
 | `localhost:5432` | PostgreSQL, for `psql` and QGIS (this machine only) |
 
-Check the stack with `curl localhost:8080/api/v1/health/` (`{"status":"ok","db":true,"storage":true}`); browse the OGC collections at `http://localhost:8080/ogc/collections`. API docs: `http://localhost:8080/api/v1/docs/`.
+Check the stack with `curl localhost:8080/api/v1/health/` (`{"status":"ok","db":true,"storage":true}`); browse the OGC collections at `http://localhost:8080/ogc/collections` (the browser asks for an admin's email and password; tools use a token, see [docs/setup/ogc-access.md](docs/setup/ogc-access.md)). API docs: `http://localhost:8080/api/v1/docs/`.
 
 ### Data
 

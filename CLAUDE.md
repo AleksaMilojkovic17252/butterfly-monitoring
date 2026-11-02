@@ -61,8 +61,8 @@ scripts/restore.sh <backup-dir>
 # MinIO user for Django (T049; docs/setup/minio.md). Rerun after a fresh volume; restore.sh does it.
 scripts/minio-setup.sh
 
-# OGC collections, filters and paging (T068)
-scripts/ogc-smoke.sh [base-url]
+# OGC collections, filters and paging (T068). OGC_AUTH is an admin credential (T069; docs/setup/ogc-access.md)
+OGC_AUTH='Token <key>' scripts/ogc-smoke.sh [base-url]
 ```
 
 ## Code style and conventions

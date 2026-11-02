@@ -2,12 +2,19 @@
 # Smoke test of the OGC API - Features collections (T068). Reads only: the POST and DELETE at the end
 # must be refused, and the DELETE names an id that does not exist.
 #
-#   scripts/ogc-smoke.sh [base-url]        default http://localhost:8080/ogc
+#   OGC_AUTH='Token <key>' scripts/ogc-smoke.sh [base-url]        default http://localhost:8080/ogc
+#
+# OGC_AUTH is the whole Authorization header value of an admin (T069): 'Token <key>' (docs/setup/ogc-access.md),
+# 'Bearer <jwt>' or 'Basic <base64>'. Without it every request would get a 401.
 #
 # Prints PASS or FAIL per check and exits 1 if any failed. Expects the demo seed data
 # (docs/setup/seed-data.md) and at least one observation. The next links come from server.url in the
 # pygeoapi config, so the paging walk only reaches the laptop's own address.
 set -uo pipefail
+
+: "${OGC_AUTH:?set OGC_AUTH, for example OGC_AUTH='Token <key>'}"
+# Every curl call below sends the credential.
+curl() { command curl -H "Authorization: $OGC_AUTH" "$@"; }
 
 base=${1:-http://localhost:8080/ogc}
 transects=$base/collections/transects/items
@@ -44,7 +51,12 @@ refused() {
   esac
 }
 
-curl -fsS -o /dev/null "$base?f=json" || { echo "$base is not reachable"; exit 1; }
+code=$(curl -s -o /dev/null -w '%{http_code}' "$base?f=json")
+case $code in
+  200) ;;
+  401 | 403) echo "$base refused OGC_AUTH ($code): it must be an admin's token, JWT or Basic header"; exit 1 ;;
+  *) echo "$base is not reachable ($code)"; exit 1 ;;
+esac
 
 total_transects=$(curl -fsS -G "$transects" -d f=json -d limit=1 | jq .numberMatched)
 first=$(curl -fsS -G "$obs" -d f=json -d limit=1 | jq -c '.features[0]')

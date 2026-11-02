@@ -26,7 +26,7 @@ Phone (Flutter, Android) ──HTTPS──► Tailscale (tailscale serve, https:
                                          ▼
                                    nginx :8080 ─┬─ /api/*, /admin/*  → django (gunicorn) :8000
                                                 ├─ /static/*         → collected static files
-                                                ├─ /ogc/*            → pygeoapi :5000 (auth_request → django /api/auth/verify/)
+                                                ├─ /ogc/*            → pygeoapi :5000 (auth_request → django /api/v1/auth/verify)
                                                 └─ /sta/* (Phase 2)  → FROST :8080 (auth_request, admin-only)
 django ──► PostgreSQL 17 + PostGIS 3.5 (+ MobilityDB 1.3 in Phase 2)   [image: mobilitydb/mobilitydb]
 django ──► MinIO (S3 API) via django-storages; the phone never talks to MinIO directly

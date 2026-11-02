@@ -1,12 +1,15 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from apps.accounts.authentication import OgcBasicAuthentication
 from apps.accounts.permissions import IsAdminGroup
 from apps.accounts.serializers import LoginSerializer, UserSerializer
 
@@ -44,11 +47,13 @@ class MeView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-class AdminCheckView(APIView):
-    """200 for admins, 403 for researchers. Stand-in for the admin-only endpoints (T064, T069)."""
+class OgcVerifyView(APIView):
+    """Called only by nginx auth_request for /ogc (T069): 204, 401 or 403."""
 
+    # Basic first: DRF takes the 401 challenge from the first class (Basic realm="ogc").
+    authentication_classes = [OgcBasicAuthentication, JWTAuthentication, TokenAuthentication]
     permission_classes = [IsAdminGroup]
 
-    @extend_schema(responses={200: None})
+    @extend_schema(exclude=True)
     def get(self, request):
-        return Response({"admin": True})
+        return Response(status=status.HTTP_204_NO_CONTENT)

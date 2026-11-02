@@ -104,7 +104,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
-| T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | todo |
+| T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | done |
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | todo |
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | todo |
@@ -1322,7 +1322,7 @@ Deferred: the `plant-resources` and `habitat-features` collections, to T051 and 
 - [ ] The skeleton collection from T007 is removed.
 
 ### T069 · Token-protected pygeoapi access for admins
-[#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) · E10 · P1 · must · labels: `ogc`, `security`, `infra`, `must` · implements F68 · est. 1.5 d · **todo**
+[#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) · E10 · P1 · must · labels: `ogc`, `security`, `infra`, `must` · implements F68 · est. 1.5 d · **done**
 
 Depends on: T011, T013, T068
 From T068: `infrastructure/nginx/default.conf` has an exact `location = /ogc` block as well as `location /ogc/`: both need the auth_request, or the landing page stays open. Keep `proxy_pass http://pygeoapi;` with no URI: the container listens on 5000 under SCRIPT_NAME=/ogc, so the ticket's `http://pygeoapi:80/` is wrong here. `scripts/ogc-smoke.sh` sends no credentials, so give it an auth header.
@@ -1369,6 +1369,8 @@ location = /_auth {
   - **QGIS**: an Authentication configuration of type "API Header" with `Authorization: Token <key>` (VERIFY availability in your QGIS version), or type "Basic" as fallback
   - **Python**: `requests` with headers
   - **R**: `httr2` header, or `sf::st_read()` with `GDAL_HTTP_HEADERS` (VERIFY GDAL version)
+
+Note (2026-11-02): built and run by hand; see D-080 and `docs/setup/ogc-access.md`. Nothing skipped but automated tests (D-021), shown by hand instead. nginx `auth_request` on `/ogc`, `OgcVerifyView`, personal tokens in Django admin, Basic with the login throttle, smoke script with `OGC_AUTH`. The nginx block differs from the ticket's (D-080). The demo users' passwords are not `demo-password` here, so the matrix ran with throwaway users `t069-*@test.x` (admin and researcher groups, non-superuser admin created the tokens in Django admin). Results: no credentials 401 with one `WWW-Authenticate: Basic realm="ogc"`; researcher JWT and Basic 403; admin JWT, token, Basic 200; garbage token, wrong password, `Foo bar` 401; deactivated user and deleted token 401 within 61 s and 26 s; `Accept: application/geo+json` 200; POST and DELETE 400 from pygeoapi; HEAD 200; `/api/v1/auth/verify/` 404 from outside; cache: 3 requests, 1 Django call; Basic lockout after 6 wrong passwords answers 401, with its own counter (the app login stays open); `scripts/ogc-smoke.sh` passes. `ogrinfo` works with `GDAL_HTTP_HEADER_FILE`, not `GDAL_HTTP_HEADERS`. QGIS 4.2.3 API Header checked by the developer: connects, and a wrong token falls back to a Basic login prompt. Not checked: a real browser prompt (developer), R (not installed).
 
 ### T070 · QGIS interoperability and OGC conformance test
 [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) · E10 · P1 · must · labels: `ogc`, `evaluation`, `must` · implements F43 · est. 1.5 d · **todo**
