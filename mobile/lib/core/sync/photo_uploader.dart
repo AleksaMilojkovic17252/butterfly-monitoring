@@ -48,7 +48,8 @@ class PhotoUploader {
 
     for (final photo in photos) {
       final file = File(photo.localPath);
-      // A photo from another phone has no file here (T107).
+      // A photo from another phone has no file here: nothing to upload. It is
+      // fetched on demand for display (`PhotoRepository.preview`).
       if (!await file.exists()) continue;
       try {
         await _upload(photo, file);

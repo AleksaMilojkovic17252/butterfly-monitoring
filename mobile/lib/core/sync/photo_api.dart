@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,9 +33,9 @@ class PhotoCompleteResult {
   final DateTime uploadedAt;
 }
 
-/// The three photo upload endpoints (D-072). It only builds requests and maps
-/// replies; the uploader decides what a failure means, so a [DioException] is
-/// not caught here.
+/// The three photo upload endpoints (D-072) and the two download endpoints
+/// (T107). It only builds requests and maps replies; the caller decides what a
+/// failure means, so a [DioException] is not caught here.
 class PhotoApi {
   PhotoApi(this._dio);
   final Dio _dio;
@@ -95,6 +96,29 @@ class PhotoApi {
       serverVersion: body['server_version'] as int,
       uploadedAt: DateTime.parse(body['uploaded_at'] as String),
     );
+  }
+
+  /// `GET /api/v1/photos/<id>/thumbnail`: the small JPEG the server made in
+  /// step 3. Answers 404 while the file is not uploaded yet.
+  Future<Uint8List> thumbnail(String photoId) async {
+    final response = await _dio.get<Uint8List>(
+      '/api/v1/photos/$photoId/thumbnail',
+      options: Options(responseType: ResponseType.bytes),
+    );
+    return response.data!;
+  }
+
+  /// `GET /api/v1/photos/<id>/content`: the full image.
+  Future<Uint8List> content(String photoId) async {
+    final response = await _dio.get<Uint8List>(
+      '/api/v1/photos/$photoId/content',
+      options: Options(
+        responseType: ResponseType.bytes,
+        // A full photo can take longer than the 20 s of the other requests.
+        receiveTimeout: const Duration(minutes: 2),
+      ),
+    );
+    return response.data!;
   }
 }
 

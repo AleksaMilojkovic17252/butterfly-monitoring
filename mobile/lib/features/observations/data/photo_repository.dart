@@ -3,25 +3,33 @@ import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/sync/photo_api.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/features/observations/domain/draft_photo.dart';
+import 'package:mobile/features/observations/domain/photo_preview.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-/// Photos on this phone (T050): the only code that touches photo files and the
+/// Photos (T050): the only code that touches photo files and the
 /// `photo` table. Taking a photo makes a [DraftPhoto] (a file, no row). A row
 /// and its queue item are written by [addDrafts], through
 /// [SyncRepository.write], so both exist or neither does.
+///
+/// A photo taken on another phone has a row but no file here. [preview] and
+/// [fullImage] fetch it from the server for display (T107).
 class PhotoRepository {
-  PhotoRepository(this._db, this._sync);
+  PhotoRepository(this._db, this._sync, this._api);
   final AppDatabase _db;
   final SyncRepository _sync;
+  final PhotoApi _api;
 
   /// The server's entity type and the local table name.
   static const _entityType = 'photo';
@@ -286,14 +294,97 @@ class PhotoRepository {
     );
   }
 
-  /// Size in bytes of all photo files on this phone.
-  Future<int> storageBytes() async {
-    final directory = await photosDirectory();
-    var total = 0;
-    await for (final entry in directory.list()) {
-      if (entry is File) total += await entry.length();
+  /// What to show for the photo with [key] (T107), in this order:
+  /// 1. the photo's own file, when it is on this phone (no network);
+  /// 2. the thumbnail fetched earlier, in `photo_cache/` (no network);
+  /// 3. the thumbnail from the server, saved to `photo_cache/` first.
+  ///
+  /// Never throws for a missing connection or file: it returns a
+  /// [PhotoPreview.missing] with a sentence, because a provider that throws is
+  /// retried by Riverpod.
+  Future<PhotoPreview> preview(PhotoPreviewKey key) async {
+    if (await File(key.localPath).exists()) {
+      return PhotoPreview.onPhone(key.localPath);
     }
-    return total;
+    try {
+      final cached = File(await _cachePath(key.id));
+      if (await cached.exists()) return PhotoPreview.cached(cached.path);
+
+      final bytes = await _api.thumbnail(key.id);
+      // A 200 with no body (a proxy, a captive portal) is not a thumbnail.
+      if (bytes.isEmpty) {
+        return PhotoPreview.missing(_unavailableText(key, null));
+      }
+      // Written under a name of its own and renamed, so a killed app never
+      // leaves a half-written image that would count as cached, and two
+      // downloads of the same photo cannot write to the same file.
+      final part = File(
+        '${cached.path}.${DateTime.now().microsecondsSinceEpoch}.part',
+      );
+      await part.writeAsBytes(bytes, flush: true);
+      await part.rename(cached.path);
+      return PhotoPreview.cached(cached.path);
+    } on DioException catch (e) {
+      return PhotoPreview.missing(_unavailableText(key, e));
+    } on FileSystemException {
+      return const PhotoPreview.missing('Photo is on the server');
+    }
+  }
+
+  /// Deletes the cached thumbnail of [photoId], for a file that cannot be
+  /// shown (damaged). The next [preview] fetches it again. A missing file is
+  /// fine.
+  Future<void> deleteCachedThumbnail(String photoId) async {
+    try {
+      await _deleteFile(await _cachePath(photoId));
+    } on FileSystemException catch (e) {
+      debugPrint('Could not delete a cached thumbnail: $e');
+    }
+  }
+
+  /// The full image of the photo with [key] from the server, for the viewer.
+  /// The bytes are kept in memory only, never saved to a file (T107). When they
+  /// cannot be fetched, `unavailable` holds the sentence to show.
+  Future<FullImage> fullImage(PhotoPreviewKey key) async {
+    try {
+      final bytes = await _api.content(key.id);
+      if (bytes.isEmpty) {
+        return (bytes: null, unavailable: _unavailableText(key, null));
+      }
+      return (bytes: bytes, unavailable: null);
+    } on DioException catch (e) {
+      return (bytes: null, unavailable: _unavailableText(key, e));
+    }
+  }
+
+  /// Why a photo could not be fetched. A 404 means the server has no file for
+  /// it yet. Anything else (no connection, a server error, an empty answer)
+  /// says the photo is on the server, unless this phone's row says it was never
+  /// uploaded.
+  String _unavailableText(PhotoPreviewKey key, DioException? e) {
+    if (e?.response?.statusCode == 404) return 'Not uploaded yet';
+    return key.uploadStatus == 'uploaded'
+        ? 'Photo is on the server'
+        : 'Not uploaded yet';
+  }
+
+  /// Size in bytes of all photo files on this phone, thumbnails fetched from
+  /// the server included.
+  Future<int> storageBytes() async {
+    final photos = await _folderBytes(await photosDirectory());
+    final cache = await _folderBytes(await _cacheDirectory());
+    return photos + cache;
+  }
+
+  /// Deletes the thumbnail cache (logout). A problem with the cache must never
+  /// stop a logout, so a file error is only logged.
+  Future<void> deleteCache() async {
+    try {
+      final directory = await _cacheDirectory();
+      if (await directory.exists()) await directory.delete(recursive: true);
+    } on FileSystemException catch (e) {
+      debugPrint('Could not delete the photo cache: $e');
+    }
   }
 
   /// Deletes the whole photos folder ("Remove all local data").
@@ -301,6 +392,36 @@ class PhotoRepository {
     final documents = await getApplicationDocumentsDirectory();
     final directory = Directory('${documents.path}/photos');
     if (await directory.exists()) await directory.delete(recursive: true);
+  }
+
+  /// The folder of fetched thumbnails. It is not created here: [preview]
+  /// creates it when it saves a file.
+  Future<Directory> _cacheDirectory() async {
+    final documents = await getApplicationDocumentsDirectory();
+    return Directory('${documents.path}/photo_cache');
+  }
+
+  /// Where the thumbnail of [photoId] is kept; creates the folder.
+  Future<String> _cachePath(String photoId) async {
+    final directory = await (await _cacheDirectory()).create(recursive: true);
+    return '${directory.path}/${photoId}_thumb.jpg';
+  }
+
+  /// Total size of the files directly in [directory]; 0 when it is missing. A
+  /// file that disappears while listing (a download renaming its `.part`
+  /// file) is skipped.
+  Future<int> _folderBytes(Directory directory) async {
+    if (!await directory.exists()) return 0;
+    var total = 0;
+    await for (final entry in directory.list()) {
+      if (entry is! File) continue;
+      try {
+        total += await entry.length();
+      } on FileSystemException {
+        // Gone since it was listed.
+      }
+    }
+    return total;
   }
 
   /// The photo's row as it is now, or null when it is gone or deleted.
@@ -401,6 +522,7 @@ final photoRepositoryProvider = Provider<PhotoRepository>(
   (ref) => PhotoRepository(
     ref.watch(appDatabaseProvider),
     ref.watch(syncRepositoryProvider),
+    ref.watch(photoApiProvider),
   ),
 );
 
@@ -410,3 +532,19 @@ final photosProvider = StreamProvider.autoDispose.family<List<Photo>, String>(
   (ref, observationId) =>
       ref.watch(photoRepositoryProvider).watchObservationPhotos(observationId),
 );
+
+/// What to show for one photo (T107). Keyed by [PhotoPreviewKey] (id, file
+/// path, upload status), not the whole row: a Make primary does not load the
+/// picture again, but `pending` to `uploaded` after a sync does. `autoDispose`:
+/// forgotten when no screen shows the photo.
+final photoPreviewProvider = FutureProvider.autoDispose
+    .family<PhotoPreview, PhotoPreviewKey>(
+      (ref, key) => ref.watch(photoRepositoryProvider).preview(key),
+    );
+
+/// The full image for the viewer (T107). `autoDispose` drops the bytes when
+/// the viewer closes, which is how the full image is "not kept".
+final photoFullImageProvider = FutureProvider.autoDispose
+    .family<FullImage, PhotoPreviewKey>(
+      (ref, key) => ref.watch(photoRepositoryProvider).fullImage(key),
+    );

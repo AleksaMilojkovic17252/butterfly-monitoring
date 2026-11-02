@@ -550,7 +550,8 @@ class PullApplier {
   }
 
   /// A photo's metadata (T050). `local_path` is the path on the phone that took
-  /// it, so a row from another phone has no file here (T107). The server's
+  /// it, so a row from another phone has no file here: the app fetches the
+  /// thumbnail when it shows the photo (`PhotoRepository.preview`). The server's
   /// `storage_key` and `metadata_json` are not in the pull.
   static PhotosCompanion _photo(_Json json) {
     return PhotosCompanion.insert(

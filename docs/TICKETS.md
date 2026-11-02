@@ -142,7 +142,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
-| T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | todo |
+| T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | todo |
 
@@ -1968,9 +1968,10 @@ Out of scope: editing (T046), photos (T050), a project-wide list of all observat
 have no visit and are reached from the map popup).
 
 ### T107 · App shows photos that are not on this phone
-[#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) · E06 · added 2026-10-30 as a follow-up to T050 · P1 · should · labels: `mobile`, `should` · est. 0.5 d · **todo**
+[#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) · E06 · added 2026-10-30 as a follow-up to T050 · P1 · should · labels: `mobile`, `should` · est. 0.5 d · **done**
 
 Depends on: T050, T106
+Notes: the second-phone case was simulated by moving a photo's file off this phone (no second device; "Remove data" was avoided because of D-060). Shown by hand on the phone, 14 steps. Beyond the ticket text, at the developer's request: every photo opens the viewer (own file or the server's full image, with star and delete in its app bar), and the map popup shows the thumbnail too (D-083).
 
 Why: pull brings the photo rows of the user's observations, but not the files, which live only on the phone that took them. After a
 reinstall or on a second phone, observation detail would show empty photos. The server already serves

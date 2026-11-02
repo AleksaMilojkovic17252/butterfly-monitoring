@@ -58,8 +58,11 @@ class AuthController extends Notifier<AuthState> {
     state = const Unauthenticated();
   }
 
+  /// Logs out and deletes the thumbnails fetched from the server (T107).
+  /// Everything else stays on the phone.
   Future<void> logout() async {
     await ref.read(authRepositoryProvider).logout();
+    await ref.read(photoRepositoryProvider).deleteCache();
     state = const Unauthenticated();
   }
 

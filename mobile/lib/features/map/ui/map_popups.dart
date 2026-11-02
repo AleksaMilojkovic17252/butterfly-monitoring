@@ -26,7 +26,7 @@ Future<void> _showPopup(
   String title,
   List<(String, String)> lines,
   String path, {
-  String? photoPath,
+  Photo? photo,
 }) {
   return showDialog<void>(
     context: context,
@@ -34,13 +34,14 @@ Future<void> _showPopup(
       title: title,
       lines: lines,
       onOpen: () => _openFrom(context, dialogContext, path),
-      photoPath: photoPath,
+      photo: photo,
     ),
   );
 }
 
-/// An observation: its photo if it has one on this phone, species and count,
-/// when, life stage, behaviour and section. [taxon] and [sectionCode] are null
+/// An observation: its photo if it has one (the file, or from another phone
+/// the server's thumbnail, T107), species and count, when, life stage,
+/// behaviour and section. [taxon] and [sectionCode] are null
 /// when not known on this phone, [photo] when it has none. Opens the
 /// observation detail (T106).
 Future<void> showObservationPopup(
@@ -64,7 +65,7 @@ Future<void> showObservationPopup(
       if (sectionCode != null) ('Section', sectionCode),
     ],
     '/projects/${observation.projectId}/observations/${observation.id}',
-    photoPath: photo?.localPath,
+    photo: photo,
   );
 }
 

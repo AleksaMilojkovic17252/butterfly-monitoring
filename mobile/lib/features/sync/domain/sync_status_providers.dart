@@ -48,9 +48,10 @@ final failedPhotosProvider = StreamProvider<List<Photo>>(
   (ref) => ref.watch(syncStatusRepositoryProvider).watchFailedPhotos(),
 );
 
-/// Bytes the photo files take on this phone. It is read again whenever the
-/// number of waiting photos changes or a sync run ends.
-final photoStorageProvider = FutureProvider<int>((ref) {
+/// Bytes the photo files and the fetched thumbnails take on this phone (T107).
+/// It is read again whenever the number of waiting photos changes or a sync
+/// run ends, and each time the sync screen opens (`autoDispose`).
+final photoStorageProvider = FutureProvider.autoDispose<int>((ref) {
   ref.watch(pendingPhotosProvider);
   ref.watch(syncRunnerProvider.select((s) => s.last));
   return ref.read(photoRepositoryProvider).storageBytes();

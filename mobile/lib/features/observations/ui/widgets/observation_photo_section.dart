@@ -1,18 +1,21 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
+import 'package:mobile/features/observations/domain/photo_preview.dart';
+import 'package:mobile/features/observations/ui/widgets/photo_preview_image.dart';
+import 'package:mobile/features/observations/ui/widgets/photo_viewer.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 
 /// The photos part of the observation detail (T050): thumbnails with a star on
-/// the primary one, the W01 warning, and the buttons to add a photo. Tapping a
-/// thumbnail offers Make primary and Delete. Adding and changing photos is
-/// allowed until the visit is locked; the buttons disappear when it is.
+/// the primary one, the W01 warning, and the buttons to add a photo. Tapping any
+/// photo opens a full-screen viewer (T107) with Make primary and Delete in its
+/// app bar; on a locked visit the viewer has no actions. Adding and changing
+/// photos is allowed until the visit is locked; the buttons disappear when it
+/// is.
 class ObservationPhotoSection extends ConsumerStatefulWidget {
   const ObservationPhotoSection({
     super.key,
@@ -55,29 +58,22 @@ class _ObservationPhotoSectionState
     }
   }
 
-  /// The choices for one photo, in a bottom sheet.
-  Future<void> _openPhoto(Photo photo) async {
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!photo.isPrimary)
-              ListTile(
-                leading: const Icon(Icons.star_outline),
-                title: const Text('Make primary'),
-                onTap: () => Navigator.pop(context, 'primary'),
-              ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: const Text('Delete'),
-              onTap: () => Navigator.pop(context, 'delete'),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// Opens the viewer for [photo] and does what the user chose in it.
+  Future<void> _tapPhoto(Photo photo, bool locked) async {
+    final choice = await showPhotoViewer(context, photo, canEdit: !locked);
+    if (!mounted) return;
+    // A thumbnail that could not be fetched (offline, 404) tries again: the
+    // connection or the upload may have come since.
+    final key = photo.previewKey;
+    if (ref.read(photoPreviewProvider(key)).value?.placeholder != null) {
+      ref.invalidate(photoPreviewProvider(key));
+    }
+    await _applyChoice(photo, choice);
+  }
+
+  /// Does what the user chose for [photo]: Make primary, or Delete after a
+  /// confirmation.
+  Future<void> _applyChoice(Photo photo, String? choice) async {
     if (!mounted || choice == null) return;
     final messenger = ScaffoldMessenger.of(context);
     final photos = ref.read(photoRepositoryProvider);
@@ -141,7 +137,7 @@ class _ObservationPhotoSectionState
                   for (final photo in photos)
                     _PhotoTile(
                       photo: photo,
-                      onTap: locked ? null : () => _openPhoto(photo),
+                      onTap: () => _tapPhoto(photo, locked),
                     ),
                 ],
               ),
@@ -187,12 +183,12 @@ class _ObservationPhotoSectionState
 }
 
 /// One thumbnail with its upload state underneath. A photo whose file is not
-/// on this phone (taken on another one) shows a placeholder; T107 will fetch
-/// those from the server.
+/// on this phone (taken on another one) shows the thumbnail fetched from the
+/// server, or a sentence (T107).
 class _PhotoTile extends StatelessWidget {
   const _PhotoTile({required this.photo, required this.onTap});
   final Photo photo;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   static const _size = 96.0;
 
@@ -212,23 +208,12 @@ class _PhotoTile extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(photo.localPath),
-                      fit: BoxFit.cover,
-                      cacheWidth: 300,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Theme.of(context).colorScheme.surfaceContainer,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.all(4),
-                        child: Text(
-                          'Photo not on this phone',
-                          textAlign: TextAlign.center,
-                          style: textStyle,
-                        ),
-                      ),
-                    ),
+                  PhotoPreviewImage(
+                    photo: photo,
+                    width: _size,
+                    height: _size,
+                    cacheWidth: 300,
+                    borderRadius: 8,
                   ),
                   if (photo.isPrimary)
                     const Positioned(
