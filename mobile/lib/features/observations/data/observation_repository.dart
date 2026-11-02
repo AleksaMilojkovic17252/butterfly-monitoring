@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
@@ -9,6 +12,7 @@ import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
 import 'package:mobile/features/observations/domain/draft_photo.dart';
+import 'package:mobile/features/observations/domain/observation_details.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
@@ -85,8 +89,9 @@ class ObservationRepository {
   }
 
   /// Saves a quick entry of [count] butterflies of [taxonId] seen on [visit] at
-  /// ([lat], [lon]), now, and returns the new observation's id. The server
-  /// fills in the fields that are not sent (sex, life stage, ...).
+  /// ([lat], [lon]), now, and returns the new observation's id. [details] are
+  /// the optional extras of the Details form (T046); the default is a plain
+  /// quick entry.
   ///
   /// [photos] are saved with the observation in the same transaction, the first
   /// one as the primary photo. A species that needs a photo (W01) is saved
@@ -105,9 +110,11 @@ class ObservationRepository {
     required String? sectionId,
     required String recordedById,
     List<DraftPhoto> photos = const [],
+    ObservationDetails details = const ObservationDetails(),
   }) {
     return _db.transaction(() async {
       final current = await _checkVisit(visit.id);
+      final extras = details.trimmed();
 
       final id = const Uuid().v4();
       final now = DateTime.now().toUtc();
@@ -123,8 +130,12 @@ class ObservationRepository {
           lat: lat,
           lon: lon,
           accuracyM: accuracy,
+          sex: extras.sex,
+          lifeStage: extras.lifeStage,
+          confidence: extras.confidence,
+          behaviour: extras.behaviour,
         ),
-        await _ruleContext(current, taxonId, photos.length),
+        await _ruleContext(current.projectId, current, taxonId, photos.length),
       );
       if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
 
@@ -145,7 +156,7 @@ class ObservationRepository {
             'coordinates': [lon, lat],
           },
           'location_accuracy_m': accuracy,
-          'identification_confidence': 'confirmed_in_field',
+          ...extras.toPayload(),
           'recorded_by': recordedById,
           'source': 'transect',
           'created_at': now.toIso8601String(),
@@ -164,7 +175,13 @@ class ObservationRepository {
                 lat: lat,
                 lon: lon,
                 locationAccuracyM: Value(accuracy),
-                identificationConfidence: 'confirmed_in_field',
+                identificationConfidence: extras.confidence,
+                sex: Value(extras.sex),
+                lifeStage: Value(extras.lifeStage),
+                behaviour: Value(extras.behaviourJson),
+                microhabitat: Value(extras.microhabitat),
+                flightDirectionDeg: Value(extras.flightDirectionDeg),
+                notes: Value(extras.notes),
                 recordedById: recordedById,
                 createdAt: now,
               ),
@@ -180,6 +197,134 @@ class ObservationRepository {
       return id;
     });
   }
+
+  /// Changes the species, count and details of [opened] and queues an `update`
+  /// with only the fields that changed (T046, D-054). Nothing changed means
+  /// nothing is queued. Position, time, section and source stay as they are.
+  ///
+  /// [opened] is the row as the edit sheet loaded it. The changes are worked
+  /// out against it, not against the row as it is now: a pull may have updated
+  /// the row while the sheet was open, and those server values must not come
+  /// back as the user's edits. `baseVersion` uses the current row.
+  ///
+  /// Throws a [StateError] when the observation is gone, has a sync problem,
+  /// its visit is gone or locked, or a rule of `core/validation` refuses it.
+  Future<void> updateObservation({
+    required ButterflyObservation opened,
+    required String taxonId,
+    required int count,
+    required ObservationDetails details,
+  }) {
+    return _db.transaction(() async {
+      final current = await (_db.select(
+        _db.butterflyObservations,
+      )..where((o) => o.id.equals(opened.id))).getSingleOrNull();
+      if (current == null || current.deletedAt != null) {
+        throw StateError('This observation is no longer on this phone.');
+      }
+      // A new update would stack on an item the server refused or that is
+      // held back.
+      if (current.syncStatus == SyncStatus.conflict ||
+          current.syncStatus == SyncStatus.rejected) {
+        throw StateError(syncProblemMessage);
+      }
+      // An edit is allowed until the visit is locked, so this is not
+      // `_checkVisit` (which wants `in_progress`).
+      final visit = await _checkUnlockedVisit(current.surveyVisitId);
+
+      final after = details.trimmed();
+      final errors = validateObservation(
+        ObservationInput(
+          observedAt: current.observedAt,
+          count: count,
+          lat: current.lat,
+          lon: current.lon,
+          accuracyM: current.locationAccuracyM,
+          source: current.source,
+          sex: after.sex,
+          lifeStage: after.lifeStage,
+          confidence: after.confidence,
+          behaviour: after.behaviour,
+        ),
+        // Only the warnings read the photo count, and they are not used here.
+        await _ruleContext(current.projectId, visit, taxonId, 0),
+      );
+      if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
+
+      final beforeValues = {
+        'taxon': opened.taxonId,
+        'count': opened.count,
+        ...ObservationDetails.fromObservation(opened).trimmed().toPayload(),
+      };
+      final afterValues = {
+        'taxon': taxonId,
+        'count': count,
+        ...after.toPayload(),
+      };
+      // Compared as JSON text: `behaviour` is a list, and `!=` on two lists
+      // compares identity, so it would always look changed.
+      final changed = {
+        for (final field in afterValues.keys)
+          if (jsonEncode(afterValues[field]) != jsonEncode(beforeValues[field]))
+            field: afterValues[field],
+      };
+      if (changed.isEmpty) return;
+
+      await _sync.write(
+        projectId: current.projectId,
+        entityType: _entityType,
+        entityId: current.id,
+        operation: SyncOperation.update,
+        payload: changed,
+        baseVersion: current.serverVersion,
+        // Only the changed columns, so a value a pull brought in is kept.
+        writeRow: () {
+          final query = _db.update(_db.butterflyObservations)
+            ..where((o) => o.id.equals(current.id));
+          return query.write(
+            ButterflyObservationsCompanion(
+              taxonId: changed.containsKey('taxon')
+                  ? Value(taxonId)
+                  : const Value.absent(),
+              count: changed.containsKey('count')
+                  ? Value(count)
+                  : const Value.absent(),
+              sex: changed.containsKey('sex')
+                  ? Value(after.sex)
+                  : const Value.absent(),
+              lifeStage: changed.containsKey('life_stage')
+                  ? Value(after.lifeStage)
+                  : const Value.absent(),
+              behaviour: changed.containsKey('behaviour')
+                  ? Value(after.behaviourJson)
+                  : const Value.absent(),
+              identificationConfidence:
+                  changed.containsKey('identification_confidence')
+                  ? Value(after.confidence)
+                  : const Value.absent(),
+              microhabitat: changed.containsKey('microhabitat')
+                  ? Value(after.microhabitat)
+                  : const Value.absent(),
+              flightDirectionDeg: changed.containsKey('flight_direction_deg')
+                  ? Value(after.flightDirectionDeg)
+                  : const Value.absent(),
+              notes: changed.containsKey('notes')
+                  ? Value(after.notes)
+                  : const Value.absent(),
+            ),
+          );
+        },
+      );
+      if (changed.containsKey('taxon')) {
+        await _taxa.recordUse(current.projectId, taxonId);
+      }
+    });
+  }
+
+  /// Shown when an edit is refused because the server refused or held back an
+  /// earlier change of the observation.
+  static const syncProblemMessage =
+      'This observation has a sync problem. Open the sync screen first.';
 
   /// Takes back an observation: a create the server never saw disappears
   /// with its queue item, otherwise the row is soft-deleted and a `delete` is
@@ -206,16 +351,18 @@ class ObservationRepository {
     await _photos.deleteFiles(files);
   }
 
-  /// What the rules need to know besides the observation: the visit as it is
-  /// now, the project's protocol and the taxon.
+  /// What the rules need to know besides the observation: its visit (null for
+  /// an observation without one, as on the server), the project's protocol and
+  /// the taxon.
   Future<ObservationRuleContext> _ruleContext(
-    SurveyVisit visit,
+    String projectId,
+    SurveyVisit? visit,
     String taxonId,
     int photoCount,
   ) async {
     final protocol = await (_db.select(
       _db.projectProtocols,
-    )..where((p) => p.projectId.equals(visit.projectId))).getSingleOrNull();
+    )..where((p) => p.projectId.equals(projectId))).getSingleOrNull();
     if (protocol == null) {
       throw StateError(
         "The project's protocol is not on this phone. Sync first.",
@@ -228,10 +375,10 @@ class ObservationRepository {
       throw StateError('This species is no longer on this phone. Sync first.');
     }
     return ObservationRuleContext(
-      visitStatus: visit.status,
-      visitStartedAt: visit.startedAt,
-      visitEndedAt: visit.endedAt,
-      visitZeroConfirmed: visit.zeroObservationConfirmed,
+      visitStatus: visit?.status,
+      visitStartedAt: visit?.startedAt,
+      visitEndedAt: visit?.endedAt,
+      visitZeroConfirmed: visit?.zeroObservationConfirmed ?? false,
       toleranceMin: protocol.observationTimeToleranceMin,
       accuracyWarningM: protocol.gpsAccuracyWarningM,
       taxonPhotoRequired: taxon.photoRequired,
@@ -256,6 +403,24 @@ class ObservationRepository {
       throw StateError('The visit is no longer in progress.');
     }
     return current;
+  }
+
+  /// The visit of an observation as it is now, or null when [visitId] is null
+  /// (an observation without a visit). Throws a [StateError] when the visit is
+  /// not on the phone or is locked; any other status is fine, as in
+  /// `PhotoRepository.addToObservation`.
+  Future<SurveyVisit?> _checkUnlockedVisit(String? visitId) async {
+    if (visitId == null) return null;
+    final visit = await (_db.select(
+      _db.surveyVisits,
+    )..where((v) => v.id.equals(visitId))).getSingleOrNull();
+    if (visit == null || visit.deletedAt != null) {
+      throw StateError('The visit is no longer on this phone.');
+    }
+    if (visitIsLocked(visit.status)) {
+      throw StateError('The visit is locked.');
+    }
+    return visit;
   }
 }
 

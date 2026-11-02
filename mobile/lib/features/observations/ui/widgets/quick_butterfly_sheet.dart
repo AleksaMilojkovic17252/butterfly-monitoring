@@ -10,14 +10,15 @@ import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
-import 'package:mobile/features/observations/data/taxon_repository.dart';
 import 'package:mobile/features/observations/domain/draft_photo.dart';
+import 'package:mobile/features/observations/domain/observation_details.dart';
 import 'package:mobile/features/observations/domain/taxon_search.dart';
 import 'package:mobile/features/observations/ui/widgets/count_stepper.dart';
 import 'package:mobile/features/observations/ui/widgets/draft_photo_strip.dart';
+import 'package:mobile/features/observations/ui/widgets/observation_details_form.dart';
+import 'package:mobile/features/observations/ui/widgets/photo_prompt_dialog.dart';
 import 'package:mobile/features/observations/ui/widgets/position_line.dart';
-import 'package:mobile/features/observations/ui/widgets/sheet_list_title.dart';
-import 'package:mobile/features/observations/ui/widgets/taxon_tile.dart';
+import 'package:mobile/features/observations/ui/widgets/taxon_picker.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/visits/domain/current_section.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
@@ -27,8 +28,9 @@ import 'package:mobile/features/visits/domain/tracking_controller.dart';
 typedef SavedObservation = ({String id, String label});
 
 /// The quick butterfly entry (T045): pick a species, set the count, Save.
-/// Position, time, section and confidence fill in by themselves. Opened from
-/// Add butterfly on the active visit screen with [show].
+/// Position, time and section fill in by themselves. The Details button swaps
+/// the species list for the optional details (T046): sex, behaviour, photos
+/// and so on. Opened from Add butterfly on the active visit screen with [show].
 class QuickButterflySheet extends ConsumerStatefulWidget {
   const QuickButterflySheet({
     super.key,
@@ -62,8 +64,13 @@ class QuickButterflySheet extends ConsumerStatefulWidget {
 }
 
 class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
-  final _search = TextEditingController();
   Taxon? _selected;
+
+  /// The optional details; the defaults are what a quick entry leaves.
+  var _details = const ObservationDetails();
+
+  /// True while the Details form replaces the species list.
+  bool _detailsOpen = false;
 
   /// Starts at 1 each time the sheet opens.
   int _count = 1;
@@ -97,7 +104,6 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   /// thrown away. A saved sheet keeps its files.
   @override
   void dispose() {
-    _search.dispose();
     if (!_saved) _photos.discardDrafts(_drafts);
     super.dispose();
   }
@@ -136,6 +142,57 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       ],
     );
     _photos.discardDrafts([draft]);
+  }
+
+  /// The confidence became `photo_required` and there is no photo: ask for one.
+  /// Later adds nothing and does not block the save.
+  Future<void> _askForPhoto() async {
+    final source = await showPhotoPromptDialog(context);
+    if (source != null) await _addPhoto(source);
+  }
+
+  /// The Photo and Gallery buttons, the spinner and the drafts, for the form.
+  Widget _photoSlot() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_drafts.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: DraftPhotoStrip(
+              drafts: _drafts,
+              onRemove: _saving ? (_) {} : _removePhoto,
+            ),
+          ),
+        Row(
+          children: [
+            OutlinedButton.icon(
+              onPressed: _saving || _capturing
+                  ? null
+                  : () => _addPhoto(ImageSource.camera),
+              icon: const Icon(Icons.photo_camera_outlined),
+              label: const Text('Photo'),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              onPressed: _saving || _capturing
+                  ? null
+                  : () => _addPhoto(ImageSource.gallery),
+              icon: const Icon(Icons.photo_library_outlined),
+              label: const Text('Gallery'),
+            ),
+            if (_capturing) ...[
+              const SizedBox(width: 12),
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
   }
 
   /// The newest fix when GPS is running for this visit, otherwise null. A
@@ -191,6 +248,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
             sectionId: sectionId,
             recordedById: recordedById,
             photos: _drafts,
+            details: _details,
           );
       _saved = true;
       if (!mounted) return;
@@ -215,29 +273,9 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final taxa = ref.watch(pickerTaxaProvider).value ?? [];
-    final usage =
-        ref.watch(taxonUsageProvider(widget.visit.projectId)).value ?? [];
     final tracking = ref.watch(trackingControllerProvider);
     final fix = _liveFix(tracking);
     final section = ref.watch(currentSectionProvider(widget.visit.id));
-    final repository = ref.read(taxonRepositoryProvider);
-    final favouriteIds = {
-      for (final u in usage)
-        if (u.isFavourite) u.taxonId,
-    };
-
-    final query = _search.text;
-    final results = searchTaxa(taxa, query);
-
-    Widget tile(Taxon taxon) => TaxonTile(
-      taxon: taxon,
-      selected: taxon.id == _selected?.id,
-      favourite: favouriteIds.contains(taxon.id),
-      onTap: () => setState(() => _selected = taxon),
-      onToggleFavourite: () =>
-          repository.toggleFavourite(widget.visit.projectId, taxon.id),
-    );
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -261,47 +299,38 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                     sectionCode: fix == null ? null : section?.sectionCode,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextField(
-                    controller: _search,
-                    onChanged: (_) => setState(() {}),
-                    decoration: InputDecoration(
-                      hintText: 'Search a species',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: query.isEmpty
-                          ? null
-                          : IconButton(
-                              tooltip: 'Clear',
-                              icon: const Icon(Icons.clear),
-                              onPressed: () => setState(_search.clear),
-                            ),
-                    ),
-                  ),
-                ),
                 Expanded(
-                  child: ListView(
-                    children: query.trim().isEmpty
-                        ? [
-                            const SheetListTitle('Recent'),
-                            ..._tilesOrHint(
-                              recentTaxa(taxa, usage),
-                              'Species you save show up here.',
-                              tile,
+                  child: _detailsOpen
+                      ? Column(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () =>
+                                    setState(() => _detailsOpen = false),
+                                icon: const Icon(Icons.chevron_left),
+                                label: const Text('Back to species'),
+                              ),
                             ),
-                            const SheetListTitle('Favourites'),
-                            ..._tilesOrHint(
-                              favouriteTaxa(taxa, usage),
-                              'Tap a star to keep a species here.',
-                              tile,
+                            Expanded(
+                              child: ObservationDetailsForm(
+                                details: _details,
+                                onChanged: (details) =>
+                                    setState(() => _details = details),
+                                photos: _photoSlot(),
+                                hasPhoto: _drafts.isNotEmpty,
+                                onPhotoNeeded: _askForPhoto,
+                                showFacing: true,
+                              ),
                             ),
-                          ]
-                        : _tilesOrHint(
-                            results,
-                            'No species matches "${query.trim()}".',
-                            tile,
-                          ),
-                  ),
+                          ],
+                        )
+                      : TaxonPicker(
+                          projectId: widget.visit.projectId,
+                          selectedId: _selected?.id,
+                          onSelected: (taxon) =>
+                              setState(() => _selected = taxon),
+                        ),
                 ),
                 const Divider(height: 1),
                 Padding(
@@ -320,8 +349,8 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                           ),
                         ),
                       // W01 only warns: Save works without a photo, because the
-                      // butterfly may have flown off. TODO(T046): show the
-                      // W03/W04 prompts in the extended entry.
+                      // butterfly may have flown off. The photo buttons are in
+                      // the Details form, so the line offers to open it.
                       if ((_selected?.photoRequired ?? false) &&
                           _drafts.isEmpty)
                         Padding(
@@ -331,47 +360,28 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                               const Icon(Icons.photo_camera_outlined),
                               const SizedBox(width: 8),
                               Expanded(child: Text('${ruleMessage('W01')}.')),
-                            ],
-                          ),
-                        ),
-                      if (_drafts.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: DraftPhotoStrip(
-                            drafts: _drafts,
-                            onRemove: _saving ? (_) {} : _removePhoto,
-                          ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: _saving || _capturing
-                                  ? null
-                                  : () => _addPhoto(ImageSource.camera),
-                              icon: const Icon(Icons.photo_camera_outlined),
-                              label: const Text('Photo'),
-                            ),
-                            const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: _saving || _capturing
-                                  ? null
-                                  : () => _addPhoto(ImageSource.gallery),
-                              icon: const Icon(Icons.photo_library_outlined),
-                              label: const Text('Gallery'),
-                            ),
-                            if (_capturing) ...[
-                              const SizedBox(width: 12),
-                              const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                              if (!_detailsOpen)
+                                TextButton(
+                                  onPressed: () =>
+                                      setState(() => _detailsOpen = true),
+                                  child: const Text('Add photo'),
                                 ),
-                              ),
                             ],
-                          ],
+                          ),
+                        ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () =>
+                              setState(() => _detailsOpen = !_detailsOpen),
+                          icon: Icon(
+                            _detailsOpen
+                                ? Icons.expand_more
+                                : Icons.expand_less,
+                          ),
+                          label: Text(
+                            _detailsOpen ? 'Hide details' : 'Details',
+                          ),
                         ),
                       ),
                       Row(
@@ -423,23 +433,6 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
         ),
       ),
     );
-  }
-
-  /// A tile for each of [taxa], or the [hint] when there are none.
-  List<Widget> _tilesOrHint(
-    List<Taxon> taxa,
-    String hint,
-    Widget Function(Taxon) tile,
-  ) {
-    if (taxa.isEmpty) {
-      return [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(hint),
-        ),
-      ];
-    }
-    return [for (final taxon in taxa) tile(taxon)];
   }
 
   static String _locationMessage(LocationFailure failure) => switch (failure) {

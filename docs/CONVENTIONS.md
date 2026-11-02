@@ -66,6 +66,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | Android build: AGP / Gradle / compileSdk | 9.2.1 / 9.4.1 / 37 | raised in T037 for permission_handler_android 14 (needs compileSdk 37); `compileSdk` is set in `app/build.gradle.kts`, not taken from Flutter (36) |
 | wakelock_plus | 1.8.0 | keep-screen-on toggle of the active visit screen (T039); approved for T039. 1.8.1+ needs `dbus ^0.8`, which conflicts with `geolocator_linux` (`dbus ^0.7`) |
 | battery_plus | 7.1.2 | battery level for the automatic battery saver of GPS tracking (T038); approved for T038. Newest version; it resolves next to `geolocator_linux` (`upower 0.7.0`, `dbus 0.7.15`), so no step down was needed |
+| flutter_compass | 0.8.1 (exact) | the phone's heading for the flight direction dial's "you face" line (T046, D-082); approved for T046. Reads the magnetometer, needs no permission; the heading is only meaningful with the phone held flat |
 
 ## A.5 Database conventions (apply to every table ticket)
 

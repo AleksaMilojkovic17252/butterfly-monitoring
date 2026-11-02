@@ -32,8 +32,8 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
 | V09 | hard | visit | in status `cancelled`: `cancel_reason = not_conducted` exactly when `started_at` is empty | `cancel_reason` | `surveys.rules._v09_cancel_reason` | `visit_rules.dart` `_v09CancelReason` | cancel sheet (Finish screen), "Not conducted…" on the start form |
 | W01 | warning | observation | the taxon has `photo_required` and the observation has no photo: `validation_status = pending` | – | `observations.rules.photo_missing` | `photoMissing` | line above Save in the quick entry sheet |
 | W02 | warning | observation | `location_accuracy_m` > `gps_accuracy_warning_m` | – | `observations.rules._w02_poor_accuracy` | `isPoorAccuracy` | position line in the quick entry sheet |
-| W03 | warning | observation | `oviposition` in `behaviour` and no host-plant link | – | `observations.rules._w03_oviposition` | `_w03Oviposition` | none yet (extended entry, T046) |
-| W04 | warning | observation | `life_stage = larva` and no host-plant link | – | `observations.rules._w04_larva` | `_w04Larva` | none yet (extended entry, T046) |
+| W03 | warning | observation | `oviposition` in `behaviour` and no host-plant link | – | `observations.rules._w03_oviposition` | `w03Applies` | prompt in the Details form of the entry and edit sheets (T046); the link itself is T052 |
+| W04 | warning | observation | `life_stage = larva` and no host-plant link | – | `observations.rules._w04_larva` | `w04Applies` | prompt in the Details form of the entry and edit sheets (T046); the link itself is T052 |
 | W06 | warning | visit | weather outside the protocol thresholds (protocol.md §3), at the start, and at the end if the end weather is recorded | – | `surveys.rules._w06_weather` | `failedWeatherThresholds` (`weather_check.dart`) | start-visit form, finish form |
 | W07 | warning | visit | `started_at` is outside the season or outside the daily time window | – | `surveys.rules._w07_outside_window` | `seasonWarning`, `timeWindowWarning` (`protocol_window.dart`) | start-visit form, transect detail |
 

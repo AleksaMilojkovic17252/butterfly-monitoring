@@ -9,7 +9,12 @@ class WindPickerSheet extends StatelessWidget {
 
   /// Opens the sheet and returns the picked force, or null when it is closed
   /// without a pick.
+  ///
+  /// The text field that has the focus (the temperature) is unfocused first.
+  /// Otherwise Flutter gives the focus back to it when the sheet closes, and
+  /// its keyboard pops up again right after the pick.
   static Future<int?> show(BuildContext context, {int? selected}) {
+    FocusManager.instance.primaryFocus?.unfocus();
     return showModalBottomSheet<int>(
       context: context,
       showDragHandle: true,

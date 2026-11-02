@@ -81,7 +81,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T043 | [#60](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/60) | Admin visit review, lock and unlock with mandatory reason | P1 | must | T018, T042 | 1.5 d | done |
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | done |
-| T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | todo |
+| T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | done |
 | T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | todo |
 | T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
@@ -936,7 +936,7 @@ Depends on: T039, T044
 Note: search takes at most 0.46 ms for 300 taxa (debug build, on the phone). Checklist step 8 passed with the server unreachable, 2026-10-28; not repeated in airplane mode. The section path was checked with a fresh fix on a phone away from the transect (section empty); a section stored from a live fix is the same lookup as the header's. "Measured by T073" is T073's. No criterion was skipped as test/CI only. See D-066.
 
 ### T046 · App extended entry
-[#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) · E06 · P1 · should · labels: `mobile`, `should` · implements F15 · est. 1.5 d · **todo**
+[#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) · E06 · P1 · should · labels: `mobile`, `should` · implements F15 · est. 1.5 d · **done**
 
 Depends on: T045
 
@@ -958,6 +958,9 @@ Depends on: T045
 
 From T106 (added 2026-10-30): "editing an existing observation" starts from the **Edit** button on T106's observation detail. This
 ticket enables that button (hidden until then, and on locked visits).
+
+Note: checked on the phone on 2026-11-02 (quick path, Details on create, prompts, edit, sync with merged and conflict cases, locked visit, offline, wind-picker focus, the dial's facing line). Not checked: adding a photo in the entry or edit sheet, a lock pulled while the edit sheet is open, another user's rows without Edit, and the facing arrow following a turning phone. No criterion was skipped as test/CI only. See D-082.
+Deferred (agreed 2026-11-02): the working "Link to host plant" (picking or creating a plant record) moves to T052; T046 shows the prompts with the button disabled. Added with the developer's agreement: Edit also changes count and species.
 
 ### T047 · Incidental and other-source observations
 [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) · E06 · P1 · should · labels: `mobile`, `backend`, `should` · implements F17 · est. 1 d · **todo**
@@ -1036,6 +1039,8 @@ From T067: add `geo.plant_resources` with `CreateView` in a `resources` migratio
 - [ ] Adds `ButterflyObservation.host_plant_record` and `nectar_plant_record` (nullable FKs), and `Photo.plant_resource` with a CHECK that a photo has exactly one parent.
 - [ ] `plant_taxon` may be null for unidentified plants. Then `notes` is required (serializer rule).
 
+From T046: fill `host_plant_record` on the phone and fire W03/W04 only when there is no link (`TODO(T051)` on both sides).
+
 ### T052 · App plant entry with point and polygon drawing
 [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) · E07 · P1 · should · labels: `mobile`, `should` · implements F20 · est. 2.5 d · **todo**
 
@@ -1058,6 +1063,8 @@ From T059 (added 2026-11-02): add a "Plants" layer to the project map (`lib/feat
 - [ ] Self-intersecting polygons are blocked with a message. The area is shown while drawing.
 - [ ] The reusable widget `GeometryCaptureWidget(modes: {point, line, polygon})` is shared with T054.
 - [ ] Reachable from the active visit (linked to the visit), from the project home "Plants & habitat" tile (not linked), and from T046's plant link.
+
+From T046: enable "Link to host plant" in `ObservationDetailsForm` (`TODO(T052)`): pick a plant record of this visit or create one.
 
 Added 2026-10-30 (the tile's screen was not specified; est. + 0.25 d): the **Plants & habitat** tile opens a screen with **Add plant**,
 **Add habitat** (enabled by T054) and the user's own plant records of this project, newest first: species (or "Unidentified"),
@@ -1148,6 +1155,8 @@ Depends on: T014, T049, T058
 - [ ] Each action sets `validation_status`, `validated_by`, `validated_at` and `validation_comment`, writes a `ValidationEvent` (T058) and a history reason `"validation: <decision>"`.
 - [ ] The change view shows all photos at full size (inline read-only gallery) and a small read-only map.
 - [ ] Records of locked visits are view-only (T042).
+
+From T046: the app can now change confidence and species after the create, but `validation_status` is set on create only (D-065). Re-evaluate it here.
 
 ### T058 · Validation history
 [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) · E08 · P1 · should · labels: `backend`, `database`, `should` · implements F33 · est. 1 d · **todo**

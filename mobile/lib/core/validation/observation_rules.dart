@@ -126,8 +126,8 @@ List<String> observationWarnings(
   return [
     if (photoMissing(context.taxonPhotoRequired, context.photoCount)) 'W01',
     if (isPoorAccuracy(input.accuracyM, context.accuracyWarningM)) 'W02',
-    if (_w03Oviposition(input)) 'W03',
-    if (_w04Larva(input)) 'W04',
+    if (w03Applies(input.behaviour)) 'W03',
+    if (w04Applies(input.lifeStage)) 'W04',
   ];
 }
 
@@ -233,14 +233,17 @@ void _v08Geometry(ObservationInput input, Map<String, List<String>> errors) {
   if (!valid) _add(errors, 'geometry', 'V08');
 }
 
-bool _w03Oviposition(ObservationInput input) {
-  // W03. TODO(T051): only when the observation has no host-plant link; there
-  // is no link yet, so it always fires.
-  return input.behaviour.contains('oviposition');
+/// W03: the behaviour includes egg-laying. The form calls this too, to show
+/// the prompt without building a whole [ObservationRuleContext].
+bool w03Applies(List<String> behaviour) {
+  // TODO(T051): only when the observation has no host-plant link; there is no
+  // link yet, so it always fires.
+  return behaviour.contains('oviposition');
 }
 
-bool _w04Larva(ObservationInput input) {
-  // W04. TODO(T051): only when the observation has no host-plant link; there
-  // is no link yet, so it always fires.
-  return input.lifeStage == 'larva';
+/// W04: the life stage is larva. Used by the form like [w03Applies].
+bool w04Applies(String lifeStage) {
+  // TODO(T051): only when the observation has no host-plant link; there is no
+  // link yet, so it always fires.
+  return lifeStage == 'larva';
 }
