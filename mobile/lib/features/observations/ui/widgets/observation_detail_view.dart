@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/core/validation/observation_values.dart';
@@ -10,7 +11,11 @@ import 'package:mobile/features/observations/data/taxon_repository.dart';
 import 'package:mobile/features/observations/domain/behaviour_json.dart';
 import 'package:mobile/features/observations/domain/flight_direction.dart';
 import 'package:mobile/features/observations/ui/widgets/edit_observation_sheet.dart';
-import 'package:mobile/features/observations/ui/widgets/observation_photo_section.dart';
+import 'package:mobile/features/observations/domain/photo_parent.dart';
+import 'package:mobile/features/observations/ui/widgets/record_photo_section.dart';
+import 'package:mobile/features/resources/data/plant_repository.dart';
+import 'package:mobile/features/resources/domain/plant_links.dart';
+import 'package:mobile/features/resources/domain/plant_taxon_search.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/ui/widgets/detail_section_title.dart';
@@ -160,6 +165,8 @@ class ObservationDetailView extends ConsumerWidget {
                 behaviours.isNotEmpty ||
                 o.microhabitat.isNotEmpty ||
                 o.flightDirectionDeg != null ||
+                o.hostPlantRecordId != null ||
+                o.nectarPlantRecordId != null ||
                 o.notes.isNotEmpty) ...[
               const DetailSectionTitle('Details'),
               Card(
@@ -192,6 +199,18 @@ class ObservationDetailView extends ConsumerWidget {
                           flightDirectionLabel(o.flightDirectionDeg!),
                         ),
                       ),
+                    if (o.hostPlantRecordId != null)
+                      _LinkedPlantRow(
+                        role: PlantLinkRole.host,
+                        projectId: o.projectId,
+                        plantRecordId: o.hostPlantRecordId!,
+                      ),
+                    if (o.nectarPlantRecordId != null)
+                      _LinkedPlantRow(
+                        role: PlantLinkRole.nectar,
+                        projectId: o.projectId,
+                        plantRecordId: o.nectarPlantRecordId!,
+                      ),
                     if (o.notes.isNotEmpty)
                       ListTile(
                         title: const Text('Notes'),
@@ -202,13 +221,53 @@ class ObservationDetailView extends ConsumerWidget {
               ),
             ],
             const DetailSectionTitle('Photos'),
-            ObservationPhotoSection(
-              observation: o,
+            RecordPhotoSection(
+              parent: PhotoParent.observation(
+                id: o.id,
+                projectId: o.projectId,
+                surveyVisitId: o.surveyVisitId,
+              ),
               photoRequired: taxon?.photoRequired ?? false,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A "Host plant" or "Nectar plant" row of the observation detail (T052): the
+/// linked plant's name, and a tap opens that plant record's form.
+class _LinkedPlantRow extends ConsumerWidget {
+  const _LinkedPlantRow({
+    required this.role,
+    required this.projectId,
+    required this.plantRecordId,
+  });
+  final PlantLinkRole role;
+  final String projectId;
+  final String plantRecordId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final record = ref.watch(plantRecordProvider(plantRecordId)).value;
+    final taxonId = record?.plantTaxonId;
+    final plant = taxonId == null
+        ? null
+        : ref.watch(plantTaxaByIdsProvider(taxonId)).value?.firstOrNull;
+    return ListTile(
+      title: Text(plantLinkLabel(role)),
+      subtitle: Text(
+        record == null
+            ? 'Not on this phone'
+            : plant == null
+            ? 'Unidentified plant'
+            : plantTitle(plant),
+      ),
+      trailing: record == null ? null : const Icon(Icons.chevron_right),
+      onTap: record == null
+          ? null
+          : () => context.push('/projects/$projectId/plants/$plantRecordId'),
     );
   }
 }

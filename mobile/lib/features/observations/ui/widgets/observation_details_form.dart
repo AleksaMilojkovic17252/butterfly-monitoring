@@ -5,10 +5,12 @@ import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/observations/domain/flight_direction.dart';
 import 'package:mobile/features/observations/domain/observation_details.dart';
 import 'package:mobile/features/observations/ui/widgets/flight_direction_dial.dart';
+import 'package:mobile/features/resources/domain/plant_links.dart';
+import 'package:mobile/features/resources/ui/widgets/plant_link_tile.dart';
 
 /// The Details form of the entry and edit sheets (T046): sex, life stage,
 /// behaviour, confidence, microhabitat, flight direction, notes and photos,
-/// with the W03/W04 prompts. The parent owns the values: [details] is what is
+/// with the W03/W04 prompts and the host and nectar plant links (T052). The parent owns the values: [details] is what is
 /// shown and [onChanged] gets the new values after every change.
 ///
 /// [photos] is the sheet's own photo widget (the entry sheet holds drafts, the
@@ -22,6 +24,8 @@ class ObservationDetailsForm extends StatefulWidget {
     required this.photos,
     required this.hasPhoto,
     required this.onPhotoNeeded,
+    required this.projectId,
+    required this.visitId,
     this.showFacing = false,
   });
   final ObservationDetails details;
@@ -29,6 +33,10 @@ class ObservationDetailsForm extends StatefulWidget {
   final Widget photos;
   final bool hasPhoto;
   final VoidCallback onPhotoNeeded;
+
+  /// The observation's project and visit, for the plant link picker.
+  final String projectId;
+  final String? visitId;
 
   /// The flight direction dial shows the way the user faces (the entry sheet,
   /// where the user is at the observation). Off when editing later.
@@ -101,32 +109,15 @@ class _ObservationDetailsFormState extends State<ObservationDetailsForm> {
     );
   }
 
-  /// The W03/W04 line and the "Link to host plant" button, disabled until
-  /// plant entry exists.
+  /// The W03/W04 line. It goes away once a host plant is linked.
   Widget _hostPlantPrompt(String ruleId) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Icon(Icons.local_florist_outlined),
-              const SizedBox(width: 8),
-              Expanded(child: Text('${ruleMessage(ruleId)}.')),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // TODO(T052): enable this button: pick a plant record of this visit
-          // or create one.
-          const OutlinedButton(
-            onPressed: null,
-            child: Text('Link to host plant'),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: Text('Available once plant entry is added'),
-          ),
+          const Icon(Icons.local_florist_outlined),
+          const SizedBox(width: 8),
+          Expanded(child: Text('${ruleMessage(ruleId)}.')),
         ],
       ),
     );
@@ -151,7 +142,11 @@ class _ObservationDetailsFormState extends State<ObservationDetailsForm> {
           values: lifeStageValues,
           onChanged: (v) => widget.onChanged(_details.copyWith(lifeStage: v)),
         ),
-        if (w04Applies(_details.lifeStage)) _hostPlantPrompt('W04'),
+        if (w04Applies(
+          _details.lifeStage,
+          hostPlantRecordId: _details.hostPlantRecordId,
+        ))
+          _hostPlantPrompt('W04'),
         const SizedBox(height: 16),
         Text('Behaviour', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 8),
@@ -169,7 +164,26 @@ class _ObservationDetailsFormState extends State<ObservationDetailsForm> {
               ),
           ],
         ),
-        if (w03Applies(_details.behaviour)) _hostPlantPrompt('W03'),
+        if (w03Applies(
+          _details.behaviour,
+          hostPlantRecordId: _details.hostPlantRecordId,
+        ))
+          _hostPlantPrompt('W03'),
+        const SizedBox(height: 8),
+        PlantLinkTile(
+          role: PlantLinkRole.host,
+          projectId: widget.projectId,
+          visitId: widget.visitId,
+          value: _details.hostPlantRecordId,
+          onChanged: (id) => widget.onChanged(_details.withHostPlant(id)),
+        ),
+        PlantLinkTile(
+          role: PlantLinkRole.nectar,
+          projectId: widget.projectId,
+          visitId: widget.visitId,
+          value: _details.nectarPlantRecordId,
+          onChanged: (id) => widget.onChanged(_details.withNectarPlant(id)),
+        ),
         const SizedBox(height: 16),
         _dropdown(
           label: 'Identification confidence',

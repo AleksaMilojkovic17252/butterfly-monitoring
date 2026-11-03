@@ -203,6 +203,14 @@ class SyncRepository {
           final observationRows = _db.butterflyObservations.delete()
             ..where((t) => t.surveyVisitId.equals(item.entityId));
           await observationRows.go();
+          // The same for the visit's plant records (T052), with their photos.
+          final plants = await (_db.select(
+            _db.plantResourceObservations,
+          )..where((t) => t.surveyVisitId.equals(item.entityId))).get();
+          await _dropUnsentPlants([for (final p in plants) p.id]);
+        }
+        if (item.entityType == 'plant_resource_observation') {
+          await _dropUnsentPlants([item.entityId]);
         }
         await _db.customUpdate(
           'DELETE FROM "${item.entityType}" WHERE id = ?',
@@ -215,6 +223,85 @@ class SyncRepository {
       await _setRowStatus(item, SyncStatus.synced);
       await _syncState.setLastPullCursor(item.projectId, 0);
     });
+  }
+
+  /// Removes plant records the server never had, and what hangs on them
+  /// (T052): their photos (rows and queue items), and the links from local
+  /// observations. Those observations keep existing, so the link is cleared in
+  /// the row and in their queued payloads (`host_plant_record`,
+  /// `nectar_plant_record`), or the server would reject them for pointing at a
+  /// record it does not know. Runs inside [discard]'s transaction.
+  Future<void> _dropUnsentPlants(List<String> plantIds) async {
+    if (plantIds.isEmpty) return;
+
+    final photos = await (_db.select(
+      _db.photos,
+    )..where((t) => t.plantResourceId.isIn(plantIds))).get();
+    final photoIds = [for (final photo in photos) photo.id];
+    await (_db.delete(_db.syncQueue)..where(
+          (t) => t.entityType.equals('photo') & t.entityId.isIn(photoIds),
+        ))
+        .go();
+    await (_db.delete(
+      _db.photos,
+    )..where((t) => t.plantResourceId.isIn(plantIds))).go();
+
+    final linked =
+        await (_db.select(_db.butterflyObservations)..where(
+              (t) =>
+                  t.hostPlantRecordId.isIn(plantIds) |
+                  t.nectarPlantRecordId.isIn(plantIds),
+            ))
+            .get();
+    for (final observation in linked) {
+      await (_db.update(
+        _db.butterflyObservations,
+      )..where((t) => t.id.equals(observation.id))).write(
+        ButterflyObservationsCompanion(
+          hostPlantRecordId: Value(
+            plantIds.contains(observation.hostPlantRecordId)
+                ? null
+                : observation.hostPlantRecordId,
+          ),
+          nectarPlantRecordId: Value(
+            plantIds.contains(observation.nectarPlantRecordId)
+                ? null
+                : observation.nectarPlantRecordId,
+          ),
+        ),
+      );
+    }
+    final queued =
+        await (_db.select(_db.syncQueue)..where(
+              (t) =>
+                  t.entityType.equals('butterfly_observation') &
+                  t.entityId.isIn([for (final o in linked) o.id]),
+            ))
+            .get();
+    for (final queueItem in queued) {
+      final payload = jsonDecode(queueItem.payload) as Map<String, dynamic>;
+      var changed = false;
+      for (final key in ['host_plant_record', 'nectar_plant_record']) {
+        if (plantIds.contains(payload[key])) {
+          payload[key] = null;
+          changed = true;
+        }
+      }
+      if (!changed) continue;
+      await (_db.update(_db.syncQueue)
+            ..where((t) => t.seq.equals(queueItem.seq)))
+          .write(SyncQueueCompanion(payload: Value(jsonEncode(payload))));
+    }
+
+    await (_db.delete(_db.syncQueue)..where(
+          (t) =>
+              t.entityType.equals('plant_resource_observation') &
+              t.entityId.isIn(plantIds),
+        ))
+        .go();
+    await (_db.delete(
+      _db.plantResourceObservations,
+    )..where((t) => t.id.isIn(plantIds))).go();
   }
 
   /// Queues child rows (track points) as `create_batch` items of at most

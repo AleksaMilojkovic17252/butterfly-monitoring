@@ -8799,6 +8799,1315 @@ class PlantTaxaCompanion extends UpdateCompanion<PlantTaxon> {
   }
 }
 
+class $PlantResourceObservationsTable extends PlantResourceObservations
+    with TableInfo<$PlantResourceObservationsTable, PlantResourceObservation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlantResourceObservationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>(
+        $PlantResourceObservationsTable.$convertersyncStatus,
+      );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _surveyVisitIdMeta = const VerificationMeta(
+    'surveyVisitId',
+  );
+  @override
+  late final GeneratedColumn<String> surveyVisitId = GeneratedColumn<String>(
+    'survey_visit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES survey_visit (id)',
+    ),
+  );
+  static const VerificationMeta _plantTaxonIdMeta = const VerificationMeta(
+    'plantTaxonId',
+  );
+  @override
+  late final GeneratedColumn<String> plantTaxonId = GeneratedColumn<String>(
+    'plant_taxon_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resourceTypeMeta = const VerificationMeta(
+    'resourceType',
+  );
+  @override
+  late final GeneratedColumn<String> resourceType = GeneratedColumn<String>(
+    'resource_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _observedAtMeta = const VerificationMeta(
+    'observedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> observedAt = GeneratedColumn<DateTime>(
+    'observed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _geometryGeojsonMeta = const VerificationMeta(
+    'geometryGeojson',
+  );
+  @override
+  late final GeneratedColumn<String> geometryGeojson = GeneratedColumn<String>(
+    'geometry_geojson',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _abundanceClassMeta = const VerificationMeta(
+    'abundanceClass',
+  );
+  @override
+  late final GeneratedColumn<String> abundanceClass = GeneratedColumn<String>(
+    'abundance_class',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _patchAreaM2Meta = const VerificationMeta(
+    'patchAreaM2',
+  );
+  @override
+  late final GeneratedColumn<double> patchAreaM2 = GeneratedColumn<double>(
+    'patch_area_m2',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phenologyStageMeta = const VerificationMeta(
+    'phenologyStage',
+  );
+  @override
+  late final GeneratedColumn<String> phenologyStage = GeneratedColumn<String>(
+    'phenology_stage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _floweringIntensityMeta =
+      const VerificationMeta('floweringIntensity');
+  @override
+  late final GeneratedColumn<String> floweringIntensity =
+      GeneratedColumn<String>(
+        'flowering_intensity',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _eggsPresentMeta = const VerificationMeta(
+    'eggsPresent',
+  );
+  @override
+  late final GeneratedColumn<bool> eggsPresent = GeneratedColumn<bool>(
+    'eggs_present',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("eggs_present" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _larvaePresentMeta = const VerificationMeta(
+    'larvaePresent',
+  );
+  @override
+  late final GeneratedColumn<bool> larvaePresent = GeneratedColumn<bool>(
+    'larvae_present',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("larvae_present" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _feedingDamagePresentMeta =
+      const VerificationMeta('feedingDamagePresent');
+  @override
+  late final GeneratedColumn<bool> feedingDamagePresent = GeneratedColumn<bool>(
+    'feeding_damage_present',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("feeding_damage_present" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    plantTaxonId,
+    resourceType,
+    observedAt,
+    geometryGeojson,
+    lat,
+    lon,
+    abundanceClass,
+    patchAreaM2,
+    phenologyStage,
+    floweringIntensity,
+    eggsPresent,
+    larvaePresent,
+    feedingDamagePresent,
+    notes,
+    createdAt,
+    createdById,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'plant_resource_observation';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlantResourceObservation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('survey_visit_id')) {
+      context.handle(
+        _surveyVisitIdMeta,
+        surveyVisitId.isAcceptableOrUnknown(
+          data['survey_visit_id']!,
+          _surveyVisitIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('plant_taxon_id')) {
+      context.handle(
+        _plantTaxonIdMeta,
+        plantTaxonId.isAcceptableOrUnknown(
+          data['plant_taxon_id']!,
+          _plantTaxonIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('resource_type')) {
+      context.handle(
+        _resourceTypeMeta,
+        resourceType.isAcceptableOrUnknown(
+          data['resource_type']!,
+          _resourceTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resourceTypeMeta);
+    }
+    if (data.containsKey('observed_at')) {
+      context.handle(
+        _observedAtMeta,
+        observedAt.isAcceptableOrUnknown(data['observed_at']!, _observedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_observedAtMeta);
+    }
+    if (data.containsKey('geometry_geojson')) {
+      context.handle(
+        _geometryGeojsonMeta,
+        geometryGeojson.isAcceptableOrUnknown(
+          data['geometry_geojson']!,
+          _geometryGeojsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_geometryGeojsonMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('abundance_class')) {
+      context.handle(
+        _abundanceClassMeta,
+        abundanceClass.isAcceptableOrUnknown(
+          data['abundance_class']!,
+          _abundanceClassMeta,
+        ),
+      );
+    }
+    if (data.containsKey('patch_area_m2')) {
+      context.handle(
+        _patchAreaM2Meta,
+        patchAreaM2.isAcceptableOrUnknown(
+          data['patch_area_m2']!,
+          _patchAreaM2Meta,
+        ),
+      );
+    }
+    if (data.containsKey('phenology_stage')) {
+      context.handle(
+        _phenologyStageMeta,
+        phenologyStage.isAcceptableOrUnknown(
+          data['phenology_stage']!,
+          _phenologyStageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flowering_intensity')) {
+      context.handle(
+        _floweringIntensityMeta,
+        floweringIntensity.isAcceptableOrUnknown(
+          data['flowering_intensity']!,
+          _floweringIntensityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('eggs_present')) {
+      context.handle(
+        _eggsPresentMeta,
+        eggsPresent.isAcceptableOrUnknown(
+          data['eggs_present']!,
+          _eggsPresentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('larvae_present')) {
+      context.handle(
+        _larvaePresentMeta,
+        larvaePresent.isAcceptableOrUnknown(
+          data['larvae_present']!,
+          _larvaePresentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('feeding_damage_present')) {
+      context.handle(
+        _feedingDamagePresentMeta,
+        feedingDamagePresent.isAcceptableOrUnknown(
+          data['feeding_damage_present']!,
+          _feedingDamagePresentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlantResourceObservation map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlantResourceObservation(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $PlantResourceObservationsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      surveyVisitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_visit_id'],
+      ),
+      plantTaxonId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plant_taxon_id'],
+      ),
+      resourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resource_type'],
+      )!,
+      observedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}observed_at'],
+      )!,
+      geometryGeojson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geometry_geojson'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      abundanceClass: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}abundance_class'],
+      )!,
+      patchAreaM2: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}patch_area_m2'],
+      ),
+      phenologyStage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phenology_stage'],
+      )!,
+      floweringIntensity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}flowering_intensity'],
+      )!,
+      eggsPresent: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}eggs_present'],
+      ),
+      larvaePresent: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}larvae_present'],
+      ),
+      feedingDamagePresent: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}feeding_damage_present'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+    );
+  }
+
+  @override
+  $PlantResourceObservationsTable createAlias(String alias) {
+    return $PlantResourceObservationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class PlantResourceObservation extends DataClass
+    implements Insertable<PlantResourceObservation> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+
+  /// Null for a record made outside a visit (from the project's tile).
+  final String? surveyVisitId;
+
+  /// No foreign key: plant taxa are reference data that pull may change.
+  /// Null for an unidentified plant (then `notes` is required).
+  final String? plantTaxonId;
+
+  /// `larval_host`, `nectar_source`, `oviposition_plant`, `resting_plant` or
+  /// `unknown_association`.
+  final String resourceType;
+  final DateTime observedAt;
+
+  /// GeoJSON text of a Point or a Polygon.
+  final String geometryGeojson;
+  final double lat;
+  final double lon;
+  final String abundanceClass;
+  final double? patchAreaM2;
+  final String phenologyStage;
+  final String floweringIntensity;
+  final bool? eggsPresent;
+  final bool? larvaePresent;
+  final bool? feedingDamagePresent;
+  final String notes;
+  final DateTime createdAt;
+
+  /// Who made the record. Null until a pull brings it back for a record made
+  /// on this phone, so the repository also sets it when it writes one.
+  final String? createdById;
+  const PlantResourceObservation({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    this.surveyVisitId,
+    this.plantTaxonId,
+    required this.resourceType,
+    required this.observedAt,
+    required this.geometryGeojson,
+    required this.lat,
+    required this.lon,
+    required this.abundanceClass,
+    this.patchAreaM2,
+    required this.phenologyStage,
+    required this.floweringIntensity,
+    this.eggsPresent,
+    this.larvaePresent,
+    this.feedingDamagePresent,
+    required this.notes,
+    required this.createdAt,
+    this.createdById,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $PlantResourceObservationsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    if (!nullToAbsent || surveyVisitId != null) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId);
+    }
+    if (!nullToAbsent || plantTaxonId != null) {
+      map['plant_taxon_id'] = Variable<String>(plantTaxonId);
+    }
+    map['resource_type'] = Variable<String>(resourceType);
+    map['observed_at'] = Variable<DateTime>(observedAt);
+    map['geometry_geojson'] = Variable<String>(geometryGeojson);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    map['abundance_class'] = Variable<String>(abundanceClass);
+    if (!nullToAbsent || patchAreaM2 != null) {
+      map['patch_area_m2'] = Variable<double>(patchAreaM2);
+    }
+    map['phenology_stage'] = Variable<String>(phenologyStage);
+    map['flowering_intensity'] = Variable<String>(floweringIntensity);
+    if (!nullToAbsent || eggsPresent != null) {
+      map['eggs_present'] = Variable<bool>(eggsPresent);
+    }
+    if (!nullToAbsent || larvaePresent != null) {
+      map['larvae_present'] = Variable<bool>(larvaePresent);
+    }
+    if (!nullToAbsent || feedingDamagePresent != null) {
+      map['feeding_damage_present'] = Variable<bool>(feedingDamagePresent);
+    }
+    map['notes'] = Variable<String>(notes);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    return map;
+  }
+
+  PlantResourceObservationsCompanion toCompanion(bool nullToAbsent) {
+    return PlantResourceObservationsCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      surveyVisitId: surveyVisitId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(surveyVisitId),
+      plantTaxonId: plantTaxonId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plantTaxonId),
+      resourceType: Value(resourceType),
+      observedAt: Value(observedAt),
+      geometryGeojson: Value(geometryGeojson),
+      lat: Value(lat),
+      lon: Value(lon),
+      abundanceClass: Value(abundanceClass),
+      patchAreaM2: patchAreaM2 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(patchAreaM2),
+      phenologyStage: Value(phenologyStage),
+      floweringIntensity: Value(floweringIntensity),
+      eggsPresent: eggsPresent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(eggsPresent),
+      larvaePresent: larvaePresent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(larvaePresent),
+      feedingDamagePresent: feedingDamagePresent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(feedingDamagePresent),
+      notes: Value(notes),
+      createdAt: Value(createdAt),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+    );
+  }
+
+  factory PlantResourceObservation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlantResourceObservation(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $PlantResourceObservationsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      surveyVisitId: serializer.fromJson<String?>(json['surveyVisitId']),
+      plantTaxonId: serializer.fromJson<String?>(json['plantTaxonId']),
+      resourceType: serializer.fromJson<String>(json['resourceType']),
+      observedAt: serializer.fromJson<DateTime>(json['observedAt']),
+      geometryGeojson: serializer.fromJson<String>(json['geometryGeojson']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      abundanceClass: serializer.fromJson<String>(json['abundanceClass']),
+      patchAreaM2: serializer.fromJson<double?>(json['patchAreaM2']),
+      phenologyStage: serializer.fromJson<String>(json['phenologyStage']),
+      floweringIntensity: serializer.fromJson<String>(
+        json['floweringIntensity'],
+      ),
+      eggsPresent: serializer.fromJson<bool?>(json['eggsPresent']),
+      larvaePresent: serializer.fromJson<bool?>(json['larvaePresent']),
+      feedingDamagePresent: serializer.fromJson<bool?>(
+        json['feedingDamagePresent'],
+      ),
+      notes: serializer.fromJson<String>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $PlantResourceObservationsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'surveyVisitId': serializer.toJson<String?>(surveyVisitId),
+      'plantTaxonId': serializer.toJson<String?>(plantTaxonId),
+      'resourceType': serializer.toJson<String>(resourceType),
+      'observedAt': serializer.toJson<DateTime>(observedAt),
+      'geometryGeojson': serializer.toJson<String>(geometryGeojson),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'abundanceClass': serializer.toJson<String>(abundanceClass),
+      'patchAreaM2': serializer.toJson<double?>(patchAreaM2),
+      'phenologyStage': serializer.toJson<String>(phenologyStage),
+      'floweringIntensity': serializer.toJson<String>(floweringIntensity),
+      'eggsPresent': serializer.toJson<bool?>(eggsPresent),
+      'larvaePresent': serializer.toJson<bool?>(larvaePresent),
+      'feedingDamagePresent': serializer.toJson<bool?>(feedingDamagePresent),
+      'notes': serializer.toJson<String>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdById': serializer.toJson<String?>(createdById),
+    };
+  }
+
+  PlantResourceObservation copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    Value<String?> surveyVisitId = const Value.absent(),
+    Value<String?> plantTaxonId = const Value.absent(),
+    String? resourceType,
+    DateTime? observedAt,
+    String? geometryGeojson,
+    double? lat,
+    double? lon,
+    String? abundanceClass,
+    Value<double?> patchAreaM2 = const Value.absent(),
+    String? phenologyStage,
+    String? floweringIntensity,
+    Value<bool?> eggsPresent = const Value.absent(),
+    Value<bool?> larvaePresent = const Value.absent(),
+    Value<bool?> feedingDamagePresent = const Value.absent(),
+    String? notes,
+    DateTime? createdAt,
+    Value<String?> createdById = const Value.absent(),
+  }) => PlantResourceObservation(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    surveyVisitId: surveyVisitId.present
+        ? surveyVisitId.value
+        : this.surveyVisitId,
+    plantTaxonId: plantTaxonId.present ? plantTaxonId.value : this.plantTaxonId,
+    resourceType: resourceType ?? this.resourceType,
+    observedAt: observedAt ?? this.observedAt,
+    geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    abundanceClass: abundanceClass ?? this.abundanceClass,
+    patchAreaM2: patchAreaM2.present ? patchAreaM2.value : this.patchAreaM2,
+    phenologyStage: phenologyStage ?? this.phenologyStage,
+    floweringIntensity: floweringIntensity ?? this.floweringIntensity,
+    eggsPresent: eggsPresent.present ? eggsPresent.value : this.eggsPresent,
+    larvaePresent: larvaePresent.present
+        ? larvaePresent.value
+        : this.larvaePresent,
+    feedingDamagePresent: feedingDamagePresent.present
+        ? feedingDamagePresent.value
+        : this.feedingDamagePresent,
+    notes: notes ?? this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    createdById: createdById.present ? createdById.value : this.createdById,
+  );
+  PlantResourceObservation copyWithCompanion(
+    PlantResourceObservationsCompanion data,
+  ) {
+    return PlantResourceObservation(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      surveyVisitId: data.surveyVisitId.present
+          ? data.surveyVisitId.value
+          : this.surveyVisitId,
+      plantTaxonId: data.plantTaxonId.present
+          ? data.plantTaxonId.value
+          : this.plantTaxonId,
+      resourceType: data.resourceType.present
+          ? data.resourceType.value
+          : this.resourceType,
+      observedAt: data.observedAt.present
+          ? data.observedAt.value
+          : this.observedAt,
+      geometryGeojson: data.geometryGeojson.present
+          ? data.geometryGeojson.value
+          : this.geometryGeojson,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      abundanceClass: data.abundanceClass.present
+          ? data.abundanceClass.value
+          : this.abundanceClass,
+      patchAreaM2: data.patchAreaM2.present
+          ? data.patchAreaM2.value
+          : this.patchAreaM2,
+      phenologyStage: data.phenologyStage.present
+          ? data.phenologyStage.value
+          : this.phenologyStage,
+      floweringIntensity: data.floweringIntensity.present
+          ? data.floweringIntensity.value
+          : this.floweringIntensity,
+      eggsPresent: data.eggsPresent.present
+          ? data.eggsPresent.value
+          : this.eggsPresent,
+      larvaePresent: data.larvaePresent.present
+          ? data.larvaePresent.value
+          : this.larvaePresent,
+      feedingDamagePresent: data.feedingDamagePresent.present
+          ? data.feedingDamagePresent.value
+          : this.feedingDamagePresent,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlantResourceObservation(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('plantTaxonId: $plantTaxonId, ')
+          ..write('resourceType: $resourceType, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('abundanceClass: $abundanceClass, ')
+          ..write('patchAreaM2: $patchAreaM2, ')
+          ..write('phenologyStage: $phenologyStage, ')
+          ..write('floweringIntensity: $floweringIntensity, ')
+          ..write('eggsPresent: $eggsPresent, ')
+          ..write('larvaePresent: $larvaePresent, ')
+          ..write('feedingDamagePresent: $feedingDamagePresent, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    plantTaxonId,
+    resourceType,
+    observedAt,
+    geometryGeojson,
+    lat,
+    lon,
+    abundanceClass,
+    patchAreaM2,
+    phenologyStage,
+    floweringIntensity,
+    eggsPresent,
+    larvaePresent,
+    feedingDamagePresent,
+    notes,
+    createdAt,
+    createdById,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlantResourceObservation &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.surveyVisitId == this.surveyVisitId &&
+          other.plantTaxonId == this.plantTaxonId &&
+          other.resourceType == this.resourceType &&
+          other.observedAt == this.observedAt &&
+          other.geometryGeojson == this.geometryGeojson &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.abundanceClass == this.abundanceClass &&
+          other.patchAreaM2 == this.patchAreaM2 &&
+          other.phenologyStage == this.phenologyStage &&
+          other.floweringIntensity == this.floweringIntensity &&
+          other.eggsPresent == this.eggsPresent &&
+          other.larvaePresent == this.larvaePresent &&
+          other.feedingDamagePresent == this.feedingDamagePresent &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.createdById == this.createdById);
+}
+
+class PlantResourceObservationsCompanion
+    extends UpdateCompanion<PlantResourceObservation> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String?> surveyVisitId;
+  final Value<String?> plantTaxonId;
+  final Value<String> resourceType;
+  final Value<DateTime> observedAt;
+  final Value<String> geometryGeojson;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<String> abundanceClass;
+  final Value<double?> patchAreaM2;
+  final Value<String> phenologyStage;
+  final Value<String> floweringIntensity;
+  final Value<bool?> eggsPresent;
+  final Value<bool?> larvaePresent;
+  final Value<bool?> feedingDamagePresent;
+  final Value<String> notes;
+  final Value<DateTime> createdAt;
+  final Value<String?> createdById;
+  final Value<int> rowid;
+  const PlantResourceObservationsCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.surveyVisitId = const Value.absent(),
+    this.plantTaxonId = const Value.absent(),
+    this.resourceType = const Value.absent(),
+    this.observedAt = const Value.absent(),
+    this.geometryGeojson = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.abundanceClass = const Value.absent(),
+    this.patchAreaM2 = const Value.absent(),
+    this.phenologyStage = const Value.absent(),
+    this.floweringIntensity = const Value.absent(),
+    this.eggsPresent = const Value.absent(),
+    this.larvaePresent = const Value.absent(),
+    this.feedingDamagePresent = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlantResourceObservationsCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    this.surveyVisitId = const Value.absent(),
+    this.plantTaxonId = const Value.absent(),
+    required String resourceType,
+    required DateTime observedAt,
+    required String geometryGeojson,
+    required double lat,
+    required double lon,
+    this.abundanceClass = const Value.absent(),
+    this.patchAreaM2 = const Value.absent(),
+    this.phenologyStage = const Value.absent(),
+    this.floweringIntensity = const Value.absent(),
+    this.eggsPresent = const Value.absent(),
+    this.larvaePresent = const Value.absent(),
+    this.feedingDamagePresent = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       resourceType = Value(resourceType),
+       observedAt = Value(observedAt),
+       geometryGeojson = Value(geometryGeojson),
+       lat = Value(lat),
+       lon = Value(lon),
+       createdAt = Value(createdAt);
+  static Insertable<PlantResourceObservation> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? surveyVisitId,
+    Expression<String>? plantTaxonId,
+    Expression<String>? resourceType,
+    Expression<DateTime>? observedAt,
+    Expression<String>? geometryGeojson,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<String>? abundanceClass,
+    Expression<double>? patchAreaM2,
+    Expression<String>? phenologyStage,
+    Expression<String>? floweringIntensity,
+    Expression<bool>? eggsPresent,
+    Expression<bool>? larvaePresent,
+    Expression<bool>? feedingDamagePresent,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<String>? createdById,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (surveyVisitId != null) 'survey_visit_id': surveyVisitId,
+      if (plantTaxonId != null) 'plant_taxon_id': plantTaxonId,
+      if (resourceType != null) 'resource_type': resourceType,
+      if (observedAt != null) 'observed_at': observedAt,
+      if (geometryGeojson != null) 'geometry_geojson': geometryGeojson,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (abundanceClass != null) 'abundance_class': abundanceClass,
+      if (patchAreaM2 != null) 'patch_area_m2': patchAreaM2,
+      if (phenologyStage != null) 'phenology_stage': phenologyStage,
+      if (floweringIntensity != null) 'flowering_intensity': floweringIntensity,
+      if (eggsPresent != null) 'eggs_present': eggsPresent,
+      if (larvaePresent != null) 'larvae_present': larvaePresent,
+      if (feedingDamagePresent != null)
+        'feeding_damage_present': feedingDamagePresent,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (createdById != null) 'created_by_id': createdById,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlantResourceObservationsCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String?>? surveyVisitId,
+    Value<String?>? plantTaxonId,
+    Value<String>? resourceType,
+    Value<DateTime>? observedAt,
+    Value<String>? geometryGeojson,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<String>? abundanceClass,
+    Value<double?>? patchAreaM2,
+    Value<String>? phenologyStage,
+    Value<String>? floweringIntensity,
+    Value<bool?>? eggsPresent,
+    Value<bool?>? larvaePresent,
+    Value<bool?>? feedingDamagePresent,
+    Value<String>? notes,
+    Value<DateTime>? createdAt,
+    Value<String?>? createdById,
+    Value<int>? rowid,
+  }) {
+    return PlantResourceObservationsCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      surveyVisitId: surveyVisitId ?? this.surveyVisitId,
+      plantTaxonId: plantTaxonId ?? this.plantTaxonId,
+      resourceType: resourceType ?? this.resourceType,
+      observedAt: observedAt ?? this.observedAt,
+      geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      abundanceClass: abundanceClass ?? this.abundanceClass,
+      patchAreaM2: patchAreaM2 ?? this.patchAreaM2,
+      phenologyStage: phenologyStage ?? this.phenologyStage,
+      floweringIntensity: floweringIntensity ?? this.floweringIntensity,
+      eggsPresent: eggsPresent ?? this.eggsPresent,
+      larvaePresent: larvaePresent ?? this.larvaePresent,
+      feedingDamagePresent: feedingDamagePresent ?? this.feedingDamagePresent,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      createdById: createdById ?? this.createdById,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $PlantResourceObservationsTable.$convertersyncStatus.toSql(
+          syncStatus.value,
+        ),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (surveyVisitId.present) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId.value);
+    }
+    if (plantTaxonId.present) {
+      map['plant_taxon_id'] = Variable<String>(plantTaxonId.value);
+    }
+    if (resourceType.present) {
+      map['resource_type'] = Variable<String>(resourceType.value);
+    }
+    if (observedAt.present) {
+      map['observed_at'] = Variable<DateTime>(observedAt.value);
+    }
+    if (geometryGeojson.present) {
+      map['geometry_geojson'] = Variable<String>(geometryGeojson.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (abundanceClass.present) {
+      map['abundance_class'] = Variable<String>(abundanceClass.value);
+    }
+    if (patchAreaM2.present) {
+      map['patch_area_m2'] = Variable<double>(patchAreaM2.value);
+    }
+    if (phenologyStage.present) {
+      map['phenology_stage'] = Variable<String>(phenologyStage.value);
+    }
+    if (floweringIntensity.present) {
+      map['flowering_intensity'] = Variable<String>(floweringIntensity.value);
+    }
+    if (eggsPresent.present) {
+      map['eggs_present'] = Variable<bool>(eggsPresent.value);
+    }
+    if (larvaePresent.present) {
+      map['larvae_present'] = Variable<bool>(larvaePresent.value);
+    }
+    if (feedingDamagePresent.present) {
+      map['feeding_damage_present'] = Variable<bool>(
+        feedingDamagePresent.value,
+      );
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlantResourceObservationsCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('plantTaxonId: $plantTaxonId, ')
+          ..write('resourceType: $resourceType, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('abundanceClass: $abundanceClass, ')
+          ..write('patchAreaM2: $patchAreaM2, ')
+          ..write('phenologyStage: $phenologyStage, ')
+          ..write('floweringIntensity: $floweringIntensity, ')
+          ..write('eggsPresent: $eggsPresent, ')
+          ..write('larvaePresent: $larvaePresent, ')
+          ..write('feedingDamagePresent: $feedingDamagePresent, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -8851,6 +10160,17 @@ class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
   @override
   late final GeneratedColumn<String> observationId = GeneratedColumn<String>(
     'observation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _plantResourceIdMeta = const VerificationMeta(
+    'plantResourceId',
+  );
+  @override
+  late final GeneratedColumn<String> plantResourceId = GeneratedColumn<String>(
+    'plant_resource_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -8994,6 +10314,7 @@ class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
     deletedAt,
     id,
     observationId,
+    plantResourceId,
     localPath,
     mimeType,
     fileSize,
@@ -9045,6 +10366,15 @@ class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
         observationId.isAcceptableOrUnknown(
           data['observation_id']!,
           _observationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('plant_resource_id')) {
+      context.handle(
+        _plantResourceIdMeta,
+        plantResourceId.isAcceptableOrUnknown(
+          data['plant_resource_id']!,
+          _plantResourceIdMeta,
         ),
       );
     }
@@ -9169,6 +10499,10 @@ class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
         DriftSqlType.string,
         data['${effectivePrefix}observation_id'],
       ),
+      plantResourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plant_resource_id'],
+      ),
       localPath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}local_path'],
@@ -9238,9 +10572,13 @@ class Photo extends DataClass implements Insertable<Photo> {
   final DateTime? deletedAt;
   final String id;
 
-  /// The observation this photo belongs to. No foreign key, so T052 can add a
-  /// plant record as the other possible parent.
+  /// The observation this photo belongs to. No foreign key. A photo has
+  /// exactly one parent: this, or `plantResourceId` (the server checks it).
   final String? observationId;
+
+  /// The plant record this photo belongs to (T052), when it is not an
+  /// observation's. No foreign key, like `observationId`.
+  final String? plantResourceId;
   final String localPath;
   final String mimeType;
   final int fileSize;
@@ -9270,6 +10608,7 @@ class Photo extends DataClass implements Insertable<Photo> {
     this.deletedAt,
     required this.id,
     this.observationId,
+    this.plantResourceId,
     required this.localPath,
     required this.mimeType,
     required this.fileSize,
@@ -9300,6 +10639,9 @@ class Photo extends DataClass implements Insertable<Photo> {
     map['id'] = Variable<String>(id);
     if (!nullToAbsent || observationId != null) {
       map['observation_id'] = Variable<String>(observationId);
+    }
+    if (!nullToAbsent || plantResourceId != null) {
+      map['plant_resource_id'] = Variable<String>(plantResourceId);
     }
     map['local_path'] = Variable<String>(localPath);
     map['mime_type'] = Variable<String>(mimeType);
@@ -9337,6 +10679,9 @@ class Photo extends DataClass implements Insertable<Photo> {
       observationId: observationId == null && nullToAbsent
           ? const Value.absent()
           : Value(observationId),
+      plantResourceId: plantResourceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plantResourceId),
       localPath: Value(localPath),
       mimeType: Value(mimeType),
       fileSize: Value(fileSize),
@@ -9373,6 +10718,7 @@ class Photo extends DataClass implements Insertable<Photo> {
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       id: serializer.fromJson<String>(json['id']),
       observationId: serializer.fromJson<String?>(json['observationId']),
+      plantResourceId: serializer.fromJson<String?>(json['plantResourceId']),
       localPath: serializer.fromJson<String>(json['localPath']),
       mimeType: serializer.fromJson<String>(json['mimeType']),
       fileSize: serializer.fromJson<int>(json['fileSize']),
@@ -9398,6 +10744,7 @@ class Photo extends DataClass implements Insertable<Photo> {
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'id': serializer.toJson<String>(id),
       'observationId': serializer.toJson<String?>(observationId),
+      'plantResourceId': serializer.toJson<String?>(plantResourceId),
       'localPath': serializer.toJson<String>(localPath),
       'mimeType': serializer.toJson<String>(mimeType),
       'fileSize': serializer.toJson<int>(fileSize),
@@ -9419,6 +10766,7 @@ class Photo extends DataClass implements Insertable<Photo> {
     Value<DateTime?> deletedAt = const Value.absent(),
     String? id,
     Value<String?> observationId = const Value.absent(),
+    Value<String?> plantResourceId = const Value.absent(),
     String? localPath,
     String? mimeType,
     int? fileSize,
@@ -9441,6 +10789,9 @@ class Photo extends DataClass implements Insertable<Photo> {
     observationId: observationId.present
         ? observationId.value
         : this.observationId,
+    plantResourceId: plantResourceId.present
+        ? plantResourceId.value
+        : this.plantResourceId,
     localPath: localPath ?? this.localPath,
     mimeType: mimeType ?? this.mimeType,
     fileSize: fileSize ?? this.fileSize,
@@ -9467,6 +10818,9 @@ class Photo extends DataClass implements Insertable<Photo> {
       observationId: data.observationId.present
           ? data.observationId.value
           : this.observationId,
+      plantResourceId: data.plantResourceId.present
+          ? data.plantResourceId.value
+          : this.plantResourceId,
       localPath: data.localPath.present ? data.localPath.value : this.localPath,
       mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
       fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
@@ -9498,6 +10852,7 @@ class Photo extends DataClass implements Insertable<Photo> {
           ..write('deletedAt: $deletedAt, ')
           ..write('id: $id, ')
           ..write('observationId: $observationId, ')
+          ..write('plantResourceId: $plantResourceId, ')
           ..write('localPath: $localPath, ')
           ..write('mimeType: $mimeType, ')
           ..write('fileSize: $fileSize, ')
@@ -9521,6 +10876,7 @@ class Photo extends DataClass implements Insertable<Photo> {
     deletedAt,
     id,
     observationId,
+    plantResourceId,
     localPath,
     mimeType,
     fileSize,
@@ -9543,6 +10899,7 @@ class Photo extends DataClass implements Insertable<Photo> {
           other.deletedAt == this.deletedAt &&
           other.id == this.id &&
           other.observationId == this.observationId &&
+          other.plantResourceId == this.plantResourceId &&
           other.localPath == this.localPath &&
           other.mimeType == this.mimeType &&
           other.fileSize == this.fileSize &&
@@ -9563,6 +10920,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
   final Value<DateTime?> deletedAt;
   final Value<String> id;
   final Value<String?> observationId;
+  final Value<String?> plantResourceId;
   final Value<String> localPath;
   final Value<String> mimeType;
   final Value<int> fileSize;
@@ -9582,6 +10940,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
     this.deletedAt = const Value.absent(),
     this.id = const Value.absent(),
     this.observationId = const Value.absent(),
+    this.plantResourceId = const Value.absent(),
     this.localPath = const Value.absent(),
     this.mimeType = const Value.absent(),
     this.fileSize = const Value.absent(),
@@ -9602,6 +10961,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
     this.deletedAt = const Value.absent(),
     required String id,
     this.observationId = const Value.absent(),
+    this.plantResourceId = const Value.absent(),
     required String localPath,
     required String mimeType,
     required int fileSize,
@@ -9628,6 +10988,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
     Expression<DateTime>? deletedAt,
     Expression<String>? id,
     Expression<String>? observationId,
+    Expression<String>? plantResourceId,
     Expression<String>? localPath,
     Expression<String>? mimeType,
     Expression<int>? fileSize,
@@ -9648,6 +11009,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (id != null) 'id': id,
       if (observationId != null) 'observation_id': observationId,
+      if (plantResourceId != null) 'plant_resource_id': plantResourceId,
       if (localPath != null) 'local_path': localPath,
       if (mimeType != null) 'mime_type': mimeType,
       if (fileSize != null) 'file_size': fileSize,
@@ -9670,6 +11032,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
     Value<DateTime?>? deletedAt,
     Value<String>? id,
     Value<String?>? observationId,
+    Value<String?>? plantResourceId,
     Value<String>? localPath,
     Value<String>? mimeType,
     Value<int>? fileSize,
@@ -9690,6 +11053,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
       deletedAt: deletedAt ?? this.deletedAt,
       id: id ?? this.id,
       observationId: observationId ?? this.observationId,
+      plantResourceId: plantResourceId ?? this.plantResourceId,
       localPath: localPath ?? this.localPath,
       mimeType: mimeType ?? this.mimeType,
       fileSize: fileSize ?? this.fileSize,
@@ -9725,6 +11089,9 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
     }
     if (observationId.present) {
       map['observation_id'] = Variable<String>(observationId.value);
+    }
+    if (plantResourceId.present) {
+      map['plant_resource_id'] = Variable<String>(plantResourceId.value);
     }
     if (localPath.present) {
       map['local_path'] = Variable<String>(localPath.value);
@@ -9776,6 +11143,7 @@ class PhotosCompanion extends UpdateCompanion<Photo> {
           ..write('deletedAt: $deletedAt, ')
           ..write('id: $id, ')
           ..write('observationId: $observationId, ')
+          ..write('plantResourceId: $plantResourceId, ')
           ..write('localPath: $localPath, ')
           ..write('mimeType: $mimeType, ')
           ..write('fileSize: $fileSize, ')
@@ -14378,6 +15746,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $PlantTaxaTable plantTaxa = $PlantTaxaTable(this);
+  late final $PlantResourceObservationsTable plantResourceObservations =
+      $PlantResourceObservationsTable(this);
   late final $PhotosTable photos = $PhotosTable(this);
   late final $ProjectProtocolsTable projectProtocols = $ProjectProtocolsTable(
     this,
@@ -14410,6 +15780,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     habitatTypes,
     managementTypes,
     plantTaxa,
+    plantResourceObservations,
     photos,
     projectProtocols,
     syncConflicts,
@@ -14512,6 +15883,31 @@ final class $$ProjectsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _butterflyObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PlantResourceObservationsTable,
+    List<PlantResourceObservation>
+  >
+  _plantResourceObservationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.plantResourceObservations,
+        aliasName: 'project__id__plant_resource_observation__project_id',
+      );
+
+  $$PlantResourceObservationsTableProcessedTableManager
+  get plantResourceObservationsRefs {
+    final manager = $$PlantResourceObservationsTableTableManager(
+      $_db,
+      $_db.plantResourceObservations,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _plantResourceObservationsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -14670,6 +16066,33 @@ class $$ProjectsTableFilterComposer
               }) => $$ButterflyObservationsTableFilterComposer(
                 $db: $db,
                 $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> plantResourceObservationsRefs(
+    Expression<bool> Function($$PlantResourceObservationsTableFilterComposer f)
+    f,
+  ) {
+    final $$PlantResourceObservationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.plantResourceObservations,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PlantResourceObservationsTableFilterComposer(
+                $db: $db,
+                $table: $db.plantResourceObservations,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -14896,6 +16319,33 @@ class $$ProjectsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> plantResourceObservationsRefs<T extends Object>(
+    Expression<T> Function($$PlantResourceObservationsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PlantResourceObservationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.plantResourceObservations,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PlantResourceObservationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.plantResourceObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> projectProtocolsRefs<T extends Object>(
     Expression<T> Function($$ProjectProtocolsTableAnnotationComposer a) f,
   ) {
@@ -14939,6 +16389,7 @@ class $$ProjectsTableTableManager
             bool transectsRefs,
             bool surveyVisitsRefs,
             bool butterflyObservationsRefs,
+            bool plantResourceObservationsRefs,
             bool projectProtocolsRefs,
           })
         > {
@@ -15022,6 +16473,7 @@ class $$ProjectsTableTableManager
                 transectsRefs = false,
                 surveyVisitsRefs = false,
                 butterflyObservationsRefs = false,
+                plantResourceObservationsRefs = false,
                 projectProtocolsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -15030,6 +16482,8 @@ class $$ProjectsTableTableManager
                     if (transectsRefs) db.transects,
                     if (surveyVisitsRefs) db.surveyVisits,
                     if (butterflyObservationsRefs) db.butterflyObservations,
+                    if (plantResourceObservationsRefs)
+                      db.plantResourceObservations,
                     if (projectProtocolsRefs) db.projectProtocols,
                   ],
                   addJoins: null,
@@ -15098,6 +16552,27 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (plantResourceObservationsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          PlantResourceObservation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._plantResourceObservationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).plantResourceObservationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (projectProtocolsRefs)
                         await $_getPrefetchedData<
                           Project,
@@ -15143,6 +16618,7 @@ typedef $$ProjectsTableProcessedTableManager =
         bool transectsRefs,
         bool surveyVisitsRefs,
         bool butterflyObservationsRefs,
+        bool plantResourceObservationsRefs,
         bool projectProtocolsRefs,
       })
     >;
@@ -15941,6 +17417,32 @@ final class $$SurveyVisitsTableReferences
     );
   }
 
+  static MultiTypedResultKey<
+    $PlantResourceObservationsTable,
+    List<PlantResourceObservation>
+  >
+  _plantResourceObservationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.plantResourceObservations,
+        aliasName:
+            'survey_visit__id__plant_resource_observation__survey_visit_id',
+      );
+
+  $$PlantResourceObservationsTableProcessedTableManager
+  get plantResourceObservationsRefs {
+    final manager = $$PlantResourceObservationsTableTableManager(
+      $_db,
+      $_db.plantResourceObservations,
+    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _plantResourceObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$SurveyTrackPointsTable, List<SurveyTrackPoint>>
   _surveyTrackPointsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -16206,6 +17708,33 @@ class $$SurveyVisitsTableFilterComposer
               }) => $$ButterflyObservationsTableFilterComposer(
                 $db: $db,
                 $table: $db.butterflyObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> plantResourceObservationsRefs(
+    Expression<bool> Function($$PlantResourceObservationsTableFilterComposer f)
+    f,
+  ) {
+    final $$PlantResourceObservationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.plantResourceObservations,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PlantResourceObservationsTableFilterComposer(
+                $db: $db,
+                $table: $db.plantResourceObservations,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -16699,6 +18228,33 @@ class $$SurveyVisitsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> plantResourceObservationsRefs<T extends Object>(
+    Expression<T> Function($$PlantResourceObservationsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PlantResourceObservationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.plantResourceObservations,
+          getReferencedColumn: (t) => t.surveyVisitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PlantResourceObservationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.plantResourceObservations,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> surveyTrackPointsRefs<T extends Object>(
     Expression<T> Function($$SurveyTrackPointsTableAnnotationComposer a) f,
   ) {
@@ -16743,6 +18299,7 @@ class $$SurveyVisitsTableTableManager
             bool projectId,
             bool transectId,
             bool butterflyObservationsRefs,
+            bool plantResourceObservationsRefs,
             bool surveyTrackPointsRefs,
           })
         > {
@@ -16926,12 +18483,15 @@ class $$SurveyVisitsTableTableManager
                 projectId = false,
                 transectId = false,
                 butterflyObservationsRefs = false,
+                plantResourceObservationsRefs = false,
                 surveyTrackPointsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (butterflyObservationsRefs) db.butterflyObservations,
+                    if (plantResourceObservationsRefs)
+                      db.plantResourceObservations,
                     if (surveyTrackPointsRefs) db.surveyTrackPoints,
                   ],
                   addJoins:
@@ -16998,6 +18558,27 @@ class $$SurveyVisitsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (plantResourceObservationsRefs)
+                        await $_getPrefetchedData<
+                          SurveyVisit,
+                          $SurveyVisitsTable,
+                          PlantResourceObservation
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SurveyVisitsTableReferences
+                              ._plantResourceObservationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SurveyVisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).plantResourceObservationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.surveyVisitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (surveyTrackPointsRefs)
                         await $_getPrefetchedData<
                           SurveyVisit,
@@ -17043,6 +18624,7 @@ typedef $$SurveyVisitsTableProcessedTableManager =
         bool projectId,
         bool transectId,
         bool butterflyObservationsRefs,
+        bool plantResourceObservationsRefs,
         bool surveyTrackPointsRefs,
       })
     >;
@@ -19996,12 +21578,797 @@ typedef $$PlantTaxaTableProcessedTableManager =
       PlantTaxon,
       PrefetchHooks Function()
     >;
+typedef $$PlantResourceObservationsTableCreateCompanionBuilder =
+    PlantResourceObservationsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      Value<String?> surveyVisitId,
+      Value<String?> plantTaxonId,
+      required String resourceType,
+      required DateTime observedAt,
+      required String geometryGeojson,
+      required double lat,
+      required double lon,
+      Value<String> abundanceClass,
+      Value<double?> patchAreaM2,
+      Value<String> phenologyStage,
+      Value<String> floweringIntensity,
+      Value<bool?> eggsPresent,
+      Value<bool?> larvaePresent,
+      Value<bool?> feedingDamagePresent,
+      Value<String> notes,
+      required DateTime createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+typedef $$PlantResourceObservationsTableUpdateCompanionBuilder =
+    PlantResourceObservationsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String?> surveyVisitId,
+      Value<String?> plantTaxonId,
+      Value<String> resourceType,
+      Value<DateTime> observedAt,
+      Value<String> geometryGeojson,
+      Value<double> lat,
+      Value<double> lon,
+      Value<String> abundanceClass,
+      Value<double?> patchAreaM2,
+      Value<String> phenologyStage,
+      Value<String> floweringIntensity,
+      Value<bool?> eggsPresent,
+      Value<bool?> larvaePresent,
+      Value<bool?> feedingDamagePresent,
+      Value<String> notes,
+      Value<DateTime> createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+
+final class $$PlantResourceObservationsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PlantResourceObservationsTable,
+          PlantResourceObservation
+        > {
+  $$PlantResourceObservationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) => db.projects
+      .createAlias('plant_resource_observation__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SurveyVisitsTable _surveyVisitIdTable(_$AppDatabase db) =>
+      db.surveyVisits.createAlias(
+        'plant_resource_observation__survey_visit_id__survey_visit__id',
+      );
+
+  $$SurveyVisitsTableProcessedTableManager? get surveyVisitId {
+    final $_column = $_itemColumn<String>('survey_visit_id');
+    if ($_column == null) return null;
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_surveyVisitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PlantResourceObservationsTableFilterComposer
+    extends Composer<_$AppDatabase, $PlantResourceObservationsTable> {
+  $$PlantResourceObservationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plantTaxonId => $composableBuilder(
+    column: $table.plantTaxonId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resourceType => $composableBuilder(
+    column: $table.resourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get abundanceClass => $composableBuilder(
+    column: $table.abundanceClass,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get patchAreaM2 => $composableBuilder(
+    column: $table.patchAreaM2,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phenologyStage => $composableBuilder(
+    column: $table.phenologyStage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get floweringIntensity => $composableBuilder(
+    column: $table.floweringIntensity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get eggsPresent => $composableBuilder(
+    column: $table.eggsPresent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get larvaePresent => $composableBuilder(
+    column: $table.larvaePresent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get feedingDamagePresent => $composableBuilder(
+    column: $table.feedingDamagePresent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableFilterComposer get surveyVisitId {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlantResourceObservationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlantResourceObservationsTable> {
+  $$PlantResourceObservationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plantTaxonId => $composableBuilder(
+    column: $table.plantTaxonId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resourceType => $composableBuilder(
+    column: $table.resourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get abundanceClass => $composableBuilder(
+    column: $table.abundanceClass,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get patchAreaM2 => $composableBuilder(
+    column: $table.patchAreaM2,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phenologyStage => $composableBuilder(
+    column: $table.phenologyStage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get floweringIntensity => $composableBuilder(
+    column: $table.floweringIntensity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get eggsPresent => $composableBuilder(
+    column: $table.eggsPresent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get larvaePresent => $composableBuilder(
+    column: $table.larvaePresent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get feedingDamagePresent => $composableBuilder(
+    column: $table.feedingDamagePresent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableOrderingComposer get surveyVisitId {
+    final $$SurveyVisitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlantResourceObservationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlantResourceObservationsTable> {
+  $$PlantResourceObservationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get plantTaxonId => $composableBuilder(
+    column: $table.plantTaxonId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resourceType => $composableBuilder(
+    column: $table.resourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<String> get abundanceClass => $composableBuilder(
+    column: $table.abundanceClass,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get patchAreaM2 => $composableBuilder(
+    column: $table.patchAreaM2,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phenologyStage => $composableBuilder(
+    column: $table.phenologyStage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get floweringIntensity => $composableBuilder(
+    column: $table.floweringIntensity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get eggsPresent => $composableBuilder(
+    column: $table.eggsPresent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get larvaePresent => $composableBuilder(
+    column: $table.larvaePresent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get feedingDamagePresent => $composableBuilder(
+    column: $table.feedingDamagePresent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableAnnotationComposer get surveyVisitId {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlantResourceObservationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlantResourceObservationsTable,
+          PlantResourceObservation,
+          $$PlantResourceObservationsTableFilterComposer,
+          $$PlantResourceObservationsTableOrderingComposer,
+          $$PlantResourceObservationsTableAnnotationComposer,
+          $$PlantResourceObservationsTableCreateCompanionBuilder,
+          $$PlantResourceObservationsTableUpdateCompanionBuilder,
+          (
+            PlantResourceObservation,
+            $$PlantResourceObservationsTableReferences,
+          ),
+          PlantResourceObservation,
+          PrefetchHooks Function({bool projectId, bool surveyVisitId})
+        > {
+  $$PlantResourceObservationsTableTableManager(
+    _$AppDatabase db,
+    $PlantResourceObservationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlantResourceObservationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PlantResourceObservationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PlantResourceObservationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String?> surveyVisitId = const Value.absent(),
+                Value<String?> plantTaxonId = const Value.absent(),
+                Value<String> resourceType = const Value.absent(),
+                Value<DateTime> observedAt = const Value.absent(),
+                Value<String> geometryGeojson = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<String> abundanceClass = const Value.absent(),
+                Value<double?> patchAreaM2 = const Value.absent(),
+                Value<String> phenologyStage = const Value.absent(),
+                Value<String> floweringIntensity = const Value.absent(),
+                Value<bool?> eggsPresent = const Value.absent(),
+                Value<bool?> larvaePresent = const Value.absent(),
+                Value<bool?> feedingDamagePresent = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlantResourceObservationsCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                plantTaxonId: plantTaxonId,
+                resourceType: resourceType,
+                observedAt: observedAt,
+                geometryGeojson: geometryGeojson,
+                lat: lat,
+                lon: lon,
+                abundanceClass: abundanceClass,
+                patchAreaM2: patchAreaM2,
+                phenologyStage: phenologyStage,
+                floweringIntensity: floweringIntensity,
+                eggsPresent: eggsPresent,
+                larvaePresent: larvaePresent,
+                feedingDamagePresent: feedingDamagePresent,
+                notes: notes,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                Value<String?> surveyVisitId = const Value.absent(),
+                Value<String?> plantTaxonId = const Value.absent(),
+                required String resourceType,
+                required DateTime observedAt,
+                required String geometryGeojson,
+                required double lat,
+                required double lon,
+                Value<String> abundanceClass = const Value.absent(),
+                Value<double?> patchAreaM2 = const Value.absent(),
+                Value<String> phenologyStage = const Value.absent(),
+                Value<String> floweringIntensity = const Value.absent(),
+                Value<bool?> eggsPresent = const Value.absent(),
+                Value<bool?> larvaePresent = const Value.absent(),
+                Value<bool?> feedingDamagePresent = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                required DateTime createdAt,
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlantResourceObservationsCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                plantTaxonId: plantTaxonId,
+                resourceType: resourceType,
+                observedAt: observedAt,
+                geometryGeojson: geometryGeojson,
+                lat: lat,
+                lon: lon,
+                abundanceClass: abundanceClass,
+                patchAreaM2: patchAreaM2,
+                phenologyStage: phenologyStage,
+                floweringIntensity: floweringIntensity,
+                eggsPresent: eggsPresent,
+                larvaePresent: larvaePresent,
+                feedingDamagePresent: feedingDamagePresent,
+                notes: notes,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $PlantResourceObservationsTable,
+                    PlantResourceObservation
+                  >(table),
+                  $$PlantResourceObservationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false, surveyVisitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable:
+                            $$PlantResourceObservationsTableReferences
+                                ._projectIdTable(db),
+                        referencedColumn:
+                            $$PlantResourceObservationsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                      ) as T;
+                    }
+                    if (surveyVisitId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.surveyVisitId,
+                        referencedTable:
+                            $$PlantResourceObservationsTableReferences
+                                ._surveyVisitIdTable(db),
+                        referencedColumn:
+                            $$PlantResourceObservationsTableReferences
+                                ._surveyVisitIdTable(db)
+                                .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PlantResourceObservationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlantResourceObservationsTable,
+      PlantResourceObservation,
+      $$PlantResourceObservationsTableFilterComposer,
+      $$PlantResourceObservationsTableOrderingComposer,
+      $$PlantResourceObservationsTableAnnotationComposer,
+      $$PlantResourceObservationsTableCreateCompanionBuilder,
+      $$PlantResourceObservationsTableUpdateCompanionBuilder,
+      (PlantResourceObservation, $$PlantResourceObservationsTableReferences),
+      PlantResourceObservation,
+      PrefetchHooks Function({bool projectId, bool surveyVisitId})
+    >;
 typedef $$PhotosTableCreateCompanionBuilder = PhotosCompanion Function({
   Value<int?> serverVersion,
   Value<SyncStatus> syncStatus,
   Value<DateTime?> deletedAt,
   required String id,
   Value<String?> observationId,
+  Value<String?> plantResourceId,
   required String localPath,
   required String mimeType,
   required int fileSize,
@@ -20022,6 +22389,7 @@ typedef $$PhotosTableUpdateCompanionBuilder = PhotosCompanion Function({
   Value<DateTime?> deletedAt,
   Value<String> id,
   Value<String?> observationId,
+  Value<String?> plantResourceId,
   Value<String> localPath,
   Value<String> mimeType,
   Value<int> fileSize,
@@ -20069,6 +22437,11 @@ class $$PhotosTableFilterComposer
 
   ColumnFilters<String> get observationId => $composableBuilder(
     column: $table.observationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plantResourceId => $composableBuilder(
+    column: $table.plantResourceId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20167,6 +22540,11 @@ class $$PhotosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get plantResourceId => $composableBuilder(
+    column: $table.plantResourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get localPath => $composableBuilder(
     column: $table.localPath,
     builder: (column) => ColumnOrderings(column),
@@ -20259,6 +22637,11 @@ class $$PhotosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get plantResourceId => $composableBuilder(
+    column: $table.plantResourceId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get localPath =>
       $composableBuilder(column: $table.localPath, builder: (column) => column);
 
@@ -20337,6 +22720,7 @@ class $$PhotosTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String?> observationId = const Value.absent(),
+                Value<String?> plantResourceId = const Value.absent(),
                 Value<String> localPath = const Value.absent(),
                 Value<String> mimeType = const Value.absent(),
                 Value<int> fileSize = const Value.absent(),
@@ -20356,6 +22740,7 @@ class $$PhotosTableTableManager
                 deletedAt: deletedAt,
                 id: id,
                 observationId: observationId,
+                plantResourceId: plantResourceId,
                 localPath: localPath,
                 mimeType: mimeType,
                 fileSize: fileSize,
@@ -20377,6 +22762,7 @@ class $$PhotosTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
                 required String id,
                 Value<String?> observationId = const Value.absent(),
+                Value<String?> plantResourceId = const Value.absent(),
                 required String localPath,
                 required String mimeType,
                 required int fileSize,
@@ -20396,6 +22782,7 @@ class $$PhotosTableTableManager
                 deletedAt: deletedAt,
                 id: id,
                 observationId: observationId,
+                plantResourceId: plantResourceId,
                 localPath: localPath,
                 mimeType: mimeType,
                 fileSize: fileSize,
@@ -22979,6 +25366,11 @@ class $AppDatabaseManager {
       $$ManagementTypesTableTableManager(_db, _db.managementTypes);
   $$PlantTaxaTableTableManager get plantTaxa =>
       $$PlantTaxaTableTableManager(_db, _db.plantTaxa);
+  $$PlantResourceObservationsTableTableManager get plantResourceObservations =>
+      $$PlantResourceObservationsTableTableManager(
+        _db,
+        _db.plantResourceObservations,
+      );
   $$PhotosTableTableManager get photos =>
       $$PhotosTableTableManager(_db, _db.photos);
   $$ProjectProtocolsTableTableManager get projectProtocols =>

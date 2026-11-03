@@ -13,6 +13,7 @@ import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/data/taxon_repository.dart';
 import 'package:mobile/features/observations/domain/draft_photo.dart';
 import 'package:mobile/features/observations/domain/observation_details.dart';
+import 'package:mobile/features/observations/domain/photo_parent.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
@@ -134,6 +135,7 @@ class ObservationRepository {
           lifeStage: extras.lifeStage,
           confidence: extras.confidence,
           behaviour: extras.behaviour,
+          hostPlantRecordId: extras.hostPlantRecordId,
         ),
         await _ruleContext(current.projectId, current, taxonId, photos.length),
       );
@@ -182,14 +184,19 @@ class ObservationRepository {
                 microhabitat: Value(extras.microhabitat),
                 flightDirectionDeg: Value(extras.flightDirectionDeg),
                 notes: Value(extras.notes),
+                hostPlantRecordId: Value(extras.hostPlantRecordId),
+                nectarPlantRecordId: Value(extras.nectarPlantRecordId),
                 recordedById: recordedById,
                 createdAt: now,
               ),
             ),
       );
       await _photos.addDrafts(
-        projectId: visit.projectId,
-        observationId: id,
+        parent: PhotoParent.observation(
+          id: id,
+          projectId: visit.projectId,
+          surveyVisitId: visit.id,
+        ),
         drafts: photos,
         firstIsPrimary: true,
       );
@@ -245,6 +252,7 @@ class ObservationRepository {
           lifeStage: after.lifeStage,
           confidence: after.confidence,
           behaviour: after.behaviour,
+          hostPlantRecordId: after.hostPlantRecordId,
         ),
         // Only the warnings read the photo count, and they are not used here.
         await _ruleContext(current.projectId, visit, taxonId, 0),
@@ -270,6 +278,15 @@ class ObservationRepository {
       };
       if (changed.isEmpty) return;
 
+      // A link to a plant record (T052) must go out as an item of its own. Merged
+      // into an earlier unsent item of this observation it would keep that
+      // item's seq, and the plant record queued later would reach the server
+      // after the observation that points at it, which is refused. A cleared
+      // link (null) can merge: it points at nothing.
+      final linksAPlant = [
+        'host_plant_record',
+        'nectar_plant_record',
+      ].any((key) => changed[key] != null);
       await _sync.write(
         projectId: current.projectId,
         entityType: _entityType,
@@ -277,6 +294,7 @@ class ObservationRepository {
         operation: SyncOperation.update,
         payload: changed,
         baseVersion: current.serverVersion,
+        mergeUpdate: !linksAPlant,
         // Only the changed columns, so a value a pull brought in is kept.
         writeRow: () {
           final query = _db.update(_db.butterflyObservations)
@@ -310,6 +328,12 @@ class ObservationRepository {
                   : const Value.absent(),
               notes: changed.containsKey('notes')
                   ? Value(after.notes)
+                  : const Value.absent(),
+              hostPlantRecordId: changed.containsKey('host_plant_record')
+                  ? Value(after.hostPlantRecordId)
+                  : const Value.absent(),
+              nectarPlantRecordId: changed.containsKey('nectar_plant_record')
+                  ? Value(after.nectarPlantRecordId)
                   : const Value.absent(),
             ),
           );
@@ -408,7 +432,7 @@ class ObservationRepository {
   /// The visit of an observation as it is now, or null when [visitId] is null
   /// (an observation without a visit). Throws a [StateError] when the visit is
   /// not on the phone or is locked; any other status is fine, as in
-  /// `PhotoRepository.addToObservation`.
+  /// `PhotoRepository.addToParent`.
   Future<SurveyVisit?> _checkUnlockedVisit(String? visitId) async {
     if (visitId == null) return null;
     final visit = await (_db.select(

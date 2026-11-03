@@ -10,6 +10,8 @@ import 'package:mobile/features/observations/ui/observation_detail_screen.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
+import 'package:mobile/features/resources/ui/plant_entry_screen.dart';
+import 'package:mobile/features/resources/ui/plants_habitat_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
@@ -87,6 +89,29 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) => ObservationDetailScreen(
                   observationId: state.pathParameters['observationId']!,
                 ),
+              ),
+              // The Plants & habitat screen (T052). `new` comes before
+              // `:plantId`, or "new" would be read as a plant id.
+              GoRoute(
+                path: 'plants',
+                builder: (_, state) =>
+                    PlantsHabitatScreen(projectId: state.pathParameters['id']!),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (_, state) => PlantEntryScreen(
+                      projectId: state.pathParameters['id']!,
+                      visitId: state.uri.queryParameters['visit'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':plantId',
+                    builder: (_, state) => PlantEntryScreen(
+                      projectId: state.pathParameters['id']!,
+                      plantId: state.pathParameters['plantId']!,
+                    ),
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'transects',

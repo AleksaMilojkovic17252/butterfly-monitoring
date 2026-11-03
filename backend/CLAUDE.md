@@ -40,7 +40,7 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - `apps/core/` has the shared pieces: `models.SyncableModel` (with `soft_delete()`),
   `migration_ops` (`CreateView`, `AttachSyncTrigger`, `HistoryVersionIndex`), `history.save_with_reason`, the error
   handler in `exceptions.py`, `geo_files.open_datasource` (reading uploaded GeoJSON/KML/GPX), the admin site, and the admin map widgets in `widgets.py`
-  (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045).
+  (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045). A read-only page shows a geometry with `readonly_map.js` (a `div.readonly-geometry-map` with `data-geojson`, T052).
 - Input rules V01-V09 / W01-W07 (T055, docs/requirements/validation-rules.md) are pure functions in
   `apps/observations/rules.py` and `apps/surveys/rules.py`; `save_observation` and `save_visit` call the hard rules (the warning
   functions are not called by the services),

@@ -92,11 +92,13 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
               ),
             ],
           ),
-          AsyncData(value: final list) => ListView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: list.length,
-            itemBuilder: (context, i) =>
-                ProjectCard(project: list[i], onTap: () => _open(list[i])),
+          AsyncData(value: final list) => SafeArea(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: list.length,
+              itemBuilder: (context, i) =>
+                  ProjectCard(project: list[i], onTap: () => _open(list[i])),
+            ),
           ),
           AsyncError(:final error) => Center(child: Text('$error')),
           _ => const Center(child: CircularProgressIndicator()),

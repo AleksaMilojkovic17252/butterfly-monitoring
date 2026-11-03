@@ -9,7 +9,8 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
 
     `resources.services` also validates REST input with it, so push and REST read a payload the
     same way. Nothing here belongs to the server except `patch_area_m2`, which the server fills in
-    for a polygon when it is empty, so the same serializer is the REST output.
+    for a polygon when it is empty, and `created_by`, which is output only, so the same serializer
+    is the REST output.
 
     The messages of the hard rules are the rule IDs (docs/requirements/validation-rules.md), so
     the phone can map them to its own text.
@@ -24,8 +25,10 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlantResourceObservation
-        exclude = ["created_by", "updated_by"]
-        read_only_fields = ["deleted_at"]
+        exclude = ["updated_by"]
+        # created_by is pulled so the phone can show only its user's records (logout keeps other
+        # users' rows, T052). It is read-only: the server sets it from the caller.
+        read_only_fields = ["created_by", "deleted_at"]
         extra_kwargs = {
             "resource_type": {"error_messages": {"invalid_choice": "V07"}},
             "abundance_class": {"error_messages": {"invalid_choice": "V07"}},

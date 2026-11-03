@@ -6,6 +6,7 @@ import 'package:mobile/core/db/butterfly_observations.dart';
 import 'package:mobile/core/db/habitat_types.dart';
 import 'package:mobile/core/db/management_types.dart';
 import 'package:mobile/core/db/photos.dart';
+import 'package:mobile/core/db/plant_resource_observations.dart';
 import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
@@ -33,6 +34,7 @@ part 'app_database.g.dart';
     HabitatTypes,
     ManagementTypes,
     PlantTaxa,
+    PlantResourceObservations,
     Photos,
     ProjectProtocols,
     SyncConflicts,
@@ -49,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -143,6 +145,17 @@ class AppDatabase extends _$AppDatabase {
         // Photos arrive through pull only after this version, so every
         // project's photo rows need a full pull: start from the beginning.
         await m.createTable(schema.photo);
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from12To13: (m, schema) async {
+        await m.createTable(schema.plantResourceObservation);
+        await m.addColumn(schema.photo, schema.photo.plantResourceId);
+        // Plant rows (and plant photos) the server sent before this version had
+        // no table here, so pull skipped them and moved its cursor past them.
+        // Start every pull from the beginning, as from11To12 did. Rows waiting
+        // in the queue are not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

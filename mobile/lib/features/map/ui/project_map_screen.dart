@@ -28,6 +28,9 @@ class ProjectMapScreen extends ConsumerWidget {
             onPressed: () => showModalBottomSheet<void>(
               context: context,
               showDragHandle: true,
+              // Without this a sheet is capped at 9/16 of the screen, which six
+              // layers overflow (T052); the sheet scrolls if it is still too tall.
+              isScrollControlled: true,
               builder: (_) => MapLayersSheet(projectId: projectId),
             ),
           ),

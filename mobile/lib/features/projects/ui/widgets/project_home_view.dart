@@ -38,10 +38,10 @@ class ProjectHomeView extends ConsumerWidget {
         icon: Icons.add_location_alt_outlined,
         label: 'Free observation',
       ),
-      // Plants & habitat: enabled by T052.
-      const ProjectHomeTile(
+      ProjectHomeTile(
         icon: Icons.local_florist_outlined,
         label: 'Plants & habitat',
+        onTap: () => context.push('/projects/${project.id}/plants'),
       ),
       ProjectHomeTile(
         icon: Icons.map_outlined,

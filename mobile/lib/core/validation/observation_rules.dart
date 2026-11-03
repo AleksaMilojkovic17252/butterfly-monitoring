@@ -21,6 +21,7 @@ class ObservationInput {
     this.lifeStage = 'adult',
     this.confidence = 'confirmed_in_field',
     this.behaviour = const [],
+    this.hostPlantRecordId,
   });
 
   /// The values of a stored observation row. `behaviour` is JSON text; text
@@ -37,6 +38,7 @@ class ObservationInput {
         lifeStage: row.lifeStage,
         confidence: row.identificationConfidence,
         behaviour: _behaviourList(row.behaviour),
+        hostPlantRecordId: row.hostPlantRecordId,
       );
 
   final DateTime? observedAt;
@@ -49,6 +51,10 @@ class ObservationInput {
   final String lifeStage;
   final String confidence;
   final List<String> behaviour;
+
+  /// The plant record linked as the host plant (T052); null when not linked.
+  /// A nectar link does not count for W03 and W04.
+  final String? hostPlantRecordId;
 }
 
 List<String> _behaviourList(String json) {
@@ -126,8 +132,10 @@ List<String> observationWarnings(
   return [
     if (photoMissing(context.taxonPhotoRequired, context.photoCount)) 'W01',
     if (isPoorAccuracy(input.accuracyM, context.accuracyWarningM)) 'W02',
-    if (w03Applies(input.behaviour)) 'W03',
-    if (w04Applies(input.lifeStage)) 'W04',
+    if (w03Applies(input.behaviour, hostPlantRecordId: input.hostPlantRecordId))
+      'W03',
+    if (w04Applies(input.lifeStage, hostPlantRecordId: input.hostPlantRecordId))
+      'W04',
   ];
 }
 
@@ -233,17 +241,15 @@ void _v08Geometry(ObservationInput input, Map<String, List<String>> errors) {
   if (!valid) _add(errors, 'geometry', 'V08');
 }
 
-/// W03: the behaviour includes egg-laying. The form calls this too, to show
-/// the prompt without building a whole [ObservationRuleContext].
-bool w03Applies(List<String> behaviour) {
-  // TODO(T052): only when the observation has no host-plant link. T052 stores
-  // the link on the phone; until then there is none, so it always fires.
-  return behaviour.contains('oviposition');
+/// W03: the behaviour includes egg-laying and no host plant is linked. The
+/// form calls this too, to show the prompt without building a whole
+/// [ObservationRuleContext]. A nectar link does not count, as on the server.
+bool w03Applies(List<String> behaviour, {String? hostPlantRecordId}) {
+  return behaviour.contains('oviposition') && hostPlantRecordId == null;
 }
 
-/// W04: the life stage is larva. Used by the form like [w03Applies].
-bool w04Applies(String lifeStage) {
-  // TODO(T052): only when the observation has no host-plant link. T052 stores
-  // the link on the phone; until then there is none, so it always fires.
-  return lifeStage == 'larva';
+/// W04: the life stage is larva and no host plant is linked. Used by the form
+/// like [w03Applies].
+bool w04Applies(String lifeStage, {String? hostPlantRecordId}) {
+  return lifeStage == 'larva' && hostPlantRecordId == null;
 }

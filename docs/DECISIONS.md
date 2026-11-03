@@ -1787,3 +1787,53 @@ after the create. Plant photos get their own one-primary unique index. `Photo.pa
 **Deferred to T052:** every phone part (the Drift table, pull mapping, the W03/W04 link check, the form). Two things T052 must handle are in
 TICKETS.md: plant rows pulled before the table exists are skipped and the cursor moves past them, and the Drift table must be named
 `plant_resource_observation`.
+
+## D-087 · Plant entry (T052): full-screen capture, one GPS stream, a crossing test that agrees with PostGIS, photos with two parents
+2026-11-03 · accepted · T052, *refines D-086 (`created_by` is now pulled); extends D-054, D-064, D-075 and D-082*
+**Capture is a full-screen route.** `showGeometryCapture` pushes a `fullscreenDialog` page (Cancel, Done) around `GeometryCaptureWidget`. A map inside a
+bottom sheet or a `ListView` loses its drag to the scrolling (the arena problem of D-082's dial), so the form only holds a Location tile. The widget
+takes `modes` (`point`, `polygon`, `line`), `initial`, `onChanged` and `referenceLines`; T054 passes `line` as well. `onChanged` gets a
+`CapturedGeometry` only when the shape is valid, so Done is disabled otherwise. Changing the method with something drawn asks first.
+**One GPS stream (the rule).** geolocator's Android `getPositionStream` returns the stream that already exists and ignores the new settings, so while
+the visit tracker records, a "1 s" stream is the tracker's 5 s stream, and cancelling the wrong subscription would stop the tracker. Rule: while
+`tracking.recording && !tracking.paused` the capture only listens to `TrackingState.lastPosition` and never calls `getPositionStream`; otherwise
+it listens to `walkPositionsProvider` (an `autoDispose` stream, 1 s, best accuracy, no foreground notification), which is released as soon as the
+capture stops listening. `TrackingController` is unchanged.
+**Walk spacing.** Away from a tracked visit a corner is kept at 2 m or more from the last (and only at ≤ 15 m accuracy). During a visit it uses the
+tracker's fixes, so corners are about 6 m apart at 5 s, and the screen says so. Off a visit the screen is kept on with `WakelockPlus` (there is no
+foreground service) and the earlier state is restored (`await WakelockPlus.enabled`), so the visit's keep-screen-on toggle is not disturbed. Under about 10 m across the
+shape is coarse and the screen suggests tap mode. `Distance(roundResult: false)` is used for the 2 m test: the default rounds to whole metres.
+**Crossing test (`core/geo/polygon_math.dart`).** `polygonSelfIntersects` projects lon/lat to metres around the mean of the points with one affine
+transform (so "do these edges cross" has the same answer as in the plane PostGIS works in), then checks every pair of non-adjacent edges for a touch or
+a cross, and every adjacent pair for a spike (collinear and both going the same way from the shared corner). Under 3 distinct points or an area under
+0.01 m² also counts as a problem. A cross product under 1e-9 m² counts as zero. **Compared with PostGIS** (a throwaway script, 13 rings in two
+coordinate systems, `ST_IsValid`): square, L shape, triangle, bow-tie, a closing edge that crosses, a spike, three points on a line, a corner on an
+edge, a repeated corner next to itself, a repeated corner elsewhere, a collinear extra corner, a ring that repeats its first point, and a closing
+overlap. 26 of 26 answers agree. The area is a flat-projection figure for the screen only (about 0.1 % off); the server's `ST_Area` replaces it after sync.
+**Search without a column.** `searchPlantTaxa` normalises the three names with `searchTextOf` on the fly. There are about 100 plants, so a stored
+`search_text` column (and a migration with a backfill) was not worth it. Deactivated plants leave the picker (`pickerPlantTaxaProvider`) but
+`plantTaxaByIdsProvider` still reads them, so a stored record keeps its name. No favourites (they are a butterfly table); Recent comes from the user's own records.
+**`PhotoParent`.** A photo has one parent, an observation or a plant record. `PhotoParent.observation/.plant` holds the id, project, visit and the
+payload key (`observation` or `plant_resource`), and `PhotoRepository` takes it instead of an observation (`addDrafts`, `addToParent`). Reads
+by parent id look in both columns (`observation_id = ? OR plant_resource_id = ?`; UUIDs do not collide), so `photosProvider` is still one family.
+`ObservationPhotoSection` became `RecordPhotoSection`.
+**Delete is refused while a live observation links the record.** The edit form has Delete. A linked record gives "Linked to N butterfly records. Remove the
+link first." (the server's `SET_NULL` never fires for a soft delete, D-086, so a tombstone would leave dangling links). An unsent create disappears
+with its queue item and photos; a synced record gets a tombstone.
+**`created_by` is pulled (refines D-086).** `PlantResourceSyncSerializer` now excludes only `updated_by`, and `created_by` is read-only. Without it a
+second user on the same phone would see the first user's plant records (logout keeps local rows). `_strip` drops it from the merge snapshots, so
+a stale update of another field is still `merged`. One serializer line, no migration.
+**Admin map (asked for during testing).** The plant record admin stays read-only (D-086), so Django shows the geometry as text. A read-only field `location_map` draws it instead: a `div` with the GeoJSON in `data-geojson`, filled by `core/readonly_map.js` with the OpenLayers build Django's GIS widgets already load. No editing, and no new dependency.
+**Never push `patch_area_m2`.** When the shape changes the local value is set to null and the next pull brings the server's figure back.
+**Cursors are reset in `from12To13`** (the plant rows and plant photos the server sent earlier were skipped), as `from11To12` did.
+**Discard.** Discarding a rejected create deletes the plant row, its photos (rows and queue items) and clears the links in local observations, including
+`host_plant_record` / `nectar_plant_record` in their queued payloads, or the server would reject them for an unknown record. Discarding a never-sent visit
+also removes its plant records. Photo files of discarded plant photos stay on disk (see below).
+**Links.** One tile and picker for host and nectar (`PlantLinkTile`, `PlantLinkSheet`), offering only the types the server accepts; "New plant record" opens
+the form over the sheet with `Navigator.push` (the sheet is a pageless route). `w03Applies`/`w04Applies` are false once a host plant is linked.
+**Found on the phone while testing (all fixed).** (1) The capture page's Cancel and Done were dark green on the dark green app bar, so invisible; it now has a back arrow and a check icon. (2) A map whose camera was moved from code in `onMapReady` did not request the tiles of the new place until the first touch, so the map started grey; the start camera is now given to `FlutterMap` (`initialCenter`, `initialZoom`, `initialCameraFit`) and only the last-known-position fallback moves it afterwards. (3) A percentage width collapses in the admin's flex layout, so the first admin map was empty; it has a real width (`clamp(...)`). (4) The sixth row (Plants) made the Layers sheet overflow by 9.3 px, because a sheet without `isScrollControlled` is capped at 9/16 of the screen; it is now scroll-controlled and scrolls. (5) Plant points are clustered like butterflies (many records on one spot). **Found in the review before the commit:** (6) a link to a plant record is never merged into an earlier unsent item of the observation (`updateObservation` passes `mergeUpdate: false` for a non-null `host_plant_record` / `nectar_plant_record`). Merged, the link kept that item's `seq` and the plant record queued later reached the server after the observation, which was refused; shown with a throwaway test on the real `SyncRepository` (merged: obs create carries the link at seq 1, plant at seq 2; not merged: link update at seq 3). (7) Walking: the screen lock is restored from a `_wakelockTaken` flag, so leaving the capture right after Start walking cannot leave it on; a non-location error while finding the position now shows a message and no longer leaves Use my position disabled. These fixes were not run on the phone (it was disconnected): to check, go offline, add a butterfly in a visit, Edit it, link a New plant record, then sync and expect no refusal.
+**Not handled.** During a visit the walk's corners come at the tracker's rate, and GPS jitter can tangle a walked ring: Close then blocks, and Undo or tap mode
+is the way out; no smoothing. A plant record made through the link stays if the quick sheet is then closed without saving: it is a real record. Linked records
+are not re-checked when their role changes later (D-086). Photos saved in an edit form are not undone by leaving it (D-082). Species search has no favourites.
+Line mode is not on the phone's UI until T054. Photo files of a discarded plant record stay on disk, and the existing discard of a never-sent visit already
+leaves its observations' photo rows (`discard` knows no photo files): not changed here.

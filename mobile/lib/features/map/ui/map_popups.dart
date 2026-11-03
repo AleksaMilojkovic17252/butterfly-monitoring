@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/validation/observation_values.dart';
+import 'package:mobile/core/validation/plant_values.dart';
 import 'package:mobile/features/map/ui/widgets/map_feature_dialog.dart';
 import 'package:mobile/features/observations/domain/behaviour_json.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
@@ -107,4 +109,28 @@ Future<void> showRoutePopup(
     ('Started', formatLocalDateTime(visit.startedAt ?? visit.createdAt)),
     ('Status', visitStatusLabel(visit.status)),
   ], path);
+}
+
+/// A plant record (T052): its photo if it has one, species (or "Unidentified
+/// plant"), relation to butterflies, when, and the area of a patch. [plantName]
+/// is null for an unidentified plant or one not known on this phone, [photo]
+/// when it has none. Opens the plant record's form.
+Future<void> showPlantPopup(
+  BuildContext context, {
+  required PlantResourceObservation record,
+  required String? plantName,
+  required Photo? photo,
+}) {
+  final area = record.patchAreaM2;
+  return _showPopup(
+    context,
+    plantName ?? 'Unidentified plant',
+    [
+      ('Relation', plantValueLabel(record.resourceType)),
+      ('Seen', formatLocalDateTime(record.observedAt)),
+      if (area != null) ('Area', formatArea(area)),
+    ],
+    '/projects/${record.projectId}/plants/${record.id}',
+    photo: photo,
+  );
 }

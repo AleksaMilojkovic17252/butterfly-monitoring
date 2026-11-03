@@ -14,9 +14,13 @@ import 'package:mobile/core/db/sync_columns.dart';
 class Photos extends Table with SyncColumns {
   TextColumn get id => text()();
 
-  /// The observation this photo belongs to. No foreign key, so T052 can add a
-  /// plant record as the other possible parent.
+  /// The observation this photo belongs to. No foreign key. A photo has
+  /// exactly one parent: this, or `plantResourceId` (the server checks it).
   TextColumn get observationId => text().nullable()();
+
+  /// The plant record this photo belongs to (T052), when it is not an
+  /// observation's. No foreign key, like `observationId`.
+  TextColumn get plantResourceId => text().nullable()();
   TextColumn get localPath => text()();
   TextColumn get mimeType => text()();
   IntColumn get fileSize => integer()();

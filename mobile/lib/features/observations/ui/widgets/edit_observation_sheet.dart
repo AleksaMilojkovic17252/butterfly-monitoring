@@ -9,7 +9,8 @@ import 'package:mobile/features/observations/domain/observation_details.dart';
 import 'package:mobile/features/observations/domain/taxon_search.dart';
 import 'package:mobile/features/observations/ui/widgets/count_stepper.dart';
 import 'package:mobile/features/observations/ui/widgets/observation_details_form.dart';
-import 'package:mobile/features/observations/ui/widgets/observation_photo_section.dart';
+import 'package:mobile/features/observations/domain/photo_parent.dart';
+import 'package:mobile/features/observations/ui/widgets/record_photo_section.dart';
 import 'package:mobile/features/observations/ui/widgets/photo_prompt_dialog.dart';
 import 'package:mobile/features/observations/ui/widgets/taxon_picker.dart';
 import 'package:mobile/features/visits/domain/local_time.dart';
@@ -64,6 +65,13 @@ class _EditObservationSheetState extends ConsumerState<EditObservationSheet> {
 
   String get _taxonId => _picked?.id ?? _opened.taxonId;
 
+  /// The observation as the owner of its photos.
+  PhotoParent get _parent => PhotoParent.observation(
+    id: _opened.id,
+    projectId: _opened.projectId,
+    surveyVisitId: _opened.surveyVisitId,
+  );
+
   /// Takes or picks a photo and adds it to the observation right away. A
   /// refusal (for example a locked visit) is shown in the sheet.
   Future<void> _addPhoto(ImageSource source) async {
@@ -75,7 +83,7 @@ class _EditObservationSheetState extends ConsumerState<EditObservationSheet> {
     try {
       final draft = await photos.capture(source);
       if (draft == null) return;
-      await photos.addToObservation(_opened, draft);
+      await photos.addToParent(_parent, draft);
     } on StateError catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (error) {
@@ -134,10 +142,7 @@ class _EditObservationSheetState extends ConsumerState<EditObservationSheet> {
           'Photos are saved right away',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        ObservationPhotoSection(
-          observation: _opened,
-          photoRequired: photoRequired,
-        ),
+        RecordPhotoSection(parent: _parent, photoRequired: photoRequired),
       ],
     );
   }
@@ -207,6 +212,8 @@ class _EditObservationSheetState extends ConsumerState<EditObservationSheet> {
                                 ),
                                 hasPhoto: photoCount > 0,
                                 onPhotoNeeded: _askForPhoto,
+                                projectId: _opened.projectId,
+                                visitId: _opened.surveyVisitId,
                               ),
                             ),
                           ],

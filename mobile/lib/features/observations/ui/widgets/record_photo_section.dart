@@ -4,40 +4,42 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
+import 'package:mobile/features/observations/domain/photo_parent.dart';
 import 'package:mobile/features/observations/domain/photo_preview.dart';
 import 'package:mobile/features/observations/ui/widgets/photo_preview_image.dart';
 import 'package:mobile/features/observations/ui/widgets/photo_viewer.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 
-/// The photos part of the observation detail (T050): thumbnails with a star on
+/// The photos part of an observation's detail or a plant record's form (T050,
+/// T052): thumbnails with a star on
 /// the primary one, the W01 warning, and the buttons to add a photo. Tapping any
 /// photo opens a full-screen viewer (T107) with Make primary and Delete in its
 /// app bar; on a locked visit the viewer has no actions. Adding and changing
 /// photos is allowed until the visit is locked; the buttons disappear when it
 /// is.
-class ObservationPhotoSection extends ConsumerStatefulWidget {
-  const ObservationPhotoSection({
+class RecordPhotoSection extends ConsumerStatefulWidget {
+  const RecordPhotoSection({
     super.key,
-    required this.observation,
+    required this.parent,
     required this.photoRequired,
   });
-  final ButterflyObservation observation;
 
-  /// The species has `photo_required` (rule W01).
+  /// The observation or plant record the photos belong to.
+  final PhotoParent parent;
+
+  /// The species has `photo_required` (rule W01). Always false for a plant.
   final bool photoRequired;
 
   @override
-  ConsumerState<ObservationPhotoSection> createState() =>
-      _ObservationPhotoSectionState();
+  ConsumerState<RecordPhotoSection> createState() => _RecordPhotoSectionState();
 }
 
-class _ObservationPhotoSectionState
-    extends ConsumerState<ObservationPhotoSection> {
+class _RecordPhotoSectionState extends ConsumerState<RecordPhotoSection> {
   /// True while a photo is being taken and saved.
   bool _busy = false;
 
-  /// Takes or picks a photo and adds it to the observation. A refusal (for
+  /// Takes or picks a photo and adds it to the record. A refusal (for
   /// example a locked visit) is shown in a snackbar.
   Future<void> _add(ImageSource source) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -46,7 +48,7 @@ class _ObservationPhotoSectionState
     try {
       final draft = await photos.capture(source);
       if (draft == null) return;
-      await photos.addToObservation(widget.observation, draft);
+      await photos.addToParent(widget.parent, draft);
     } on StateError catch (error) {
       messenger.showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
@@ -110,12 +112,12 @@ class _ObservationPhotoSectionState
 
   @override
   Widget build(BuildContext context) {
-    final o = widget.observation;
-    final photos = ref.watch(photosProvider(o.id)).value ?? [];
+    final parent = widget.parent;
+    final photos = ref.watch(photosProvider(parent.id)).value ?? [];
 
-    // Watched, so the buttons go away if a pull locks the visit. An
-    // observation without a visit is never locked.
-    final visitId = o.surveyVisitId;
+    // Watched, so the buttons go away if a pull locks the visit. A record
+    // without a visit is never locked.
+    final visitId = parent.surveyVisitId;
     final visit = visitId == null
         ? null
         : ref.watch(visitProvider(visitId)).value;
@@ -153,7 +155,7 @@ class _ObservationPhotoSectionState
             if (!locked) ...[
               const SizedBox(height: 12),
               Wrap(
-                spacing: 8,
+                spacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   OutlinedButton.icon(

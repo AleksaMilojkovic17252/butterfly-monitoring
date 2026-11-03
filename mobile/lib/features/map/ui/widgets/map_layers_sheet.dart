@@ -31,27 +31,31 @@ class MapLayersSheet extends ConsumerWidget {
     }
 
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final layer in MapLayer.values)
-            SwitchListTile(
-              title: Text(layer.label),
-              subtitle: layer == MapLayer.visitRoute && routeNote != null
-                  ? Text(routeNote)
-                  : null,
-              // Without a visit the route switch is disabled and shows off, so
-              // it does not look on when nothing can be drawn.
-              value:
-                  on.contains(layer) &&
-                  (layer != MapLayer.visitRoute || visitId != null),
-              onChanged: layer == MapLayer.visitRoute && visitId == null
-                  ? null
-                  : (value) => ref
-                        .read(mapLayersProvider.notifier)
-                        .toggle(layer, value),
-            ),
-        ],
+      // Scrolls when the layers do not fit (a small screen, a large font, or one
+      // more layer later), instead of overflowing.
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final layer in MapLayer.values)
+              SwitchListTile(
+                title: Text(layer.label),
+                subtitle: layer == MapLayer.visitRoute && routeNote != null
+                    ? Text(routeNote)
+                    : null,
+                // Without a visit the route switch is disabled and shows off, so
+                // it does not look on when nothing can be drawn.
+                value:
+                    on.contains(layer) &&
+                    (layer != MapLayer.visitRoute || visitId != null),
+                onChanged: layer == MapLayer.visitRoute && visitId == null
+                    ? null
+                    : (value) => ref
+                          .read(mapLayersProvider.notifier)
+                          .toggle(layer, value),
+              ),
+          ],
+        ),
       ),
     );
   }

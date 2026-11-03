@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
@@ -254,7 +255,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       if (!mounted) return;
       Navigator.pop(context, (id: id, label: '${taxonTitle(taxon)} × $_count'));
     } on LocationException catch (error) {
-      _fail(_locationMessage(error.failure));
+      _fail(locationMessage(error.failure));
     } on StateError catch (error) {
       _fail(error.message);
     } catch (error) {
@@ -320,6 +321,8 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                                 photos: _photoSlot(),
                                 hasPhoto: _drafts.isNotEmpty,
                                 onPhotoNeeded: _askForPhoto,
+                                projectId: widget.visit.projectId,
+                                visitId: widget.visit.id,
                                 showFacing: true,
                               ),
                             ),
@@ -434,12 +437,4 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       ),
     );
   }
-
-  static String _locationMessage(LocationFailure failure) => switch (failure) {
-    LocationFailure.serviceOff => 'Location is off. Turn it on in Android.',
-    LocationFailure.denied => 'Location permission was not given.',
-    LocationFailure.deniedForever =>
-      'Location permission is blocked. Allow it in Android settings.',
-    LocationFailure.unavailable => 'No GPS fix yet. Try again outside.',
-  };
 }

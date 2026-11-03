@@ -167,8 +167,11 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
 
   Future<void> _addPlant() async {
     if (!await _confirmIfPaused()) return;
-    // TODO(T052): open the plant entry.
-    _showMessage('Plant entry is coming in a later version');
+    if (!mounted) return;
+    final saved = await context.push<String>(
+      '/projects/${widget.visit.projectId}/plants/new?visit=${widget.visit.id}',
+    );
+    if (saved != null && mounted) _showMessage('Saved: plant record');
   }
 
   Future<void> _addHabitat() async {

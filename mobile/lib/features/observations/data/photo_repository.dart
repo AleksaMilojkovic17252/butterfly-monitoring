@@ -13,13 +13,16 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/sync/photo_api.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/features/observations/domain/draft_photo.dart';
+import 'package:mobile/features/observations/domain/photo_parent.dart';
 import 'package:mobile/features/observations/domain/photo_preview.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 /// Photos (T050): the only code that touches photo files and the
-/// `photo` table. Taking a photo makes a [DraftPhoto] (a file, no row). A row
+/// `photo` table. A photo belongs to a butterfly observation or a plant record
+/// (a [PhotoParent], T052); reads by parent id look in both columns, since the
+/// UUIDs of the two never collide. Taking a photo makes a [DraftPhoto] (a file, no row). A row
 /// and its queue item are written by [addDrafts], through
 /// [SyncRepository.write], so both exist or neither does.
 ///
@@ -128,13 +131,12 @@ class PhotoRepository {
     }
   }
 
-  /// Writes a `photo` create for each of [drafts] on the observation, and
-  /// queues it. When [firstIsPrimary] is true the first draft is the primary
-  /// photo. Call it after the observation's own write: the queue then sends the
-  /// observation first. Joins a running transaction.
+  /// Writes a `photo` create for each of [drafts] on [parent], and queues it.
+  /// When [firstIsPrimary] is true the first draft is the primary photo. Call
+  /// it after the parent's own write: the queue then sends the observation or
+  /// plant record first. Joins a running transaction.
   Future<void> addDrafts({
-    required String projectId,
-    required String observationId,
+    required PhotoParent parent,
     required List<DraftPhoto> drafts,
     required bool firstIsPrimary,
   }) async {
@@ -143,12 +145,12 @@ class PhotoRepository {
       final isPrimary = firstIsPrimary && i == 0;
       final createdAt = DateTime.now().toUtc();
       await _sync.write(
-        projectId: projectId,
+        projectId: parent.projectId,
         entityType: _entityType,
         entityId: draft.id,
         operation: SyncOperation.create,
         payload: {
-          'observation': observationId,
+          parent.payloadKey: parent.id,
           'local_path': draft.path,
           'mime_type': 'image/jpeg',
           'file_size': draft.size,
@@ -164,7 +166,8 @@ class PhotoRepository {
             .insert(
               PhotosCompanion.insert(
                 id: draft.id,
-                observationId: Value(observationId),
+                observationId: Value(parent.isPlant ? null : parent.id),
+                plantResourceId: Value(parent.isPlant ? parent.id : null),
                 localPath: draft.path,
                 mimeType: 'image/jpeg',
                 fileSize: draft.size,
@@ -180,20 +183,17 @@ class PhotoRepository {
     }
   }
 
-  /// Adds [draft] to an observation that is already saved. The photo is
-  /// primary when the observation has no live photo yet. The visit may be
+  /// Adds [draft] to an observation or plant record that is already saved. The
+  /// photo is primary when the parent has no live photo yet. The visit may be
   /// completed, but not locked: the server refuses photo changes on a locked
   /// visit (D-072).
   ///
   /// Throws a [StateError] when the visit is gone or locked; the draft's file
   /// is deleted then, and also when the write fails.
-  Future<void> addToObservation(
-    ButterflyObservation observation,
-    DraftPhoto draft,
-  ) async {
+  Future<void> addToParent(PhotoParent parent, DraftPhoto draft) async {
     try {
       await _db.transaction(() async {
-        final visitId = observation.surveyVisitId;
+        final visitId = parent.surveyVisitId;
         if (visitId != null) {
           final visit = await (_db.select(
             _db.surveyVisits,
@@ -205,10 +205,9 @@ class PhotoRepository {
             throw StateError('The visit is locked.');
           }
         }
-        final existing = await _livePhotos(observation.id);
+        final existing = await _livePhotos(parent.id);
         await addDrafts(
-          projectId: observation.projectId,
-          observationId: observation.id,
+          parent: parent,
           drafts: [draft],
           firstIsPrimary: existing.isEmpty,
         );
@@ -219,17 +218,15 @@ class PhotoRepository {
     }
   }
 
-  /// Live photos of an observation, newest first.
-  Stream<List<Photo>> watchObservationPhotos(String observationId) {
+  /// Live photos of an observation or a plant record, newest first.
+  Stream<List<Photo>> watchPhotos(String parentId) {
     final query = _db.select(_db.photos)
-      ..where(
-        (p) => p.observationId.equals(observationId) & p.deletedAt.isNull(),
-      )
+      ..where((p) => _ofParent(p, parentId) & p.deletedAt.isNull())
       ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]);
     return query.watch();
   }
 
-  /// Makes [photo] the observation's primary photo. The old primary is unset
+  /// Makes [photo] the primary photo of its observation or plant record. The old primary is unset
   /// first and the new one set second, as two queue items in that order: the
   /// server checks "one primary per observation" on every change (D-072).
   ///
@@ -242,7 +239,7 @@ class PhotoRepository {
       final current =
           await (_db.select(_db.photos)..where(
                 (p) =>
-                    p.observationId.equals(fresh.observationId!) &
+                    _ofParent(p, _parentIdOf(fresh)) &
                     p.deletedAt.isNull() &
                     p.isPrimary.equals(true),
               ))
@@ -278,6 +275,12 @@ class PhotoRepository {
     }
     return paths;
   }
+
+  /// Queues the delete of every live photo of a plant record, for
+  /// `PlantRepository.delete`. Same contract as [deleteObservationPhotos]:
+  /// returns the paths to delete after the caller's transaction commits.
+  Future<List<String>> deletePlantPhotos(String plantId) =>
+      deleteObservationPhotos(plantId);
 
   /// Deletes photo files that are no longer used. A missing file is fine.
   Future<void> deleteFiles(List<String> paths) async {
@@ -448,7 +451,7 @@ class PhotoRepository {
       baseVersion: photo.serverVersion,
     );
     if (photo.isPrimary) {
-      final rest = await _livePhotos(photo.observationId!);
+      final rest = await _livePhotos(_parentIdOf(photo));
       if (rest.isNotEmpty) {
         rest.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         await _setPrimary(rest.first, true);
@@ -481,22 +484,40 @@ class PhotoRepository {
     });
   }
 
-  /// The project of the photo's observation.
+  /// The id of the observation or plant record the photo belongs to.
+  String _parentIdOf(Photo photo) =>
+      photo.observationId ?? photo.plantResourceId!;
+
+  /// The photo's parent is [parentId], an observation or a plant record.
+  Expression<bool> _ofParent($PhotosTable p, String parentId) =>
+      p.observationId.equals(parentId) | p.plantResourceId.equals(parentId);
+
+  /// The project of the photo's observation or plant record.
   Future<String> _projectIdOf(Photo photo) async {
-    final observation = await (_db.select(
-      _db.butterflyObservations,
-    )..where((o) => o.id.equals(photo.observationId ?? ''))).getSingleOrNull();
-    if (observation == null) {
-      throw StateError('The observation is no longer on this phone.');
+    final observationId = photo.observationId;
+    if (observationId != null) {
+      final observation = await (_db.select(
+        _db.butterflyObservations,
+      )..where((o) => o.id.equals(observationId))).getSingleOrNull();
+      if (observation == null) {
+        throw StateError('The observation is no longer on this phone.');
+      }
+      return observation.projectId;
     }
-    return observation.projectId;
+    final plant =
+        await (_db.select(_db.plantResourceObservations)
+              ..where((o) => o.id.equals(photo.plantResourceId ?? '')))
+            .getSingleOrNull();
+    if (plant == null) {
+      throw StateError('The plant record is no longer on this phone.');
+    }
+    return plant.projectId;
   }
 
-  Future<List<Photo>> _livePhotos(String observationId) {
-    return (_db.select(_db.photos)..where(
-          (p) => p.observationId.equals(observationId) & p.deletedAt.isNull(),
-        ))
-        .get();
+  Future<List<Photo>> _livePhotos(String parentId) {
+    return (_db.select(
+      _db.photos,
+    )..where((p) => _ofParent(p, parentId) & p.deletedAt.isNull())).get();
   }
 
   /// Width and height of an image file, read from its header (no full decode).
@@ -526,11 +547,10 @@ final photoRepositoryProvider = Provider<PhotoRepository>(
   ),
 );
 
-/// Live photos of one observation, newest first (T050). `autoDispose`: the
-/// query stops when the detail screen closes.
+/// Live photos of one observation or plant record, newest first (T050, T052).
+/// `autoDispose`: the query stops when the screen closes.
 final photosProvider = StreamProvider.autoDispose.family<List<Photo>, String>(
-  (ref, observationId) =>
-      ref.watch(photoRepositoryProvider).watchObservationPhotos(observationId),
+  (ref, parentId) => ref.watch(photoRepositoryProvider).watchPhotos(parentId),
 );
 
 /// What to show for one photo (T107). Keyed by [PhotoPreviewKey] (id, file

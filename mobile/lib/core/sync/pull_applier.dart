@@ -6,6 +6,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/db/search_text.dart';
 import 'package:mobile/core/db/sync_queue.dart';
 import 'package:mobile/core/db/sync_status.dart';
+import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 
@@ -43,6 +44,8 @@ class PullApplier {
     'butterfly_observation': (rows) =>
         _store(_db.butterflyObservations, rows, _butterflyObservation),
     'photo': (rows) => _store(_db.photos, rows, _photo),
+    'plant_resource_observation': (rows) =>
+        _store(_db.plantResourceObservations, rows, _plantResource),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -145,7 +148,7 @@ class PullApplier {
 
   /// For each pulled visit an admin has locked (T042): the local changes never
   /// sent yet (the visit's updates, its track point batches and the changes to
-  /// its observations) become `rejected`, because the server would refuse them, and the sync screen
+  /// its observations and plant records) become `rejected`, because the server would refuse them, and the sync screen
   /// shows them with the lock message. The row is then set `synced`, so the
   /// pending guard lets the server's locked row in and the visit shows as
   /// locked. Changes the server has already rejected keep their message.
@@ -173,9 +176,17 @@ class PullApplier {
           _db.syncQueue.entityType.equals('butterfly_observation') &
           _db.syncQueue.entityId.isIn([for (final o in observations) o.id]);
 
+      // The same for the visit's plant records (T052).
+      final plants = await (_db.select(
+        _db.plantResourceObservations,
+      )..where((t) => t.surveyVisitId.equals(id))).get();
+      final plantItems =
+          _db.syncQueue.entityType.equals('plant_resource_observation') &
+          _db.syncQueue.entityId.isIn([for (final p in plants) p.id]);
+
       await (_db.update(_db.syncQueue)..where(
             (t) =>
-                (visitItems | observationItems) &
+                (visitItems | observationItems | plantItems) &
                 t.status.equalsValue(QueueStatus.queued) &
                 t.retryCount.equals(0),
           ))
@@ -542,6 +553,11 @@ class PullApplier {
       flightDirectionDeg: Value(json['flight_direction_deg'] as int?),
       notes: Value(json['notes'] as String),
       source: Value(json['source'] as String),
+      // Both links are always written, null included: an upsert leaves a
+      // column alone when it is absent, so a link cleared on the server would
+      // otherwise stay on the phone (T052).
+      hostPlantRecordId: Value(json['host_plant_record'] as String?),
+      nectarPlantRecordId: Value(json['nectar_plant_record'] as String?),
       createdAt: DateTime.parse(json['created_at'] as String),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),
@@ -557,6 +573,7 @@ class PullApplier {
     return PhotosCompanion.insert(
       id: json['id'] as String,
       observationId: Value(json['observation'] as String?),
+      plantResourceId: Value(json['plant_resource'] as String?),
       localPath: json['local_path'] as String,
       mimeType: json['mime_type'] as String,
       fileSize: json['file_size'] as int,
@@ -568,6 +585,48 @@ class PullApplier {
       uploadedAt: Value(_dateOrNull(json['uploaded_at'])),
       isPrimary: Value(json['is_primary'] as bool),
       createdAt: DateTime.parse(json['created_at'] as String),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// A plant record the caller made (T052). The geometry is a GeoJSON Point or
+  /// Polygon, kept as text; `lat`/`lon` are the point, or the centre of the
+  /// polygon. `patch_area_m2` is the server's figure. `created_by` is the
+  /// caller's id, which the pull carries so a second user on this phone does
+  /// not see these rows.
+  static PlantResourceObservationsCompanion _plantResource(_Json json) {
+    final geometry = jsonEncode(json['geometry']);
+    final parsed = parseGeometry(geometry);
+    if (parsed == null || parsed.points.isEmpty) {
+      throw FormatException(
+        'Plant record ${json['id']} has no usable geometry',
+      );
+    }
+    final centre = parsed.type == 'Polygon'
+        ? polygonCentroid(parsed.points)
+        : parsed.points.first;
+    return PlantResourceObservationsCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      surveyVisitId: Value(json['survey_visit'] as String?),
+      plantTaxonId: Value(json['plant_taxon'] as String?),
+      resourceType: json['resource_type'] as String,
+      observedAt: DateTime.parse(json['observed_at'] as String),
+      geometryGeojson: geometry,
+      lat: centre.latitude,
+      lon: centre.longitude,
+      abundanceClass: Value(json['abundance_class'] as String),
+      patchAreaM2: Value(_decimalOrNull(json['patch_area_m2'])),
+      phenologyStage: Value(json['phenology_stage'] as String),
+      floweringIntensity: Value(json['flowering_intensity'] as String),
+      eggsPresent: Value(json['eggs_present'] as bool?),
+      larvaePresent: Value(json['larvae_present'] as bool?),
+      feedingDamagePresent: Value(json['feeding_damage_present'] as bool?),
+      notes: Value(json['notes'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      createdById: Value(json['created_by'] as String?),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),

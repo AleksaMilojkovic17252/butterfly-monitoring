@@ -81,6 +81,7 @@ String entityTypeLabel(String type) {
     'habitat_type' => 'Habitat types',
     'management_type' => 'Management types',
     'photo' => 'Photo records',
+    'plant_resource_observation' => 'Plant records',
     'plant_taxon' => 'Plants',
     'survey_visit' => 'Visits',
     'survey_track_point' => 'Track points',
