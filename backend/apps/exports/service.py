@@ -34,7 +34,8 @@ DATE_NOTE = (
     "observed_at (observations, plant records and habitat features), "
 )
 DATE_NOTE += "phenomenon_time_start (snapshots) and recorded_at (track points), in UTC, "
-DATE_NOTE += "both days included. Transects and transect_sections ignore them."
+DATE_NOTE += "both days included. validation_history filters on the observed_at of the "
+DATE_NOTE += "observation, not on decided_at. Transects and transect_sections ignore them."
 TRUE_VALUES = {"1", "true", "yes"}
 FALSE_VALUES = {"0", "false", "no", ""}
 

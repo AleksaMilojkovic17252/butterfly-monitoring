@@ -1906,3 +1906,22 @@ topmost gets the tap (butterflies, plants, habitats), so a habitat under a plant
 **Asked for during testing.** The active visit's snackbars name what was saved: "Saved habitat: <type>" and "Saved plant: <name or Unidentified plant>", through
 `HabitatRepository.titleOf` and `PlantRepository.titleOf`, with the old wording as a fallback.
 **Code review fixes (2026-11-03).** `HabitatEntryScreen._fillPoint` ignores a tracker fix older than 30 s (the tracker runs every 5 s, 15 s in battery saver) and asks for a fresh reading, so a stalled GPS cannot put a feature where the observer was minutes ago; with location off the Location tile says "Not set" and gives the reason (checked on the phone). `PlantEntryScreen._fillPoint` got the same rule (asked for after the review). The habitat tile reads its shape through `CapturedGeometry.fromGeoJson` instead of searching the GeoJSON text.
+
+## D-090 · Validation history (T058): `from`/`to` follow the observation, previous taxon is the validated taxon, `DEFERRED` stays
+2026-11-03 · accepted · T058, *builds on D-065, D-077 and D-085; closes the `validation_history` part of D-077's "Deferred"*
+**`from`/`to` filter on the observation's `observed_at`**, not on `decided_at` (`time_field="observation__observed_at"`). A decision made in
+October on a July observation stays in the bundle for June to August, so a bundle's history matches its observations. The cost: "what was decided
+in October" needs `decided_at` filtered after export. `metadata.json`'s date note says so.
+**`previous_taxon` is the observation's `validated_taxon` before the decision** (null if none was set), which fits the nullable column;
+`new_taxon` is set only for `changed_taxon`. The recorder's taxon stays on the observation. `previous_status` and `new_status` are plain
+`varchar(15)` with no CHECK, as the ticket specifies.
+**One writer.** `validation.services.record_decision` is the only code that creates a `ValidationEvent`. It reads the previous status and taxon from
+the observation, so T057's actions call it *before* changing the observation. It does not change the observation itself. It raises `ValueError` for `changed_taxon` without a `new_taxon` and for a `new_taxon` on any other decision (the DB CHECK only covers the first). T057 calls it in one `transaction.atomic()` with the observation's change, loaded `select_for_update()`; the service does not open the transaction itself because the caller owns the observation's save. Not a `SyncableModel`,
+no history table, no sync trigger: server-only and append-only.
+**`DEFERRED` stays as an empty dict** (the mechanism is kept for the next dataset); the exports bundle now has `validation_history.csv`. Events of a
+soft-deleted observation leave the export, like snapshots (`observations_for` is `.alive()`).
+**Read-only by the inline, not by permissions.** The ticket says the admin has no add, change or delete permission for the model, but D-085 gives the
+`admin` group every permission of every project model, so the group holds all four here too. What keeps the rows read-only is
+`ValidationEventInline` (its `has_add/change/delete_permission` return `False`) and that no `ModelAdmin` is registered; T057 adds the Validation
+section and must keep it read-only. Shown with `admin@demo` (staff, not superuser). The inline needs `validation.view_validationevent`, which the
+same `migrate` grants. An observation of a locked visit shows its history too.

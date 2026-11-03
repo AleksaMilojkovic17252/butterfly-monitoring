@@ -57,6 +57,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the
   CSV/GeoJSON/JSON streams, `service.py` is the single implementation (`export`, `bundle`) that the API views and T065's admin
   actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields.
+- `apps/validation/` (T058, D-090) holds `ValidationEvent`, an append-only record of each validation decision. Only
+  `services.record_decision` creates events (call it before changing the observation); the read-only `ValidationEventInline` on the observation
+  admin and the `validation_history` export read them.
 - `apps/accounts/` has `OgcVerifyView` (`/api/v1/auth/verify`, T069, D-080): nginx `auth_request` calls it for `/ogc`, and
   `authentication.py` adds Basic auth with its own failed-login counter. Personal tokens (`rest_framework.authtoken`) are accepted there only.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all

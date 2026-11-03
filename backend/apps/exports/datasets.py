@@ -21,12 +21,11 @@ from apps.surveys.models import SurveyTrackPoint, SurveyVisit, visit_outcome
 from apps.surveys.services import visits_for
 from apps.transects.models import Transect, TransectSection
 from apps.transects.services import GeodesicLength, sections_for, transects_for
+from apps.validation.models import ValidationEvent
 
 # Datasets named in the ticket whose tables do not exist yet. They are added here when the
 # ticket that builds the table is done.
-DEFERRED = {
-    "validation_history": "T058",
-}
+DEFERRED = {}
 
 # The name of the hidden column that carries a row's geometry as a GeoJSON string.
 GEOMETRY_KEY = "_geojson"
@@ -47,7 +46,7 @@ class Dataset:
     model: type
     queryset: Callable  # user -> the live rows that user may export
     columns: tuple
-    time_field: str | None  # the field `from`/`to` filter on; None if dates do not apply
+    time_field: str | None  # the field path `from`/`to` filter on; None if dates do not apply
     project_fields: tuple  # paths to the project id, any of which may match
     geometry: str | None  # "point", "line", "point_or_polygon", "point_line_or_polygon" or None
     order_by: tuple
@@ -390,10 +389,43 @@ TRACK_POINT_COLUMNS = tuple(
 )
 
 
+VALIDATION_HISTORY_COLUMNS = (
+    Column("id", "id", "Stable identifier of the validation event (UUID)"),
+    Column(
+        "project_id",
+        "observation__project_id",
+        "Project of the observation the decision is about",
+    ),
+    Column("observation_id", "observation_id"),
+    Column("decision", "decision"),
+    Column("previous_status", "previous_status"),
+    Column("new_status", "new_status"),
+    Column("previous_taxon_id", "previous_taxon_id"),
+    Column(
+        "previous_taxon_scientific_name",
+        "previous_taxon__scientific_name",
+        "Scientific name of the validator's taxon before the decision; missing if none was set",
+    ),
+    Column("new_taxon_id", "new_taxon_id"),
+    Column(
+        "new_taxon_scientific_name",
+        "new_taxon__scientific_name",
+        "Scientific name of the taxon the validator set; only for a changed_taxon decision",
+    ),
+    Column("comment", "comment"),
+    Column("decided_by_id", "decided_by_id"),
+    Column("decided_at", "decided_at"),
+)
+
+
 def _snapshots_for(user):
     return EnvironmentalSnapshot.objects.filter(
         Q(survey_visit__in=visits_for(user)) | Q(observation__in=observations_for(user))
     )
+
+
+def _validation_events_for(user):
+    return ValidationEvent.objects.filter(observation__in=observations_for(user))
 
 
 def _track_points_for(user):
@@ -484,6 +516,16 @@ DATASETS = {
             order_by=("phenomenon_time_start", "id"),
         ),
         Dataset(
+            name="validation_history",
+            model=ValidationEvent,
+            queryset=_validation_events_for,
+            columns=VALIDATION_HISTORY_COLUMNS,
+            time_field="observation__observed_at",  # the observation's date, not decided_at (D-090)
+            project_fields=("observation__project_id",),
+            geometry=None,
+            order_by=("decided_at", "id"),
+        ),
+        Dataset(
             name="track_points",
             model=SurveyTrackPoint,
             queryset=_track_points_for,
@@ -506,6 +548,7 @@ BUNDLE_DATASETS = (
     "transects",
     "transect_sections",
     "environmental_snapshots",
+    "validation_history",
 )
 
 

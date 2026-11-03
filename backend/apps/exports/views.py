@@ -66,8 +66,9 @@ class ExportDatasetView(ExportView):
             (200, "application/json"): OpenApiTypes.BINARY,
         },
         description="One dataset as a file, streamed. Datasets: survey_visits, "
-        "butterfly_observations, transects, transect_sections, environmental_snapshots, "
-        "track_points. Admins only.",
+        "butterfly_observations, plant_resources, habitat_features, transects, "
+        "transect_sections, environmental_snapshots, validation_history, track_points. "
+        "Admins only.",
     )
     def get(self, request, dataset):
         fmt = service.parse_format(request.query_params)

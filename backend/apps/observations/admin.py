@@ -16,6 +16,7 @@ from apps.core.admin import (
 from apps.observations import services
 from apps.observations.models import Behaviour, ButterflyObservation, Photo, UploadStatus
 from apps.surveys.state import VisitLocked
+from apps.validation.admin import ValidationEventInline
 
 
 def _explain_rule(observation, field, rule_id):
@@ -172,7 +173,7 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     until T057, and an observation of a locked visit opens read-only (T042)."""
 
     form = ButterflyObservationAdminForm
-    inlines = [PhotoInline]
+    inlines = [PhotoInline, ValidationEventInline]
     # Never edited in the admin: the project and visit cannot change (T044), the validation fields
     # and flags belong to T055-T057.
     fixed_fields = [
