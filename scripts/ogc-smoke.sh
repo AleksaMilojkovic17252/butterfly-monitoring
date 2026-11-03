@@ -21,6 +21,7 @@ transects=$base/collections/transects/items
 sections=$base/collections/transect-sections/items
 obs=$base/collections/butterfly-observations/items
 plants=$base/collections/plant-resources/items
+habitats=$base/collections/habitat-features/items
 failed=0
 
 pass() { echo "PASS  $1"; }
@@ -65,8 +66,8 @@ first_id=$(jq -r .id <<<"$first")
 day=$(jq -r '.properties.observed_at[:10]' <<<"$first")
 
 echo "== Collections"
-expect "the four collections, no skeleton" \
-  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations", "plant-resources"]) and index("skeleton-pings") == null)' \
+expect "the five collections, no skeleton" \
+  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations", "plant-resources", "habitat-features"]) and index("skeleton-pings") == null)' \
   "$base/collections"
 expect "observations have spatial and temporal extents" \
   '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
@@ -74,10 +75,15 @@ expect "observations have spatial and temporal extents" \
 expect "plant records have spatial and temporal extents" \
   '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
   "$base/collections/plant-resources"
+expect "habitat features have spatial and temporal extents" \
+  '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
+  "$base/collections/habitat-features"
 expect "OpenAPI lists the observations" \
   '.paths | keys | any(contains("butterfly-observations"))' "$base/openapi"
 expect "OpenAPI lists the plant records" \
   '.paths | keys | any(contains("plant-resources"))' "$base/openapi"
+expect "OpenAPI lists the habitat features" \
+  '.paths | keys | any(contains("habitat-features"))' "$base/openapi"
 
 echo "== bbox"
 expect "bbox around Fruška Gora: some transects, not all" \
@@ -107,6 +113,22 @@ expect "resource_type=larval_host returns only that value" \
 expect "a resource_type nobody has matches nothing" \
   '.numberMatched == 0' \
   "$plants" --data-urlencode 'resource_type=NoSuchType'
+
+echo "== Habitat features (these pass with no rows too)"
+expect "geometry_type is POINT, LINESTRING or POLYGON, nothing else" \
+  '.features | all(.properties.geometry_type | . == "POINT" or . == "LINESTRING" or . == "POLYGON")' \
+  "$habitats"
+habitat_code=$(curl -fsS -G "$habitats" -d f=json -d limit=1 | jq -r '.features[0].properties.habitat_type_code // empty')
+if [ -n "$habitat_code" ]; then
+  expect "habitat_type_code=$habitat_code returns only that value" \
+    ".numberMatched > 0 and (.features | all(.properties.habitat_type_code == \"$habitat_code\"))" \
+    "$habitats" --data-urlencode "habitat_type_code=$habitat_code"
+else
+  echo "SKIP  no habitat features yet: the real-code filter is not checked"
+fi
+expect "a habitat_type_code nobody has matches nothing" \
+  '.numberMatched == 0' \
+  "$habitats" --data-urlencode 'habitat_type_code=NoSuchType'
 
 echo "== Property filter"
 expect "effective_family=Lycaenidae returns only that family" \

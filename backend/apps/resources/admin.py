@@ -6,15 +6,60 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
 from apps.observations.admin import PhotoInline
-from apps.resources.models import PlantResourceObservation
+from apps.resources.models import HabitatFeature, PlantResourceObservation
+
+
+class ReadOnlyGeometryAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
+    """Base for a record that is made on the phone and pushed through the API, so the admin only
+    shows it (T051, T053): no add, no change, no actions. A read-only map shows its geometry (the
+    form's own map widget is for editing, and a page without change permission shows plain text
+    instead)."""
+
+    @property
+    def media(self):
+        # OpenLayers as Django's GIS widgets load it, plus the script that draws the geometry.
+        return (
+            super().media
+            + forms.Media(css=OpenLayersWidget.Media.css, js=OpenLayersWidget.Media.js[:1])
+            + forms.Media(js=["core/readonly_map.js"])
+        )
+
+    def get_fields(self, request, obj=None):
+        fields = [field.name for field in self.model._meta.fields]
+        # The map goes right after the geometry text.
+        fields.insert(fields.index("geometry") + 1, "location_map")
+        return fields
+
+    def get_readonly_fields(self, request, obj=None):
+        return [*self.get_fields(request, obj)]
+
+    @admin.display(description=_("Map"))
+    def location_map(self, record):
+        """The geometry on a map. `format_html` escapes the GeoJSON in the attribute. The width
+        is not a percentage: the admin puts read-only values in a flex box, where a percentage
+        collapses to 0 and the map draws nothing."""
+        if record.geometry is None:
+            return "-"
+        return format_html(
+            '<div class="readonly-geometry-map" data-geojson="{}" '
+            'style="width: clamp(320px, calc(100vw - 640px), 720px); height: 380px;"></div>',
+            record.geometry.geojson,
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        return {}
 
 
 @admin.register(PlantResourceObservation)
-class PlantResourceObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
-    """Plant records are recorded on the phone and pushed through the API, so this page only
-    shows them (T051), with their photos: the thumbnail opens the original. Like `PhotoAdmin`:
-    no add, no change, no actions. A read-only map shows the point or the polygon (the form's own
-    map widget is for editing, and a page without change permission shows plain text instead)."""
+class PlantResourceObservationAdmin(ReadOnlyGeometryAdmin):
+    """Plant records (T051), with their photos: the thumbnail opens the original. Like
+    `PhotoAdmin`."""
 
     inlines = [PhotoInline]
     list_display = [
@@ -31,46 +76,35 @@ class PlantResourceObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     ordering = ["-observed_at"]
     list_select_related = ["plant_taxon", "project", "survey_visit__transect", "created_by"]
 
-    @property
-    def media(self):
-        # OpenLayers as Django's GIS widgets load it, plus the script that draws the geometry.
-        return (
-            super().media
-            + forms.Media(css=OpenLayersWidget.Media.css, js=OpenLayersWidget.Media.js[:1])
-            + forms.Media(js=["core/readonly_map.js"])
-        )
-
-    def get_fields(self, request, obj=None):
-        fields = [field.name for field in PlantResourceObservation._meta.fields]
-        # The map goes right after the geometry text.
-        fields.insert(fields.index("geometry") + 1, "location_map")
-        return fields
-
-    def get_readonly_fields(self, request, obj=None):
-        return [*self.get_fields(request, obj)]
-
-    @admin.display(description=_("Map"))
-    def location_map(self, plant):
-        """The point or polygon on a map. `format_html` escapes the GeoJSON in the attribute. The
-        width is not a percentage: the admin puts read-only values in a flex box, where a
-        percentage collapses to 0 and the map draws nothing."""
-        if plant.geometry is None:
-            return "-"
-        return format_html(
-            '<div class="readonly-geometry-map" data-geojson="{}" '
-            'style="width: clamp(320px, calc(100vw - 640px), 720px); height: 380px;"></div>',
-            plant.geometry.geojson,
-        )
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def get_actions(self, request):
-        return {}
-
     @admin.display(description=_("Plant"), ordering="plant_taxon__scientific_name")
     def plant(self, plant_resource):
         return plant_resource.plant_taxon or _("Unidentified plant")
+
+
+@admin.register(HabitatFeature)
+class HabitatFeatureAdmin(ReadOnlyGeometryAdmin):
+    """Habitat features (T053). They have no photos."""
+
+    list_display = [
+        "observed_at",
+        "habitat_type",
+        "management_type",
+        "geometry_kind",
+        "project",
+        "survey_visit",
+        "created_by",
+    ]
+    list_filter = ["project", "habitat_type"]
+    search_fields = ["habitat_type__name_en", "notes"]
+    ordering = ["-observed_at"]
+    list_select_related = [
+        "habitat_type",
+        "management_type",
+        "project",
+        "survey_visit__transect",
+        "created_by",
+    ]
+
+    @admin.display(description=_("Geometry"))
+    def geometry_kind(self, feature):
+        return feature.geometry.geom_type

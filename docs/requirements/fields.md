@@ -109,6 +109,11 @@ Mandatory: `project`, `habitat_type`, `observed_at`, `geometry` (Point, LineStri
 Optional: `survey_visit`, `management_type`, `vegetation_height_cm`, `shrub_cover_pct`,
 `tree_cover_pct`, `bare_ground_pct` (0–100), `flower_abundance_class`, `grazing_intensity`,
 `mowing_status`, `disturbance_type`, `notes`.
+`geometry` must be valid (V08: a Point, a LineString or a Polygon, two-dimensional, inside the longitude and latitude
+limits). A cover percentage outside 0–100 comes back as a field error on that field (`vegetation_height_cm` is a whole
+number from 0 to 32767). `habitat_type` and `management_type` are checked against the codelist only when the value is new
+or changed: a soft-deleted type cannot be chosen, but a record that already has one keeps it, and an inactive type is
+allowed (T020). The sync entity type is `habitat_feature`. A habitat feature has no photos.
 
 ## EnvironmentalSnapshot (T063)
 Mandatory: `source_type`, `moment`, `phenomenon_time_start`, and `survey_visit` or `observation`.

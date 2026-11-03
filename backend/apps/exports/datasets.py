@@ -15,8 +15,8 @@ from django.db.models.functions import Coalesce
 from apps.environment.models import EnvironmentalSnapshot
 from apps.observations.models import ButterflyObservation
 from apps.observations.services import observations_for
-from apps.resources.models import PlantResourceObservation
-from apps.resources.services import plant_resources_for
+from apps.resources.models import HabitatFeature, PlantResourceObservation
+from apps.resources.services import habitat_features_for, plant_resources_for
 from apps.surveys.models import SurveyTrackPoint, SurveyVisit, visit_outcome
 from apps.surveys.services import visits_for
 from apps.transects.models import Transect, TransectSection
@@ -25,7 +25,6 @@ from apps.transects.services import GeodesicLength, sections_for, transects_for
 # Datasets named in the ticket whose tables do not exist yet. They are added here when the
 # ticket that builds the table is done.
 DEFERRED = {
-    "habitat_features": "T053",
     "validation_history": "T058",
 }
 
@@ -50,7 +49,7 @@ class Dataset:
     columns: tuple
     time_field: str | None  # the field `from`/`to` filter on; None if dates do not apply
     project_fields: tuple  # paths to the project id, any of which may match
-    geometry: str | None  # "point", "line", "point_or_polygon" or None
+    geometry: str | None  # "point", "line", "point_or_polygon", "point_line_or_polygon" or None
     order_by: tuple
     geometry_columns: tuple = ()  # lon/lat or geometry_wkt: in CSV and JSON, not in GeoJSON
     post: Callable | None = None  # changes a row (a dict) after it is read
@@ -258,6 +257,47 @@ PLANT_RESOURCE_COLUMNS = tuple(
     ]
 )
 
+HABITAT_FEATURE_COLUMNS = tuple(
+    _common(created=False)
+    + [
+        Column("project_id", "project_id"),
+        Column("survey_visit_id", "survey_visit_id"),
+        Column("observed_at", "observed_at"),
+        Column("habitat_type_code", "habitat_type__code", "Code of the habitat type list value"),
+        Column(
+            "habitat_type_name_en",
+            "habitat_type__name_en",
+            "English name of the habitat type list value",
+        ),
+        Column(
+            "management_type_code",
+            "management_type__code",
+            "Code of the management type list value; missing when not recorded",
+        ),
+        Column("vegetation_height_cm", "vegetation_height_cm"),
+        Column("shrub_cover_pct", "shrub_cover_pct"),
+        Column("tree_cover_pct", "tree_cover_pct"),
+        Column("bare_ground_pct", "bare_ground_pct"),
+        Column("flower_abundance_class", "flower_abundance_class"),
+        Column("grazing_intensity", "grazing_intensity"),
+        Column("mowing_status", "mowing_status"),
+        Column("disturbance_type", "disturbance_type"),
+        Column(
+            "protocol_version",
+            Coalesce("survey_visit__protocol_version", "project__protocol__protocol_version"),
+            "Protocol version of the visit, or of the project for a record without a visit",
+        ),
+        Column("notes", "notes"),
+        Column(
+            "geometry_type",
+            Func(F("geometry"), function="GeometryType", output_field=CharField()),
+            "POINT, LINESTRING or POLYGON: the kind of geometry in geometry_wkt",
+        ),
+        Column("created_at", "created_at", "When the record was created (UTC, ISO 8601)"),
+        Column("updated_at", "updated_at", "When the record last changed (UTC, ISO 8601)"),
+    ]
+)
+
 TRANSECT_COLUMNS = tuple(
     _common(created=False)
     + [
@@ -399,6 +439,19 @@ DATASETS = {
             ),
         ),
         Dataset(
+            name="habitat_features",
+            model=HabitatFeature,
+            queryset=habitat_features_for,
+            columns=HABITAT_FEATURE_COLUMNS,
+            time_field="observed_at",
+            project_fields=("project_id",),
+            geometry="point_line_or_polygon",
+            order_by=("observed_at", "id"),
+            geometry_columns=_line_columns(
+                "Point, line or polygon as WKT, WGS 84 (EPSG:4326), coordinates in lon lat order"
+            ),
+        ),
+        Dataset(
             name="transects",
             model=Transect,
             queryset=transects_for,
@@ -449,6 +502,7 @@ BUNDLE_DATASETS = (
     "survey_visits",
     "butterfly_observations",
     "plant_resources",
+    "habitat_features",
     "transects",
     "transect_sections",
     "environmental_snapshots",

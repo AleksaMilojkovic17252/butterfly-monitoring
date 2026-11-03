@@ -55,8 +55,9 @@ The current views and the migration that creates each:
 | `geo.transects`, `geo.transect_sections` | `transects/0005_geo_views` |
 | `geo.butterfly_observations` | `observations/0004_geo_views` |
 | `geo.plant_resources` | `resources/0002_geo_views` |
+| `geo.habitat_features` | `resources/0004_habitat_geo_view`, `0005_habitat_view_visit` (adds `survey_visit_id`) |
 
-`geo.habitat_features` follows with T053. A view's migration lives in the
+A view's migration lives in the
 app that owns its main table. Views hide soft-deleted rows and the rows of soft-deleted parents (D-078).
 
 PostGIS's own `geometry_columns`, `geography_columns` and `spatial_ref_sys` in `public` are readable by

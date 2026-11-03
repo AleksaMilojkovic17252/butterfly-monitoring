@@ -125,3 +125,24 @@ resources:
         geom_field: geometry
         time_field: observed_at
         title_field: plant_scientific_name
+
+  habitat-features:
+    type: collection
+    title: Habitat features
+    description: Habitat type, management, vegetation structure and disturbance of points, lines and polygons
+    keywords: [butterflies, habitat, vegetation, management]
+    extents:
+      spatial: *spatial_extent
+      # Static, as for the observations (T068, D-079).
+      temporal:
+        begin: 2026-03-01T00:00:00Z
+        end: 2026-12-31T23:59:59Z
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data: *database
+        id_field: id
+        table: habitat_features
+        geom_field: geometry
+        time_field: observed_at
+        title_field: habitat_type_name_en

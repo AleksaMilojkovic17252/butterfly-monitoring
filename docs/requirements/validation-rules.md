@@ -12,8 +12,8 @@ implement it and name the ID in a comment, and each rule has a test on each side
 - **W05** (species outside its known range) is out of scope: there is no distribution data.
 
 Server code: `backend/apps/observations/rules.py`, `backend/apps/surveys/rules.py` and, for plant records
-(T051), `backend/apps/resources/rules.py`. The hard rules are called from `save_observation`, `save_visit`
-and `save_plant_resource`, so REST, push and admin are all covered. The warning
+(T051) and habitat features (T053), `backend/apps/resources/rules.py`. The hard rules are called from
+`save_observation`, `save_visit`, `save_plant_resource` and `save_habitat_feature`, so REST, push and admin are all covered. The warning
 functions (`observation_warnings`, `visit_warnings`) are not called by the services: warnings are not stored
 on the server, except W01, which sets `validation_status` on create (`photo_missing`). App code:
 `mobile/lib/core/validation/`.
@@ -23,13 +23,13 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
 | ID | Level | Entity | Rule | Field(s) reported | Server function | App function | Where the app shows it |
 |---|---|---|---|---|---|---|---|
 | V01 | hard | observation | `count` ≥ 1 | `count` | `observations.rules._v01_count` | `observation_rules.dart` `_v01Count` | quick entry sheet (error text) |
-| V02 | hard | observation, plant record | `observed_at` and `geometry` are both present | `observed_at`, `geometry` | `observations.rules._v02_required`, `resources.rules._v02_required` | `_v02Required` (plant records: `plant_rules.dart`, T052) | quick entry sheet |
+| V02 | hard | observation, plant record, habitat feature | `observed_at` and `geometry` are both present | `observed_at`, `geometry` | `observations.rules._v02_required`, `resources.rules._v02_required` | `_v02Required` (plant records: `plant_rules.dart`, T052) | quick entry sheet |
 | V03 | hard | observation | a `source = transect` observation is on a visit in `in_progress`, `completed`, `synced` or `reviewed`, or on a `cancelled` visit that was started (`started_at` is set); never `draft`, `locked`, or a `cancelled` visit that was never started | `survey_visit` | `observations.rules._v03_visit_status` | `_v03VisitStatus` | quick entry sheet; sync screen for a rejected item |
 | V04 | hard | observation | `observed_at` is in `[started_at − tol, ended_at + tol]` of its visit; with no `ended_at` only the lower bound applies; `tol` = `observation_time_tolerance_min` | `observed_at` | `observations.rules._v04_observed_at` | `_v04ObservedAt` | quick entry sheet |
 | V05 | hard | visit | in status `completed`, `synced`, `reviewed` or `locked`: start and end temperature, wind and cloud are all set, or `weather_missing_reason` is not blank | each missing weather field | `surveys.rules._v05_weather` | `visit_rules.dart` `_v05Weather` | visit write (finish form from T040) |
 | V06 | hard | visit and observation | true-zero consistency, see below | visit: `zero_observation_confirmed`; observation: `survey_visit` | `surveys.rules._v06_visit`, `observations.rules._v06_observation` | `_v06Visit`, `_v06Observation` | quick entry sheet; finish (T040/T041) |
-| V07 | hard | observation, visit, plant record | the value is in the codelist | the field | `observations.rules._v07_choices`, `surveys.rules._v07_choices`, `resources.rules._v07_choices` | `_v07Choices` (plant records: `plant_rules.dart`, T052) | any write |
-| V08 | hard | observation, plant record | `geometry` is a non-empty, valid Point with longitude −180..180 and latitude −90..90; for a plant record a Point or a Polygon, two-dimensional, all of it inside those limits | `geometry` | `observations.rules._v08_geometry`, `resources.rules._v08_geometry` | `_v08Geometry` (plant records: `plant_rules.dart`, T052; the ring test is `polygonSelfIntersects`) | quick entry sheet |
+| V07 | hard | observation, visit, plant record, habitat feature | the value is in the codelist | the field | `observations.rules._v07_choices`, `surveys.rules._v07_choices`, `resources.rules._v07_choices` | `_v07Choices` (plant records: `plant_rules.dart`, T052) | any write |
+| V08 | hard | observation, plant record, habitat feature | `geometry` is a non-empty, valid Point with longitude −180..180 and latitude −90..90; for a plant record a Point or a Polygon, for a habitat feature a Point, a LineString or a Polygon, two-dimensional, all of it inside those limits | `geometry` | `observations.rules._v08_geometry`, `resources.rules._v08_geometry` | `_v08Geometry` (plant records: `plant_rules.dart`, T052; the ring test is `polygonSelfIntersects`) | quick entry sheet |
 | V09 | hard | visit | in status `cancelled`: `cancel_reason = not_conducted` exactly when `started_at` is empty | `cancel_reason` | `surveys.rules._v09_cancel_reason` | `visit_rules.dart` `_v09CancelReason` | cancel sheet (Finish screen), "Not conducted…" on the start form |
 | W01 | warning | observation | the taxon has `photo_required` and the observation has no photo: `validation_status = pending` | – | `observations.rules.photo_missing` | `photoMissing` | line above Save in the quick entry sheet |
 | W02 | warning | observation | `location_accuracy_m` > `gps_accuracy_warning_m` | – | `observations.rules._w02_poor_accuracy` | `isPoorAccuracy` | position line in the quick entry sheet |
@@ -77,6 +77,11 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
   are required when the plant is not identified" is a serializer rule with a plain sentence, not a rule ID.
   The phone's copy of these rules is `core/validation/plant_rules.dart` (T052): V08 there also runs the ring test
   `polygonSelfIntersects`, which agrees with PostGIS's `ST_IsValid` (D-087), and `plantNotesMissing` is the notes rule.
+- **Habitat features (T053).** Only V02, V07 and V08 apply, as for plant records. V07 lists `flower_abundance_class`,
+  `grazing_intensity`, `mowing_status` and `disturbance_type` (each may also be blank). V08 takes a Point, a LineString or a
+  Polygon; a Z coordinate, a MultiPolygon, a bow-tie, a line of one point or of two identical points, and a longitude of 500
+  are all `{"geometry": ["V08"]}`. A percentage outside 0–100 is a plain field error on that field, not a rule ID (no rule
+  covers it). The app's copy of these rules comes with T054.
 - **W07.** The season is compared by local calendar date (both end days are inside), the daily window by
   local wall-clock minute (both ends are inside). "Local" is the time zone of the study site, which the
   protocol holds as `time_zone` (an IANA name, default `Europe/Belgrade`, set per project in the admin). The

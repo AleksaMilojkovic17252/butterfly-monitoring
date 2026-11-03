@@ -1837,3 +1837,38 @@ is the way out; no smoothing. A plant record made through the link stays if the 
 are not re-checked when their role changes later (D-086). Photos saved in an edit form are not undone by leaving it (D-082). Species search has no favourites.
 Line mode is not on the phone's UI until T054. Photo files of a discarded plant record stay on disk, and the existing discard of a never-sent visit already
 leaves its observations' photo rows (`discard` knows no photo files): not changed here.
+
+## D-088 · Habitat features: entity type, three shapes, codelist checks only on change, percentages as field errors, no photos
+2026-11-03 · accepted · T053, *extends D-086; the phone part is T054*
+**Entity type = table name.** The sync type is `habitat_feature`, because the phone's tombstone SQL uses the type as the table name (D-086). The
+Drift table must be named the same. Push has `create`, `update` and `delete`; the delete is beyond the ticket text, as for plant records (D-086).
+REST is `POST` and `PATCH /api/v1/habitat-features` only, as the ticket lists: no GET, no DELETE. Nothing is computed by the server, so the sync
+entry has no `server_fills_null`.
+**Two additions beyond the criteria (approved):** push `delete`, and a read-only admin page with a map (`HabitatFeatureAdmin`). The map and the
+read-only behaviour moved from the plant admin into a shared base class, `ReadOnlyGeometryAdmin`; the plant page is unchanged.
+**V08 for three shapes.** `resources.rules._is_valid_geometry(geometry, allowed_types)` is the one test (non-empty, valid, two-dimensional,
+inside the longitude and latitude limits); plants pass Point and Polygon, habitat features Point, LineString and Polygon. `is_valid_plant_geometry`
+had no other caller and was removed. A MultiPolygon, a bow-tie, a line of one point, a line of two identical points, longitude 500 and a Z
+coordinate are all `{"geometry": ["V08"]}`, because the rules run before `validate_constraints`. `habitat_geom_type` (POINT, LINESTRING,
+POLYGON) and `habitat_geom_valid` are added by `RunSQL` in `resources/0003_habitat_feature`, as for plants; they only catch a write that skips
+the service (shown with raw `INSERT`s of a MultiPoint and of a bow-tie).
+**Codelists are checked only when the value changed.** `_check_codelists` refuses a soft-deleted habitat or management type that is *new*: on a
+create, or when an update changes the id. A full row echoed back by the phone, whose type was deleted since, is accepted (the idea of D-086's
+links). An inactive type is allowed everywhere: T020 says deactivating only hides a value from pickers. The plant taxon check
+(`_check_plant_taxon`) is not changed and still runs whenever `plant_taxon` is in the payload. `geo.habitat_features` does not filter on a
+codelist's `deleted_at` either: the record keeps its value.
+**Percentages are field errors.** The serializer sets `min_value: 0, max_value: 100` on the three cover percentages, so a bad value is
+`{"shrub_cover_pct": [...]}` with a plain sentence (no rule in validation-rules.md covers it). `habitat_pct_ok` is the safety net for a write
+that skips the service. `vegetation_height_cm` of 40000 is a field error too (DRF reads the smallint range from the model).
+**No photos.** The ticket's model has none, so `Photo` is untouched and has no habitat parent. If habitat features get photos later, that is a new
+ticket (T052 added `PhotoParent` on the phone for plant records only).
+**Shared code, plants unchanged.** `_check_context` became `_check_project`, `_check_plant_taxon` and `_check_visit`, called in the old order;
+`_validated_changes` (lock the visit, membership, serializer, drop an unchanged `project` or `survey_visit`) and `_store` (constraints, save with
+a reason, refresh `server_version`) are shared. The T051 smoke script gives the same answers as before, except one assertion that T052 had
+already made stale ("the pull row has no created_by", D-087).
+**View, exports, OGC.** `geo.habitat_features` (`resources/0004_habitat_geo_view`; `0005_habitat_view_visit` adds `survey_visit_id` after review, as `geo.plant_resources` has it, by dropping and creating the view) joins the habitat type and left-joins the management type,
+hides soft-deleted rows and the rows of soft-deleted projects (D-078) and exposes `geometry` unchanged for the GiST index. The export dataset has
+geometry kind `point_line_or_polygon` (`Point, LineString or Polygon` in `metadata.json`) and is in the project bundle. The pygeoapi collection is
+`habitat-features`, `title_field: habitat_type_name_en`.
+**Deferred to T054:** every phone part (the Drift table, the pull mapping, the form, the rule copies). Two things T054 must handle are in TICKETS.md:
+habitat rows pulled before the table exists are skipped and the cursor moves past them, and the Drift table must be named `habitat_feature`.

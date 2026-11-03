@@ -30,7 +30,8 @@ FORMATS = {
     "json": ("application/json", "json"),
 }
 DATE_NOTE = (
-    "from and to filter on started_at (visits), observed_at (observations and plant records), "
+    "from and to filter on started_at (visits), "
+    "observed_at (observations, plant records and habitat features), "
 )
 DATE_NOTE += "phenomenon_time_start (snapshots) and recorded_at (track points), in UTC, "
 DATE_NOTE += "both days included. Transects and transect_sections ignore them."
@@ -149,6 +150,7 @@ def metadata(user, names, filters, fmt="csv"):
                 "point": "Point",
                 "line": "LineString",
                 "point_or_polygon": "Point or Polygon",
+                "point_line_or_polygon": "Point, LineString or Polygon",
             }.get(dataset.geometry),
             "columns": {column.name: dataset.description(column) for column in dataset.all_columns},
         }

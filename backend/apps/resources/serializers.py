@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.core.serializers import UTCDateTimeField, WritableGeoJSONField
-from apps.resources.models import PlantResourceObservation
+from apps.resources.models import HabitatFeature, PlantResourceObservation
 
 
 class PlantResourceSyncSerializer(serializers.ModelSerializer):
@@ -55,3 +55,34 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
                 {"notes": ["Required when the plant is not identified."]}
             )
         return attrs
+
+
+class HabitatFeatureSyncSerializer(serializers.ModelSerializer):
+    """A habitat feature as pulled to the phone, pushed from it and returned by REST (T053).
+
+    Built like `PlantResourceSyncSerializer`, and `resources.services` validates REST input with
+    it too. `habitat_type` is required (a non-null foreign key) and `management_type` may be
+    null. The messages of the hard rules are the rule IDs; a percentage outside 0-100 has no rule
+    ID, so its message is a plain sentence on the field.
+    """
+
+    created_at = UTCDateTimeField(required=False)
+    observed_at = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
+    geometry = WritableGeoJSONField(
+        ("Point", "LineString", "Polygon"),
+        error_messages={"required": "V02", "null": "V02", "wrong_type": "V08", "invalid": "V08"},
+    )
+
+    class Meta:
+        model = HabitatFeature
+        exclude = ["updated_by"]
+        read_only_fields = ["created_by", "deleted_at"]
+        extra_kwargs = {
+            "flower_abundance_class": {"error_messages": {"invalid_choice": "V07"}},
+            "grazing_intensity": {"error_messages": {"invalid_choice": "V07"}},
+            "mowing_status": {"error_messages": {"invalid_choice": "V07"}},
+            "disturbance_type": {"error_messages": {"invalid_choice": "V07"}},
+            "shrub_cover_pct": {"min_value": 0, "max_value": 100},
+            "tree_cover_pct": {"min_value": 0, "max_value": 100},
+            "bare_ground_pct": {"min_value": 0, "max_value": 100},
+        }

@@ -23,7 +23,7 @@ from apps.observations.serializers import ButterflyObservationSyncSerializer, Ph
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
 from apps.resources import services as resources
-from apps.resources.serializers import PlantResourceSyncSerializer
+from apps.resources.serializers import HabitatFeatureSyncSerializer, PlantResourceSyncSerializer
 from apps.surveys import services as surveys
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.sync import conflicts
@@ -150,8 +150,21 @@ ENTITIES = [
         ),
         server_fills_null=frozenset({"patch_area_m2"}),
     ),
+    # Scoped to created_by = user. The entity type is the table name (D-086, D-088). Nothing is
+    # computed by the server, so there is no `server_fills_null`.
+    SyncEntity(
+        "habitat_feature",
+        HabitatFeatureSyncSerializer,
+        resources.pull_habitat_features,
+        push=PushHandlers(
+            create=resources.push_create_habitat,
+            update=resources.push_update_habitat,
+            delete=resources.push_delete_habitat,
+            project_of=resources.project_of,
+            guard=resources.guard_habitat_feature,
+        ),
+    ),
 ]
-# T053 adds more user data here, each registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 

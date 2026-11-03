@@ -47,9 +47,10 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   and a rejection is `{"<field>": ["V04"]}` (the message is the rule ID).
 - Section assignment (T048, D-084): `transects.services.nearest_section_id` finds the section; `observations.services`
   calls it on create, and `SyncEntity.server_fills_null` makes a pushed null section mean "server fills it in".
-- `apps/resources/` (T051, D-086) holds `PlantResourceObservation` (a point or patch polygon, with `patch_area_m2` computed by
-  `save_plant_resource`), its rules (V02, V07, V08), the REST endpoints and the read-only admin. Observations link to it
-  (`host_plant_record`, `nectar_plant_record`) and a `Photo` can belong to it; `observations.services` imports
+- `apps/resources/` (T051, D-086; T053, D-088) holds `PlantResourceObservation` (a point or patch polygon, with `patch_area_m2` computed by
+  `save_plant_resource`) and `HabitatFeature` (a point, line or polygon, `save_habitat_feature`), their rules (V02, V07, V08), the REST
+  endpoints and the read-only admin (`ReadOnlyGeometryAdmin` is the shared base). Observations link to a plant record
+  (`host_plant_record`, `nectar_plant_record`) and a `Photo` can belong to one (a habitat feature has no photos); `observations.services` imports
   `resources.services`, never the reverse.
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
   `save_visit` calls for a finished visit (D-076).
