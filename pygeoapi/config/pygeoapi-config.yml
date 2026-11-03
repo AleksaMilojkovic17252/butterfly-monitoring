@@ -104,3 +104,24 @@ resources:
         geom_field: geometry
         time_field: observed_at
         title_field: effective_scientific_name
+
+  plant-resources:
+    type: collection
+    title: Plant records
+    description: Host and nectar plants as points or patch polygons, with their role, abundance and state
+    keywords: [butterflies, plants, host plants, nectar]
+    extents:
+      spatial: *spatial_extent
+      # Static, as for the observations (T068, D-079).
+      temporal:
+        begin: 2026-03-01T00:00:00Z
+        end: 2026-12-31T23:59:59Z
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data: *database
+        id_field: id
+        table: plant_resources
+        geom_field: geometry
+        time_field: observed_at
+        title_field: plant_scientific_name

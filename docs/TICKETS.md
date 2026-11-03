@@ -86,7 +86,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | done |
 | T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
 | T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049, T106 | 2.5 d | done |
-| T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | todo |
+| T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | done |
 | T052 | [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) | App plant entry with point and polygon drawing | P1 | should | T050, T051 | 2.5 d | todo |
 | T053 | [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) | HabitatFeature model and API | P1 | should | T020, T026 | 1.5 d | todo |
 | T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | todo |
@@ -1027,7 +1027,7 @@ dependency). Photos whose file is not on this phone (taken on another phone, or 
 - [ ] Local photo storage use is shown on the sync screen (T032).
 
 ### T051 · PlantResourceObservation model and API
-[#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should` · implements F20 · est. 1.5 d · **todo**
+[#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should` · implements F20 · est. 1.5 d · **done**
 
 Depends on: T020, T044, T049
 From T064: add the `plant_resources` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
@@ -1042,12 +1042,21 @@ From T067: add `geo.plant_resources` with `CreateView` in a `resources` migratio
 - [ ] Adds `ButterflyObservation.host_plant_record` and `nectar_plant_record` (nullable FKs), and `Photo.plant_resource` with a CHECK that a photo has exactly one parent.
 - [ ] `plant_taxon` may be null for unidentified plants. Then `notes` is required (serializer rule).
 
-From T046: fill `host_plant_record` on the phone and fire W03/W04 only when there is no link (`TODO(T051)` on both sides).
+Additions beyond the criteria (agreed 2026-11-02): push `delete`, a read-only admin page for plant records with their photos inline, and `host_plant_record_id` and `nectar_plant_record_id` in the `butterfly_observations` export.
+Deferred: the Drift part of the ticket text and the phone's side of the T046 note (store the link, fire W03/W04 only without one) go to T052, as for earlier backend tickets. The only Dart edits are comments (`TODO(T051)` is now `TODO(T052)`).
+Notes: shown by hand with `tmp/t051/smoke.py` (not committed, D-021; 144 checks over the 22 cases) and `scripts/ogc-smoke.sh`: push create of a point and a polygon with the area computed, a resent create (`merged`, same version, area kept), a LineString, a bow-tie, longitude 500 and a 40° polygon refused, raw SQL inserts refused by the CHECKs, the notes rule on create and PATCH, REST POST and PATCH (201, 200, 400, 403, 404), area recomputed or emptied when the shape changes, a stale update merged, a locked visit refusing update, delete, REST PATCH and a new record, push delete with a tombstone, observation links (own, other project, deleted, repeated after the delete, the role of the plant record), a plant photo (upload, thumbnail, other researcher 404, exactly-one-parent, one primary), W03/W04 with and without a link, exports (CSV, GeoJSON, JSON, bundle, researcher 403), the admin pages, `geo.plant_resources` as `pygeoapi_ro` and the `plant-resources` collection in JSON and HTML (an unidentified plant has a null title and both work). See D-086.
 
 ### T052 · App plant entry with point and polygon drawing
 [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) · E07 · P1 · should · labels: `mobile`, `should` · implements F20 · est. 2.5 d · **todo**
 
 Depends on: T050, T051
+From T051 (added 2026-11-02): the server side is done (D-086), the phone part is here:
+- Store `host_plant_record` and `nectar_plant_record` in `_butterflyObservation` (they are already in the Drift table and sent by the server), and make `w03Applies` and `w04Applies` check the link (`TODO(T052)` in `observation_rules.dart`).
+- The Drift table must be named `plant_resource_observation`: the entity type is the table name, and the pull's tombstone SQL uses the type as the table name.
+- **Plant rows pulled before the table exists are skipped and the cursor moves past them** (`_applyType` ignores a type it has no store for), so the Drift migration must reset the pull cursor, or otherwise pull them again.
+- Do not push a phone-computed `patch_area_m2`: leave it null or out, and the server computes it (a pushed number must have at most one decimal and nine whole digits).
+- Add the photo's `plant_resource` to the Drift table and to `_photo` (the pull already carries it, and `observation` is null for such a photo). Until then a pulled plant photo is stored with no parent, and code that does `observationId!` (`photo_repository.dart`, around the upload and the live-photo lookup) would fail on it: make those paths handle a plant parent, or skip such a row.
+- The server now checks the role of a link (D-086): a host link takes a `larval_host`, `oviposition_plant` or `unknown_association` record, a nectar link a `nectar_source` or `unknown_association` one, and a `resting_plant` fits neither. The link picker should offer only those, so a wrong one is not found out by a rejected push.
 From T059 (added 2026-11-02): add a "Plants" layer to the project map (`lib/features/map/`, D-081) and an "Open" in its popup that goes to the plant's edit form.
 
 - [ ] Form fields:

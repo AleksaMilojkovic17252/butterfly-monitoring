@@ -236,14 +236,14 @@ void _v08Geometry(ObservationInput input, Map<String, List<String>> errors) {
 /// W03: the behaviour includes egg-laying. The form calls this too, to show
 /// the prompt without building a whole [ObservationRuleContext].
 bool w03Applies(List<String> behaviour) {
-  // TODO(T051): only when the observation has no host-plant link; there is no
-  // link yet, so it always fires.
+  // TODO(T052): only when the observation has no host-plant link. T052 stores
+  // the link on the phone; until then there is none, so it always fires.
   return behaviour.contains('oviposition');
 }
 
 /// W04: the life stage is larva. Used by the form like [w03Applies].
 bool w04Applies(String lifeStage) {
-  // TODO(T051): only when the observation has no host-plant link; there is no
-  // link yet, so it always fires.
+  // TODO(T052): only when the observation has no host-plant link. T052 stores
+  // the link on the phone; until then there is none, so it always fires.
   return lifeStage == 'larva';
 }

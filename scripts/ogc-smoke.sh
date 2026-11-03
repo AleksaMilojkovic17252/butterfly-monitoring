@@ -20,6 +20,7 @@ base=${1:-http://localhost:8080/ogc}
 transects=$base/collections/transects/items
 sections=$base/collections/transect-sections/items
 obs=$base/collections/butterfly-observations/items
+plants=$base/collections/plant-resources/items
 failed=0
 
 pass() { echo "PASS  $1"; }
@@ -64,14 +65,19 @@ first_id=$(jq -r .id <<<"$first")
 day=$(jq -r '.properties.observed_at[:10]' <<<"$first")
 
 echo "== Collections"
-expect "the three collections, no skeleton" \
-  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations"]) and index("skeleton-pings") == null)' \
+expect "the four collections, no skeleton" \
+  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations", "plant-resources"]) and index("skeleton-pings") == null)' \
   "$base/collections"
 expect "observations have spatial and temporal extents" \
   '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
   "$base/collections/butterfly-observations"
+expect "plant records have spatial and temporal extents" \
+  '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
+  "$base/collections/plant-resources"
 expect "OpenAPI lists the observations" \
   '.paths | keys | any(contains("butterfly-observations"))' "$base/openapi"
+expect "OpenAPI lists the plant records" \
+  '.paths | keys | any(contains("plant-resources"))' "$base/openapi"
 
 echo "== bbox"
 expect "bbox around Fruška Gora: some transects, not all" \
@@ -90,6 +96,17 @@ expect "a one-second window inside the extent, with no data, matches nothing" \
   "$obs" --data-urlencode 'datetime=2026-03-01T00:00:00Z/2026-03-01T00:00:01Z'
 refused "a window outside the collection's temporal extent is refused (D-079)" \
   -G "$obs" --data-urlencode f=json --data-urlencode 'datetime=2000-01-01T00:00:00Z/2000-12-31T23:59:59Z'
+
+echo "== Plant records (these pass with no rows too)"
+expect "geometry_type is POINT or POLYGON, nothing else" \
+  '.features | all(.properties.geometry_type | . == "POINT" or . == "POLYGON")' \
+  "$plants"
+expect "resource_type=larval_host returns only that value" \
+  '.features | all(.properties.resource_type == "larval_host")' \
+  "$plants" --data-urlencode 'resource_type=larval_host'
+expect "a resource_type nobody has matches nothing" \
+  '.numberMatched == 0' \
+  "$plants" --data-urlencode 'resource_type=NoSuchType'
 
 echo "== Property filter"
 expect "effective_family=Lycaenidae returns only that family" \

@@ -78,7 +78,9 @@ Mandatory: `project`, `observed_at`, `taxon`, `count` (≥ 1), `geometry` (Point
 `identification_confidence` (D confirmed_in_field). `survey_visit` M when `source = transect`.
 Optional: `transect_section` (the phone's guess, else nearest by the server (T048), or by hand), `location_accuracy_m`, `sex` (D unknown),
 `life_stage` (D adult), `behaviour` (list), `microhabitat`, `flight_direction_deg` (0–359), `notes`,
-`host_plant_record`, `nectar_plant_record` (T051). `source` D transect.
+`host_plant_record`, `nectar_plant_record` (T051; a record of the same project that the caller may see, whose
+type fits: host = larval_host, oviposition_plant or unknown_association, nectar = nectar_source or unknown_association; only a changed link is
+checked, so a link to a plant record that was deleted since stays). `source` D transect.
 Server-owned: `validation_status`, `validated_taxon`, `validated_by`, `validated_at`,
 `validation_comment`, `quality_flags`. `photo_count` is computed, not stored.
 
@@ -87,7 +89,8 @@ Mandatory: `mime_type`, `file_size`, `sha256`, `captured_at`, and exactly one pa
 (`observation` or `plant_resource`). Optional: `local_path`, `width`, `height`, `is_primary`,
 `metadata_json`. Server-owned: `storage_key`, `uploaded_at`, `upload_status`.
 Limits (T049): at most 15 MB (`file_size`), `mime_type` `image/jpeg` or `image/png`; `sha256` is 64 lowercase
-hex digits. `observation`, `sha256`, `mime_type` and `file_size` cannot change after the create. The phone has
+hex digits. `observation`, `plant_resource`, `sha256`, `mime_type` and `file_size` cannot change after the
+create, so a photo keeps its parent. One primary photo per observation and one per plant record. The phone has
 no `storage_key` or `metadata_json` column.
 
 ## PlantResourceObservation ⟳ (T051)
@@ -95,6 +98,11 @@ Mandatory: `project`, `resource_type`, `observed_at`, `geometry` (Point or Polyg
 Optional: `survey_visit`, `plant_taxon` (if empty, `notes` is M), `abundance_class`,
 `patch_area_m2` (S for polygons if empty), `phenology_stage`, `flowering_intensity`, `eggs_present`,
 `larvae_present`, `feeding_damage_present`, `notes`.
+`patch_area_m2` is worked out by the server (`ST_Area` on the geography, square metres, one decimal) for a polygon
+when it is empty. A change that moves a polygon, or turns a point into a polygon or back, empties a stored area
+again unless the same payload sends a different one (the stored value echoed back does not count); a moved point keeps an area the client set. A polygon whose area does
+not fit the column (999,999,999.9 m², about a 32 km square) is a field error on `patch_area_m2`. The phone must
+not push a computed area: leave it null or out.
 
 ## HabitatFeature ⟳ (T053)
 Mandatory: `project`, `habitat_type`, `observed_at`, `geometry` (Point, LineString or Polygon).

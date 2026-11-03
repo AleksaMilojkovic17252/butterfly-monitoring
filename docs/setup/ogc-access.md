@@ -82,7 +82,7 @@ printf 'Authorization: Token %s\n' $KEY > ~/.ogc-header; chmod 600 ~/.ogc-header
 env GDAL_HTTP_HEADER_FILE=$HOME/.ogc-header ogrinfo OAPIF:http://localhost:8080/ogc
 ```
 
-This lists `transects`, `transect-sections` and `butterfly-observations`. The driver's own `USERPWD` open
+This lists `transects`, `transect-sections`, `butterfly-observations` and `plant-resources`. The driver's own `USERPWD` open
 option also works for Basic: `ogrinfo -oo USERPWD=email:password OAPIF:http://localhost:8080/ogc`.
 
 R with `sf` uses the same GDAL, so set the variable before reading. **Not run:** R is not installed on this machine.

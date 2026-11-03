@@ -71,7 +71,7 @@ class ButterflyObservation(SyncableModel):
     """What was seen, how many, where, when, how sure, and in which context (T044).
 
     `photo_count` is not a column: it is computed (`observations.services.photo_count`).
-    `host_plant_record` and `nectar_plant_record` are added in T051. The
+    `host_plant_record` and `nectar_plant_record` link to plant records (T051). The
     `validation_*` fields and `quality_flags` belong to the server (T055-T057); a client never
     sets them.
     """
@@ -153,6 +153,23 @@ class ButterflyObservation(SyncableModel):
         help_text="Flight direction, degrees clockwise from north (0-359)",
     )
     notes = models.TextField(blank=True, help_text="Free-text notes on the observation")
+    # SET_NULL fires only on a hard delete. A soft-deleted plant record keeps its links (D-086).
+    host_plant_record = models.ForeignKey(
+        "resources.PlantResourceObservation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Plant record of the plant the larva or egg was found on",
+    )
+    nectar_plant_record = models.ForeignKey(
+        "resources.PlantResourceObservation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Plant record of the plant the butterfly was nectaring on",
+    )
     source = models.CharField(
         max_length=20,
         choices=ObservationSource.choices,
@@ -258,12 +275,19 @@ class Photo(SyncableModel):
     The phone owns the metadata, including `sha256`, `mime_type` and `file_size`, which cannot
     change after the create. The server owns `storage_key`, `upload_status`, `uploaded_at` and
     `metadata_json` (`server_owned` in the sync registry). Photos with the same `sha256` share
-    one stored object. A plant record becomes the second possible parent in T051, with a CHECK
-    that a photo has exactly one; until then the observation is required by the service.
+    one stored object. The parent is an observation or a plant record (T051): the table's CHECK
+    says a photo has exactly one, and neither can change after the create.
     """
 
     observation = models.ForeignKey(
         ButterflyObservation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="photos",
+    )
+    plant_resource = models.ForeignKey(
+        "resources.PlantResourceObservation",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -315,7 +339,22 @@ class Photo(SyncableModel):
                 condition=models.Q(is_primary=True, deleted_at__isnull=True),
                 name="photo_one_primary_per_observation",
             ),
+            models.UniqueConstraint(
+                fields=["plant_resource"],
+                condition=models.Q(is_primary=True, deleted_at__isnull=True),
+                name="photo_one_primary_per_plant_resource",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(observation__isnull=False, plant_resource__isnull=True)
+                | models.Q(observation__isnull=True, plant_resource__isnull=False),
+                name="photo_exactly_one_parent",
+            ),
         ]
+
+    @property
+    def parent(self):
+        """The observation or the plant record the photo belongs to."""
+        return self.observation if self.observation_id else self.plant_resource
 
     def __str__(self):
         return f"{self.sha256[:12]} ({self.upload_status})"

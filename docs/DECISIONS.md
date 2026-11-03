@@ -1749,3 +1749,41 @@ the per-device GPS interval override (`gps_interval_override.dart`) and the batt
 `grant_admin_permissions` acts when the sender is the last installed app with a models module, worked out on each call. Django makes each app's permissions in that app's own `post_migrate`, so acting on `accounts` missed every app listed after it until a second `migrate`.
 **Why not a named app.** Apps with no `models.py` never send the signal (`reports`, listed last, today), and the last sender changes when one of them gets a model. **Why not every signal.** It would work, but would rebuild the group about 18 times per `migrate` for no benefit.
 **Does not rely on signal order.** Before the sync the receiver calls Django's `create_permissions` for every app with models (idempotent), so the result does not depend on `django.contrib.auth` being listed before `apps.accounts` or on the order of the receivers. A `migrate` with nothing to apply still sends the signal, but `set()` writes nothing.
+
+## D-086 · Plant records: entity type, computed area, geometry CHECK, links that survive a delete
+2026-11-02 · accepted · T051, *refines D-050 and D-084; the phone part is T052*
+**Entity type = table name.** The sync type is `plant_resource_observation`, the table's name, because the phone's tombstone SQL uses the
+type as the table name. Push has `create`, `update` and `delete` (the delete is beyond the ticket text: a plant record is user data the phone must be
+able to remove). REST is `POST` and `PATCH /api/v1/plant-resources` only, as the ticket lists; there is no GET or DELETE.
+**`patch_area_m2`.** The server computes it (`ST_Area` on the geography, rounded half up to one decimal) in `save_plant_resource`, after the rules,
+when the stored value is null and the geometry is a polygon, so a bad polygon (longitude 500) is `{"geometry": ["V08"]}` and never reaches
+PostGIS. A push `create` registers `server_fills_null={"patch_area_m2"}` (D-084's mechanism), so a resent create with a null area neither clears
+the computed value nor conflicts with it. A PATCH that changes the shape (`equals_exact` is false) and involves a polygon (before or after)
+without sending a *new* area empties the stored one, so it is computed again (a payload that echoes the stored value, as a full row from the
+phone would, does not count as sending one); a moved point keeps an area the client set. An area that does not
+fit `numeric(10,1)` (999,999,999.9 m², a square of about 32 km) is a field error on `patch_area_m2` ("This polygon is too large."); the
+serializer does not check a server-computed value, so the service does. The phone must not push an area it computed itself.
+**Geometry CHECKs: `RunSQL` was used; a `Func` in `CheckConstraint` was not tried.** `plant_res_geom_type` (`GeometryType(geometry) IN ('POINT',
+'POLYGON')`) and `plant_res_geom_valid` (`ST_IsValid(geometry)`) are added by `RunSQL` with a reverse in `resources/0001_initial`, as the
+ticket's DDL has them. The readable error does not come from them: V08 (`resources.rules.is_valid_plant_geometry`: Point or Polygon, not empty,
+valid, no Z, extent inside the longitude and latitude limits) refuses first, and the CHECKs only catch a write that skips the service. Shown by
+hand with raw `INSERT`s of a LineString and of a bow-tie polygon.
+**No V03 or V04.** A plant record has no visit-status or time-window rule, so only V02, V07 and V08 apply; the visit lock is its one visit rule
+(`visit_locked` on update, delete and a new record or photo on a locked visit). "A plant with no taxon needs notes" is a serializer rule with a
+plain sentence (not a rule ID), reading the final values (the stored row for a key that a PATCH leaves out).
+**Links survive a soft delete.** `SET_NULL` only fires on a hard delete, so a soft-deleted plant record stays linked from its observations. Only a
+*new* link is checked (`_check_plant_links`: the record must be one the caller may see, live, in the observation's project), and only when the
+value changed, so a full payload that repeats an old link to a record deleted since is not refused. **Role.** A host link takes a plant record
+of type `larval_host`, `oviposition_plant` or `unknown_association`, a nectar link `nectar_source` or `unknown_association`; `resting_plant` fits
+neither (`PLANT_LINK_ROLES`). The visit is *not* compared: a patch is revisited every round, and a plant record may be made off a visit, so only
+the project must match. Changing a record's type later does not re-check existing links. W03 and W04 read `host_plant_record_id` on
+the server (a nectar link does not count); the phone still always fires them until T052.
+**Photos.** A photo has exactly one parent (`photo_exactly_one_parent` CHECK, plus a field error from the service), and the parent cannot change
+after the create. Plant photos get their own one-primary unique index. `Photo.parent` is the one place that picks the parent.
+**Three additions beyond the criteria (approved):** push `delete`; a read-only admin page for plant records with the photos inline; and
+`host_plant_record_id` and `nectar_plant_record_id` in the `butterfly_observations` export (`geo.butterfly_observations` does not change).
+**OGC.** `geo.plant_resources` (`resources/0002_geo_views`) exposes `geometry` unchanged and `geometry_type`. pygeoapi serves it with the generic
+`geometry` column, and `f=json` and `f=html` both work when `plant_scientific_name` is null (an unidentified plant).
+**Deferred to T052:** every phone part (the Drift table, pull mapping, the W03/W04 link check, the form). Two things T052 must handle are in
+TICKETS.md: plant rows pulled before the table exists are skipped and the cursor moves past them, and the Drift table must be named
+`plant_resource_observation`.

@@ -162,10 +162,15 @@ def _w02_poor_accuracy(data, context):
 
 
 def _w03_oviposition(data):
-    # W03. TODO(T051): fire only when the observation has no host-plant link; there is no link yet.
-    return Behaviour.OVIPOSITION in (data.get("behaviour") or [])
+    # W03: oviposition without a host-plant link. The server checks the link (T051); the phone
+    # follows in T052.
+    return Behaviour.OVIPOSITION in (data.get("behaviour") or []) and _no_host_plant(data)
 
 
 def _w04_larva(data):
-    # W04. TODO(T051): fire only when the observation has no host-plant link; there is no link yet.
-    return data.get("life_stage") == LifeStage.LARVA
+    # W04: a larva without a host-plant link.
+    return data.get("life_stage") == LifeStage.LARVA and _no_host_plant(data)
+
+
+def _no_host_plant(data):
+    return data.get("host_plant_record_id") is None

@@ -29,7 +29,9 @@ FORMATS = {
     "geojson": ("application/geo+json", "geojson"),
     "json": ("application/json", "json"),
 }
-DATE_NOTE = "from and to filter on started_at (visits), observed_at (observations), "
+DATE_NOTE = (
+    "from and to filter on started_at (visits), observed_at (observations and plant records), "
+)
 DATE_NOTE += "phenomenon_time_start (snapshots) and recorded_at (track points), in UTC, "
 DATE_NOTE += "both days included. Transects and transect_sections ignore them."
 TRUE_VALUES = {"1", "true", "yes"}
@@ -143,7 +145,11 @@ def metadata(user, names, filters, fmt="csv"):
         row_counts[name] = _queryset(user, dataset, filters).count()
         datasets[name] = {
             "file": f"{name}.{extension}",
-            "geometry": {"point": "Point", "line": "LineString"}.get(dataset.geometry),
+            "geometry": {
+                "point": "Point",
+                "line": "LineString",
+                "point_or_polygon": "Point or Polygon",
+            }.get(dataset.geometry),
             "columns": {column.name: dataset.description(column) for column in dataset.all_columns},
         }
         protocol_versions |= _distinct(user, dataset, filters, "protocol_version")

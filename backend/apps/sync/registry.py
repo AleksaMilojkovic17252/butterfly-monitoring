@@ -22,6 +22,8 @@ from apps.observations import services as observations
 from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
 from apps.projects import services as projects
 from apps.projects.serializers import ProjectProtocolSyncSerializer, ProjectSyncSerializer
+from apps.resources import services as resources
+from apps.resources.serializers import PlantResourceSyncSerializer
 from apps.surveys import services as surveys
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.sync import conflicts
@@ -132,8 +134,24 @@ ENTITIES = [
         ),
         server_owned=frozenset({"storage_key", "upload_status", "uploaded_at", "metadata_json"}),
     ),
+    # Scoped to created_by = user. The entity type is the table name: the phone's tombstone SQL
+    # uses the type as the table name (D-086). A null `patch_area_m2` in a create means "the server
+    # works it out", so a resent create does not clear or conflict on the computed area.
+    SyncEntity(
+        "plant_resource_observation",
+        PlantResourceSyncSerializer,
+        resources.pull_plant_resources,
+        push=PushHandlers(
+            create=resources.push_create,
+            update=resources.push_update,
+            delete=resources.push_delete,
+            project_of=resources.project_of,
+            guard=resources.guard_plant_resource,
+        ),
+        server_fills_null=frozenset({"patch_area_m2"}),
+    ),
 ]
-# T051 and T053 add more user data here, each registering `push=PushHandlers(...)`.
+# T053 adds more user data here, each registering `push=PushHandlers(...)`.
 
 _BY_TYPE = {entity.entity_type: entity for entity in ENTITIES}
 

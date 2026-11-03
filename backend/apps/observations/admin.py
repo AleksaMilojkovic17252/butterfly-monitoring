@@ -99,7 +99,7 @@ def _thumbnail_link(photo):
 
 
 class PhotoInline(admin.TabularInline):
-    """The observation's live photos as a read-only summary."""
+    """The live photos of an observation or a plant record, as a read-only summary."""
 
     model = Photo
     fields = ["preview", "upload_status", "is_primary"]
@@ -132,6 +132,7 @@ class PhotoAdmin(HistoryAdmin, SyncableAdmin):
     list_display = [
         "preview",
         "observation",
+        "plant_resource",
         "upload_status",
         "mime_type",
         "file_size",
@@ -140,7 +141,7 @@ class PhotoAdmin(HistoryAdmin, SyncableAdmin):
         "is_primary",
     ]
     list_filter = ["upload_status", "mime_type"]
-    list_select_related = ["observation__taxon"]
+    list_select_related = ["observation__taxon", "plant_resource__plant_taxon"]
     ordering = ["-captured_at"]
 
     def get_fields(self, request, obj=None):
@@ -202,7 +203,7 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     search_fields = ["taxon__scientific_name", "recorded_by__email", "notes"]
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
-    raw_id_fields = ["taxon", "transect_section"]
+    raw_id_fields = ["taxon", "transect_section", "host_plant_record", "nectar_plant_record"]
     actions = [*SyncableAdmin.actions, "reassign_sections"]
 
     def get_fields(self, request, obj=None):

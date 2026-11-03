@@ -9,12 +9,14 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from django.contrib.gis.db.models.functions import AsGeoJSON, AsWKT
-from django.db.models import F, FloatField, Func, Q, Value
+from django.db.models import CharField, F, FloatField, Func, Q, Value
 from django.db.models.functions import Coalesce
 
 from apps.environment.models import EnvironmentalSnapshot
 from apps.observations.models import ButterflyObservation
 from apps.observations.services import observations_for
+from apps.resources.models import PlantResourceObservation
+from apps.resources.services import plant_resources_for
 from apps.surveys.models import SurveyTrackPoint, SurveyVisit, visit_outcome
 from apps.surveys.services import visits_for
 from apps.transects.models import Transect, TransectSection
@@ -23,7 +25,6 @@ from apps.transects.services import GeodesicLength, sections_for, transects_for
 # Datasets named in the ticket whose tables do not exist yet. They are added here when the
 # ticket that builds the table is done.
 DEFERRED = {
-    "plant_resources": "T051",
     "habitat_features": "T053",
     "validation_history": "T058",
 }
@@ -49,7 +50,7 @@ class Dataset:
     columns: tuple
     time_field: str | None  # the field `from`/`to` filter on; None if dates do not apply
     project_fields: tuple  # paths to the project id, any of which may match
-    geometry: str | None  # "point", "line" or None
+    geometry: str | None  # "point", "line", "point_or_polygon" or None
     order_by: tuple
     geometry_columns: tuple = ()  # lon/lat or geometry_wkt: in CSV and JSON, not in GeoJSON
     post: Callable | None = None  # changes a row (a dict) after it is read
@@ -98,14 +99,8 @@ def _point_columns():
     )
 
 
-def _line_columns():
-    return (
-        Column(
-            "geometry_wkt",
-            AsWKT("geometry"),
-            "Line as WKT, WGS 84 (EPSG:4326), coordinates in lon lat order",
-        ),
-    )
+def _line_columns(description="Line as WKT, WGS 84 (EPSG:4326), coordinates in lon lat order"):
+    return (Column("geometry_wkt", AsWKT("geometry"), description),)
 
 
 def _outcome_post(row):
@@ -218,8 +213,46 @@ OBSERVATION_COLUMNS = tuple(
         Column("validated_at", "validated_at"),
         Column("validation_comment", "validation_comment"),
         Column("recorded_by_id", "recorded_by_id"),
+        Column("host_plant_record_id", "host_plant_record_id"),
+        Column("nectar_plant_record_id", "nectar_plant_record_id"),
         Column("quality_flags", "quality_flags"),
         Column("notes", "notes"),
+        Column("created_at", "created_at", "When the record was created (UTC, ISO 8601)"),
+        Column("updated_at", "updated_at", "When the record last changed (UTC, ISO 8601)"),
+    ]
+)
+
+PLANT_RESOURCE_COLUMNS = tuple(
+    _common(created=False)
+    + [
+        Column("project_id", "project_id"),
+        Column("survey_visit_id", "survey_visit_id"),
+        Column("observed_at", "observed_at"),
+        Column("plant_taxon_id", "plant_taxon_id"),
+        Column(
+            "plant_scientific_name",
+            "plant_taxon__scientific_name",
+            "Scientific name of the plant; missing for an unidentified plant",
+        ),
+        Column("resource_type", "resource_type"),
+        Column("abundance_class", "abundance_class"),
+        Column("patch_area_m2", "patch_area_m2"),
+        Column("phenology_stage", "phenology_stage"),
+        Column("flowering_intensity", "flowering_intensity"),
+        Column("eggs_present", "eggs_present"),
+        Column("larvae_present", "larvae_present"),
+        Column("feeding_damage_present", "feeding_damage_present"),
+        Column(
+            "protocol_version",
+            Coalesce("survey_visit__protocol_version", "project__protocol__protocol_version"),
+            "Protocol version of the visit, or of the project for a record without a visit",
+        ),
+        Column("notes", "notes"),
+        Column(
+            "geometry_type",
+            Func(F("geometry"), function="GeometryType", output_field=CharField()),
+            "POINT or POLYGON: the kind of geometry in geometry_wkt",
+        ),
         Column("created_at", "created_at", "When the record was created (UTC, ISO 8601)"),
         Column("updated_at", "updated_at", "When the record last changed (UTC, ISO 8601)"),
     ]
@@ -353,6 +386,19 @@ DATASETS = {
             geometry_columns=_point_columns(),
         ),
         Dataset(
+            name="plant_resources",
+            model=PlantResourceObservation,
+            queryset=plant_resources_for,
+            columns=PLANT_RESOURCE_COLUMNS,
+            time_field="observed_at",
+            project_fields=("project_id",),
+            geometry="point_or_polygon",
+            order_by=("observed_at", "id"),
+            geometry_columns=_line_columns(
+                "Point or polygon as WKT, WGS 84 (EPSG:4326), coordinates in lon lat order"
+            ),
+        ),
+        Dataset(
             name="transects",
             model=Transect,
             queryset=transects_for,
@@ -402,6 +448,7 @@ DATASETS = {
 BUNDLE_DATASETS = (
     "survey_visits",
     "butterfly_observations",
+    "plant_resources",
     "transects",
     "transect_sections",
     "environmental_snapshots",

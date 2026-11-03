@@ -25,9 +25,10 @@ class GeoJSONField(serializers.Field):
 class WritableGeoJSONField(serializers.Field):
     """A GEOS geometry read from and written as a GeoJSON geometry object in EPSG:4326.
 
-    `geom_type` is the one GEOS type accepted ("Point", "LineString", ...). Track points (T036)
-    and observations (T044) use it for what the phone sends. A caller can replace the message
-    with a rule ID: `error_messages={"wrong_type": "V08", "invalid": "V08"}` (T055).
+    `geom_type` is the one GEOS type accepted ("Point", "LineString", ...), or a tuple of them
+    (plant records take a point or a polygon, T051). Track points (T036) and observations (T044)
+    use it for what the phone sends. A caller can replace the message with a rule ID:
+    `error_messages={"wrong_type": "V08", "invalid": "V08"}` (T055).
     """
 
     default_error_messages = {
@@ -36,20 +37,22 @@ class WritableGeoJSONField(serializers.Field):
     }
 
     def __init__(self, geom_type, **kwargs):
-        self.geom_type = geom_type
+        self.geom_types = (geom_type,) if isinstance(geom_type, str) else tuple(geom_type)
+        # For the messages: "Point" or "Point or Polygon".
+        self.geom_type = " or ".join(self.geom_types)
         super().__init__(**kwargs)
 
     def to_representation(self, value) -> dict:
         return json.loads(value.geojson)
 
     def to_internal_value(self, data):
-        if not isinstance(data, dict) or data.get("type") != self.geom_type:
+        if not isinstance(data, dict) or data.get("type") not in self.geom_types:
             self.fail("wrong_type", geom_type=self.geom_type)
         try:
             geometry = GEOSGeometry(json.dumps(data), srid=4326)
         except (GDALException, GEOSException, ValueError, TypeError):
             self.fail("invalid", geom_type=self.geom_type)
-        if geometry.geom_type != self.geom_type or geometry.empty or not geometry.valid:
+        if geometry.geom_type not in self.geom_types or geometry.empty or not geometry.valid:
             self.fail("invalid", geom_type=self.geom_type)
         return geometry
 

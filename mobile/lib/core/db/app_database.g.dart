@@ -5223,7 +5223,7 @@ class ButterflyObservation extends DataClass
   final String notes;
   final String source;
 
-  /// T051 will fill these two; the server has no such columns yet.
+  /// T052 fills these two; the server has had the columns since T051.
   final String? hostPlantRecordId;
   final String? nectarPlantRecordId;
   final DateTime createdAt;
@@ -9238,7 +9238,7 @@ class Photo extends DataClass implements Insertable<Photo> {
   final DateTime? deletedAt;
   final String id;
 
-  /// The observation this photo belongs to. No foreign key, so T051 can add a
+  /// The observation this photo belongs to. No foreign key, so T052 can add a
   /// plant record as the other possible parent.
   final String? observationId;
   final String localPath;

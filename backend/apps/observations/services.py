@@ -13,6 +13,7 @@ import hashlib
 import tempfile
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Q
 from django.utils import timezone
 from PIL import Image
 from rest_framework import exceptions, serializers
@@ -31,6 +32,8 @@ from apps.observations.models import (
 )
 from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
 from apps.projects.services import is_member, projects_for
+from apps.resources.models import ResourceType
+from apps.resources.services import plant_resources_for
 from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
@@ -41,6 +44,21 @@ REST_REASON = "REST API"  # history_change_reason of changes made through /obser
 REASSIGN_REASON = "reassign sections"  # history_change_reason of the admin action (T048)
 UPLOAD_REASON = "photo upload"  # history_change_reason of the server's own upload saves
 CHUNK_BYTES = 64 * 1024
+PLANT_LINK_FIELDS = ("host_plant_record", "nectar_plant_record")  # links to plant records (T051)
+# The resource types a plant record may have to be linked in each role. A resting plant is neither;
+# an unknown association is let through, since the observer could not say more (D-086).
+PLANT_LINK_ROLES = {
+    "host_plant_record": (
+        ResourceType.LARVAL_HOST,
+        ResourceType.OVIPOSITION_PLANT,
+        ResourceType.UNKNOWN_ASSOCIATION,
+    ),
+    "nectar_plant_record": (ResourceType.NECTAR_SOURCE, ResourceType.UNKNOWN_ASSOCIATION),
+}
+PLANT_LINK_ROLE_NAMES = {
+    "host_plant_record": "a host plant",
+    "nectar_plant_record": "a nectar plant",
+}
 MAX_PHOTO_PIXELS = (
     100_000_000  # the thumbnail is made in memory; the byte limit alone does not bound it
 )
@@ -100,6 +118,7 @@ def build_new_observation(user, observation_id, data):
     observation = ButterflyObservation(id=observation_id, created_by=user, **values)
     _check_context(user, observation)
     _check_recorder(user, observation)
+    _check_plant_links(user, observation, PLANT_LINK_FIELDS)
     if observation.transect_section_id is None:
         observation.transect_section_id = _nearest_section_id(observation)
     observation.validation_status = initial_validation_status(
@@ -123,12 +142,24 @@ def apply_observation_changes(user, observation, data):
             new_value = changes.pop(field_name)
             if getattr(new_value, "pk", None) != getattr(observation, f"{field_name}_id"):
                 raise exceptions.ValidationError({field_name: ["Cannot be changed."]})
+    old_links = {name: getattr(observation, f"{name}_id") for name in PLANT_LINK_FIELDS}
     for field_name, value in changes.items():
         setattr(observation, field_name, value)
     if {"transect_section", "taxon"} & changes.keys():
         _check_context(user, observation)
     if "recorded_by" in changes:
         _check_recorder(user, observation)
+    # Only a link that changed is checked: a full payload that repeats an old link, also to a
+    # plant record deleted since, is not refused (D-086).
+    _check_plant_links(
+        user,
+        observation,
+        [
+            name
+            for name in PLANT_LINK_FIELDS
+            if getattr(observation, f"{name}_id") != old_links[name]
+        ],
+    )
     if changes.get("transect_section", "absent") is None:
         observation.transect_section_id = _nearest_section_id(observation)
     return observation
@@ -217,13 +248,15 @@ def is_locked(observation):
 
 def check_admin_edit(admin_user, observation, changed_fields):
     """The rules for an admin's edit of `observation` (unsaved, with the form's values): its visit
-    must not be locked, and a changed section, taxon or recorder must fit. Raises DRF exceptions."""
+    must not be locked, and a changed section, taxon, recorder or plant link must fit. Raises DRF
+    exceptions."""
     if observation.survey_visit_id is not None:
         ensure_unlocked(observation.survey_visit)
     if {"transect_section", "taxon"} & set(changed_fields):
         _check_context(admin_user, observation)
     if "recorded_by" in changed_fields:
         _check_recorder(admin_user, observation)
+    _check_plant_links(admin_user, observation, changed_fields)
 
 
 def admin_save_observation(observation, admin_user, reason, changed_fields):
@@ -270,6 +303,7 @@ def _rule_data(observation):
             "behaviour",
             "identification_confidence",
             "location_accuracy_m",
+            "host_plant_record_id",
         )
     }
 
@@ -290,14 +324,15 @@ def _rule_context(observation):
     )
 
 
-def _lock_visit(observation):
-    """Lock the observation's visit for the rest of the transaction and refuse a locked one.
-    Done first, so a lock that lands while another request works on the visit is not missed."""
-    if observation.survey_visit_id is None:
+def _lock_visit(record):
+    """Lock the visit of `record` (an observation or a plant record) for the rest of the
+    transaction and refuse a locked one. Done first, so a lock that lands while another request
+    works on the visit is not missed."""
+    if record.survey_visit_id is None:
         return
-    visit = SurveyVisit.objects.select_for_update().get(pk=observation.survey_visit_id)
+    visit = SurveyVisit.objects.select_for_update().get(pk=record.survey_visit_id)
     ensure_unlocked(visit)
-    observation.survey_visit = visit
+    record.survey_visit = visit
 
 
 def _check_context(user, observation):
@@ -352,6 +387,35 @@ def _check_recorder(user, observation):
         )
 
 
+def _check_plant_links(user, observation, changed_fields):
+    """A host or nectar plant record that is set, and in `changed_fields`, must be one the user
+    may see, be in the observation's project and have a resource type that fits the role. A
+    deleted record is not found, so it cannot be linked anew; a link already there stays (soft
+    delete keeps links, D-086). The visit is not compared: a patch is revisited, and a plant
+    record may be made off a visit."""
+    for field_name in PLANT_LINK_FIELDS:
+        plant_id = getattr(observation, f"{field_name}_id")
+        if field_name not in changed_fields or plant_id is None:
+            continue
+        resource_type = (
+            plant_resources_for(user)
+            .filter(pk=plant_id, project_id=observation.project_id)
+            .values_list("resource_type", flat=True)
+            .first()
+        )
+        if resource_type is None:
+            raise exceptions.ValidationError({field_name: ["This plant record was not found."]})
+        if resource_type not in PLANT_LINK_ROLES[field_name]:
+            raise exceptions.ValidationError(
+                {
+                    field_name: [
+                        f"This plant record is not {PLANT_LINK_ROLE_NAMES[field_name]} "
+                        f"({ResourceType(resource_type).label.lower()})."
+                    ]
+                }
+            )
+
+
 # Photos (T049)
 
 
@@ -394,9 +458,11 @@ class PayloadTooLarge(exceptions.APIException):
 
 
 def photos_for(user):
-    """Live photos of live observations the user may see: an admin all of them, a researcher the
-    ones they created."""
-    photos = Photo.objects.alive().filter(observation__in=observations_for(user))
+    """Live photos of live observations and plant records the user may see: an admin all of
+    them, a researcher the ones they created."""
+    photos = Photo.objects.alive().filter(
+        Q(observation__in=observations_for(user)) | Q(plant_resource__in=plant_resources_for(user))
+    )
     if is_admin(user):
         return photos
     return photos.filter(created_by=user)
@@ -404,7 +470,9 @@ def photos_for(user):
 
 def pull_photos(user, project):
     """The caller's own photos in the project, deleted rows included (D-049)."""
-    return Photo.objects.filter(observation__project=project, created_by=user)
+    return Photo.objects.filter(
+        Q(observation__project=project) | Q(plant_resource__project=project), created_by=user
+    )
 
 
 def build_new_photo(user, photo_id, data):
@@ -415,11 +483,21 @@ def build_new_photo(user, photo_id, data):
     values = dict(serializer.validated_data)
 
     observation = values.get("observation")
-    if observation is None:  # until T051 adds the plant parent
-        raise exceptions.ValidationError({"observation": ["Required."]})
-    if not observations_for(user).filter(pk=observation.pk).exists():
-        raise exceptions.ValidationError({"observation": ["This observation was not found."]})
-    _lock_visit(observation)
+    plant = values.get("plant_resource")
+    if (observation is None) == (plant is None):
+        raise exceptions.ValidationError(
+            {"observation": ["Send exactly one of observation and plant_resource."]}
+        )
+    if observation is not None:
+        if not observations_for(user).filter(pk=observation.pk).exists():
+            raise exceptions.ValidationError({"observation": ["This observation was not found."]})
+        _lock_visit(observation)
+    else:
+        if not plant_resources_for(user).filter(pk=plant.pk).exists():
+            raise exceptions.ValidationError(
+                {"plant_resource": ["This plant record was not found."]}
+            )
+        _lock_visit(plant)
 
     if values["mime_type"] not in PHOTO_MIME_TYPES:
         raise exceptions.ValidationError(
@@ -435,17 +513,19 @@ def build_new_photo(user, photo_id, data):
 def apply_photo_changes(user, photo, data):
     """Apply an update payload to `photo` (unsaved). Only the keys in `data` change, and only
     `is_primary`, `local_path`, `captured_at`, `width` and `height` may: the file's identity is
-    frozen at the create."""
-    _lock_visit(photo.observation)
-    if not is_admin(user) and not is_member(user, photo.observation.project_id):
+    frozen at the create, parent included."""
+    parent = photo.parent
+    _lock_visit(parent)
+    if not is_admin(user) and not is_member(user, parent.project_id):
         raise exceptions.PermissionDenied("You are not a member of this photo's project.")
     serializer = PhotoSyncSerializer(photo, data=data, partial=True)
     serializer.is_valid(raise_exception=True)
     changes = dict(serializer.validated_data)
 
-    if "observation" in changes:
-        if getattr(changes.pop("observation"), "pk", None) != photo.observation_id:
-            raise exceptions.ValidationError({"observation": ["Cannot be changed."]})
+    for field_name in ("observation", "plant_resource"):
+        if field_name in changes:
+            if getattr(changes.pop(field_name), "pk", None) != getattr(photo, f"{field_name}_id"):
+                raise exceptions.ValidationError({field_name: ["Cannot be changed."]})
     for field_name in ("sha256", "mime_type", "file_size"):
         if field_name in changes and changes.pop(field_name) != getattr(photo, field_name):
             raise exceptions.ValidationError({field_name: ["Cannot be changed."]})
@@ -477,19 +557,19 @@ def push_update_photo(user, photo, data):
 
 
 def push_delete_photo(user, photo):
-    _lock_visit(photo.observation)
+    _lock_visit(photo.parent)
     soft_delete_pushed(photo, user)
 
 
 def photo_project_of(photo):
-    return photo.observation.project
+    return photo.parent.project
 
 
 def guard_photo(user, photo):
     """Push guard (`PushHandlers.guard`): a photo of a locked visit refuses every change (T042)."""
-    visit = photo.observation.survey_visit if photo.observation_id else None
-    if visit is not None:
-        ensure_unlocked(visit)
+    parent = photo.parent
+    if parent.survey_visit_id is not None:
+        ensure_unlocked(parent.survey_visit)
 
 
 # Upload steps. Each takes a photo loaded through `photos_for(user)`. They do not call

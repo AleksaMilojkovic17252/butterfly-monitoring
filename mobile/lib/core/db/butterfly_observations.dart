@@ -43,7 +43,7 @@ class ButterflyObservations extends Table with SyncColumns {
   TextColumn get notes => text().withDefault(const Constant(''))();
   TextColumn get source => text().withDefault(const Constant('transect'))();
 
-  /// T051 will fill these two; the server has no such columns yet.
+  /// T052 fills these two; the server has had the columns since T051.
   TextColumn get hostPlantRecordId => text().nullable()();
   TextColumn get nectarPlantRecordId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
