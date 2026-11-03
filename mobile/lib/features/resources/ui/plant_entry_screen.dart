@@ -148,16 +148,28 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
     super.dispose();
   }
 
+  /// The oldest tracker fix [_fillPoint] still trusts. The tracker's own
+  /// interval is 5 s (15 s in battery saver), so a fix older than this means
+  /// GPS has stalled, and the observer may have walked on.
+  static const _maxFixAge = Duration(seconds: 30);
+
   /// Puts the phone's position in as a point when the form opens: the visit
-  /// tracker's newest fix while it records, otherwise a fresh reading. It never
-  /// overwrites a shape the user drew in the meantime.
+  /// tracker's newest fix while it records and the fix is recent, otherwise a
+  /// fresh reading. It never overwrites a shape the user drew in the meantime.
   Future<void> _fillPoint() async {
     setState(() => _locating = true);
     LatLng? fix;
     String? problem;
     final tracking = ref.read(trackingControllerProvider);
-    final live = tracking.recording && !tracking.paused
+    final newest = tracking.recording && !tracking.paused
         ? tracking.lastPosition
+        : null;
+    // A stale fix is not used: a fresh reading is asked for instead.
+    final live =
+        newest != null &&
+            DateTime.now().toUtc().difference(newest.timestamp.toUtc()) <=
+                _maxFixAge
+        ? newest
         : null;
     if (live != null) {
       fix = LatLng(live.latitude, live.longitude);

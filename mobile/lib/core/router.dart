@@ -10,6 +10,7 @@ import 'package:mobile/features/observations/ui/observation_detail_screen.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
+import 'package:mobile/features/resources/ui/habitat_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plant_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plants_habitat_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
@@ -112,6 +113,23 @@ final routerProvider = Provider<GoRouter>((ref) {
                     ),
                   ),
                 ],
+              ),
+              // Habitat features (T054). There is no list route (the list is
+              // on the Plants & habitat screen), so no parent. `new` comes
+              // before `:habitatId`, or "new" would be read as an id.
+              GoRoute(
+                path: 'habitats/new',
+                builder: (_, state) => HabitatEntryScreen(
+                  projectId: state.pathParameters['id']!,
+                  visitId: state.uri.queryParameters['visit'],
+                ),
+              ),
+              GoRoute(
+                path: 'habitats/:habitatId',
+                builder: (_, state) => HabitatEntryScreen(
+                  projectId: state.pathParameters['id']!,
+                  habitatId: state.pathParameters['habitatId']!,
+                ),
               ),
               GoRoute(
                 path: 'transects',

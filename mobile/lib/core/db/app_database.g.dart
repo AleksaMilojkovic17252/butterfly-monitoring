@@ -10108,6 +10108,1359 @@ class PlantResourceObservationsCompanion
   }
 }
 
+class $HabitatFeaturesTable extends HabitatFeatures
+    with TableInfo<$HabitatFeaturesTable, HabitatFeature> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitatFeaturesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>($HabitatFeaturesTable.$convertersyncStatus);
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _surveyVisitIdMeta = const VerificationMeta(
+    'surveyVisitId',
+  );
+  @override
+  late final GeneratedColumn<String> surveyVisitId = GeneratedColumn<String>(
+    'survey_visit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES survey_visit (id)',
+    ),
+  );
+  static const VerificationMeta _habitatTypeIdMeta = const VerificationMeta(
+    'habitatTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> habitatTypeId = GeneratedColumn<String>(
+    'habitat_type_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _managementTypeIdMeta = const VerificationMeta(
+    'managementTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> managementTypeId = GeneratedColumn<String>(
+    'management_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _observedAtMeta = const VerificationMeta(
+    'observedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> observedAt = GeneratedColumn<DateTime>(
+    'observed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _geometryGeojsonMeta = const VerificationMeta(
+    'geometryGeojson',
+  );
+  @override
+  late final GeneratedColumn<String> geometryGeojson = GeneratedColumn<String>(
+    'geometry_geojson',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _vegetationHeightCmMeta =
+      const VerificationMeta('vegetationHeightCm');
+  @override
+  late final GeneratedColumn<int> vegetationHeightCm = GeneratedColumn<int>(
+    'vegetation_height_cm',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _shrubCoverPctMeta = const VerificationMeta(
+    'shrubCoverPct',
+  );
+  @override
+  late final GeneratedColumn<int> shrubCoverPct = GeneratedColumn<int>(
+    'shrub_cover_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _treeCoverPctMeta = const VerificationMeta(
+    'treeCoverPct',
+  );
+  @override
+  late final GeneratedColumn<int> treeCoverPct = GeneratedColumn<int>(
+    'tree_cover_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bareGroundPctMeta = const VerificationMeta(
+    'bareGroundPct',
+  );
+  @override
+  late final GeneratedColumn<int> bareGroundPct = GeneratedColumn<int>(
+    'bare_ground_pct',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _flowerAbundanceClassMeta =
+      const VerificationMeta('flowerAbundanceClass');
+  @override
+  late final GeneratedColumn<String> flowerAbundanceClass =
+      GeneratedColumn<String>(
+        'flower_abundance_class',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _grazingIntensityMeta = const VerificationMeta(
+    'grazingIntensity',
+  );
+  @override
+  late final GeneratedColumn<String> grazingIntensity = GeneratedColumn<String>(
+    'grazing_intensity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _mowingStatusMeta = const VerificationMeta(
+    'mowingStatus',
+  );
+  @override
+  late final GeneratedColumn<String> mowingStatus = GeneratedColumn<String>(
+    'mowing_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _disturbanceTypeMeta = const VerificationMeta(
+    'disturbanceType',
+  );
+  @override
+  late final GeneratedColumn<String> disturbanceType = GeneratedColumn<String>(
+    'disturbance_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    habitatTypeId,
+    managementTypeId,
+    observedAt,
+    geometryGeojson,
+    lat,
+    lon,
+    vegetationHeightCm,
+    shrubCoverPct,
+    treeCoverPct,
+    bareGroundPct,
+    flowerAbundanceClass,
+    grazingIntensity,
+    mowingStatus,
+    disturbanceType,
+    notes,
+    createdAt,
+    createdById,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habitat_feature';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitatFeature> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('survey_visit_id')) {
+      context.handle(
+        _surveyVisitIdMeta,
+        surveyVisitId.isAcceptableOrUnknown(
+          data['survey_visit_id']!,
+          _surveyVisitIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('habitat_type_id')) {
+      context.handle(
+        _habitatTypeIdMeta,
+        habitatTypeId.isAcceptableOrUnknown(
+          data['habitat_type_id']!,
+          _habitatTypeIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_habitatTypeIdMeta);
+    }
+    if (data.containsKey('management_type_id')) {
+      context.handle(
+        _managementTypeIdMeta,
+        managementTypeId.isAcceptableOrUnknown(
+          data['management_type_id']!,
+          _managementTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observed_at')) {
+      context.handle(
+        _observedAtMeta,
+        observedAt.isAcceptableOrUnknown(data['observed_at']!, _observedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_observedAtMeta);
+    }
+    if (data.containsKey('geometry_geojson')) {
+      context.handle(
+        _geometryGeojsonMeta,
+        geometryGeojson.isAcceptableOrUnknown(
+          data['geometry_geojson']!,
+          _geometryGeojsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_geometryGeojsonMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('vegetation_height_cm')) {
+      context.handle(
+        _vegetationHeightCmMeta,
+        vegetationHeightCm.isAcceptableOrUnknown(
+          data['vegetation_height_cm']!,
+          _vegetationHeightCmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('shrub_cover_pct')) {
+      context.handle(
+        _shrubCoverPctMeta,
+        shrubCoverPct.isAcceptableOrUnknown(
+          data['shrub_cover_pct']!,
+          _shrubCoverPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tree_cover_pct')) {
+      context.handle(
+        _treeCoverPctMeta,
+        treeCoverPct.isAcceptableOrUnknown(
+          data['tree_cover_pct']!,
+          _treeCoverPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bare_ground_pct')) {
+      context.handle(
+        _bareGroundPctMeta,
+        bareGroundPct.isAcceptableOrUnknown(
+          data['bare_ground_pct']!,
+          _bareGroundPctMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flower_abundance_class')) {
+      context.handle(
+        _flowerAbundanceClassMeta,
+        flowerAbundanceClass.isAcceptableOrUnknown(
+          data['flower_abundance_class']!,
+          _flowerAbundanceClassMeta,
+        ),
+      );
+    }
+    if (data.containsKey('grazing_intensity')) {
+      context.handle(
+        _grazingIntensityMeta,
+        grazingIntensity.isAcceptableOrUnknown(
+          data['grazing_intensity']!,
+          _grazingIntensityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mowing_status')) {
+      context.handle(
+        _mowingStatusMeta,
+        mowingStatus.isAcceptableOrUnknown(
+          data['mowing_status']!,
+          _mowingStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('disturbance_type')) {
+      context.handle(
+        _disturbanceTypeMeta,
+        disturbanceType.isAcceptableOrUnknown(
+          data['disturbance_type']!,
+          _disturbanceTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HabitatFeature map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitatFeature(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $HabitatFeaturesTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      surveyVisitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}survey_visit_id'],
+      ),
+      habitatTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habitat_type_id'],
+      )!,
+      managementTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}management_type_id'],
+      ),
+      observedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}observed_at'],
+      )!,
+      geometryGeojson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geometry_geojson'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      vegetationHeightCm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}vegetation_height_cm'],
+      ),
+      shrubCoverPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}shrub_cover_pct'],
+      ),
+      treeCoverPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tree_cover_pct'],
+      ),
+      bareGroundPct: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bare_ground_pct'],
+      ),
+      flowerAbundanceClass: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}flower_abundance_class'],
+      )!,
+      grazingIntensity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}grazing_intensity'],
+      )!,
+      mowingStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mowing_status'],
+      )!,
+      disturbanceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}disturbance_type'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+    );
+  }
+
+  @override
+  $HabitatFeaturesTable createAlias(String alias) {
+    return $HabitatFeaturesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+
+  /// Null for a feature made outside a visit (from the project's tile).
+  final String? surveyVisitId;
+
+  /// Required. No foreign key (reference data).
+  final String habitatTypeId;
+
+  /// Null when not recorded. No foreign key (reference data).
+  final String? managementTypeId;
+  final DateTime observedAt;
+
+  /// GeoJSON text of a Point, a LineString or a Polygon.
+  final String geometryGeojson;
+  final double lat;
+  final double lon;
+
+  /// Centimetres; null when not measured.
+  final int? vegetationHeightCm;
+
+  /// Cover in percent (0-100); null means "not recorded", which is not 0 %.
+  final int? shrubCoverPct;
+  final int? treeCoverPct;
+  final int? bareGroundPct;
+
+  /// `none`, `low`, `medium` or `high`; `''` when not recorded.
+  final String flowerAbundanceClass;
+  final String grazingIntensity;
+
+  /// `unmown`, `recently_mown`, `mown_this_season` or `unknown`; `''` when not
+  /// recorded.
+  final String mowingStatus;
+
+  /// `none`, `trampling`, `vehicle_tracks`, `fire`, `erosion`, `dumping` or
+  /// `other`; `''` when not recorded.
+  final String disturbanceType;
+  final String notes;
+  final DateTime createdAt;
+
+  /// Who made the feature. Null until a pull brings it back for a feature made
+  /// on this phone, so the repository also sets it when it writes one.
+  final String? createdById;
+  const HabitatFeature({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    this.surveyVisitId,
+    required this.habitatTypeId,
+    this.managementTypeId,
+    required this.observedAt,
+    required this.geometryGeojson,
+    required this.lat,
+    required this.lon,
+    this.vegetationHeightCm,
+    this.shrubCoverPct,
+    this.treeCoverPct,
+    this.bareGroundPct,
+    required this.flowerAbundanceClass,
+    required this.grazingIntensity,
+    required this.mowingStatus,
+    required this.disturbanceType,
+    required this.notes,
+    required this.createdAt,
+    this.createdById,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $HabitatFeaturesTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    if (!nullToAbsent || surveyVisitId != null) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId);
+    }
+    map['habitat_type_id'] = Variable<String>(habitatTypeId);
+    if (!nullToAbsent || managementTypeId != null) {
+      map['management_type_id'] = Variable<String>(managementTypeId);
+    }
+    map['observed_at'] = Variable<DateTime>(observedAt);
+    map['geometry_geojson'] = Variable<String>(geometryGeojson);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || vegetationHeightCm != null) {
+      map['vegetation_height_cm'] = Variable<int>(vegetationHeightCm);
+    }
+    if (!nullToAbsent || shrubCoverPct != null) {
+      map['shrub_cover_pct'] = Variable<int>(shrubCoverPct);
+    }
+    if (!nullToAbsent || treeCoverPct != null) {
+      map['tree_cover_pct'] = Variable<int>(treeCoverPct);
+    }
+    if (!nullToAbsent || bareGroundPct != null) {
+      map['bare_ground_pct'] = Variable<int>(bareGroundPct);
+    }
+    map['flower_abundance_class'] = Variable<String>(flowerAbundanceClass);
+    map['grazing_intensity'] = Variable<String>(grazingIntensity);
+    map['mowing_status'] = Variable<String>(mowingStatus);
+    map['disturbance_type'] = Variable<String>(disturbanceType);
+    map['notes'] = Variable<String>(notes);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    return map;
+  }
+
+  HabitatFeaturesCompanion toCompanion(bool nullToAbsent) {
+    return HabitatFeaturesCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      surveyVisitId: surveyVisitId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(surveyVisitId),
+      habitatTypeId: Value(habitatTypeId),
+      managementTypeId: managementTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(managementTypeId),
+      observedAt: Value(observedAt),
+      geometryGeojson: Value(geometryGeojson),
+      lat: Value(lat),
+      lon: Value(lon),
+      vegetationHeightCm: vegetationHeightCm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vegetationHeightCm),
+      shrubCoverPct: shrubCoverPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shrubCoverPct),
+      treeCoverPct: treeCoverPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(treeCoverPct),
+      bareGroundPct: bareGroundPct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bareGroundPct),
+      flowerAbundanceClass: Value(flowerAbundanceClass),
+      grazingIntensity: Value(grazingIntensity),
+      mowingStatus: Value(mowingStatus),
+      disturbanceType: Value(disturbanceType),
+      notes: Value(notes),
+      createdAt: Value(createdAt),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+    );
+  }
+
+  factory HabitatFeature.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitatFeature(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $HabitatFeaturesTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      surveyVisitId: serializer.fromJson<String?>(json['surveyVisitId']),
+      habitatTypeId: serializer.fromJson<String>(json['habitatTypeId']),
+      managementTypeId: serializer.fromJson<String?>(json['managementTypeId']),
+      observedAt: serializer.fromJson<DateTime>(json['observedAt']),
+      geometryGeojson: serializer.fromJson<String>(json['geometryGeojson']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      vegetationHeightCm: serializer.fromJson<int?>(json['vegetationHeightCm']),
+      shrubCoverPct: serializer.fromJson<int?>(json['shrubCoverPct']),
+      treeCoverPct: serializer.fromJson<int?>(json['treeCoverPct']),
+      bareGroundPct: serializer.fromJson<int?>(json['bareGroundPct']),
+      flowerAbundanceClass: serializer.fromJson<String>(
+        json['flowerAbundanceClass'],
+      ),
+      grazingIntensity: serializer.fromJson<String>(json['grazingIntensity']),
+      mowingStatus: serializer.fromJson<String>(json['mowingStatus']),
+      disturbanceType: serializer.fromJson<String>(json['disturbanceType']),
+      notes: serializer.fromJson<String>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $HabitatFeaturesTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'surveyVisitId': serializer.toJson<String?>(surveyVisitId),
+      'habitatTypeId': serializer.toJson<String>(habitatTypeId),
+      'managementTypeId': serializer.toJson<String?>(managementTypeId),
+      'observedAt': serializer.toJson<DateTime>(observedAt),
+      'geometryGeojson': serializer.toJson<String>(geometryGeojson),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'vegetationHeightCm': serializer.toJson<int?>(vegetationHeightCm),
+      'shrubCoverPct': serializer.toJson<int?>(shrubCoverPct),
+      'treeCoverPct': serializer.toJson<int?>(treeCoverPct),
+      'bareGroundPct': serializer.toJson<int?>(bareGroundPct),
+      'flowerAbundanceClass': serializer.toJson<String>(flowerAbundanceClass),
+      'grazingIntensity': serializer.toJson<String>(grazingIntensity),
+      'mowingStatus': serializer.toJson<String>(mowingStatus),
+      'disturbanceType': serializer.toJson<String>(disturbanceType),
+      'notes': serializer.toJson<String>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdById': serializer.toJson<String?>(createdById),
+    };
+  }
+
+  HabitatFeature copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    Value<String?> surveyVisitId = const Value.absent(),
+    String? habitatTypeId,
+    Value<String?> managementTypeId = const Value.absent(),
+    DateTime? observedAt,
+    String? geometryGeojson,
+    double? lat,
+    double? lon,
+    Value<int?> vegetationHeightCm = const Value.absent(),
+    Value<int?> shrubCoverPct = const Value.absent(),
+    Value<int?> treeCoverPct = const Value.absent(),
+    Value<int?> bareGroundPct = const Value.absent(),
+    String? flowerAbundanceClass,
+    String? grazingIntensity,
+    String? mowingStatus,
+    String? disturbanceType,
+    String? notes,
+    DateTime? createdAt,
+    Value<String?> createdById = const Value.absent(),
+  }) => HabitatFeature(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    surveyVisitId: surveyVisitId.present
+        ? surveyVisitId.value
+        : this.surveyVisitId,
+    habitatTypeId: habitatTypeId ?? this.habitatTypeId,
+    managementTypeId: managementTypeId.present
+        ? managementTypeId.value
+        : this.managementTypeId,
+    observedAt: observedAt ?? this.observedAt,
+    geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    vegetationHeightCm: vegetationHeightCm.present
+        ? vegetationHeightCm.value
+        : this.vegetationHeightCm,
+    shrubCoverPct: shrubCoverPct.present
+        ? shrubCoverPct.value
+        : this.shrubCoverPct,
+    treeCoverPct: treeCoverPct.present ? treeCoverPct.value : this.treeCoverPct,
+    bareGroundPct: bareGroundPct.present
+        ? bareGroundPct.value
+        : this.bareGroundPct,
+    flowerAbundanceClass: flowerAbundanceClass ?? this.flowerAbundanceClass,
+    grazingIntensity: grazingIntensity ?? this.grazingIntensity,
+    mowingStatus: mowingStatus ?? this.mowingStatus,
+    disturbanceType: disturbanceType ?? this.disturbanceType,
+    notes: notes ?? this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    createdById: createdById.present ? createdById.value : this.createdById,
+  );
+  HabitatFeature copyWithCompanion(HabitatFeaturesCompanion data) {
+    return HabitatFeature(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      surveyVisitId: data.surveyVisitId.present
+          ? data.surveyVisitId.value
+          : this.surveyVisitId,
+      habitatTypeId: data.habitatTypeId.present
+          ? data.habitatTypeId.value
+          : this.habitatTypeId,
+      managementTypeId: data.managementTypeId.present
+          ? data.managementTypeId.value
+          : this.managementTypeId,
+      observedAt: data.observedAt.present
+          ? data.observedAt.value
+          : this.observedAt,
+      geometryGeojson: data.geometryGeojson.present
+          ? data.geometryGeojson.value
+          : this.geometryGeojson,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      vegetationHeightCm: data.vegetationHeightCm.present
+          ? data.vegetationHeightCm.value
+          : this.vegetationHeightCm,
+      shrubCoverPct: data.shrubCoverPct.present
+          ? data.shrubCoverPct.value
+          : this.shrubCoverPct,
+      treeCoverPct: data.treeCoverPct.present
+          ? data.treeCoverPct.value
+          : this.treeCoverPct,
+      bareGroundPct: data.bareGroundPct.present
+          ? data.bareGroundPct.value
+          : this.bareGroundPct,
+      flowerAbundanceClass: data.flowerAbundanceClass.present
+          ? data.flowerAbundanceClass.value
+          : this.flowerAbundanceClass,
+      grazingIntensity: data.grazingIntensity.present
+          ? data.grazingIntensity.value
+          : this.grazingIntensity,
+      mowingStatus: data.mowingStatus.present
+          ? data.mowingStatus.value
+          : this.mowingStatus,
+      disturbanceType: data.disturbanceType.present
+          ? data.disturbanceType.value
+          : this.disturbanceType,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitatFeature(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('habitatTypeId: $habitatTypeId, ')
+          ..write('managementTypeId: $managementTypeId, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('vegetationHeightCm: $vegetationHeightCm, ')
+          ..write('shrubCoverPct: $shrubCoverPct, ')
+          ..write('treeCoverPct: $treeCoverPct, ')
+          ..write('bareGroundPct: $bareGroundPct, ')
+          ..write('flowerAbundanceClass: $flowerAbundanceClass, ')
+          ..write('grazingIntensity: $grazingIntensity, ')
+          ..write('mowingStatus: $mowingStatus, ')
+          ..write('disturbanceType: $disturbanceType, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    surveyVisitId,
+    habitatTypeId,
+    managementTypeId,
+    observedAt,
+    geometryGeojson,
+    lat,
+    lon,
+    vegetationHeightCm,
+    shrubCoverPct,
+    treeCoverPct,
+    bareGroundPct,
+    flowerAbundanceClass,
+    grazingIntensity,
+    mowingStatus,
+    disturbanceType,
+    notes,
+    createdAt,
+    createdById,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitatFeature &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.surveyVisitId == this.surveyVisitId &&
+          other.habitatTypeId == this.habitatTypeId &&
+          other.managementTypeId == this.managementTypeId &&
+          other.observedAt == this.observedAt &&
+          other.geometryGeojson == this.geometryGeojson &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.vegetationHeightCm == this.vegetationHeightCm &&
+          other.shrubCoverPct == this.shrubCoverPct &&
+          other.treeCoverPct == this.treeCoverPct &&
+          other.bareGroundPct == this.bareGroundPct &&
+          other.flowerAbundanceClass == this.flowerAbundanceClass &&
+          other.grazingIntensity == this.grazingIntensity &&
+          other.mowingStatus == this.mowingStatus &&
+          other.disturbanceType == this.disturbanceType &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.createdById == this.createdById);
+}
+
+class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String?> surveyVisitId;
+  final Value<String> habitatTypeId;
+  final Value<String?> managementTypeId;
+  final Value<DateTime> observedAt;
+  final Value<String> geometryGeojson;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<int?> vegetationHeightCm;
+  final Value<int?> shrubCoverPct;
+  final Value<int?> treeCoverPct;
+  final Value<int?> bareGroundPct;
+  final Value<String> flowerAbundanceClass;
+  final Value<String> grazingIntensity;
+  final Value<String> mowingStatus;
+  final Value<String> disturbanceType;
+  final Value<String> notes;
+  final Value<DateTime> createdAt;
+  final Value<String?> createdById;
+  final Value<int> rowid;
+  const HabitatFeaturesCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.surveyVisitId = const Value.absent(),
+    this.habitatTypeId = const Value.absent(),
+    this.managementTypeId = const Value.absent(),
+    this.observedAt = const Value.absent(),
+    this.geometryGeojson = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.vegetationHeightCm = const Value.absent(),
+    this.shrubCoverPct = const Value.absent(),
+    this.treeCoverPct = const Value.absent(),
+    this.bareGroundPct = const Value.absent(),
+    this.flowerAbundanceClass = const Value.absent(),
+    this.grazingIntensity = const Value.absent(),
+    this.mowingStatus = const Value.absent(),
+    this.disturbanceType = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HabitatFeaturesCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    this.surveyVisitId = const Value.absent(),
+    required String habitatTypeId,
+    this.managementTypeId = const Value.absent(),
+    required DateTime observedAt,
+    required String geometryGeojson,
+    required double lat,
+    required double lon,
+    this.vegetationHeightCm = const Value.absent(),
+    this.shrubCoverPct = const Value.absent(),
+    this.treeCoverPct = const Value.absent(),
+    this.bareGroundPct = const Value.absent(),
+    this.flowerAbundanceClass = const Value.absent(),
+    this.grazingIntensity = const Value.absent(),
+    this.mowingStatus = const Value.absent(),
+    this.disturbanceType = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       habitatTypeId = Value(habitatTypeId),
+       observedAt = Value(observedAt),
+       geometryGeojson = Value(geometryGeojson),
+       lat = Value(lat),
+       lon = Value(lon),
+       createdAt = Value(createdAt);
+  static Insertable<HabitatFeature> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? surveyVisitId,
+    Expression<String>? habitatTypeId,
+    Expression<String>? managementTypeId,
+    Expression<DateTime>? observedAt,
+    Expression<String>? geometryGeojson,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<int>? vegetationHeightCm,
+    Expression<int>? shrubCoverPct,
+    Expression<int>? treeCoverPct,
+    Expression<int>? bareGroundPct,
+    Expression<String>? flowerAbundanceClass,
+    Expression<String>? grazingIntensity,
+    Expression<String>? mowingStatus,
+    Expression<String>? disturbanceType,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<String>? createdById,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (surveyVisitId != null) 'survey_visit_id': surveyVisitId,
+      if (habitatTypeId != null) 'habitat_type_id': habitatTypeId,
+      if (managementTypeId != null) 'management_type_id': managementTypeId,
+      if (observedAt != null) 'observed_at': observedAt,
+      if (geometryGeojson != null) 'geometry_geojson': geometryGeojson,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (vegetationHeightCm != null)
+        'vegetation_height_cm': vegetationHeightCm,
+      if (shrubCoverPct != null) 'shrub_cover_pct': shrubCoverPct,
+      if (treeCoverPct != null) 'tree_cover_pct': treeCoverPct,
+      if (bareGroundPct != null) 'bare_ground_pct': bareGroundPct,
+      if (flowerAbundanceClass != null)
+        'flower_abundance_class': flowerAbundanceClass,
+      if (grazingIntensity != null) 'grazing_intensity': grazingIntensity,
+      if (mowingStatus != null) 'mowing_status': mowingStatus,
+      if (disturbanceType != null) 'disturbance_type': disturbanceType,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (createdById != null) 'created_by_id': createdById,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HabitatFeaturesCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String?>? surveyVisitId,
+    Value<String>? habitatTypeId,
+    Value<String?>? managementTypeId,
+    Value<DateTime>? observedAt,
+    Value<String>? geometryGeojson,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<int?>? vegetationHeightCm,
+    Value<int?>? shrubCoverPct,
+    Value<int?>? treeCoverPct,
+    Value<int?>? bareGroundPct,
+    Value<String>? flowerAbundanceClass,
+    Value<String>? grazingIntensity,
+    Value<String>? mowingStatus,
+    Value<String>? disturbanceType,
+    Value<String>? notes,
+    Value<DateTime>? createdAt,
+    Value<String?>? createdById,
+    Value<int>? rowid,
+  }) {
+    return HabitatFeaturesCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      surveyVisitId: surveyVisitId ?? this.surveyVisitId,
+      habitatTypeId: habitatTypeId ?? this.habitatTypeId,
+      managementTypeId: managementTypeId ?? this.managementTypeId,
+      observedAt: observedAt ?? this.observedAt,
+      geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      vegetationHeightCm: vegetationHeightCm ?? this.vegetationHeightCm,
+      shrubCoverPct: shrubCoverPct ?? this.shrubCoverPct,
+      treeCoverPct: treeCoverPct ?? this.treeCoverPct,
+      bareGroundPct: bareGroundPct ?? this.bareGroundPct,
+      flowerAbundanceClass: flowerAbundanceClass ?? this.flowerAbundanceClass,
+      grazingIntensity: grazingIntensity ?? this.grazingIntensity,
+      mowingStatus: mowingStatus ?? this.mowingStatus,
+      disturbanceType: disturbanceType ?? this.disturbanceType,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      createdById: createdById ?? this.createdById,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $HabitatFeaturesTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (surveyVisitId.present) {
+      map['survey_visit_id'] = Variable<String>(surveyVisitId.value);
+    }
+    if (habitatTypeId.present) {
+      map['habitat_type_id'] = Variable<String>(habitatTypeId.value);
+    }
+    if (managementTypeId.present) {
+      map['management_type_id'] = Variable<String>(managementTypeId.value);
+    }
+    if (observedAt.present) {
+      map['observed_at'] = Variable<DateTime>(observedAt.value);
+    }
+    if (geometryGeojson.present) {
+      map['geometry_geojson'] = Variable<String>(geometryGeojson.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (vegetationHeightCm.present) {
+      map['vegetation_height_cm'] = Variable<int>(vegetationHeightCm.value);
+    }
+    if (shrubCoverPct.present) {
+      map['shrub_cover_pct'] = Variable<int>(shrubCoverPct.value);
+    }
+    if (treeCoverPct.present) {
+      map['tree_cover_pct'] = Variable<int>(treeCoverPct.value);
+    }
+    if (bareGroundPct.present) {
+      map['bare_ground_pct'] = Variable<int>(bareGroundPct.value);
+    }
+    if (flowerAbundanceClass.present) {
+      map['flower_abundance_class'] = Variable<String>(
+        flowerAbundanceClass.value,
+      );
+    }
+    if (grazingIntensity.present) {
+      map['grazing_intensity'] = Variable<String>(grazingIntensity.value);
+    }
+    if (mowingStatus.present) {
+      map['mowing_status'] = Variable<String>(mowingStatus.value);
+    }
+    if (disturbanceType.present) {
+      map['disturbance_type'] = Variable<String>(disturbanceType.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitatFeaturesCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('surveyVisitId: $surveyVisitId, ')
+          ..write('habitatTypeId: $habitatTypeId, ')
+          ..write('managementTypeId: $managementTypeId, ')
+          ..write('observedAt: $observedAt, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('vegetationHeightCm: $vegetationHeightCm, ')
+          ..write('shrubCoverPct: $shrubCoverPct, ')
+          ..write('treeCoverPct: $treeCoverPct, ')
+          ..write('bareGroundPct: $bareGroundPct, ')
+          ..write('flowerAbundanceClass: $flowerAbundanceClass, ')
+          ..write('grazingIntensity: $grazingIntensity, ')
+          ..write('mowingStatus: $mowingStatus, ')
+          ..write('disturbanceType: $disturbanceType, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PhotosTable extends Photos with TableInfo<$PhotosTable, Photo> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -15748,6 +17101,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PlantTaxaTable plantTaxa = $PlantTaxaTable(this);
   late final $PlantResourceObservationsTable plantResourceObservations =
       $PlantResourceObservationsTable(this);
+  late final $HabitatFeaturesTable habitatFeatures = $HabitatFeaturesTable(
+    this,
+  );
   late final $PhotosTable photos = $PhotosTable(this);
   late final $ProjectProtocolsTable projectProtocols = $ProjectProtocolsTable(
     this,
@@ -15781,6 +17137,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     managementTypes,
     plantTaxa,
     plantResourceObservations,
+    habitatFeatures,
     photos,
     projectProtocols,
     syncConflicts,
@@ -15908,6 +17265,26 @@ final class $$ProjectsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _plantResourceObservationsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HabitatFeaturesTable, List<HabitatFeature>>
+  _habitatFeaturesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitatFeatures,
+    aliasName: 'project__id__habitat_feature__project_id',
+  );
+
+  $$HabitatFeaturesTableProcessedTableManager get habitatFeaturesRefs {
+    final manager = $$HabitatFeaturesTableTableManager(
+      $_db,
+      $_db.habitatFeatures,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _habitatFeaturesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -16099,6 +17476,31 @@ class $$ProjectsTableFilterComposer
                     $removeJoinBuilderFromRootComposer,
               ),
         );
+    return f(composer);
+  }
+
+  Expression<bool> habitatFeaturesRefs(
+    Expression<bool> Function($$HabitatFeaturesTableFilterComposer f) f,
+  ) {
+    final $$HabitatFeaturesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitatFeatures,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitatFeaturesTableFilterComposer(
+            $db: $db,
+            $table: $db.habitatFeatures,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 
@@ -16346,6 +17748,31 @@ class $$ProjectsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> habitatFeaturesRefs<T extends Object>(
+    Expression<T> Function($$HabitatFeaturesTableAnnotationComposer a) f,
+  ) {
+    final $$HabitatFeaturesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitatFeatures,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitatFeaturesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitatFeatures,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> projectProtocolsRefs<T extends Object>(
     Expression<T> Function($$ProjectProtocolsTableAnnotationComposer a) f,
   ) {
@@ -16390,6 +17817,7 @@ class $$ProjectsTableTableManager
             bool surveyVisitsRefs,
             bool butterflyObservationsRefs,
             bool plantResourceObservationsRefs,
+            bool habitatFeaturesRefs,
             bool projectProtocolsRefs,
           })
         > {
@@ -16474,6 +17902,7 @@ class $$ProjectsTableTableManager
                 surveyVisitsRefs = false,
                 butterflyObservationsRefs = false,
                 plantResourceObservationsRefs = false,
+                habitatFeaturesRefs = false,
                 projectProtocolsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -16484,6 +17913,7 @@ class $$ProjectsTableTableManager
                     if (butterflyObservationsRefs) db.butterflyObservations,
                     if (plantResourceObservationsRefs)
                       db.plantResourceObservations,
+                    if (habitatFeaturesRefs) db.habitatFeatures,
                     if (projectProtocolsRefs) db.projectProtocols,
                   ],
                   addJoins: null,
@@ -16573,6 +18003,27 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (habitatFeaturesRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          HabitatFeature
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._habitatFeaturesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitatFeaturesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (projectProtocolsRefs)
                         await $_getPrefetchedData<
                           Project,
@@ -16619,6 +18070,7 @@ typedef $$ProjectsTableProcessedTableManager =
         bool surveyVisitsRefs,
         bool butterflyObservationsRefs,
         bool plantResourceObservationsRefs,
+        bool habitatFeaturesRefs,
         bool projectProtocolsRefs,
       })
     >;
@@ -17443,6 +18895,26 @@ final class $$SurveyVisitsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$HabitatFeaturesTable, List<HabitatFeature>>
+  _habitatFeaturesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitatFeatures,
+    aliasName: 'survey_visit__id__habitat_feature__survey_visit_id',
+  );
+
+  $$HabitatFeaturesTableProcessedTableManager get habitatFeaturesRefs {
+    final manager = $$HabitatFeaturesTableTableManager(
+      $_db,
+      $_db.habitatFeatures,
+    ).filter((f) => f.surveyVisitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _habitatFeaturesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$SurveyTrackPointsTable, List<SurveyTrackPoint>>
   _surveyTrackPointsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
@@ -17741,6 +19213,31 @@ class $$SurveyVisitsTableFilterComposer
                     $removeJoinBuilderFromRootComposer,
               ),
         );
+    return f(composer);
+  }
+
+  Expression<bool> habitatFeaturesRefs(
+    Expression<bool> Function($$HabitatFeaturesTableFilterComposer f) f,
+  ) {
+    final $$HabitatFeaturesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitatFeatures,
+      getReferencedColumn: (t) => t.surveyVisitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitatFeaturesTableFilterComposer(
+            $db: $db,
+            $table: $db.habitatFeatures,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 
@@ -18255,6 +19752,31 @@ class $$SurveyVisitsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> habitatFeaturesRefs<T extends Object>(
+    Expression<T> Function($$HabitatFeaturesTableAnnotationComposer a) f,
+  ) {
+    final $$HabitatFeaturesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitatFeatures,
+      getReferencedColumn: (t) => t.surveyVisitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitatFeaturesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitatFeatures,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> surveyTrackPointsRefs<T extends Object>(
     Expression<T> Function($$SurveyTrackPointsTableAnnotationComposer a) f,
   ) {
@@ -18300,6 +19822,7 @@ class $$SurveyVisitsTableTableManager
             bool transectId,
             bool butterflyObservationsRefs,
             bool plantResourceObservationsRefs,
+            bool habitatFeaturesRefs,
             bool surveyTrackPointsRefs,
           })
         > {
@@ -18484,6 +20007,7 @@ class $$SurveyVisitsTableTableManager
                 transectId = false,
                 butterflyObservationsRefs = false,
                 plantResourceObservationsRefs = false,
+                habitatFeaturesRefs = false,
                 surveyTrackPointsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -18492,6 +20016,7 @@ class $$SurveyVisitsTableTableManager
                     if (butterflyObservationsRefs) db.butterflyObservations,
                     if (plantResourceObservationsRefs)
                       db.plantResourceObservations,
+                    if (habitatFeaturesRefs) db.habitatFeatures,
                     if (surveyTrackPointsRefs) db.surveyTrackPoints,
                   ],
                   addJoins:
@@ -18579,6 +20104,27 @@ class $$SurveyVisitsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (habitatFeaturesRefs)
+                        await $_getPrefetchedData<
+                          SurveyVisit,
+                          $SurveyVisitsTable,
+                          HabitatFeature
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SurveyVisitsTableReferences
+                              ._habitatFeaturesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SurveyVisitsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitatFeaturesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.surveyVisitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (surveyTrackPointsRefs)
                         await $_getPrefetchedData<
                           SurveyVisit,
@@ -18625,6 +20171,7 @@ typedef $$SurveyVisitsTableProcessedTableManager =
         bool transectId,
         bool butterflyObservationsRefs,
         bool plantResourceObservationsRefs,
+        bool habitatFeaturesRefs,
         bool surveyTrackPointsRefs,
       })
     >;
@@ -22362,6 +23909,787 @@ typedef $$PlantResourceObservationsTableProcessedTableManager =
       PlantResourceObservation,
       PrefetchHooks Function({bool projectId, bool surveyVisitId})
     >;
+typedef $$HabitatFeaturesTableCreateCompanionBuilder =
+    HabitatFeaturesCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      Value<String?> surveyVisitId,
+      required String habitatTypeId,
+      Value<String?> managementTypeId,
+      required DateTime observedAt,
+      required String geometryGeojson,
+      required double lat,
+      required double lon,
+      Value<int?> vegetationHeightCm,
+      Value<int?> shrubCoverPct,
+      Value<int?> treeCoverPct,
+      Value<int?> bareGroundPct,
+      Value<String> flowerAbundanceClass,
+      Value<String> grazingIntensity,
+      Value<String> mowingStatus,
+      Value<String> disturbanceType,
+      Value<String> notes,
+      required DateTime createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+typedef $$HabitatFeaturesTableUpdateCompanionBuilder =
+    HabitatFeaturesCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String?> surveyVisitId,
+      Value<String> habitatTypeId,
+      Value<String?> managementTypeId,
+      Value<DateTime> observedAt,
+      Value<String> geometryGeojson,
+      Value<double> lat,
+      Value<double> lon,
+      Value<int?> vegetationHeightCm,
+      Value<int?> shrubCoverPct,
+      Value<int?> treeCoverPct,
+      Value<int?> bareGroundPct,
+      Value<String> flowerAbundanceClass,
+      Value<String> grazingIntensity,
+      Value<String> mowingStatus,
+      Value<String> disturbanceType,
+      Value<String> notes,
+      Value<DateTime> createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+
+final class $$HabitatFeaturesTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $HabitatFeaturesTable, HabitatFeature> {
+  $$HabitatFeaturesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('habitat_feature__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SurveyVisitsTable _surveyVisitIdTable(_$AppDatabase db) => db
+      .surveyVisits
+      .createAlias('habitat_feature__survey_visit_id__survey_visit__id');
+
+  $$SurveyVisitsTableProcessedTableManager? get surveyVisitId {
+    final $_column = $_itemColumn<String>('survey_visit_id');
+    if ($_column == null) return null;
+    final manager = $$SurveyVisitsTableTableManager(
+      $_db,
+      $_db.surveyVisits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_surveyVisitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HabitatFeaturesTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitatFeaturesTable> {
+  $$HabitatFeaturesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get managementTypeId => $composableBuilder(
+    column: $table.managementTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get vegetationHeightCm => $composableBuilder(
+    column: $table.vegetationHeightCm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get shrubCoverPct => $composableBuilder(
+    column: $table.shrubCoverPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get treeCoverPct => $composableBuilder(
+    column: $table.treeCoverPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bareGroundPct => $composableBuilder(
+    column: $table.bareGroundPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get flowerAbundanceClass => $composableBuilder(
+    column: $table.flowerAbundanceClass,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get grazingIntensity => $composableBuilder(
+    column: $table.grazingIntensity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mowingStatus => $composableBuilder(
+    column: $table.mowingStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get disturbanceType => $composableBuilder(
+    column: $table.disturbanceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableFilterComposer get surveyVisitId {
+    final $$SurveyVisitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableFilterComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitatFeaturesTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitatFeaturesTable> {
+  $$HabitatFeaturesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get managementTypeId => $composableBuilder(
+    column: $table.managementTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get vegetationHeightCm => $composableBuilder(
+    column: $table.vegetationHeightCm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get shrubCoverPct => $composableBuilder(
+    column: $table.shrubCoverPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get treeCoverPct => $composableBuilder(
+    column: $table.treeCoverPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bareGroundPct => $composableBuilder(
+    column: $table.bareGroundPct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get flowerAbundanceClass => $composableBuilder(
+    column: $table.flowerAbundanceClass,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get grazingIntensity => $composableBuilder(
+    column: $table.grazingIntensity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mowingStatus => $composableBuilder(
+    column: $table.mowingStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get disturbanceType => $composableBuilder(
+    column: $table.disturbanceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableOrderingComposer get surveyVisitId {
+    final $$SurveyVisitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitatFeaturesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitatFeaturesTable> {
+  $$HabitatFeaturesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get managementTypeId => $composableBuilder(
+    column: $table.managementTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get observedAt => $composableBuilder(
+    column: $table.observedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<int> get vegetationHeightCm => $composableBuilder(
+    column: $table.vegetationHeightCm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get shrubCoverPct => $composableBuilder(
+    column: $table.shrubCoverPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get treeCoverPct => $composableBuilder(
+    column: $table.treeCoverPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get bareGroundPct => $composableBuilder(
+    column: $table.bareGroundPct,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get flowerAbundanceClass => $composableBuilder(
+    column: $table.flowerAbundanceClass,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get grazingIntensity => $composableBuilder(
+    column: $table.grazingIntensity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mowingStatus => $composableBuilder(
+    column: $table.mowingStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get disturbanceType => $composableBuilder(
+    column: $table.disturbanceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SurveyVisitsTableAnnotationComposer get surveyVisitId {
+    final $$SurveyVisitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.surveyVisitId,
+      referencedTable: $db.surveyVisits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SurveyVisitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.surveyVisits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitatFeaturesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitatFeaturesTable,
+          HabitatFeature,
+          $$HabitatFeaturesTableFilterComposer,
+          $$HabitatFeaturesTableOrderingComposer,
+          $$HabitatFeaturesTableAnnotationComposer,
+          $$HabitatFeaturesTableCreateCompanionBuilder,
+          $$HabitatFeaturesTableUpdateCompanionBuilder,
+          (HabitatFeature, $$HabitatFeaturesTableReferences),
+          HabitatFeature,
+          PrefetchHooks Function({bool projectId, bool surveyVisitId})
+        > {
+  $$HabitatFeaturesTableTableManager(
+    _$AppDatabase db,
+    $HabitatFeaturesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitatFeaturesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitatFeaturesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitatFeaturesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String?> surveyVisitId = const Value.absent(),
+                Value<String> habitatTypeId = const Value.absent(),
+                Value<String?> managementTypeId = const Value.absent(),
+                Value<DateTime> observedAt = const Value.absent(),
+                Value<String> geometryGeojson = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<int?> vegetationHeightCm = const Value.absent(),
+                Value<int?> shrubCoverPct = const Value.absent(),
+                Value<int?> treeCoverPct = const Value.absent(),
+                Value<int?> bareGroundPct = const Value.absent(),
+                Value<String> flowerAbundanceClass = const Value.absent(),
+                Value<String> grazingIntensity = const Value.absent(),
+                Value<String> mowingStatus = const Value.absent(),
+                Value<String> disturbanceType = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitatFeaturesCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                habitatTypeId: habitatTypeId,
+                managementTypeId: managementTypeId,
+                observedAt: observedAt,
+                geometryGeojson: geometryGeojson,
+                lat: lat,
+                lon: lon,
+                vegetationHeightCm: vegetationHeightCm,
+                shrubCoverPct: shrubCoverPct,
+                treeCoverPct: treeCoverPct,
+                bareGroundPct: bareGroundPct,
+                flowerAbundanceClass: flowerAbundanceClass,
+                grazingIntensity: grazingIntensity,
+                mowingStatus: mowingStatus,
+                disturbanceType: disturbanceType,
+                notes: notes,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                Value<String?> surveyVisitId = const Value.absent(),
+                required String habitatTypeId,
+                Value<String?> managementTypeId = const Value.absent(),
+                required DateTime observedAt,
+                required String geometryGeojson,
+                required double lat,
+                required double lon,
+                Value<int?> vegetationHeightCm = const Value.absent(),
+                Value<int?> shrubCoverPct = const Value.absent(),
+                Value<int?> treeCoverPct = const Value.absent(),
+                Value<int?> bareGroundPct = const Value.absent(),
+                Value<String> flowerAbundanceClass = const Value.absent(),
+                Value<String> grazingIntensity = const Value.absent(),
+                Value<String> mowingStatus = const Value.absent(),
+                Value<String> disturbanceType = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                required DateTime createdAt,
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitatFeaturesCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                surveyVisitId: surveyVisitId,
+                habitatTypeId: habitatTypeId,
+                managementTypeId: managementTypeId,
+                observedAt: observedAt,
+                geometryGeojson: geometryGeojson,
+                lat: lat,
+                lon: lon,
+                vegetationHeightCm: vegetationHeightCm,
+                shrubCoverPct: shrubCoverPct,
+                treeCoverPct: treeCoverPct,
+                bareGroundPct: bareGroundPct,
+                flowerAbundanceClass: flowerAbundanceClass,
+                grazingIntensity: grazingIntensity,
+                mowingStatus: mowingStatus,
+                disturbanceType: disturbanceType,
+                notes: notes,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HabitatFeaturesTable, HabitatFeature>(table),
+                  $$HabitatFeaturesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false, surveyVisitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable: $$HabitatFeaturesTableReferences
+                            ._projectIdTable(db),
+                        referencedColumn: $$HabitatFeaturesTableReferences
+                            ._projectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (surveyVisitId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.surveyVisitId,
+                        referencedTable: $$HabitatFeaturesTableReferences
+                            ._surveyVisitIdTable(db),
+                        referencedColumn: $$HabitatFeaturesTableReferences
+                            ._surveyVisitIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitatFeaturesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitatFeaturesTable,
+      HabitatFeature,
+      $$HabitatFeaturesTableFilterComposer,
+      $$HabitatFeaturesTableOrderingComposer,
+      $$HabitatFeaturesTableAnnotationComposer,
+      $$HabitatFeaturesTableCreateCompanionBuilder,
+      $$HabitatFeaturesTableUpdateCompanionBuilder,
+      (HabitatFeature, $$HabitatFeaturesTableReferences),
+      HabitatFeature,
+      PrefetchHooks Function({bool projectId, bool surveyVisitId})
+    >;
 typedef $$PhotosTableCreateCompanionBuilder = PhotosCompanion Function({
   Value<int?> serverVersion,
   Value<SyncStatus> syncStatus,
@@ -25371,6 +27699,8 @@ class $AppDatabaseManager {
         _db,
         _db.plantResourceObservations,
       );
+  $$HabitatFeaturesTableTableManager get habitatFeatures =>
+      $$HabitatFeaturesTableTableManager(_db, _db.habitatFeatures);
   $$PhotosTableTableManager get photos =>
       $$PhotosTableTableManager(_db, _db.photos);
   $$ProjectProtocolsTableTableManager get projectProtocols =>

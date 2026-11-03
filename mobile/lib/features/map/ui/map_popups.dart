@@ -4,6 +4,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/validation/observation_values.dart';
 import 'package:mobile/core/validation/plant_values.dart';
+import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/map/ui/widgets/map_feature_dialog.dart';
 import 'package:mobile/features/observations/domain/behaviour_json.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
@@ -133,4 +134,26 @@ Future<void> showPlantPopup(
     '/projects/${record.projectId}/plants/${record.id}',
     photo: photo,
   );
+}
+
+/// A habitat feature (T054): its habitat type, when it was seen, the
+/// management type when one is set, and the area of a polygon or the length of
+/// a line. The server computes no area for habitat features, so the figure is
+/// worked out here from the stored points. [habitatName] and [managementName]
+/// are null when not known on this phone. Opens the habitat feature's form.
+Future<void> showHabitatPopup(
+  BuildContext context, {
+  required HabitatFeature record,
+  required String? habitatName,
+  required String? managementName,
+}) {
+  final shape = CapturedGeometry.fromGeoJson(record.geometryGeojson);
+  return _showPopup(context, habitatName ?? 'Habitat feature', [
+    ('Seen', formatLocalDateTime(record.observedAt)),
+    if (managementName != null) ('Management', managementName),
+    if (shape != null && shape.mode == GeometryMode.polygon)
+      ('Area', formatArea(shape.areaM2)),
+    if (shape != null && shape.mode == GeometryMode.line)
+      ('Length', formatLength(shape.lengthM)),
+  ], '/projects/${record.projectId}/habitats/${record.id}');
 }

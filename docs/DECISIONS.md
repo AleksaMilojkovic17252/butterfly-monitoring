@@ -1872,3 +1872,37 @@ geometry kind `point_line_or_polygon` (`Point, LineString or Polygon` in `metada
 `habitat-features`, `title_field: habitat_type_name_en`.
 **Deferred to T054:** every phone part (the Drift table, the pull mapping, the form, the rule copies). Two things T054 must handle are in TICKETS.md:
 habitat rows pulled before the table exists are skipped and the cursor moves past them, and the Drift table must be named `habitat_feature`.
+
+## D-089 · Habitat feature entry (T054): Record button for covers, every codelist row read, one polygon layer for two record types
+2026-11-03 · accepted · T054, *builds on D-081, D-082, D-086, D-087 and D-088*
+**Cover fields (shrub, tree, bare ground).** `CoverField` shows "Not recorded" and a **Record** button. Record sets 0 % and shows a slider (0-100,
+step 5) with **Clear**, which sets null again. 0 % ("I looked, none") and null ("did not look") are different answers on the server too, and a slider
+that always shows a position would save a false value the first time the form is scrolled or saved. A stored 37 (from REST) is shown as 37 until the
+user moves the slider.
+**Codelist providers read every row.** `habitatTypesProvider` and `managementTypesProvider` return all rows, inactive and deleted ones included, by
+`sortOrder`. The form filters them for the picker; tiles and popups use all of them, so an old feature keeps its name when a type is deactivated
+(D-088: deactivating only hides a value from pickers). `DropdownButtonFormField` asserts unless exactly one item matches its value and reads
+`initialValue` once, and these lists load from Drift, so the form shows a spinner until both lists are there and always puts the selected id among the
+items, even when it is inactive, deleted or not on this phone ("Not on this phone").
+**One polygon layer, one hit notifier.** Plant patches and habitat areas share one `PolygonLayer` and `_polygonHits` (habitats first, so a plant
+patch inside a habitat area is on top and gets the tap). Two layers on one notifier would overwrite each other's hits. Habitat lines go into the
+polyline layer above the sections and below the visit route, so a hedge along a transect stays tappable. Points get a third cluster layer, in brown,
+below the plants'. The Habitats switch is a new `MapLayer`; filters do not apply (D-081). Shapes flutter_map would assert on (a line under 2 points, a
+polygon under 3) are left out.
+**A line's centre.** `lat`/`lon` of a habitat feature are the first point of a Point and `polygonCentroid` of anything else, the same as
+`CapturedGeometry.centroid`. `_plantResource` only used the centroid for polygons, which would have moved a line's `lat`/`lon` after its first pull.
+**Cursor reset.** `from13To14` creates the table and deletes the `cursor:%` rows, because habitat rows sent before this version were skipped and the
+cursor moved past them (T053). Queued rows are not touched.
+**Locked visits and discard.** `_rejectChangesToLockedVisits` lists the visit's habitat features like its plant records, so a queued change shows the
+lock message instead of being pushed and refused. `SyncRepository.discard` of a never-sent visit also removes its habitat rows and queue items.
+**Routes.** `/projects/:id/habitats/new?visit=` before `/projects/:id/habitats/:habitatId`. There is no list route: the list is on Plants & habitat.
+**Not handled.** Photos (none on the server); other members' features (T112); the server's area and length are not stored on the phone, so the popup's
+figure is a local estimate; Polygon (walk) outdoors is still untested (T052's deferral, `GeometryCaptureWidget` is unchanged).
+**Found while testing on the phone (2026-11-03).** No bug needed a fix. Two things worth knowing: (1) the sync runner pushes before it pulls, so a lock that
+arrives after a push is refused by the server ("visit_locked", with the admin's name and reason) and the pull-side `_rejectChangesToLockedVisits` is only
+reached when the pull comes first (the project card's Update). The pull-side habitat case, discard (trap 4), the line centre (trap 7), a cleared nullable
+value and tombstones were checked with a throwaway smoke test (`tmp/t054/habitat_smoke_test.dart`, not committed, D-021). (2) Where shapes overlap, the
+topmost gets the tap (butterflies, plants, habitats), so a habitat under a plant patch is only reachable from the list.
+**Asked for during testing.** The active visit's snackbars name what was saved: "Saved habitat: <type>" and "Saved plant: <name or Unidentified plant>", through
+`HabitatRepository.titleOf` and `PlantRepository.titleOf`, with the old wording as a fallback.
+**Code review fixes (2026-11-03).** `HabitatEntryScreen._fillPoint` ignores a tracker fix older than 30 s (the tracker runs every 5 s, 15 s in battery saver) and asks for a fresh reading, so a stalled GPS cannot put a feature where the observer was minutes ago; with location off the Location tile says "Not set" and gives the reason (checked on the phone). `PlantEntryScreen._fillPoint` got the same rule (asked for after the review). The habitat tile reads its shape through `CapturedGeometry.fromGeoJson` instead of searching the GeoJSON text.

@@ -78,6 +78,7 @@ List<String> _messagesOf(Object? value) {
 String entityTypeLabel(String type) {
   return switch (type) {
     'butterfly_observation' => 'Butterfly observations',
+    'habitat_feature' => 'Habitat features',
     'habitat_type' => 'Habitat types',
     'management_type' => 'Management types',
     'photo' => 'Photo records',

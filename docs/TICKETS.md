@@ -89,7 +89,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T051 | [#68](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/68) | PlantResourceObservation model and API | P1 | should | T020, T044, T049 | 1.5 d | done |
 | T052 | [#69](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/69) | App plant entry with point and polygon drawing | P1 | should | T050, T051 | 2.5 d | done |
 | T053 | [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) | HabitatFeature model and API | P1 | should | T020, T026 | 1.5 d | done |
-| T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | todo |
+| T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | done |
 | T055 | [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) | Input validation rules (shared by app and server) | P1 | must | T016, T034, T044 | 2 d | done |
 | T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | todo |
 | T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | todo |
@@ -1106,7 +1106,8 @@ Additions beyond the criteria (agreed 2026-11-03): push `delete`, and a read-onl
 Notes: shown by hand with `tmp/t053/smoke.py` (not committed, D-021; 181 checks) and `scripts/ogc-smoke.sh` (30 PASS). The `pygeoapi_ro` read of the view and the refused `public.habitat_feature` were checked with psql. The T051 smoke script gives the same answers as before except "the pull row has no created_by", which T052 made stale (D-087). The maps were not looked at in a browser: only the map div, its GeoJSON type and the scripts were checked in the page HTML. See D-088.
 
 ### T054 · App habitat feature entry
-[#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) · E07 · P1 · should · labels: `mobile`, `should` · implements F21 · est. 1.5 d · **todo**
+[#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) · E07 · P1 · should · labels: `mobile`, `should` · implements F21 · est. 1.5 d · **done**
+Deferred: Polygon (walk) outdoors is still not tested (T052's deferral; `GeometryCaptureWidget` is unchanged). Other members' habitat features are not visible (T112). Locked-visit pull rejection (trap 3) and discard (trap 4) were checked with a throwaway test, not on the phone (D-089).
 
 Depends on: T052, T053
 From T059 (added 2026-11-02): add a "Habitats" layer to the project map (`lib/features/map/`, D-081) and an "Open" in its popup that goes to the habitat feature's edit form.
@@ -1121,6 +1122,8 @@ All / Plants / Habitat, and this ticket enables its **Add habitat** button.
 From T052 (added 2026-11-03): reuse `GeometryCaptureWidget` and `showGeometryCapture` (`features/resources/`), with `{point, line, polygon}`; line mode was only checked with a temporary change in T052, so recheck it on the phone. The Plants & habitat list (`PlantsHabitatScreen`) shows plant records only: join the habitat features into it (the All / Plants / Habitat chip), and enable its disabled **Add habitat** button. `PhotoParent` has no habitat variant yet; add one if habitat features get photos.
 
 From T053 (added 2026-11-03, D-088): the server side is done. (1) The Drift table must be named `habitat_feature`, the sync entity type. (2) Habitat rows the server sends before the table exists are skipped and the pull cursor moves past them, so the Drift migration must reset the pull cursor (delete the `cursor:%` rows, as T112 describes `from12To13` doing). (3) Push `delete` exists, so a synced record can be removed with a tombstone. (4) Add the type to `sync_error_message.dart` where plants are named. (5) A habitat feature has no photos on the server, so the app has no habitat photo parent. (6) The pull row carries `created_by` (ids, as the plant row does), so the phone can show only its user's rows.
+
+Agreed 2026-11-03 (beyond the text): the edit form has **Delete** (push `delete` exists, D-088), with a confirmation; an unsent create just disappears. The three cover fields start as "Not recorded" with a **Record** button, then show a slider (0-100, step 5) and **Clear**, because 0 % and "not recorded" are different answers and a scroll must never save a false value (D-089). Only the user's own features show (`created_by`); other members' come with T112. The phone test is guided one step at a time. **Not tested outdoors:** Polygon (walk), still deferred from T052; `GeometryCaptureWidget` is unchanged here. Asked for during testing (outside the criteria): the active visit's snackbars name what was saved ("Saved habitat: <type>", "Saved plant: <name>"), with a `titleOf` method on `HabitatRepository` and `PlantRepository`.
 
 ### T055 · Input validation rules (shared by app and server)
 [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) · E08 · P1 · must · labels: `backend`, `mobile`, `must` · implements F30 · est. 2 d · **done**

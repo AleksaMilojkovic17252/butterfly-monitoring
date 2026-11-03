@@ -10,7 +10,9 @@ import 'package:mobile/features/map/domain/map_taxa.dart';
 import 'package:mobile/features/map/ui/map_popups.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
+import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
+import 'package:mobile/features/resources/domain/habitat_names.dart';
 import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/features/resources/domain/plant_taxon_search.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
@@ -22,7 +24,8 @@ import 'package:mobile/features/visits/data/visit_repository.dart';
 
 /// The map of the project map screen (T059): transects, sections, the
 /// observations as clusters, the user's plant records (T052: green markers for
-/// points, filled areas for patches), the route of the visit chosen in the filters and
+/// points, filled areas for patches), the user's habitat features (T054: brown
+/// markers, lines and areas), the route of the visit chosen in the filters and
 /// the OpenStreetMap basemap, each as a layer that can be switched off.
 ///
 /// It is a stateful widget for three things that must survive a rebuild: the
@@ -44,8 +47,9 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   /// Filled by the polyline layer with the lines under the last pointer-down.
   final LayerHitNotifier<Object> _hits = ValueNotifier(null);
 
-  /// The same for the plant patches, which have a layer of their own: a
-  /// polygon layer and a polyline layer cannot share one notifier.
+  /// The same for the plant patches and habitat areas, which share a polygon
+  /// layer of their own: a polygon layer and a polyline layer cannot share one
+  /// notifier, and two polygon layers cannot either.
   final LayerHitNotifier<Object> _polygonHits = ValueNotifier(null);
 
   // Memo of the plant markers and patches, by the same idea as the markers
@@ -54,6 +58,13 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   List<Marker> _plantMarkers = const [];
   Map<String, PlantResourceObservation> _plantsById = const {};
   List<Polygon<Object>> _plantPolygons = const [];
+
+  // Memo of the habitat markers, lines and areas, the same way (T054).
+  List<HabitatFeature>? _habitatsSource;
+  List<Marker> _habitatMarkers = const [];
+  Map<String, HabitatFeature> _habitatsById = const {};
+  List<Polygon<Object>> _habitatPolygons = const [];
+  List<Polyline<Object>> _habitatLines = const [];
 
   // Memo of the markers. The cluster layer builds its whole cluster tree again
   // whenever it gets a different list instance, which is slow with thousands
@@ -165,6 +176,68 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     _plantPolygons = polygons;
   }
 
+  /// The brown markers of the point features, the lines of the line features
+  /// and the areas of the polygon features. Built again only when [habitats]
+  /// is a different list than last time. A shape with too few points for
+  /// flutter_map (a line under 2, a polygon under 3) is left out, because the
+  /// layers assert on it.
+  void _updateHabitats(List<HabitatFeature> habitats) {
+    if (identical(habitats, _habitatsSource)) return;
+    _habitatsSource = habitats;
+    final markers = <Marker>[];
+    final polygons = <Polygon<Object>>[];
+    final lines = <Polyline<Object>>[];
+    _habitatsById = {for (final feature in habitats) feature.id: feature};
+    for (final feature in habitats) {
+      final shape = parseGeometry(feature.geometryGeojson);
+      if (shape == null) continue;
+      switch (shape.type) {
+        case 'Polygon':
+          if (shape.points.length < 3) continue;
+          polygons.add(
+            Polygon<Object>(
+              points: shape.points,
+              color: Colors.brown.withValues(alpha: 0.3),
+              borderColor: Colors.brown.shade800,
+              borderStrokeWidth: 2,
+              hitValue: feature,
+            ),
+          );
+        case 'LineString':
+          if (shape.points.length < 2) continue;
+          lines.add(
+            Polyline<Object>(
+              points: shape.points,
+              strokeWidth: 5,
+              color: Colors.brown.shade600,
+              hitValue: feature,
+            ),
+          );
+        default:
+          markers.add(
+            Marker(
+              // The key is how a tap finds the feature again.
+              key: ValueKey(feature.id),
+              point: shape.points.first,
+              width: 28,
+              height: 28,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.brown.shade600,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Icon(Icons.terrain, size: 16, color: Colors.white),
+              ),
+            ),
+          );
+      }
+    }
+    _habitatMarkers = markers;
+    _habitatPolygons = polygons;
+    _habitatLines = lines;
+  }
+
   /// Parses the transect and section lines again only when the lists changed.
   void _updateLines(List<Transect> transects, List<SectionWithHabitat> all) {
     if (identical(transects, _transectsSource) &&
@@ -219,6 +292,7 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   CameraFit? _computeFit(
     List<ButterflyObservation> observations,
     List<PlantResourceObservation> plants,
+    List<HabitatFeature> habitats,
   ) {
     final points = [
       for (final line in _transectLines) ...line.points,
@@ -226,6 +300,7 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
       for (final o in observations) LatLng(o.lat, o.lon),
       // The centre of a patch is enough for the camera.
       for (final p in plants) LatLng(p.lat, p.lon),
+      for (final h in habitats) LatLng(h.lat, h.lon),
     ];
     if (points.isEmpty) return null;
     return CameraFit.bounds(
@@ -267,6 +342,8 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
           visit: hit,
           transect: transectById(hit.transectId),
         );
+      case HabitatFeature():
+        _onHabitatTap(hit);
     }
   }
 
@@ -278,10 +355,47 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     if (record != null) _onPlantTap(record);
   }
 
-  /// A tap on a plant patch: the topmost patch under the finger gets its popup.
+  /// A tap on a single habitat marker (not a cluster).
+  void _onHabitatMarkerTap(Marker marker) {
+    final key = marker.key;
+    if (key is! ValueKey<String>) return;
+    final feature = _habitatsById[key.value];
+    if (feature != null) _onHabitatTap(feature);
+  }
+
+  /// A tap on a plant patch or habitat area: the topmost one under the finger
+  /// gets its popup.
   void _onPolygonTap() {
     final hit = _polygonHits.value?.hitValues.firstOrNull;
-    if (hit is PlantResourceObservation) _onPlantTap(hit);
+    if (hit is PlantResourceObservation) {
+      _onPlantTap(hit);
+    } else if (hit is HabitatFeature) {
+      _onHabitatTap(hit);
+    }
+  }
+
+  /// A tap on a habitat marker, line or area: its popup, with the names of its
+  /// habitat and management type (read once, deactivated types included).
+  Future<void> _onHabitatTap(HabitatFeature feature) async {
+    final repository = ref.read(habitatRepositoryProvider);
+    final habitatTypes = await repository.watchHabitatTypes().first;
+    final managementTypes = await repository.watchManagementTypes().first;
+    if (!mounted) return;
+    final habitat = habitatTypes
+        .where((t) => t.id == feature.habitatTypeId)
+        .firstOrNull;
+    final managementId = feature.managementTypeId;
+    final management = managementId == null
+        ? null
+        : managementTypes.where((t) => t.id == managementId).firstOrNull;
+    showHabitatPopup(
+      context,
+      record: feature,
+      habitatName: habitat == null ? null : habitatTypeTitle(habitat),
+      managementName: management == null
+          ? null
+          : managementTypeTitle(management),
+    );
   }
 
   /// A tap on a plant marker or patch: its popup, with the primary photo and
@@ -350,7 +464,8 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     final transects = ref.watch(projectTransectsProvider(projectId));
     final sections = ref.watch(projectSectionsProvider(projectId));
     final plants = ref.watch(plantRecordsProvider(projectId));
-    final queries = [observations, transects, sections, plants];
+    final habitats = ref.watch(habitatFeaturesProvider(projectId));
+    final queries = [observations, transects, sections, plants, habitats];
     if (queries.any((q) => !q.hasValue)) {
       // A failed query would otherwise leave the spinner on for ever.
       final failed = queries.where((q) => q.hasError).firstOrNull;
@@ -364,6 +479,7 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     final allSections = sections.requireValue;
     final allObservations = observations.requireValue;
     final allPlants = plants.requireValue;
+    final allHabitats = habitats.requireValue;
 
     // Watched here, which keeps the query alive while the map is open.
     final taxa = ref.watch(projectTaxaProvider(projectId));
@@ -372,7 +488,8 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     // The camera is fitted once, on the first data, to everything unfiltered.
     _updateLines(allTransects, allSections);
     _updatePlants(allPlants);
-    final fit = _fit ??= _computeFit(allObservations, allPlants);
+    _updateHabitats(allHabitats);
+    final fit = _fit ??= _computeFit(allObservations, allPlants, allHabitats);
     if (fit == null) {
       return const Center(
         child: Padding(
@@ -402,6 +519,14 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
           : ref.watch(visitRouteProvider(visit.id)).value ?? const [],
     );
 
+    // The areas of both record types go in one layer with one hit notifier.
+    // Habitats first, so a plant patch inside a habitat area stays on top and
+    // gets the tap.
+    final polygons = [
+      if (layers.contains(MapLayer.habitats)) ..._habitatPolygons,
+      if (layers.contains(MapLayer.plants)) ..._plantPolygons,
+    ];
+
     return FlutterMap(
       options: MapOptions(
         initialCameraFit: fit,
@@ -421,16 +546,16 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'rs.amilojkovic.butterfly',
           ),
-        // The plant patches, below the lines. A tap on a patch finds it through
-        // its own hit notifier; `deferToChild` lets a tap that misses every
-        // patch fall through to whatever is below.
-        if (layers.contains(MapLayer.plants) && _plantPolygons.isNotEmpty)
+        // The plant patches and habitat areas, below the lines. A tap on one
+        // finds it through the shared hit notifier; `deferToChild` lets a tap
+        // that misses every area fall through to whatever is below.
+        if (polygons.isNotEmpty)
           GestureDetector(
             behavior: HitTestBehavior.deferToChild,
             onTap: _onPolygonTap,
             child: PolygonLayer<Object>(
               hitNotifier: _polygonHits,
-              polygons: _plantPolygons,
+              polygons: polygons,
             ),
           ),
         // A tap on the lines. `deferToChild`: the detector only takes the tap
@@ -441,10 +566,12 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
           child: PolylineLayer<Object>(
             hitNotifier: _hits,
             minimumHitbox: 15,
-            // Bottom to top: transects, sections, the route.
+            // Bottom to top: transects, sections, habitat lines, the route. A
+            // hedge along a transect stays tappable above the section.
             polylines: [
               if (layers.contains(MapLayer.transects)) ..._transectLines,
               if (layers.contains(MapLayer.sections)) ..._sectionLines,
+              if (layers.contains(MapLayer.habitats)) ..._habitatLines,
               if (layers.contains(MapLayer.visitRoute) &&
                   visit != null &&
                   routePoints.length >= 2)
@@ -457,6 +584,34 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
             ],
           ),
         ),
+        // Habitat points are clustered the same way, in brown, below the plants.
+        if (layers.contains(MapLayer.habitats) && _habitatMarkers.isNotEmpty)
+          MarkerClusterLayerWidget(
+            options: MarkerClusterLayerOptions(
+              markers: _habitatMarkers,
+              size: const Size(40, 40),
+              maxClusterRadius: 60,
+              maxZoom: 18,
+              centerMarkerOnClick: false,
+              onMarkerTap: _onHabitatMarkerTap,
+              builder: (context, markers) => DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.brown.shade800,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    '${markers.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         // Plant points are clustered like the butterflies: many records on one
         // spot become one numbered green circle, and a tap spreads them out.
         if (layers.contains(MapLayer.plants) && _plantMarkers.isNotEmpty)

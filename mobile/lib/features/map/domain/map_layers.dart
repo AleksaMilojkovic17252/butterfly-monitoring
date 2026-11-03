@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The layers of the project map (T059) that the Layers sheet switches.
-/// Plants came with T052; habitats are added with T054.
+/// Plants came with T052 and habitats with T054.
 enum MapLayer {
   transects('Transects'),
   sections('Sections'),
   observations('Observations'),
   plants('Plants'),
+  habitats('Habitats'),
   visitRoute('Visit route'),
   basemap('Basemap (OpenStreetMap)');
 

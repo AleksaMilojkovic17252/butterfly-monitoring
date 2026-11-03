@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.steps.dart';
 import 'package:mobile/core/db/butterfly_observations.dart';
+import 'package:mobile/core/db/habitat_features.dart';
 import 'package:mobile/core/db/habitat_types.dart';
 import 'package:mobile/core/db/management_types.dart';
 import 'package:mobile/core/db/photos.dart';
@@ -35,6 +36,7 @@ part 'app_database.g.dart';
     ManagementTypes,
     PlantTaxa,
     PlantResourceObservations,
+    HabitatFeatures,
     Photos,
     ProjectProtocols,
     SyncConflicts,
@@ -51,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -156,6 +158,16 @@ class AppDatabase extends _$AppDatabase {
         // no table here, so pull skipped them and moved its cursor past them.
         // Start every pull from the beginning, as from11To12 did. Rows waiting
         // in the queue are not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from13To14: (m, schema) async {
+        await m.createTable(schema.habitatFeature);
+        // Habitat rows the server sent before this version had no table here,
+        // so pull skipped them and moved its cursor past them. Start every pull
+        // from the beginning, as from12To13 did. Rows waiting in the queue are
+        // not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

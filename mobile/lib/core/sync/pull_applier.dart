@@ -46,6 +46,8 @@ class PullApplier {
     'photo': (rows) => _store(_db.photos, rows, _photo),
     'plant_resource_observation': (rows) =>
         _store(_db.plantResourceObservations, rows, _plantResource),
+    'habitat_feature': (rows) =>
+        _store(_db.habitatFeatures, rows, _habitatFeature),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -148,7 +150,7 @@ class PullApplier {
 
   /// For each pulled visit an admin has locked (T042): the local changes never
   /// sent yet (the visit's updates, its track point batches and the changes to
-  /// its observations and plant records) become `rejected`, because the server would refuse them, and the sync screen
+  /// its observations, plant records and habitat features) become `rejected`, because the server would refuse them, and the sync screen
   /// shows them with the lock message. The row is then set `synced`, so the
   /// pending guard lets the server's locked row in and the visit shows as
   /// locked. Changes the server has already rejected keep their message.
@@ -184,9 +186,17 @@ class PullApplier {
           _db.syncQueue.entityType.equals('plant_resource_observation') &
           _db.syncQueue.entityId.isIn([for (final p in plants) p.id]);
 
+      // And its habitat features (T054).
+      final habitats = await (_db.select(
+        _db.habitatFeatures,
+      )..where((t) => t.surveyVisitId.equals(id))).get();
+      final habitatItems =
+          _db.syncQueue.entityType.equals('habitat_feature') &
+          _db.syncQueue.entityId.isIn([for (final h in habitats) h.id]);
+
       await (_db.update(_db.syncQueue)..where(
             (t) =>
-                (visitItems | observationItems | plantItems) &
+                (visitItems | observationItems | plantItems | habitatItems) &
                 t.status.equalsValue(QueueStatus.queued) &
                 t.retryCount.equals(0),
           ))
@@ -624,6 +634,51 @@ class PullApplier {
       eggsPresent: Value(json['eggs_present'] as bool?),
       larvaePresent: Value(json['larvae_present'] as bool?),
       feedingDamagePresent: Value(json['feeding_damage_present'] as bool?),
+      notes: Value(json['notes'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      createdById: Value(json['created_by'] as String?),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// A habitat feature the caller made (T054). The geometry is a GeoJSON
+  /// Point, LineString or Polygon, kept as text. `lat`/`lon` are the point
+  /// itself, or the centre of the line or polygon: the same rule as
+  /// `CapturedGeometry.centroid` (the first point for a Point, otherwise
+  /// `polygonCentroid`), so a line's position does not change after a pull.
+  /// The nullable columns are always written, null included, so a value
+  /// cleared on the server is cleared here too.
+  static HabitatFeaturesCompanion _habitatFeature(_Json json) {
+    final geometry = jsonEncode(json['geometry']);
+    final parsed = parseGeometry(geometry);
+    if (parsed == null || parsed.points.isEmpty) {
+      throw FormatException(
+        'Habitat feature ${json['id']} has no usable geometry',
+      );
+    }
+    final centre = parsed.type == 'Point'
+        ? parsed.points.first
+        : polygonCentroid(parsed.points);
+    return HabitatFeaturesCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      surveyVisitId: Value(json['survey_visit'] as String?),
+      habitatTypeId: json['habitat_type'] as String,
+      managementTypeId: Value(json['management_type'] as String?),
+      observedAt: DateTime.parse(json['observed_at'] as String),
+      geometryGeojson: geometry,
+      lat: centre.latitude,
+      lon: centre.longitude,
+      vegetationHeightCm: Value(json['vegetation_height_cm'] as int?),
+      shrubCoverPct: Value(json['shrub_cover_pct'] as int?),
+      treeCoverPct: Value(json['tree_cover_pct'] as int?),
+      bareGroundPct: Value(json['bare_ground_pct'] as int?),
+      flowerAbundanceClass: Value(json['flower_abundance_class'] as String),
+      grazingIntensity: Value(json['grazing_intensity'] as String),
+      mowingStatus: Value(json['mowing_status'] as String),
+      disturbanceType: Value(json['disturbance_type'] as String),
       notes: Value(json['notes'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       createdById: Value(json['created_by'] as String?),

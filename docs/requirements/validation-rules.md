@@ -81,7 +81,9 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
   `grazing_intensity`, `mowing_status` and `disturbance_type` (each may also be blank). V08 takes a Point, a LineString or a
   Polygon; a Z coordinate, a MultiPolygon, a bow-tie, a line of one point or of two identical points, and a longitude of 500
   are all `{"geometry": ["V08"]}`. A percentage outside 0–100 is a plain field error on that field, not a rule ID (no rule
-  covers it). The app's copy of these rules comes with T054.
+  covers it). The app's copy is `mobile/lib/core/validation/habitat_rules.dart` (T054: `validateHabitatFeature`, V08 for the
+  three shapes with `polygonSelfIntersects`) with the values in `habitat_values.dart`, plus `vegetationHeightProblem` for the height (0 to
+  32767, the server's smallint). The cover slider cannot produce a bad percentage.
 - **W07.** The season is compared by local calendar date (both end days are inside), the daily window by
   local wall-clock minute (both ends are inside). "Local" is the time zone of the study site, which the
   protocol holds as `time_zone` (an IANA name, default `Europe/Belgrade`, set per project in the admin). The

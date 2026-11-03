@@ -14,6 +14,7 @@ import 'package:mobile/features/observations/domain/draft_photo.dart';
 import 'package:mobile/features/observations/domain/photo_parent.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/resources/domain/plant_input.dart';
+import 'package:mobile/features/resources/domain/plant_taxon_search.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
@@ -100,6 +101,21 @@ class PlantRepository {
         (p) => OrderingTerm.desc(p.createdAt),
       ]);
     return query.watch();
+  }
+
+  /// What to call plant record [id] in a "Saved" message: the plant's name, or
+  /// "Unidentified plant". Null when the record is not on this phone.
+  Future<String?> titleOf(String id) async {
+    final record = await (_db.select(
+      _db.plantResourceObservations,
+    )..where((p) => p.id.equals(id))).getSingleOrNull();
+    if (record == null) return null;
+    final taxonId = record.plantTaxonId;
+    if (taxonId == null) return 'Unidentified plant';
+    final plant = await (_db.select(
+      _db.plantTaxa,
+    )..where((t) => t.id.equals(taxonId))).getSingleOrNull();
+    return plant == null ? 'Plant' : plantTitle(plant);
   }
 
   // --- Writes --------------------------------------------------------------

@@ -7,6 +7,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/ui/widgets/quick_butterfly_sheet.dart';
+import 'package:mobile/features/resources/data/habitat_repository.dart';
+import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/ui/widgets/transect_map.dart';
@@ -171,13 +173,20 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     final saved = await context.push<String>(
       '/projects/${widget.visit.projectId}/plants/new?visit=${widget.visit.id}',
     );
-    if (saved != null && mounted) _showMessage('Saved: plant record');
+    if (saved == null || !mounted) return;
+    final title = await ref.read(plantRepositoryProvider).titleOf(saved);
+    if (mounted) _showMessage('Saved plant: ${title ?? 'plant record'}');
   }
 
   Future<void> _addHabitat() async {
     if (!await _confirmIfPaused()) return;
-    // TODO(T054): open the habitat feature entry.
-    _showMessage('Habitat entry is coming in a later version');
+    if (!mounted) return;
+    final saved = await context.push<String>(
+      '/projects/${widget.visit.projectId}/habitats/new?visit=${widget.visit.id}',
+    );
+    if (saved == null || !mounted) return;
+    final title = await ref.read(habitatRepositoryProvider).titleOf(saved);
+    if (mounted) _showMessage('Saved habitat: ${title ?? 'habitat feature'}');
   }
 
   /// Opens the Finish screen (T040). Backing out of it changes nothing.

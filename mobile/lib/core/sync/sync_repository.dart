@@ -133,9 +133,9 @@ class SyncRepository {
   /// (later ones were built on it). Three outcomes:
   /// - `create_batch`: the child rows of every batch of the parent are deleted.
   /// - A create the server never had (`server_version` null): the row is
-  ///   deleted. For a visit its track points, observations and their queued
-  ///   items go too, or they would be pushed for a visit the server never
-  ///   gets (T036, T045).
+  ///   deleted. For a visit its track points, observations, plant records,
+  ///   habitat features and their queued items go too, or they would be pushed
+  ///   for a visit the server never gets (T036, T045, T052, T054).
   /// - Otherwise the row becomes `synced` and the project's pull cursor goes
   ///   back to 0, so the next pull brings the server's version back.
   Future<void> discard(SyncQueueItem item) {
@@ -208,6 +208,20 @@ class SyncRepository {
             _db.plantResourceObservations,
           )..where((t) => t.surveyVisitId.equals(item.entityId))).get();
           await _dropUnsentPlants([for (final p in plants) p.id]);
+          // And its habitat features (T054): no photos or links hang on them.
+          final habitats = await (_db.select(
+            _db.habitatFeatures,
+          )..where((t) => t.surveyVisitId.equals(item.entityId))).get();
+          final habitatItems = _db.syncQueue.delete()
+            ..where(
+              (t) =>
+                  t.entityType.equals('habitat_feature') &
+                  t.entityId.isIn([for (final h in habitats) h.id]),
+            );
+          await habitatItems.go();
+          final habitatRows = _db.habitatFeatures.delete()
+            ..where((t) => t.surveyVisitId.equals(item.entityId));
+          await habitatRows.go();
         }
         if (item.entityType == 'plant_resource_observation') {
           await _dropUnsentPlants([item.entityId]);
