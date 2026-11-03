@@ -15,7 +15,8 @@ Server code: `backend/apps/observations/rules.py`, `backend/apps/surveys/rules.p
 (T051) and habitat features (T053), `backend/apps/resources/rules.py`. The hard rules are called from
 `save_observation`, `save_visit`, `save_plant_resource` and `save_habitat_feature`, so REST, push and admin are all covered. The warning
 functions (`observation_warnings`, `visit_warnings`) are not called by the services: warnings are not stored
-on the server, except W01, which sets `validation_status` on create (`photo_missing`). App code:
+on the server, except W01, which sets `validation_status` on create (`photo_missing`) and again when a recorder changes the taxon or
+confidence of an undecided record (D-091). App code:
 `mobile/lib/core/validation/`.
 
 ## Rules
@@ -65,7 +66,8 @@ on the server, except W01, which sets `validation_status` on create (`photo_miss
   `identification_confidence`. Visit: `status`, `survey_method`, `precipitation`, `cancel_reason` (blank is
   allowed). The app keeps the same lists in `lib/core/validation/observation_values.dart`,
   `lib/core/validation/visit_values.dart`.
-- **W01.** Applied on create only (D-065). Re-checking when a photo arrives belongs to T057.
+- **W01.** Applied on create, and again when a recorder changes the taxon or confidence of a `pending` or `not_required` record (T057, D-091);
+  a decided record is never touched, and a photo arriving changes nothing.
   `photo_count` counts the observation's live photos, uploaded or not (T049), so it is 0 at the create.
 - **W03, W04.** The server reads the link (`host_plant_record_id`, T051): they fire on `oviposition` and on
   `life_stage = larva` only when it is empty. A nectar link does not count. The app does the same since T052:

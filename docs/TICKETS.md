@@ -92,7 +92,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | done |
 | T055 | [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) | Input validation rules (shared by app and server) | P1 | must | T016, T034, T044 | 2 d | done |
 | T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | todo |
-| T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | todo |
+| T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | done |
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | done |
 | T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | done |
 | T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | todo |
@@ -1169,8 +1169,10 @@ Depends on: T036, T048, T055
 - [ ] Admin list filter "Has flag: …" on observations and visits uses the array-contains lookup.
 - [ ] Changing a protocol threshold and recomputing changes the flags (tested).
 
+Note from T057: the validation queue's `FlagFilter` (`apps/validation/admin.py`) lists the three codes `outside_project_area`, `far_from_transect` and `high_count`; the "Has flag" filter here can share them.
+
 ### T057 · Admin validation queue
-[#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) · E08 · P1 · should · labels: `admin`, `should` · implements F32 · est. 2 d · **todo**
+[#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) · E08 · P1 · should · labels: `admin`, `should` · implements F32 · est. 2 d · **done**
 
 Depends on: T014, T049, T058
 
@@ -1185,6 +1187,8 @@ Depends on: T014, T049, T058
 
 From T046: the app can now change confidence and species after the create, but `validation_status` is set on create only (D-065). Re-evaluate it here.
 From T058: call `validation.services.record_decision` before changing the observation (it reads the previous status and taxon from it), and keep the Validation section read-only for `ValidationEvent` (D-090). Do the event and the observation's change in one `transaction.atomic()`, with the observation loaded by `select_for_update()`, so a failed save leaves no event and the previous values are the stored ones.
+
+Notes (D-091): checked by hand with `tmp/t057/smoke.py` (110 checks; a push at an older `base_version` after a decision comes back `merged`, the decision survives). Also added: stale decisions are refused under the lock and a project the user cannot see is refused (`decide`). No test or CI criteria were skipped, the ticket has none. The queue is narrower than the ticket's wording: a decided record leaves it, because a flag never clears and the queue could not otherwise empty. Beyond the criteria, at the developer's request: a **Send back to queue** action on the observation list, and decision buttons (Confirm, Mark unconfirmed, Mark undeterminable, Change taxon) on the record's page. D-065's and D-082's note that the status is not recomputed is closed here: a real change of taxon or confidence on an undecided record re-evaluates it.
 
 ### T058 · Validation history
 [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) · E08 · P1 · should · labels: `backend`, `database`, `should` · implements F33 · est. 1 d · **done**

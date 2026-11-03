@@ -1,9 +1,12 @@
 import re
 
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.gis.admin import GISModelAdmin
+from django.contrib.gis.forms.widgets import OpenLayersWidget
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -180,3 +183,35 @@ class MapAdmin(GISModelAdmin):
                     widget.attrs["default_lon"], widget.attrs["default_lat"] = center
                     widget.attrs["default_zoom"] = self.area_zoom
         return form
+
+
+class ReadOnlyMapMixin:
+    """Adds `location_map` for a model admin: a read-only map of the record's `geometry`
+    (T052). Put it first in the bases and list `location_map` in the fields. A page without
+    change permission shows plain text for the form's own map widget, so this draws the geometry
+    with `readonly_map.js` instead."""
+
+    location_map_height = "380px"
+
+    @property
+    def media(self):
+        # OpenLayers as Django's GIS widgets load it, plus the script that draws the geometry.
+        return (
+            super().media
+            + forms.Media(css=OpenLayersWidget.Media.css, js=OpenLayersWidget.Media.js[:1])
+            + forms.Media(js=["core/readonly_map.js"])
+        )
+
+    @admin.display(description=_("Map"))
+    def location_map(self, record):
+        """The geometry on a map. `format_html` escapes the GeoJSON in the attribute. The width
+        is not a percentage: the admin puts read-only values in a flex box, where a percentage
+        collapses to 0 and the map draws nothing."""
+        if record.geometry is None:
+            return "-"
+        return format_html(
+            '<div class="readonly-geometry-map" data-geojson="{}" '
+            'style="width: clamp(320px, calc(100vw - 640px), 720px); height: {};"></div>',
+            record.geometry.geojson,
+            self.location_map_height,
+        )

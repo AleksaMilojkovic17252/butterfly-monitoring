@@ -1,28 +1,16 @@
-from django import forms
 from django.contrib import admin
-from django.contrib.gis.forms.widgets import OpenLayersWidget
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
+from apps.core.admin import HistoryAdmin, MapAdmin, ReadOnlyMapMixin, SyncableAdmin
 from apps.observations.admin import PhotoInline
 from apps.resources.models import HabitatFeature, PlantResourceObservation
 
 
-class ReadOnlyGeometryAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
+class ReadOnlyGeometryAdmin(ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
     """Base for a record that is made on the phone and pushed through the API, so the admin only
     shows it (T051, T053): no add, no change, no actions. A read-only map shows its geometry (the
     form's own map widget is for editing, and a page without change permission shows plain text
     instead)."""
-
-    @property
-    def media(self):
-        # OpenLayers as Django's GIS widgets load it, plus the script that draws the geometry.
-        return (
-            super().media
-            + forms.Media(css=OpenLayersWidget.Media.css, js=OpenLayersWidget.Media.js[:1])
-            + forms.Media(js=["core/readonly_map.js"])
-        )
 
     def get_fields(self, request, obj=None):
         fields = [field.name for field in self.model._meta.fields]
@@ -32,19 +20,6 @@ class ReadOnlyGeometryAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         return [*self.get_fields(request, obj)]
-
-    @admin.display(description=_("Map"))
-    def location_map(self, record):
-        """The geometry on a map. `format_html` escapes the GeoJSON in the attribute. The width
-        is not a percentage: the admin puts read-only values in a flex box, where a percentage
-        collapses to 0 and the map draws nothing."""
-        if record.geometry is None:
-            return "-"
-        return format_html(
-            '<div class="readonly-geometry-map" data-geojson="{}" '
-            'style="width: clamp(320px, calc(100vw - 640px), 720px); height: 380px;"></div>',
-            record.geometry.geojson,
-        )
 
     def has_add_permission(self, request):
         return False

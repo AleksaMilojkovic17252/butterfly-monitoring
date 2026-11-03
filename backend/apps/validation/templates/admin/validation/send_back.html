@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Send decided observations back to the validation queue. Each one becomes pending again, its
+  validator, time, comment and validated taxon are cleared, and a "reset" event is added to its
+  validation history. Observations that were not decided are skipped.</p>
+<ul>
+  {% for observation in observations %}
+  <li>{{ observation }} ({{ observation.get_validation_status_display }}){% if observation.validation_status not in decided_statuses %} (skipped){% endif %}</li>
+  {% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="send_back_to_queue">
+  {% for observation in observations %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ observation.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Send back">
+  <a href="{% url 'admin:observations_butterflyobservation_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

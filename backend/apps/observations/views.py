@@ -82,7 +82,8 @@ class ButterflyObservationDetail(APIView):
         request=ButterflyObservationSyncSerializer, responses=ButterflyObservationSerializer
     )
     def patch(self, request, observation_id):
-        """Change some fields. The validation status is not recomputed."""
+        """Change some fields. A new taxon or confidence works the validation status out again for
+        an undecided record (D-091)."""
         with transaction.atomic():
             observation = _observation_or_404(request.user, observation_id)
             services.update_observation(request.user, observation, _json_object(request))

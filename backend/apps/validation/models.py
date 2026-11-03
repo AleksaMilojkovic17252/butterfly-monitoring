@@ -3,6 +3,8 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from apps.observations.models import ButterflyObservation
+
 
 class Decision(models.TextChoices):
     CONFIRMED = "confirmed"
@@ -84,3 +86,13 @@ class ValidationEvent(models.Model):
 
     def __str__(self):
         return f"{self.decision} ({self.previous_status} -> {self.new_status})"
+
+
+class ValidationQueueItem(ButterflyObservation):
+    """An observation as the validation queue shows it (T057). Admin only: never save one of
+    these, a proxy save writes no history row. `validation.services` loads the real model."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "validation queue item"
+        verbose_name_plural = "validation queue"

@@ -40,7 +40,8 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - `apps/core/` has the shared pieces: `models.SyncableModel` (with `soft_delete()`),
   `migration_ops` (`CreateView`, `AttachSyncTrigger`, `HistoryVersionIndex`), `history.save_with_reason`, the error
   handler in `exceptions.py`, `geo_files.open_datasource` (reading uploaded GeoJSON/KML/GPX), the admin site, and the admin map widgets in `widgets.py`
-  (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045). A read-only page shows a geometry with `readonly_map.js` (a `div.readonly-geometry-map` with `data-geojson`, T052).
+  (`EditableMapWidget`, `LineMapWidget`; `setReference()` in `editable_map.js` draws a guide line, D-045). A read-only page shows a geometry with `readonly_map.js` (a `div.readonly-geometry-map` with `data-geojson`, T052); `ReadOnlyMapMixin` adds it
+  as `location_map` to a model admin.
 - Input rules V01-V09 / W01-W07 (T055, docs/requirements/validation-rules.md) are pure functions in
   `apps/observations/rules.py` and `apps/surveys/rules.py`; `save_observation` and `save_visit` call the hard rules (the warning
   functions are not called by the services),
@@ -57,9 +58,11 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the
   CSV/GeoJSON/JSON streams, `service.py` is the single implementation (`export`, `bundle`) that the API views and T065's admin
   actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields.
-- `apps/validation/` (T058, D-090) holds `ValidationEvent`, an append-only record of each validation decision. Only
-  `services.record_decision` creates events (call it before changing the observation); the read-only `ValidationEventInline` on the observation
-  admin and the `validation_history` export read them.
+- `apps/validation/` (T058, D-090; T057, D-091) holds `ValidationEvent`, an append-only record of each validation decision, and the proxy
+  `ValidationQueueItem` (the admin queue). Only `services.record_decision` creates events, and `services.decide` is the one way to apply a
+  decision (it calls `record_decision` before changing the observation). **Never save a `ValidationQueueItem`**: a proxy save writes no history row, so
+  `decide` loads `ButterflyObservation`. The read-only `ValidationEventInline` (in `inlines.py`) on the observation admin and the
+  `validation_history` export read the events.
 - `apps/accounts/` has `OgcVerifyView` (`/api/v1/auth/verify`, T069, D-080): nginx `auth_request` calls it for `/ogc`, and
   `authentication.py` adds Basic auth with its own failed-login counter. Personal tokens (`rest_framework.authtoken`) are accepted there only.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all

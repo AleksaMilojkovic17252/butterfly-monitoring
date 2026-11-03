@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block extrahead %}{{ block.super }}{{ form.media }}{% endblock %}
+{% block content %}
+<p>Set the validated taxon. Each selected record is confirmed with the chosen taxon. The taxon the
+  recorder entered stays as entered; the choice goes into <em>validated taxon</em> and the
+  validation history.</p>
+<ul>
+  {% for observation in observations %}<li>{{ observation }} ({{ observation.recorded_by }})</li>{% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="change_taxon">
+  {% for observation in observations %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ observation.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Change taxon">
+  <a href="{% url 'admin:validation_validationqueueitem_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

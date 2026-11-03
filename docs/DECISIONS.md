@@ -1925,3 +1925,39 @@ soft-deleted observation leave the export, like snapshots (`observations_for` is
 `ValidationEventInline` (its `has_add/change/delete_permission` return `False`) and that no `ModelAdmin` is registered; T057 adds the Validation
 section and must keep it read-only. Shown with `admin@demo` (staff, not superuser). The inline needs `validation.view_validationevent`, which the
 same `migrate` grants. An observation of a locked visit shows its history too.
+
+## D-091 · Validation queue (T057): decided records leave it, re-evaluation for undecided records only, a proxy that is never saved
+2026-11-03 · accepted · T057, *closes the re-evaluation notes of D-065 and D-082; builds on D-085 and D-090*
+**The queue** is `ValidationQueueItem`, a proxy of `ButterflyObservation` under **Validation**: not deleted, in a project the user sees, and
+`validation_status = pending`, or flagged and still `not_required` (`validation.services.queue_filter`). This is narrower than the ticket's "or any
+flag": a flag never clears, so a decided record would stay in the queue and it could never empty. A confirmed, unconfirmed or undeterminable record
+leaves it; the observation list still finds it by its Validation status.
+**Decisions** go through `validation.services.decide(observation_id, decision, user, new_taxon, comment)`: one `transaction.atomic()`, the row loaded
+`select_for_update()`, its visit locked and `ensure_unlocked` (a locked visit is `VisitLocked`, nothing is written), `record_decision` first, then the
+fields, then `save_with_reason(..., "validation: <decision>")`. It saves with `save_with_reason`, not `save_observation`: it changes server-owned
+fields only, so V03 or V04 must not refuse it for reasons that have nothing to do with the decision.
+- **Stale decisions are refused under the lock.** `decide` checks, after locking the row, that it still waits for a validator (`queue_filter`), or for a reset that it is
+  decided (`DECIDED_STATUSES`), else raises `StaleDecision` (409, named in the admin's "Not changed" message). Two validators, or a double click, cannot both decide a record.
+- **Project scope is checked in `decide`.** A user who cannot see the record's project (`projects_for`) gets `PermissionDenied`, so every entry point agrees with the queue; the Send back action also lists only records of the user's projects.
+- **Change taxon sets `confirmed`.** `ValidationStatus` has no separate value, and the validator has determined the species.
+- **`validated_taxon` follows the latest decision:** the new taxon for `changed_taxon`, null for every other decision. The event keeps the old one in
+  `previous_taxon`.
+- **Bulk Confirm, Unconfirmed and Undeterminable save an empty comment.** The comment box is on the record's page.
+- **The thumbnail** is the primary uploaded photo, else the oldest uploaded one, else `-`.
+**Re-evaluation (`observations.services.reevaluate_validation_status`).** A real change of `taxon` or `identification_confidence` on a record whose
+status is `pending` or `not_required` works the status out again with `initial_validation_status`; REST, push (conflict resolution included) and the
+admin form all reach it. A decided record is never touched, a payload that repeats the stored values counts as no change, and a photo arriving
+changes nothing, because an expert still has to look at it. A record a validator has touched (it has any `validation_events`) never drops back to
+`not_required`, or a phone edit could silently undo **Send back to queue**.
+**Beyond the ticket's criteria (the developer asked):** the **Send back to queue** action on the observation list (required comment, `pending`,
+`validated_*` cleared, a `reset` event), and the decision buttons on the record's page (Confirm, Mark unconfirmed, Mark undeterminable with an optional
+comment, and Change taxon), hidden for a locked visit. The buttons post to `<pk>/decide/`, which accepts those three decisions only.
+**The proxy is never saved.** Django sends `post_save` with the proxy as sender, so a proxy save writes **no history row** (and the sync conflict check
+reads past states from history). `decide` always loads `ButterflyObservation`. The admin is a plain `ModelAdmin`: `HistoryAdmin` raises
+`NotHistoricalModelError` on a proxy, and the soft delete and Deleted filter of `SyncableAdmin` have no place in the queue. `has_change_permission` is
+true without an object (the actions need it) and false with one (the page is view-only). `ValidationEvent` stays without a `ModelAdmin` (D-090);
+`ValidationEventInline` moved to `validation/inlines.py` to avoid an import cycle, and the map of the read-only plant and habitat pages is now
+`core.admin.ReadOnlyMapMixin`.
+**Not handled.** A confirmed record can later show a recorder's species the validator never saw: the recorder's edit changes `taxon`, the decision
+stays. The autocomplete lists retired taxa (it searches through `TaxonAdmin`); the form refuses them with "Select a valid choice". A photo that arrives
+does not change a `photo_required` taxon's status (`initial_validation_status` counts 0 photos).

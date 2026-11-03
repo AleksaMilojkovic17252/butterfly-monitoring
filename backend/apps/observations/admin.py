@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin, messages
 from django.db import transaction
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -14,9 +15,17 @@ from apps.core.admin import (
     add_validation_errors,
 )
 from apps.observations import services
-from apps.observations.models import Behaviour, ButterflyObservation, Photo, UploadStatus
+from apps.observations.models import (
+    Behaviour,
+    ButterflyObservation,
+    Photo,
+    UploadStatus,
+)
+from apps.projects.services import projects_for
 from apps.surveys.state import VisitLocked
-from apps.validation.admin import ValidationEventInline
+from apps.validation.inlines import ValidationEventInline
+from apps.validation.models import Decision
+from apps.validation.services import DECIDED_STATUSES, decide
 
 
 def _explain_rule(observation, field, rule_id):
@@ -63,6 +72,14 @@ def _refusal_text(observation, error):
     return " ".join(sentences)
 
 
+class SendBackForm(forms.Form):
+    comment = forms.CharField(
+        label=_("Comment"),
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Why the record goes back to the queue. It is kept in the validation history."),
+    )
+
+
 class ButterflyObservationAdminForm(forms.ModelForm):
     """Runs the service's checks for an admin edit (`services.check_admin_edit`), so a locked
     visit, or a section, taxon or recorder that does not fit, shows as a form error."""
@@ -87,15 +104,16 @@ class ButterflyObservationAdminForm(forms.ModelForm):
         return cleaned_data
 
 
-def _thumbnail_link(photo):
+def _thumbnail_link(photo, max_width=400):
     """The thumbnail of an uploaded photo, linking to the original. Both load through the API
     views, which accept the admin's session login."""
     if photo.upload_status != UploadStatus.UPLOADED:
         return "-"
     return format_html(
-        '<a href="{}"><img src="{}" style="max-width:400px"></a>',
+        '<a href="{}"><img src="{}" class="photo-thumbnail" style="max-width:{}px"></a>',
         reverse("photo-content", args=[photo.pk]),
         reverse("photo-thumbnail", args=[photo.pk]),
+        max_width,
     )
 
 
@@ -170,12 +188,13 @@ class PhotoAdmin(HistoryAdmin, SyncableAdmin):
 class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     """Observations are recorded on the phone. An admin may correct one of an unlocked visit
     (saved through `services.admin_save_observation`, T044). The validation fields are read-only
-    until T057, and an observation of a locked visit opens read-only (T042)."""
+    here: decisions go through the validation queue (T057), and **Send back to queue** undoes
+    one. An observation of a locked visit opens read-only (T042)."""
 
     form = ButterflyObservationAdminForm
     inlines = [PhotoInline, ValidationEventInline]
     # Never edited in the admin: the project and visit cannot change (T044), the validation fields
-    # and flags belong to T055-T057.
+    # change only through the validation queue (T057) and the flags are the server's (T056).
     fixed_fields = [
         "id",
         "project",
@@ -205,7 +224,7 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
     raw_id_fields = ["taxon", "transect_section", "host_plant_record", "nectar_plant_record"]
-    actions = [*SyncableAdmin.actions, "reassign_sections"]
+    actions = [*SyncableAdmin.actions, "reassign_sections", "send_back_to_queue"]
 
     def get_fields(self, request, obj=None):
         # Model order, editable or not; photo_count is computed, so it is added by name.
@@ -268,6 +287,61 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
                 _("Not changed: %(observations)s") % {"observations": "; ".join(refused)},
                 messages.ERROR,
             )
+
+    @admin.action(description=_("Send back to queue…"), permissions=["change"])
+    def send_back_to_queue(self, request, queryset):
+        """Put decided observations back to `pending` with a required comment (T057, D-091). The
+        validated fields are cleared and a `reset` event is written; undecided ones are skipped.
+        Each runs on its own, so a refused one (a locked visit) is named, not fatal to the rest."""
+        observations = list(
+            queryset.filter(
+                deleted_at__isnull=True, project__in=projects_for(request.user)
+            ).select_related("taxon", "project")
+        )
+        if not observations:
+            self.message_user(request, _("Select at least one observation."), messages.ERROR)
+            return None
+        form = SendBackForm(request.POST if "apply" in request.POST else None)
+        if "apply" in request.POST and form.is_valid():
+            sent = skipped = 0
+            refused = []
+            for observation in observations:
+                if observation.validation_status not in DECIDED_STATUSES:
+                    skipped += 1
+                    continue
+                try:
+                    decide(
+                        observation.pk,
+                        Decision.RESET,
+                        request.user,
+                        comment=form.cleaned_data["comment"],
+                    )
+                except APIException as error:
+                    refused.append(f"{observation} ({_refusal_text(observation, error)})")
+                    continue
+                sent += 1
+            self.message_user(
+                request,
+                _("Sent back %(sent)d, skipped %(skipped)d (not decided).")
+                % {"sent": sent, "skipped": skipped},
+            )
+            if refused:
+                self.message_user(
+                    request,
+                    _("Not changed: %(observations)s") % {"observations": "; ".join(refused)},
+                    messages.ERROR,
+                )
+            return None
+        context = {
+            **self.admin_site.each_context(request),
+            "title": _("Send back to the validation queue"),
+            "opts": self.model._meta,
+            "observations": observations,
+            "decided_statuses": DECIDED_STATUSES,
+            "form": form,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        return TemplateResponse(request, "admin/validation/send_back.html", context)
 
     def has_add_permission(self, request):
         return False

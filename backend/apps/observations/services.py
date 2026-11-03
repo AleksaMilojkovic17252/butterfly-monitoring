@@ -98,13 +98,33 @@ def photo_count(observation):
 def initial_validation_status(confidence, taxon):
     """`pending` when the record needs an expert's look, `not_required` otherwise (outline 8.8).
 
-    Used on create only. A new observation has no photo yet (photos arrive after it, T049), so a
-    taxon that requires one is always pending (W01); a photo that arrives later does not change
-    it (re-evaluation is T057).
+    Worked out on create, and again by `reevaluate_validation_status` when a recorder changes the
+    taxon or confidence of an undecided record. A new observation has no photo yet (photos arrive
+    after it, T049), so a taxon that requires one is always pending (W01); a photo that arrives
+    later does not change it, because an expert still has to look at it (D-091).
     """
     if confidence in PENDING_CONFIDENCES or rules.photo_missing(taxon.photo_required, 0):
         return ValidationStatus.PENDING
     return ValidationStatus.NOT_REQUIRED
+
+
+def reevaluate_validation_status(observation, changed_fields):
+    """A recorder's edit of the taxon or confidence of an undecided record (T057, D-091). A
+    decided record is left alone, and so is one a validator sent back (it stays pending).
+
+    Sets `validation_status` on the unsaved `observation`; the caller's `save_observation`
+    saves it."""
+    if not {"taxon", "identification_confidence"} & set(changed_fields):
+        return
+    if observation.validation_status not in (
+        ValidationStatus.PENDING,
+        ValidationStatus.NOT_REQUIRED,
+    ):
+        return
+    status = initial_validation_status(observation.identification_confidence, observation.taxon)
+    if status == ValidationStatus.NOT_REQUIRED and observation.validation_events.exists():
+        return  # a validator has touched it: it never drops back to not_required
+    observation.validation_status = status
 
 
 def build_new_observation(user, observation_id, data):
@@ -128,8 +148,9 @@ def build_new_observation(user, observation_id, data):
 
 
 def apply_observation_changes(user, observation, data):
-    """Apply an update payload to `observation` (unsaved). Only the keys in `data` change. The
-    validation status is not worked out again (T055 and T057 own it)."""
+    """Apply an update payload to `observation` (unsaved). Only the keys in `data` change. A real
+    change of the taxon or confidence works the validation status out again for an undecided
+    record (`reevaluate_validation_status`, D-091)."""
     _lock_visit(observation)
     if not is_admin(user) and not is_member(user, observation.project_id):
         raise exceptions.PermissionDenied("You are not a member of this observation's project.")
@@ -143,8 +164,17 @@ def apply_observation_changes(user, observation, data):
             if getattr(new_value, "pk", None) != getattr(observation, f"{field_name}_id"):
                 raise exceptions.ValidationError({field_name: ["Cannot be changed."]})
     old_links = {name: getattr(observation, f"{name}_id") for name in PLANT_LINK_FIELDS}
+    old_taxon_id = observation.taxon_id
+    old_confidence = observation.identification_confidence
     for field_name, value in changes.items():
         setattr(observation, field_name, value)
+    # Only a value that really changed counts: a full payload that repeats one changes nothing.
+    changed = []
+    if observation.taxon_id != old_taxon_id:
+        changed.append("taxon")
+    if observation.identification_confidence != old_confidence:
+        changed.append("identification_confidence")
+    reevaluate_validation_status(observation, changed)
     if {"transect_section", "taxon"} & changes.keys():
         _check_context(user, observation)
     if "recorded_by" in changes:
@@ -261,6 +291,7 @@ def check_admin_edit(admin_user, observation, changed_fields):
 
 def admin_save_observation(observation, admin_user, reason, changed_fields):
     check_admin_edit(admin_user, observation, changed_fields)
+    reevaluate_validation_status(observation, changed_fields)
     return save_observation(observation, admin_user, reason or "admin edit")
 
 
