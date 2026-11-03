@@ -146,8 +146,8 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | done |
 | T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | todo |
-| T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 1.5 d | todo |
-| T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants and habitat features | P1 | could | T051, T052, T053 | 1.5 d | todo |
+| T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | todo |
+| T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants and habitat features | P1 | could | T051, T052, T053, T054 | 3 d | todo |
 
 ## Acceptance criteria
 
@@ -1091,7 +1091,7 @@ Agreed 2026-11-03 (beyond the text): during a visit Polygon (walk) uses the trac
 [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) · E07 · P1 · should · labels: `backend`, `database`, `sync`, `should`, `p2-compat` · implements F21 · est. 1.5 d · **todo**
 
 Depends on: T020, T026
-From T064: add the `habitat_features` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`).
+From T064: add the `habitat_features` export dataset (`apps/exports/datasets.py`, remove it from `DEFERRED`, and add it to `BUNDLE_DATASETS` so the project ZIP includes it).
 From T068: add the `habitat-features` collection to `pygeoapi/config/pygeoapi-config.yml` (same pattern, `title_field: habitat_type_name_en`) and to `scripts/ogc-smoke.sh`. Run `migrate` before restarting pygeoapi: it does not start if a configured view is missing.
 From T067: add `geo.habitat_features` with `CreateView` in a `resources` migration (columns in TICKET_DETAILS T067; also hide rows of soft-deleted projects, D-078; the table keeps GeoDjango's GiST index on `geometry` and the view exposes that column unchanged), and its pygeoapi collection if T068 is done.
 
@@ -1184,7 +1184,7 @@ Depends on: T044
 
 - [ ] The `ValidationEvent` model is written only by validation services (T057).
 - [ ] A read-only inline on the observation admin, newest first.
-- [ ] Included in exports as `validation_history.csv` (T064): add the dataset in `apps/exports/datasets.py` and remove it from `DEFERRED`.
+- [ ] Included in exports as `validation_history.csv` (T064): add the dataset in `apps/exports/datasets.py`, remove it from `DEFERRED` and add it to `BUNDLE_DATASETS`, so the project ZIP includes it.
 
 ### T059 · App map screen with layers and filters
 [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) · E09 · P1 · must · labels: `mobile`, `must` · implements F34 · est. 2.5 d · **done**
@@ -2114,58 +2114,69 @@ Out of scope: reopening a visit (`completed` back to `in_progress`); free observ
 time, position or section of an existing observation (T046 left them out); Django admin add; tests (D-021).
 
 ### T111 · Admin adds and edits plant records on a map
-[#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `could` · est. 1.5 d · **todo**
+[#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `admin`, `could` · implements F20 (admin side) · est. 2 d · **todo**
 
 Depends on: T051, T052
-Notes: draft; the GitHub issue is not created yet. All open questions are settled (decisions 1-8 below).
+Notes: All decisions settled (1-5 below).
 
-Why: the plant record page in Django admin is read-only (T051, D-086, with a read-only map added in T052). An admin who sees a wrong species, a wrong relation or a misplaced point cannot correct it, while a butterfly observation of an unlocked visit can be corrected (T044, T042). The researcher's phone is not always at hand, and a patch drawn badly in the field is easier to fix on a large map at a desk. An admin should also be able to **record a plant without a phone** (a plant seen on a paper form, or a record made from a photo).
+Why: The plant record page in Django admin is read-only (T051, D-086; T052 added a read-only map). An admin who sees a wrong species, a wrong relation or a misplaced point cannot correct it, while a butterfly observation of an unlocked visit can be corrected (T044, T042). A patch drawn badly in the field is easier to fix on a large map at a desk, and the researcher's phone is not always at hand. An admin should also be able to record a plant without a phone (from a paper form or a photo).
+
+This follows D-003 (admin-only operations live in Django admin). It differs from butterfly observations, which have no add in admin (D-065): whether they should get one is T110's open question 4, not this ticket.
 
 Decisions (2026-11-03):
-1. **A change of relation is refused when it breaks a link.** If butterfly observations link to the record as host or nectar plant and the new `resource_type` no longer fits that role (D-086: host takes `larval_host`, `oviposition_plant`, `unknown_association`; nectar takes `nectar_source`, `unknown_association`), the save is refused with a form error that names the observations (their date and species) and says to change them first.
-2. **A soft delete is refused while a live observation links the record,** as the phone does (D-087). The Soft delete and Restore actions are switched on for this page. Like Reassign sections (T048), each record is saved on its own and a refused one is named in the message, so the rest still go through.
-3. **The admin can add a plant record without a phone.** See the add criteria below.
-4. **The shape can change between point and polygon on the map.** Django's own map widget for a generic geometry field already has the choice built in: three buttons on the map (Point, Line, Polygon), one active at a time, and a new shape replaces the old one (`OLMapWidget.js`, `GeometryTypeControl`). Use it. The Line button is hidden, since a line is refused (V08). Beside the map a read-only note says what is stored now ("Polygon, 4064.1 m²") and a help line says that changing the type empties the area, which the server then works out again. A point-only edit keeps an area the admin set (D-086: a moved point keeps it), and an optional raw GeoJSON box (`display_raw`) lets the admin type exact coordinates.
+1. **A change of relation is refused when it breaks a link.** If live butterfly observations link to the record and the new `resource_type` no longer fits the role (D-086, `PLANT_LINK_ROLES`), the save is refused. The form error names up to five observations (date and species), then "and N more", and says to change them first. **Admin only:** phone, push and REST keep D-086's "no re-check", and a later ticket can change that.
+2. **A soft delete is refused while a live observation links the record,** as the phone does (D-087). Also admin only: `push_delete` does not check this.
+3. **A record is added only for a member of the chosen project** (`created_by`), so it reaches that member's phone on the next pull.
+4. **On add, a visit is checked on the server.** It must be in the chosen project and created by the chosen researcher (the rule the phone's pull uses). A form error refuses anything else; no script filters the list.
 5. **`observed_at` is editable,** as for butterfly observations.
 
-- [ ] **Editable fields:** `plant_taxon` (the plant, or empty for an unidentified one), `resource_type`, `observed_at`, `abundance_class`, `phenology_stage`, `flowering_intensity`, `eggs_present`, `larvae_present`, `feeding_damage_present`, `notes` and `geometry`. Read-only on an existing record: `id`, `project`, `survey_visit` (neither can change, D-086), `created_by`, `patch_area_m2` (the server works it out), `deleted_at` and the sync bookkeeping fields.
-- [ ] **Add:** the page has an Add button. The form asks for the **project**, the **researcher** it is recorded for (`created_by`: a member of that project, so the record reaches their phone on the next pull, since a phone only pulls its own records), an optional **visit** (it must belong to the project, and to that researcher), `observed_at` (default: now), the relation, the plant (or notes for an unidentified one) and the shape. The id is generated by the server (`uuid4`, the model default). Saved through `resources.services` with the history reason "admin add". A locked visit refuses a new record on it.
-- [ ] **Map:** `geometry` is edited on the map with the three type buttons of decision 4, as the butterfly observation's point is (`MapAdmin`). The shape is a point or a polygon and nothing else. The read-only map of T052 (`readonly_map.js`) stays for a locked visit.
-- [ ] **One save path:** a new `resources.services.admin_save_plant_resource` (like `observations.services.admin_save_observation`), for add and change, so admin, REST and push share the rules: a locked visit refuses (`visit_locked`, shown as a form error, the page opens read-only as in T042), V02, V07 and V08, the "unidentified plant needs notes" rule, decision 1's link check, and `patch_area_m2` emptied and worked out again when the shape changes (`save_plant_resource`). The save has a change reason (the box of `HistoryAdmin`, default "admin edit"), so History shows who changed what.
-- [ ] **Rule messages in the form:** a refused save shows the rule's sentence on the field (the helper the observation admin uses, `_explain_rule`), not a bare ID.
-- [ ] **Effect on phones, shown by hand:** (a) change the species in admin, Sync now on the phone, the record shows the new name; (b) the phone has an unsynced edit of **another** field, and then syncs: `merged`; (c) the phone has an unsynced edit of the **same** field: `conflict` (D-049), listed on the Sync screen and in admin's Sync conflicts; (d) a point changed to a polygon in admin gets its area from the server and the phone pulls it; (e) a record added in admin for a researcher appears on that researcher's phone after a sync, and not on another user's.
-- [ ] **Permissions:** the Admin group has the add and change permissions for the model on the same `migrate` (T109, D-085).
-- [ ] The photos inline stays read-only. No new dependency and no migration. Docs: `backend/CLAUDE.md` (the admin line) and a decision entry.
+- [ ] **Editable fields:** `plant_taxon` (empty for an unidentified plant), `resource_type`, `observed_at`, `abundance_class`, `phenology_stage`, `flowering_intensity`, `eggs_present`, `larvae_present`, `feeding_damage_present`, `notes`, `geometry`. Read-only on an existing record: `id`, `project`, `survey_visit` (D-086), `created_by`, `patch_area_m2`, `deleted_at` and the sync fields.
+- [ ] **Add:** the page has an Add button. The form asks for the project, the researcher (`created_by`), an optional visit (`raw_id_fields`, as the observation admin does), `observed_at` (default now), the relation, the plant (or notes) and the shape. `patch_area_m2` is not on the form. The id is the model default (`uuid4`). The history reason is "admin add" (the reason dialog only shows on a change). A locked visit refuses a new record on it.
+- [ ] **Map:** `geometry` uses Django's generic map widget (`MapAdmin`) with the Line button hidden by CSS (`.type-LineString`), since V08 refuses a line. An existing shape can be reshaped or moved straight away. To change type, the admin clicks **Delete all Features**, picks Point or Polygon and draws: the widget hides the type buttons while a shape exists. A help line says so. A read-only note gives what is stored now ("Polygon, 4064.1 m²").
+- [ ] **Exact coordinates:** an optional form field takes GeoJSON in longitude and latitude (WGS 84). When filled, it replaces the map's shape. Django's `display_raw` box is not used: it holds Web Mercator metres, and typed `[20.45, 44.81]` was saved near 0°, 0° with no error.
+- [ ] **An untouched map changes nothing:** when `geometry` is not in `form.changed_data`, the stored value is kept exactly. The widget's round trip through Web Mercator moves a coordinate slightly (`20.457312` came back as `20.457311999999998`), and `has_changed` hides that.
+- [ ] **One save path:** a new `resources.services.admin_save_plant_resource` (like `observations.services.admin_save_observation`) for add and change. It refuses a locked visit (form error) and applies V02, V07, V08, decision 1 and "an unidentified plant needs notes". That last rule is in the serializer today, which an admin form does not pass through, so it moves to a function that both call. The rule that empties the area on a shape change moves out of `apply_plant_resource_changes` in the same way: `save_plant_resource` only fills an empty area. The change reason comes from `HistoryAdmin`'s dialog, default "admin edit".
+- [ ] **Soft delete and Restore:** the two actions are switched on for this page, and this page overrides them. Each record is handled on its own and a refused one is named in the message (as Reassign sections does, T048). Both refuse a locked visit, and Soft delete applies decision 2. The shared `SyncableAdmin` actions check neither.
+- [ ] **Read-only pages:** a record of a locked visit (T042) or a soft-deleted record opens read-only, with T052's read-only map. `location_map` is only on these pages.
+- [ ] **Rule messages:** a refused save shows a sentence on the field, through `core.admin.add_validation_errors` and an explain function for plant rules (the observation admin's `_explain_rule` reads `ButterflyObservation`, and its V08 text only speaks of a point).
+- [ ] **Effect on phones, shown by hand:** (a) change the species in admin, Sync now, the phone shows the new name; (b) an unsynced phone edit of **another** field: `merged`; (c) an unsynced phone edit of the **same** field: `conflict` (D-049), on the Sync screen and in admin's Sync conflicts; (d) a point changed to a polygon gets its area from the server and the phone pulls it; (e) a record added for a researcher appears on their phone after a sync, and not on another user's (T112 changes this last part); (f) a soft delete removes the record from the phone and Restore brings it back.
+- [ ] **Permissions, checked by hand:** a non-superuser admin sees Add and can save. The Admin group already holds the add and change permissions (T109, D-085), so no grant is needed.
+- [ ] The photos inline stays read-only. No new dependency and no migration. Docs: `backend/CLAUDE.md` (the "read-only admin" wording) and a decision entry that refines D-086 and D-087.
 
-Settled later the same day (2026-11-03):
-6. **A record is recorded only for a member of the chosen project.** An admin cannot record one for themselves (no phone would show it). A record added in admin still reaches the exports, which an admin always gets in full (T064); who else should see a record is T112's question.
-7. **Visit on add: a server-side check is enough.** The form refuses a visit that is not the chosen project's, or not the chosen researcher's, with a form error. No script that filters the list.
-8. **The refusal of a relation change** names up to five linked observations (their date and species), then "and N more".
+Technical notes: Copy the pattern of `backend/apps/observations/admin.py` (`ButterflyObservationAdminForm`, `save_model`, `has_change_permission`) and `observations/services.py` (`check_admin_edit`, `admin_save_observation`). `SyncableAdmin.sync_readonly_fields` includes `created_by`, so `get_readonly_fields` must let it through on add. `build_new_plant_resource` reads a serializer payload and takes the caller as creator, so the admin path builds on the form's instance. `save_with_reason` sets `updated_by` to the admin and leaves `created_by` alone, so the researcher still owns the record and can edit it from the phone (`sync/services.py`, created_by or admin). A map zooms to the project only on a change page; the add page opens on `MapAdmin`'s default.
 
-Out of scope: editing photos in admin (make primary, delete); editing habitat features (T053 has its own admin); unlocking a visit (T043); a change to the phone (a pulled change already shows, D-087); tests (D-021).
+If time is short (1 d instead): Edit only: no Add button and no GeoJSON field. Soft delete and Restore stay off.
+
+Out of scope: Editing photos in admin (make primary, delete); An admin page for habitat features (T053 does not list one, so that gap stays until it is asked for); Unlocking a visit (T043). Changes to the phone (a pulled change already shows, D-087); The same link checks on phone, push and REST. Tests (D-021).
 
 ### T112 · Project members see each other's plants and habitat features
-[#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `mobile`, `sync`, `could` · est. 1.5 d · **todo**
+[#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `mobile`, `sync`, `could` · implements F20, F21 (changes the researcher role in PROJECT_OUTLINE) · est. 3 d · **todo**
 
-Depends on: T051, T052, T053 (T054 for the habitat part on the phone)
-Notes: draft; the GitHub issue is not created yet. The open questions below are to be settled with the developer before building.
+Depends on: T051, T052, T053, T054
+Notes: All decisions settled (1-5 below).
 
-Why: plants and habitat features describe a place, not one person's sighting. A researcher who walks a transect, or chooses a host plant to link to a butterfly, benefits from everything the project already knows, including what other members recorded. Today each researcher sees only their own: the pull sends only records with `created_by = user` (`pull_plant_resources`, D-086), `plant_resources_for` shows a researcher only their own and decides what a butterfly may link to, the phone filters by `createdById` (D-087, T052 step 18), and the exports are admin-only (T064, D-077). Raised by the developer during T052 testing, together with the view that a member exporting a project should get all of its data, including what they did not add.
+Why: Plants and habitat features describe a place, not one person's sighting. A researcher who walks a transect, or picks a host plant to link to a butterfly, benefits from what the project already knows, including what other members recorded. Today each researcher sees only their own: `pull_plant_resources` sends rows with `created_by = user` (D-086), `plant_resources_for` also decides what a butterfly may link to, and the phone filters by `createdById` (D-087). This ticket shares those two record types inside a project, read-only for everyone but the creator and admins. Butterfly observations and visits stay own-only.
 
-- [ ] **Pull:** plant records (and habitat features, from T053) of a project go to **every member** of that project, not only their creator. Tombstones too (D-049). Butterfly observations and visits stay own-only (out of scope).
-- [ ] **Server visibility:** `plant_resources_for` (REST, and the link check `_check_plant_links`) lets a member see and link to every live plant record of their projects. A link still has to stay in the observation's project (D-086).
-- [ ] **Phone:** the list on Plants & habitat, the species picker's Recent, the link picker and the map show the project's records, not only the user's. `PlantRepository` filters by the project (and by membership, see question 2) instead of `createdById`. Each tile shows who recorded it.
-- [ ] **Edit and delete stay with the creator (and admin)**, as the push check already says (`created_by` or admin). Another member's record opens read-only on the phone, with a line "Recorded by <name>", no Save and no Delete (the same read-only form as a locked visit, T052). A butterfly may still link to it.
-- [ ] **Who recorded it:** the phone shows a name for another member. `created_by` is already pulled as an id; add a way to pull the members' display names of the project (see question 3).
-- [ ] **Habitat features** (T053 and T054) are built this way from the start if this ticket is settled before them; otherwise this ticket changes them.
-- [ ] Shown by hand with two researchers: A records a plant, B syncs and sees it (list, map, link picker), links a butterfly to it, cannot edit or delete it; A edits it and B pulls the change; A deletes it and B's phone drops it.
-- [ ] Docs: D-086 and D-087 are amended in a new decision entry; `docs/requirements` if a rule changes.
+Decisions (2026-11-03):
+1. **Everything in a project is shared.** No hiding of a record's location.
+2. **The creator's name travels with the record.** A read-only `created_by_name` field on the sync serializer and one Drift column. `ProjectMembership` is not synced (D-036), so a member list would need a new endpoint and would miss a former member's records. A renamed user shows the old name until the record next changes.
+3. **The phone also checks membership,** because logout keeps local rows: the providers return nothing unless the project is in `UserProfile.projectIds` (from `/auth/me`).
+4. **A plant record's photos follow it,** read-only.
+5. **A creator can delete or retype a record that another member links to.** Their phone cannot see that member's observations, so its "Linked to N" check does not cover them, and a server refusal would surface offline work as a rejected change. D-086 already lets links survive a soft delete, and the linked row on the observation detail already copes with a missing record.
 
-Open questions (to settle before building):
-1. **Exports for members.** The exports are admin-only (T064). Should a researcher be allowed to export their project, and if so with **all** members' plants and habitats (and observations?), or only their own? This is probably its own ticket (export access for members), since it changes D-077.
-2. **Who is "a member" on a shared phone.** Logout keeps the local rows (T052). If the phone shows all rows of a project, a user who is not a member of that project must not see them. Is it enough that the project list is built from membership, or must the repository also check?
-3. **Names of other members.** Pull the display names of the project's members (a small new list), or show "another researcher" with no name?
-4. **Sensitive records.** Should a researcher be able to hide a plant record's location from other members (for example a protected plant), or is everything in a project shared?
-5. **Are observations next?** If plants are shared, should the butterfly observations of a project be shared too (read-only)? Out of scope here; say if it should be its own ticket.
+- [ ] **Pull:** `pull_plant_resources` and the habitat pull send every row of the project to every member, tombstones included (D-049). Observations and visits do not change.
+- [ ] **Old rows arrive:** the Drift migration deletes the `cursor:%` rows, as `from12To13` did. Without it, a phone's cursor is already past other members' existing rows and they never arrive.
+- [ ] **See and link:** `plant_resources_for` (and the habitat equivalent) returns every live record of the user's projects. A link must still stay in the observation's project (D-086).
+- [ ] **Write scope stays own:** a new scope (own rows, all rows for an admin) replaces `plant_resources_for` in `_plant_or_404` (REST PATCH) and in `build_new_photo`, and the habitat REST uses the same split. Widening without this would let any member PATCH another member's record or add a photo to it, since those two only test visibility. Another member's PATCH stays a 404. The push check (`created_by` or admin) already holds.
+- [ ] **Photos:** `pull_photos` also sends the photos of the project's plant records. The content and thumbnail views read through a new scope that includes them. `photos_for` stays as it is for the upload steps, so nobody can finish another member's upload.
+- [ ] **Phone lists:** the Plants & habitat list, the species picker's Recent, the link picker and the map show the project's records (`watchProjectPlants` and `watchLinkablePlants` lose the `createdById` filter). Each tile shows who recorded it.
+- [ ] **Read-only for others:** another member's record opens with a "Recorded by" line naming the creator, and with no Save, Delete or photo add, using `PlantForm`'s `readOnly`. Admins and the creator keep editing. A butterfly may still link to it. The same applies to habitat features (T054).
+- [ ] **A visit that is not on this phone:** a shared record's `survey_visit` can point at another member's visit, which is not pulled. Nothing on the phone may fail on it (`visitProvider` gives null; foreign keys are not enforced on the phone).
+- [ ] **Shown by hand with two researchers:** A records a plant with a photo; B syncs and sees both (list, map, link picker), links a butterfly, and cannot edit or delete it; a direct PATCH by B is a 404; A edits it and B pulls the change; A deletes it and B's phone drops it, with B's butterfly keeping its row; a third user not in the project sees nothing on the same phone; a phone that synced before the update gets A's older records.
+- [ ] **Docs:** a new decision entry amends D-086 and D-087. PROJECT_OUTLINE's researcher role ("sees own data") and `mobile/CLAUDE.md`/`backend/CLAUDE.md` follow. T111's hand check (e) no longer holds for other members of the project. Drift snapshot and migration committed.
 
-Out of scope: sharing butterfly observations and visits; export access (question 1, probably its own ticket); editing another member's record; tests (D-021).
+Technical notes: This comes after T053 and T054, so it changes finished code rather than building habitat features two ways. `created_by_name` must join `SERVER_OWNED_FIELDS` (`sync/services.py`) so it never counts as a merge difference, and the pull needs `select_related("created_by")` to avoid one query per row. `_plantResource` in `core/sync/pull_applier.dart` stores the new column. `plant_resources_for` also feeds the exports dataset (`exports/datasets.py`); exports are admin-only (D-077), so nothing changes there. B linking offline to a record A has since deleted gets the existing "This plant record was not found" rejection on the Sync screen.
+
+If time is short (1.5 d instead): Plants and habitat without photos, and "Another researcher" in place of a name, which drops the new field and column. The cursor reset still needs a Drift schema step.
+
+Out of scope: Sharing butterfly observations and visits, even read-only; Export access for members (it changes D-077; its own ticket if wanted); Hiding a sensitive record from other members. Editing another member's record; Tests (D-021).
