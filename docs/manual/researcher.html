@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Researcher manual · Butterfly Monitoring</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="site" href="index.html">Butterfly Monitoring</a>
+  <span class="here">Researcher manual</span>
+  <a class="other" href="admin.html">Admin manual</a>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+<details open>
+<summary>Contents</summary>
+<ol>
+  <li><a href="#about">About this manual</a>
+    <ol>
+      <li><a href="#conventions">How to read the boxes</a></li>
+    </ol>
+  </li>
+  <li><a href="#big-picture">The big picture</a>
+    <ol>
+      <li><a href="#offline">The app works without a connection</a></li>
+      <li><a href="#words">Key words</a></li>
+    </ol>
+  </li>
+  <li><a href="#getting-started">Getting started</a>
+    <ol>
+      <li><a href="#need">What you need</a></li>
+      <li><a href="#account">Get your account</a></li>
+      <li><a href="#install">Install the app</a></li>
+      <li><a href="#login">Log in</a></li>
+      <li><a href="#download">Download your project</a></li>
+      <li><a href="#permissions">Permissions the app asks for</a></li>
+      <li><a href="#checklist">Before each field day</a></li>
+    </ol>
+  </li>
+  <li><a href="#tour">Finding your way around</a>
+    <ol>
+      <li><a href="#tour-projects">The project list</a></li>
+      <li><a href="#tour-home">The project home screen</a></li>
+    </ol>
+  </li>
+  <li><a href="#protocol">The field method in short</a>
+    <ol>
+      <li><a href="#method-box">What to count</a></li>
+      <li><a href="#method-when">When to walk</a></li>
+      <li><a href="#method-records">How to record</a></li>
+      <li><a href="#method-valid">What makes a visit valid</a></li>
+    </ol>
+  </li>
+  <li><a href="#transects">Transects</a>
+    <ol>
+      <li><a href="#transect-list">The list</a></li>
+      <li><a href="#transect-detail">The detail page</a></li>
+    </ol>
+  </li>
+  <li><a href="#visit">Walking a visit</a>
+    <ol>
+      <li><a href="#start-open">Open the start form</a></li>
+      <li><a href="#start-form">Fill in the start form</a></li>
+      <li><a href="#active">During the walk</a></li>
+      <li><a href="#butterfly">Record a butterfly</a></li>
+      <li><a href="#details">Add details</a></li>
+      <li><a href="#photos">Add photos</a></li>
+      <li><a href="#visit-plants">Plants and habitat during a walk</a></li>
+      <li><a href="#finish">Finish the visit</a></li>
+      <li><a href="#cancel">Cancel a visit</a></li>
+      <li><a href="#not-conducted">Record a visit that did not happen</a></li>
+    </ol>
+  </li>
+  <li><a href="#review">After the walk: review and correct</a>
+    <ol>
+      <li><a href="#review-visit">Look at a visit</a></li>
+      <li><a href="#edit-observation">Correct a record</a></li>
+      <li><a href="#manage-photos">Manage photos</a></li>
+    </ol>
+  </li>
+  <li><a href="#plants">Plants and habitat</a>
+    <ol>
+      <li><a href="#plant-record">Add a plant record</a></li>
+      <li><a href="#location">Set a location: point, patch or line</a></li>
+      <li><a href="#habitat-record">Add a habitat feature</a></li>
+      <li><a href="#edit-plants">Change or delete a plant or habitat record</a></li>
+    </ol>
+  </li>
+  <li><a href="#map">The map</a>
+    <ol>
+      <li><a href="#map-symbols">What you see</a></li>
+      <li><a href="#map-popups">Tap something for details</a></li>
+      <li><a href="#map-layers">Layers and filters</a></li>
+      <li><a href="#map-offline">Maps without a connection</a></li>
+    </ol>
+  </li>
+  <li><a href="#sync">Sync</a>
+    <ol>
+      <li><a href="#sync-when">When it happens</a></li>
+      <li><a href="#sync-screen">The Unsynced data screen</a></li>
+      <li><a href="#sync-errors">Errors: the server refused a change</a></li>
+      <li><a href="#sync-conflicts">Conflicts: you and an admin changed the same thing</a></li>
+      <li><a href="#sync-wifi">Save mobile data</a></li>
+    </ol>
+  </li>
+  <li><a href="#settings">Settings</a>
+  </li>
+  <li><a href="#statuses">Visit statuses</a>
+  </li>
+  <li><a href="#reference">Reference: the Beaufort scale</a>
+  </li>
+  <li><a href="#messages">Messages and what they mean</a>
+    <ol>
+      <li><a href="#messages-entry">When saving a record or finishing a visit</a></li>
+      <li><a href="#messages-sync">In the Errors section of Unsynced data</a></li>
+    </ol>
+  </li>
+  <li><a href="#faq">Problems and answers</a>
+  </li>
+  <li><a href="#coming-later">Coming later</a>
+  </li>
+</ol>
+</details>
+</nav>
+<main>
+<h1>Researcher manual</h1>
+<p class="lead">How to use the Butterfly Monitoring app in the field: from your first login to a finished, synced visit.</p>
+
+<h2 id="about">About this manual</h2>
+<p>This manual is for people who walk butterfly transects with the Android app. You do not need any technical knowledge. If you are new, read <a href="#big-picture">The big picture</a> and <a href="#getting-started">Getting started</a>, then follow <a href="#visit">Walking a visit</a> once with the app in your hand.</p>
+<p>Later you can come back to look something up. The <a href="#messages">Messages</a> and <a href="#faq">Problems and answers</a> chapters explain what to do when the app tells you something unexpected.</p>
+<p>Every screenshot comes from the real app, using an invented example project called <em>Demo – User Manual</em>. Your project, transects and species will differ.</p>
+
+<h3 id="conventions">How to read the boxes</h3>
+<div class="box tip"><span class="tag">Tip</span>A shortcut or a habit that saves time in the field.</div>
+<div class="box note"><span class="tag">Good to know</span>An explanation of why something works the way it does.</div>
+<div class="box warn"><span class="tag">Careful</span>Something that can lose data or spoil a record.</div>
+<div class="box today"><span class="tag">For now</span>How something works today, while the system is still being built. It will get simpler.</div>
+<div class="box later"><span class="tag">Coming later</span>A planned feature that is not in the app yet.</div>
+<p>Words written like <span class="btn">Start visit</span> are the exact labels of buttons and fields in the app.</p>
+
+<h2 id="big-picture">The big picture</h2>
+<p>The system supports standardised butterfly counts called <strong>Pollard walks</strong>. You walk a fixed route, count the butterflies in a fixed box around you, and note the weather and your route. Doing it the same way every time is what makes counts from different days and places comparable.</p>
+<p>There are two kinds of user:</p>
+<ul>
+  <li><strong>Researchers</strong> use the phone app. They walk visits and record what they see. They see only their own records.</li>
+  <li><strong>Admins</strong> use a website. They create projects and transects, add people to projects, check uncertain records, and export the data. Admins can also use the app.</li>
+</ul>
+<figure class="diagram"><img src="img/workflow.svg" alt="The admin prepares the project. The researcher downloads it, walks visits and syncs. The admin validates, reviews and exports." width="860" height="300"></figure>
+
+<h3 id="offline">The app works without a connection</h3>
+<p>Everything you need for the field is stored on your phone: the transects, the species list, the rules and your own records. Fields often have no signal, so the app never needs a connection to record anything.</p>
+<p>When the phone is online again, the app sends your new records to the server and fetches anything new. This is called <strong>sync</strong>. It happens by itself, and you can also start it yourself. See <a href="#sync">Sync</a>.</p>
+<div class="box warn"><span class="tag">Careful</span>Until a record has synced, the only copy is on your phone. Sync regularly, and before you uninstall the app or change phones.</div>
+
+<h3 id="words">Key words</h3>
+<div class="tablewrap"><table>
+<tr><th>Word</th><th>Meaning</th></tr>
+<tr><td><strong>Project</strong></td><td>One monitoring programme, for example one study area and period. It has its own transects and rules. You only see projects an admin has added you to.</td></tr>
+<tr><td><strong>Transect</strong></td><td>A fixed route that is walked again and again. An admin draws it. You cannot change it on the phone.</td></tr>
+<tr><td><strong>Section</strong></td><td>A numbered part of a transect (S1, S2, …), usually with one habitat type. Your records are linked to a section automatically.</td></tr>
+<tr><td><strong>Visit</strong></td><td>One walk of a transect on one day: who walked, when, in what weather, the GPS route, and what was seen.</td></tr>
+<tr><td><strong>Observation</strong></td><td>One butterfly record: a species and a count at one time and place. A group seen together is one observation with a higher count.</td></tr>
+<tr><td><strong>Plant record</strong></td><td>A host or nectar plant, recorded as a point or a drawn patch.</td></tr>
+<tr><td><strong>Habitat feature</strong></td><td>A note about the habitat at a place: type, management, vegetation, disturbance.</td></tr>
+<tr><td><strong>Protocol</strong></td><td>The project's rules for a valid walk: season, time of day, weather limits, GPS settings. An admin sets them.</td></tr>
+<tr><td><strong>Sync</strong></td><td>Sending your changes to the server and receiving new data from it.</td></tr>
+<tr><td><strong>Validation</strong></td><td>An admin checking an uncertain record, for example from its photo.</td></tr>
+<tr><td><strong>True zero</strong></td><td>You walked the whole visit properly and saw no butterflies. This is real data, so the app asks you to confirm it.</td></tr>
+</table></div>
+
+<h2 id="getting-started">Getting started</h2>
+
+<h3 id="need">What you need</h3>
+<ul>
+  <li>An Android phone with GPS, running Android 7 or newer. There is no iPhone version.</li>
+  <li>An account. An admin creates it for you. There is no sign-up form.</li>
+  <li>To be added to a project by an admin.</li>
+  <li>A connection for the first login and the first download. After that the app works offline.</li>
+</ul>
+
+<h3 id="account">Get your account</h3>
+<p>Ask your project admin for an account. They will give you an email address and a password to log in with. The same person adds you to your project. If you log in and see no projects, they have not done this yet.</p>
+
+<h3 id="install">Install the app</h3>
+<ol class="steps">
+  <li>On your phone, open the project's download page and download the app. It is an <strong>APK</strong> file, which is how Android apps are installed from outside the Play Store.</li>
+  <li>Open the downloaded file. Android may warn you that it comes from an unknown source. Allow your browser or file manager to install apps, then tap <span class="btn">Install</span>.</li>
+  <li>Open <strong>Butterfly Monitoring</strong>.</li>
+</ol>
+<div class="box today"><span class="tag">For now</span>The download page and the public server do not exist yet. Until they do, your admin sends you the APK file and tells you the server address. Enter that address before you log in: on the login screen tap the gear at the top right, type the address in <span class="btn">URL</span>, tap <span class="btn">Test Connection</span>, then <span class="btn">Save</span>. <em>Connected (200)</em> means it works. The server is currently a laptop, so it can only be reached the way your admin sets up for you. On some phones these two buttons sit partly behind Android's navigation bar. Tap their upper edge.</div>
+<div class="box later"><span class="tag">Coming later</span>When the system is finished, the server address will be built in. You will only install the app and log in.</div>
+
+<h3 id="login">Log in</h3>
+<p>Enter the email and password you were given and tap <span class="btn">Log in</span>. The eye icon shows the password as you type it.</p>
+<div class="shots">
+<figure><a href="img/researcher/login.webp"><img src="img/researcher/login.webp" alt="The login screen. The gear at the top right opens the server settings. The bottom line shows when this phone last synced." width="540" height="1040"></a><figcaption>The login screen. The gear at the top right opens the server settings. The bottom line shows when this phone last synced.</figcaption></figure>
+</div>
+<ul>
+  <li><strong>You stay logged in.</strong> Next time, the app opens straight away, even without a connection. It reopens the project you used last.</li>
+  <li><strong>Forgotten password:</strong> the app has no reset. Ask an admin, who can set a new one for you.</li>
+  <li><strong><em>Wrong email or password.</em></strong> Check for typing mistakes. After five failed tries, that account is blocked from logging in for 15 minutes.</li>
+  <li><strong><em>Can't reach the server. Check your connection.</em></strong> You have no connection, or the server is not running. Try again later, or ask your admin.</li>
+</ul>
+
+<h3 id="download">Download your project</h3>
+<p>After the first login you see <strong>Projects</strong>, the list of projects you belong to. A project must be downloaded before you can use it in the field.</p>
+<ol class="steps">
+  <li>Find your project and tap <span class="btn">Download</span>. Do this somewhere with a good connection.</li>
+  <li>Wait until the card shows <strong>Ready</strong>. The progress line counts the records received. <span class="btn">Cancel</span> pauses the download, and tapping <span class="btn">Download</span> again continues it.</li>
+  <li>Tap the card to open the project.</li>
+</ol>
+<div class="shots">
+<figure><a href="img/researcher/project-card-download.webp"><img src="img/researcher/project-card-download.webp" alt="Not downloaded yet. The card shows the project&#x27;s name, period, transects, unsynced changes and status." width="540" height="380"></a><figcaption>Not downloaded yet. The card shows the project's name, period, transects, unsynced changes and status.</figcaption></figure>
+<figure><a href="img/researcher/project-card-downloading.webp"><img src="img/researcher/project-card-downloading.webp" alt="Downloading. You can see how many records have arrived." width="540" height="380"></a><figcaption>Downloading. You can see how many records have arrived.</figcaption></figure>
+<figure><a href="img/researcher/project-card-ready.webp"><img src="img/researcher/project-card-ready.webp" alt="Ready. Everything you need is on the phone." width="540" height="292"></a><figcaption>Ready. Everything you need is on the phone.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Status on the card</th><th>Meaning</th><th>What to do</th></tr>
+<tr><td><strong>Not loaded</strong></td><td>The project is not on this phone yet.</td><td>Tap <span class="btn">Download</span>.</td></tr>
+<tr><td><strong>Ready</strong></td><td>The project is on this phone and you can use it offline.</td><td>Nothing.</td></tr>
+<tr><td><strong>Outdated</strong></td><td>The server has newer data for this project than this phone, for example a changed transect.</td><td>Tap <span class="btn">Update</span> when you have a connection.</td></tr>
+</table></div>
+<p>If the list says <em>No projects on this phone yet</em>, pull the list down to refresh it. If nothing appears, ask an admin to add you to a project.</p>
+
+<h3 id="permissions">Permissions the app asks for</h3>
+<p>Android asks you to allow a few things. The app asks when it first needs each one, which is mostly when you start your first visit. Your answer matters, because without location there is no route.</p>
+<div class="tablewrap"><table>
+<tr><th>Permission</th><th>Why</th><th>Choose</th></tr>
+<tr><td><strong>Location</strong></td><td>Records your route and the position of each record.</td><td>Allow <em>while using the app</em>, with precise location on.</td></tr>
+<tr><td><strong>Notifications</strong></td><td>Shows the <em>Visit in progress</em> notification, which keeps recording running while the screen is off.</td><td>Allow.</td></tr>
+<tr><td><strong>Run without battery restrictions</strong></td><td>Some phones stop GPS when the screen goes off. The app asks once: <em>Keep recording with the screen off</em>.</td><td>Tap <span class="btn">Allow</span>, then confirm in Android's dialog.</td></tr>
+<tr><td><strong>Camera and photos</strong></td><td>To photograph butterflies and plants, or to choose existing pictures.</td><td>Allow when asked.</td></tr>
+</table></div>
+<div class="box warn"><span class="tag">Careful</span>Some phones are very strict about saving battery. If routes have gaps while your screen was off, check that this app is set to <em>Unrestricted</em> in Android's battery settings for the app.</div>
+
+<h3 id="checklist">Before each field day</h3>
+<p>Do this at home while you still have a connection.</p>
+<ul>
+  <li>Open the app and let it sync. <span class="btn">Unsynced data</span> should have no badge.</li>
+  <li>Check that your project card says <strong>Ready</strong>. If it says <strong>Outdated</strong>, tap <span class="btn">Update</span>.</li>
+  <li>Open the map once for your study area while online. Map backgrounds you have viewed stay on the phone for a while. See <a href="#map-offline">Maps without a connection</a>.</li>
+  <li>Charge the phone. GPS uses a lot of battery, so a power bank helps on long days.</li>
+  <li>Check the weather limits of your project. See <a href="#protocol">The field method</a>.</li>
+</ul>
+
+<h2 id="tour">Finding your way around</h2>
+<h3 id="tour-projects">The project list</h3>
+<p>The first screen lists your projects. The gear opens <a href="#settings">Settings</a>. Pull the list down to run a full sync. Tap a project to open it. The app remembers it and opens it directly next time. To change project, tap the back arrow on the project's home screen.</p>
+
+<h3 id="tour-home">The project home screen</h3>
+<div class="shots">
+<figure><a href="img/researcher/home.webp"><img src="img/researcher/home.webp" alt="The project home screen with its tiles. Greyed-out tiles are not available yet." width="540" height="1040"></a><figcaption>The project home screen with its tiles. Greyed-out tiles are not available yet.</figcaption></figure>
+<figure><a href="img/researcher/home-visit-in-progress.webp"><img src="img/researcher/home-visit-in-progress.webp" alt="While a visit is in progress, a card at the top shows the transect, the GPS interval, how many route points are recorded and the last GPS fix. Tap it to go back to the visit." width="540" height="1040"></a><figcaption>While a visit is in progress, a card at the top shows the transect, the GPS interval, how many route points are recorded and the last GPS fix. Tap it to go back to the visit.</figcaption></figure>
+<figure><a href="img/researcher/home-badge.webp"><img src="img/researcher/home-badge.webp" alt="The number on Unsynced data shows the changes still waiting to reach the server." width="540" height="1040"></a><figcaption>The number on Unsynced data shows the changes still waiting to reach the server.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Tile</th><th>What it does</th></tr>
+<tr><td><span class="btn">Start visit</span></td><td>The quickest way into a walk. See <a href="#start-open">Open the start form</a>.</td></tr>
+<tr><td><span class="btn">Transects</span></td><td>Browse the transects: map, sections, protocol and your past visits. See <a href="#transects">Transects</a>.</td></tr>
+<tr><td><span class="btn">Plants &amp; habitat</span></td><td>Your plant records and habitat features. See <a href="#plants">Plants and habitat</a>.</td></tr>
+<tr><td><span class="btn">Map</span></td><td>Everything on one map, with layers and filters. See <a href="#map">The map</a>.</td></tr>
+<tr><td><span class="btn">Unsynced data</span></td><td>What is waiting to sync, errors and conflicts. See <a href="#sync">Sync</a>.</td></tr>
+<tr><td><span class="btn">Free observation</span></td><td>Shows <em>Coming later</em>. Not available yet.</td></tr>
+<tr><td><span class="btn">Statistics</span></td><td>Shows <em>Coming later</em>. Not available yet.</td></tr>
+</table></div>
+<div class="box later"><span class="tag">Coming later</span><strong>Free observation</strong> will record butterflies seen outside a standard walk, such as incidental sightings and larval or host-plant searches, without a visit. <strong>Statistics</strong> will show your own figures offline: visits, true zeros, species, individuals per km and per hour, your top species and a weekly chart.</div>
+
+<h2 id="protocol">The field method in short</h2>
+<p>The app records data, but the method is what makes it useful. This is the short version. The numbers below are the standard defaults, and <strong>each project can set its own</strong>. To see your project's values, open a transect and scroll to <strong>Protocol</strong>, or look at the start form.</p>
+
+<h3 id="method-box">What to count</h3>
+<p>Walk the transect at a steady pace and count every butterfly inside an imagined <strong>recording box</strong> that moves with you:</p>
+<ul>
+  <li>2.5 m to each side of you, so 5 m wide in total</li>
+  <li>5 m ahead of you</li>
+  <li>5 m above you</li>
+</ul>
+<p>Butterflies outside the box are not part of the count.</p>
+
+<h3 id="method-when">When to walk</h3>
+<div class="tablewrap"><table>
+<tr><th>Rule</th><th>Default</th></tr>
+<tr><td>Season</td><td>Set per project, typically 1 April to 30 September</td></tr>
+<tr><td>Time of day</td><td>10:00 to 17:00 local time</td></tr>
+<tr><td>Temperature and cloud</td><td>At least 13 °C with at most 40 % cloud, <strong>or</strong> at least 17 °C with any cloud</td></tr>
+<tr><td>Wind</td><td>At most 5 on the Beaufort scale</td></tr>
+<tr><td>Rain</td><td>None</td></tr>
+<tr><td>Visits per transect</td><td>8 per season</td></tr>
+</table></div>
+<p>The app warns you when you are outside these limits, but it never stops you. A walk outside the limits is still saved. It is marked as not weather-suitable so that analysts can decide what to do with it.</p>
+
+<h3 id="method-records">How to record</h3>
+<ul>
+  <li><strong>One record per species per sighting.</strong> Ten individuals flying up together are one record with a count of 10. The same species 30 m further on is a new record.</li>
+  <li><strong>Do not add everything up at the end.</strong> Each record has its own time and place, so enter it when you see it.</li>
+  <li><strong>Record uncertainty.</strong> If you are not sure, say so with <span class="btn">Identification confidence</span>. See <a href="#details">Add details</a>.</li>
+  <li><strong>Pause for anything that is not walking.</strong> Netting, identifying, photographing or resting are pauses. Paused time does not count as walking time.</li>
+</ul>
+
+<h3 id="method-valid">What makes a visit valid</h3>
+<p>A visit counts as valid for analysis when all three of these are true:</p>
+<ol>
+  <li>It was finished, not cancelled.</li>
+  <li>The weather was within the limits, or a reason is recorded.</li>
+  <li>The GPS route covers at least 80 % of the transect.</li>
+</ol>
+<p>Other visits are still stored. Nothing is thrown away, so always record what really happened.</p>
+<div class="box note"><span class="tag">Good to know</span><strong>A walk with no butterflies is valuable.</strong> Knowing a species was absent is real data. Finish the visit and confirm the true zero. Do not cancel it. See <a href="#true-zero">Confirm a true zero</a>.</div>
+
+<h2 id="transects">Transects</h2>
+<p>Open <span class="btn">Transects</span> on the project home screen.</p>
+<h3 id="transect-list">The list</h3>
+<div class="shots">
+<figure><a href="img/researcher/transects.webp"><img src="img/researcher/transects.webp" alt="Sorted by code. Each row shows the code, name, your number of visits, your last visit and the distance from you." width="540" height="1040"></a><figcaption>Sorted by code. Each row shows the code, name, your number of visits, your last visit and the distance from you.</figcaption></figure>
+<figure><a href="img/researcher/transects-distance.webp"><img src="img/researcher/transects-distance.webp" alt="Sorted by distance, so the nearest transect is at the top." width="540" height="1040"></a><figcaption>Sorted by distance, so the nearest transect is at the top.</figcaption></figure>
+</div>
+<ul>
+  <li><strong>Search</strong> by name or code in the box at the top.</li>
+  <li><strong>Sort by</strong> <span class="btn">Code</span> or <span class="btn">Distance</span>.</li>
+  <li>The <strong>location icon</strong> at the top right takes a fresh GPS position and updates the distances. Use it if the distances look wrong. Without a position they show a dash.</li>
+  <li>The <strong>cloud icon</strong> on each row shows whether the download of the project has finished.</li>
+</ul>
+
+<h3 id="transect-detail">The detail page</h3>
+<p>Tap a transect to see everything about it.</p>
+<div class="shots">
+<figure><a href="img/researcher/transect-detail-1.webp"><img src="img/researcher/transect-detail-1.webp" alt="The route on a map, with each section in its own colour, the length, and a description." width="540" height="1040"></a><figcaption>The route on a map, with each section in its own colour, the length, and a description.</figcaption></figure>
+<figure><a href="img/researcher/transect-detail-2.webp"><img src="img/researcher/transect-detail-2.webp" alt="The sections with their habitat type, and the habitat summary." width="540" height="1040"></a><figcaption>The sections with their habitat type, and the habitat summary.</figcaption></figure>
+<figure><a href="img/researcher/transect-detail-3.webp"><img src="img/researcher/transect-detail-3.webp" alt="The protocol of the project, and My visits. A lock icon marks a locked visit." width="540" height="1040"></a><figcaption>The protocol of the project, and My visits. A lock icon marks a locked visit.</figcaption></figure>
+</div>
+<p>Tap a row in <strong>My visits</strong> to open it. The button at the bottom says <span class="btn">Start visit</span>, or <span class="btn">Continue draft</span> if you saved a draft for this transect. If an admin has made the transect inactive, the button is greyed out and the page says <em>This transect is inactive and cannot be walked</em>.</p>
+<div class="box note"><span class="tag">Good to know</span>You cannot change a transect on the phone. If a route crosses private land or has become impassable, cancel the visit with the reason <em>Invalid (protocol not followed)</em>, explain in the note, and tell your admin.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Route proposals</strong> will let you record a better route from the field. An admin can then turn it into a transect.</div>
+<h2 id="visit">Walking a visit</h2>
+<p>This is the main job of the app. A visit has five steps:</p>
+<ol class="steps">
+  <li><strong>Open the start form</strong> for the transect you are standing at.</li>
+  <li><strong>Fill in the weather</strong> and tap <span class="btn">Start</span>. GPS recording begins.</li>
+  <li><strong>Walk and record</strong> each butterfly as you see it.</li>
+  <li><strong>Finish</strong>: check the summary and fill in the weather at the end.</li>
+  <li><strong>Sync</strong> happens by itself when you are back online.</li>
+</ol>
+
+<h3 id="start-open">Open the start form</h3>
+<p>Tap the <span class="btn">Start visit</span> tile. The app works out what you most likely want:</p>
+<ul>
+  <li>If a <strong>visit is in progress</strong>, it opens that visit.</li>
+  <li>If you have <strong>saved drafts</strong> in this project, it offers them, along with <span class="btn">Choose a transect</span>.</li>
+  <li>Otherwise it opens the <strong>transect list with the nearest transect first</strong>.</li>
+</ul>
+<p>Tap the transect, then tap <span class="btn">Start visit</span> at the bottom of its page.</p>
+<div class="shots">
+<figure><a href="img/researcher/draft-sheet.webp"><img src="img/researcher/draft-sheet.webp" alt="With a saved draft, the Start visit tile offers it first." width="540" height="1040"></a><figcaption>With a saved draft, the Start visit tile offers it first.</figcaption></figure>
+<figure><a href="img/researcher/window-dialog.webp"><img src="img/researcher/window-dialog.webp" alt="Outside the season or the daily time window, the app warns you. Start anyway continues." width="540" height="1040"></a><figcaption>Outside the season or the daily time window, the app warns you. Start anyway continues.</figcaption></figure>
+<figure><a href="img/researcher/start-warning.webp"><img src="img/researcher/start-warning.webp" alt="The warning stays on the form as a reminder. You can still start." width="540" height="1040"></a><figcaption>The warning stays on the form as a reminder. You can still start.</figcaption></figure>
+</div>
+<div class="box note"><span class="tag">Good to know</span>The season and time checks use your phone's time zone, which is right as long as you are at the study site.</div>
+
+<h3 id="start-form">Fill in the start form</h3>
+<div class="shots">
+<figure><a href="img/researcher/start-form.webp"><img src="img/researcher/start-form.webp" alt="The top of the form: observers and the first weather fields." width="540" height="1040"></a><figcaption>The top of the form: observers and the first weather fields.</figcaption></figure>
+<figure><a href="img/researcher/wind-picker.webp"><img src="img/researcher/wind-picker.webp" alt="Wind opens a list of Beaufort forces. Each one says what it looks like outdoors, so you do not need a wind meter." width="540" height="1040"></a><figcaption>Wind opens a list of Beaufort forces. Each one says what it looks like outdoors, so you do not need a wind meter.</figcaption></figure>
+<figure><a href="img/researcher/start-filled.webp"><img src="img/researcher/start-filled.webp" alt="The form filled in." width="540" height="1040"></a><figcaption>The form filled in.</figcaption></figure>
+<figure><a href="img/researcher/start-suitable.webp"><img src="img/researcher/start-suitable.webp" alt="A green card means the weather is within the project&#x27;s limits." width="540" height="1040"></a><figcaption>A green card means the weather is within the project's limits.</figcaption></figure>
+<figure><a href="img/researcher/start-weather-outside.webp"><img src="img/researcher/start-weather-outside.webp" alt="A red card says which limit is broken." width="540" height="1040"></a><figcaption>A red card says which limit is broken.</figcaption></figure>
+<figure><a href="img/researcher/start-protocol-check.webp"><img src="img/researcher/start-protocol-check.webp" alt="The protocol summary and the tick you need before you can start." width="540" height="1040"></a><figcaption>The protocol summary and the tick you need before you can start.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>What to enter</th><th>Needed to start?</th></tr>
+<tr><td><strong>Observer</strong></td><td>Your name, filled in for you.</td><td>Automatic</td></tr>
+<tr><td><span class="btn">Number of observers</span></td><td>How many people are counting, using − and +.</td><td>Starts at 1</td></tr>
+<tr><td><span class="btn">Other observers' names</span></td><td>Names of the others, if any.</td><td>No</td></tr>
+<tr><td><span class="btn">Temperature</span></td><td>Air temperature in °C. Decimals and minus values are fine.</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Wind</span></td><td>Tap and choose the Beaufort force.</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Cloud cover</span></td><td>Slide to the share of sky that is cloud, in steps of 10 %.</td><td>Starts at 0 %</td></tr>
+<tr><td><span class="btn">Precipitation</span></td><td>None, Drizzle, Light rain or Rain.</td><td>Starts at None</td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Anything useful about this visit.</td><td>No</td></tr>
+<tr><td><span class="btn">I will walk this visit by the protocol</span></td><td>Your promise to follow the method. Read the summary above it.</td><td><strong>Yes</strong></td></tr>
+</table></div>
+<p>As soon as temperature and wind are filled in, a card shows the result of the weather check.</p>
+<p>The buttons at the bottom and top of the form:</p>
+<ul>
+  <li><span class="btn">Start</span> begins the visit.</li>
+  <li><span class="btn">Save draft</span> stores what you typed without starting. Nothing is required. Next time, the form opens with <em>Carrying on with your draft</em>.</li>
+  <li><span class="btn">Not conducted…</span> at the top right records that a planned visit did not happen. See <a href="#not-conducted">Record a visit that did not happen</a>.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/start-missing.webp"><img src="img/researcher/start-missing.webp" alt="Tapping Start with something missing tells you what to fill in." width="540" height="1040"></a><figcaption>Tapping Start with something missing tells you what to fill in.</figcaption></figure>
+<figure><a href="img/researcher/weather-dialog.webp"><img src="img/researcher/weather-dialog.webp" alt="Tapping Start with weather outside the limits asks you to confirm. The visit is then marked as not weather-suitable." width="540" height="1040"></a><figcaption>Tapping Start with weather outside the limits asks you to confirm. The visit is then marked as not weather-suitable.</figcaption></figure>
+<figure><a href="img/researcher/continue-draft.webp"><img src="img/researcher/continue-draft.webp" alt="A saved draft opens with your values and a note at the top." width="540" height="1040"></a><figcaption>A saved draft opens with your values and a note at the top.</figcaption></figure>
+</div>
+<p>Only one visit can be in progress at a time. If another one is running, the app tells you <em>A visit is already in progress</em>. Finish or cancel that one first.</p>
+<p>The first time you tap <span class="btn">Start</span>, the app asks for location and notification permission, and once for the battery exception. See <a href="#permissions">Permissions</a>.</p>
+
+<h3 id="active">During the walk</h3>
+<div class="shots">
+<figure><a href="img/researcher/active-start.webp"><img src="img/researcher/active-start.webp" alt="Just after Start. The first section is highlighted and the timer is running." width="540" height="1040"></a><figcaption>Just after Start. The first section is highlighted and the timer is running.</figcaption></figure>
+<figure><a href="img/researcher/active-walking.webp"><img src="img/researcher/active-walking.webp" alt="Near the end of the walk. Your route is the black line, and your position is the dot." width="540" height="1040"></a><figcaption>Near the end of the walk. Your route is the black line, and your position is the dot.</figcaption></figure>
+</div>
+<ul>
+  <li><strong>Time:</strong> walking time, without pauses.</li>
+  <li><strong>Distance:</strong> the length of your GPS route so far.</li>
+  <li><strong>Section:</strong> the section you are in. It changes by itself as you walk. A dash means you are too far from the transect.</li>
+  <li><strong>Observations:</strong> how many records you have saved in this visit.</li>
+  <li><strong>The map:</strong> each section in its own colour, the current one thicker. The circle around your position shows how accurate the GPS is. The dot turns grey when the position may be old, for example during a pause.</li>
+</ul>
+
+<h4>You can lock the phone</h4>
+<p>GPS recording runs in the background, so you can lock the phone and put it in your pocket. While it records, Android shows a permanent notification, <em>Visit in progress</em>, that you cannot swipe away. This is normal.</p>
+<p>You can also leave the visit screen with the back arrow and look at other screens. The recording continues, and a card shows <em>Visit in progress</em>. Tap the card or the <span class="btn">Start visit</span> tile to return.</p>
+<p>If the app is closed or the phone restarts during a visit, open the app again. The visit continues, and a line says <em>Tracking interrupted</em> with the times of the gap.</p>
+
+<h4>The two icons at the top right</h4>
+<div class="shots">
+<figure><a href="img/researcher/battery-saver.webp"><img src="img/researcher/battery-saver.webp" alt="Battery saver on: fewer GPS points and lower accuracy. The icon changes and a message confirms it." width="540" height="1040"></a><figcaption>Battery saver on: fewer GPS points and lower accuracy. The icon changes and a message confirms it.</figcaption></figure>
+<figure><a href="img/researcher/keep-screen.webp"><img src="img/researcher/keep-screen.webp" alt="Keep the screen on: useful if you look at the map a lot, but it uses more battery." width="540" height="1040"></a><figcaption>Keep the screen on: useful if you look at the map a lot, but it uses more battery.</figcaption></figure>
+</div>
+<ul>
+  <li><strong>Battery saver</strong> (battery icon) records a point every 15 seconds instead of every 5, by default. The app turns it on by itself below 20 % battery and tells you. Tap the icon to turn it on or off. The route becomes rougher, so use it only when you need to.</li>
+  <li><strong>Keep the screen on</strong> (sun icon) stops the screen going dark while this screen is open.</li>
+</ul>
+
+<h4>Pause and resume</h4>
+<p>Tap <span class="btn">Pause</span> whenever you stop walking the transect, for example to net or identify a butterfly, take a careful photo, or rest. The timer stops and no route is recorded. Tap <span class="btn">Resume</span> to continue.</p>
+<div class="shots">
+<figure><a href="img/researcher/paused.webp"><img src="img/researcher/paused.webp" alt="Paused. A blue line explains it and the position dot turns grey." width="540" height="1040"></a><figcaption>Paused. A blue line explains it and the position dot turns grey.</figcaption></figure>
+<figure><a href="img/researcher/paused-dialog.webp"><img src="img/researcher/paused-dialog.webp" alt="Adding something during a pause asks first, because it is not part of the walk." width="540" height="1040"></a><figcaption>Adding something during a pause asks first, because it is not part of the walk.</figcaption></figure>
+</div>
+<div class="box tip"><span class="tag">Tip</span>A butterfly you are netting is usually still the one you saw from the transect. Record it first, then pause while you handle it.</div>
+
+<h4>If GPS has a problem</h4>
+<p>A line appears above the map. The visit is not lost. Fix the cause if you can and carry on.</p>
+<div class="tablewrap"><table>
+<tr><th>The app says</th><th>What it means</th><th>What to do</th></tr>
+<tr><td><em>No GPS fix for … s</em></td><td>No position has arrived for a while (60 s by default), often because of forest or a phone deep in a bag.</td><td>Keep walking. Hold the phone higher if it continues. The gap is listed on the Finish screen.</td></tr>
+<tr><td><em>Location is switched off. The route is not being recorded.</em></td><td>Location was turned off on the phone.</td><td>Turn on Location in Android's quick settings.</td></tr>
+<tr><td><em>Location permission was refused…</em> or <em>Location is blocked for this app…</em></td><td>The app has no permission.</td><td>Allow location for this app in Android's settings, then tap <span class="btn">Try again</span>.</td></tr>
+<tr><td><em>GPS stopped. The route is not being recorded.</em></td><td>The location stream ended unexpectedly.</td><td>Tap <span class="btn">Try again</span>.</td></tr>
+<tr><td><em>Some route points could not be saved</em></td><td>The phone could not write to its storage.</td><td>Free some storage on the phone. If it continues, tell your admin.</td></tr>
+<tr><td><em>The route of this visit is not recorded here.</em></td><td>The visit was started on another phone, so this phone is not recording it.</td><td>Continue on the phone that started it.</td></tr>
+</table></div>
+
+<h3 id="butterfly">Record a butterfly</h3>
+<p>Tap the big <span class="btn">Add butterfly</span> button. A quick record takes three taps: the species, perhaps the count, and <span class="btn">Save</span>.</p>
+<div class="shots">
+<figure><a href="img/researcher/butterfly-sheet.webp"><img src="img/researcher/butterfly-sheet.webp" alt="The sheet on first use. The top line shows GPS accuracy and the current section." width="540" height="1040"></a><figcaption>The sheet on first use. The top line shows GPS accuracy and the current section.</figcaption></figure>
+<figure><a href="img/researcher/butterfly-search.webp"><img src="img/researcher/butterfly-search.webp" alt="Type part of a name. You can use the Serbian, scientific or English name, with or without special letters." width="540" height="1040"></a><figcaption>Type part of a name. You can use the Serbian, scientific or English name, with or without special letters.</figcaption></figure>
+<figure><a href="img/researcher/butterfly-selected.webp"><img src="img/researcher/butterfly-selected.webp" alt="The chosen species is highlighted and shown above the Save button. The star makes it a favourite." width="540" height="1040"></a><figcaption>The chosen species is highlighted and shown above the Save button. The star makes it a favourite.</figcaption></figure>
+<figure><a href="img/researcher/butterfly-recent.webp"><img src="img/researcher/butterfly-recent.webp" alt="Later, your recent species and favourites are listed straight away." width="540" height="1040"></a><figcaption>Later, your recent species and favourites are listed straight away.</figcaption></figure>
+</div>
+<ol class="steps">
+  <li><strong>Choose the species.</strong> Tap it under <strong>Recent</strong> or <strong>Favourites</strong>, or type in <span class="btn">Search a species</span>. Tap a star to keep a species in Favourites.</li>
+  <li><strong>Set the count.</strong> It starts at 1. Use − and +. For a large number, press and hold the number and type it (up to 9999).</li>
+  <li><strong>Tap <span class="btn">Save</span>.</strong> The sheet closes and a message appears at the bottom.</li>
+</ol>
+<div class="shots">
+<figure><a href="img/researcher/count-dialog.webp"><img src="img/researcher/count-dialog.webp" alt="Press and hold the number to type a large count." width="540" height="1040"></a><figcaption>Press and hold the number to type a large count.</figcaption></figure>
+<figure><a href="img/researcher/saved-undo.webp"><img src="img/researcher/saved-undo.webp" alt="After saving, Undo is available for 10 seconds if you made a mistake." width="540" height="1040"></a><figcaption>After saving, Undo is available for 10 seconds if you made a mistake.</figcaption></figure>
+</div>
+<p>The app fills in the rest by itself:</p>
+<ul>
+  <li><strong>Time:</strong> the moment you tapped <span class="btn">Save</span>.</li>
+  <li><strong>Position:</strong> your GPS position at that moment. If no fix is available yet, the top line says <em>No GPS fix yet – Save will get one</em> and Save waits for one. If it cannot get one, the sheet stays open and tells you why.</li>
+  <li><strong>Section:</strong> worked out from your position. If you are too far from the transect, it stays empty.</li>
+  <li><strong>Accuracy:</strong> the top line shows it. If it is worse than the project's limit (25 m by default) you see <em>Low GPS accuracy</em>. The record is still saved.</li>
+</ul>
+<div class="box warn"><span class="tag">Careful</span>After the 10 seconds of Undo, the app has no delete button for a butterfly record. You can still correct it. See <a href="#edit-observation">Correct a record</a>. If it should not exist at all, ask an admin to remove it.</div>
+
+<h3 id="details">Add details</h3>
+<p>Quick entry is enough for most sightings. When you have more to say, tap <span class="btn">Details</span> in the sheet. Details are optional, and you can also add them later.</p>
+<div class="shots">
+<figure><a href="img/researcher/details-1.webp"><img src="img/researcher/details-1.webp" alt="Sex, life stage and behaviour. You can choose several behaviours." width="540" height="1040"></a><figcaption>Sex, life stage and behaviour. You can choose several behaviours.</figcaption></figure>
+<figure><a href="img/researcher/details-2.webp"><img src="img/researcher/details-2.webp" alt="Links to a host plant and a nectar plant, and the identification confidence." width="540" height="1040"></a><figcaption>Links to a host plant and a nectar plant, and the identification confidence.</figcaption></figure>
+<figure><a href="img/researcher/details-3.webp"><img src="img/researcher/details-3.webp" alt="Microhabitat, flight direction, notes and photos." width="540" height="1040"></a><figcaption>Microhabitat, flight direction, notes and photos.</figcaption></figure>
+<figure><a href="img/researcher/details-w03.webp"><img src="img/researcher/details-w03.webp" alt="Choosing egg-laying or larva suggests linking the host plant." width="540" height="1040"></a><figcaption>Choosing egg-laying or larva suggests linking the host plant.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>Choices</th><th>Starts as</th></tr>
+<tr><td><span class="btn">Sex</span></td><td>Male, Female, Mixed (for a group with both), Unknown, Not applicable</td><td>Unknown</td></tr>
+<tr><td><span class="btn">Life stage</span></td><td>Egg, Larva, Pupa, Adult, Unknown</td><td>Adult</td></tr>
+<tr><td><span class="btn">Behaviour</span></td><td>Any of: Flying, Resting, Basking, Nectaring, Courtship, Mating, Territorial, Oviposition, Mud puddling, Feeding on fruit, Feeding on sap, Larval feeding, Other, Unknown</td><td>None</td></tr>
+<tr><td><span class="btn">Host plant</span></td><td>Link to one of your plant records</td><td>Not linked</td></tr>
+<tr><td><span class="btn">Nectar plant</span></td><td>Link to one of your plant records</td><td>Not linked</td></tr>
+<tr><td><span class="btn">Identification confidence</span></td><td>See the table below</td><td>Confirmed in field</td></tr>
+<tr><td><span class="btn">Microhabitat</span></td><td>Free text, up to 100 characters</td><td>Empty</td></tr>
+<tr><td><span class="btn">Flight direction</span></td><td>A compass direction on a dial</td><td>Not set</td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Free text</td><td>Empty</td></tr>
+<tr><td><strong>Photos</strong></td><td><span class="btn">Photo</span> or <span class="btn">Gallery</span></td><td>None</td></tr>
+</table></div>
+
+<h4 id="confidence">Identification confidence</h4>
+<p>Be honest here. An uncertain record is useful, and an admin can check it. The last column shows which records go to an admin for checking.</p>
+<div class="tablewrap"><table>
+<tr><th>Choice</th><th>Use it when</th><th>Goes to validation?</th></tr>
+<tr><td>Confirmed in field</td><td>You are sure of the species.</td><td>No</td></tr>
+<tr><td>Probable</td><td>You are fairly sure.</td><td>No</td></tr>
+<tr><td>Photo required</td><td>A photo is needed to confirm it. The app offers to take one straight away. You can also answer <span class="btn">Later</span>.</td><td><strong>Yes</strong></td></tr>
+<tr><td>Genus only</td><td>You know the genus but not the species. Say so in the notes.</td><td><strong>Yes</strong></td></tr>
+<tr><td>Species group</td><td>It belongs to a group of look-alike species.</td><td>No</td></tr>
+<tr><td>Unknown</td><td>You could not identify it.</td><td><strong>Yes</strong></td></tr>
+<tr><td>Expert review required</td><td>An expert should look at it.</td><td><strong>Yes</strong></td></tr>
+</table></div>
+<div class="box note"><span class="tag">Good to know</span>The app always needs a species name for a record. If you cannot name the species, choose the closest entry, set the confidence to match, and describe what you saw in the notes. Validation happens on the server and is not shown in the app. Your record stays as you entered it, and the admin's decision is stored next to it.</div>
+
+<h4 id="flight">Flight direction</h4>
+<p>Tap <span class="btn">Flight direction</span> and tap or drag on the dial. The blue arrow shows the way you are facing, from the phone's compass, so a butterfly flying straight ahead of you flies along that line. <span class="btn">Clear</span> removes the direction.</p>
+<div class="shots">
+<figure><a href="img/researcher/flight-dial.webp"><img src="img/researcher/flight-dial.webp" alt="The dial. The arrow points the way you face, and the green line is the butterfly&#x27;s direction." width="540" height="1040"></a><figcaption>The dial. The arrow points the way you face, and the green line is the butterfly's direction.</figcaption></figure>
+</div>
+
+<h4 id="links">Link a host or nectar plant</h4>
+<p>Tap <span class="btn">Host plant</span> or <span class="btn">Nectar plant</span>. A list shows the plant records that fit, with those from this visit first. Tap one, or tap <span class="btn">New plant record</span> to create it now.</p>
+<p>If you chose the behaviour <em>Oviposition</em> or the life stage <em>Larva</em>, the app suggests linking the host plant. It is only a suggestion, and it disappears once a host plant is linked.</p>
+<div class="shots">
+<figure><a href="img/researcher/plant-link-sheet.webp"><img src="img/researcher/plant-link-sheet.webp" alt="The plants you can link. Only records whose relation fits are offered." width="540" height="1040"></a><figcaption>The plants you can link. Only records whose relation fits are offered.</figcaption></figure>
+<figure><a href="img/researcher/plant-links-set.webp"><img src="img/researcher/plant-links-set.webp" alt="Both links set. The cross removes a link." width="540" height="1040"></a><figcaption>Both links set. The cross removes a link.</figcaption></figure>
+</div>
+<p>Which plant records can be linked depends on their <span class="btn">Relation to butterflies</span>: a host plant link accepts larval host plants, oviposition plants and unknown associations. A nectar plant link accepts nectar sources and unknown associations.</p>
+
+<h3 id="photos">Add photos</h3>
+<p>Open <span class="btn">Details</span> and scroll to <strong>Photos</strong>.</p>
+<ul>
+  <li><span class="btn">Photo</span> opens the camera. <span class="btn">Gallery</span> lets you choose an existing picture.</li>
+  <li>You can add several. The first gets a star, which marks the main photo. The cross removes a photo before you save.</li>
+  <li>Photos are made smaller on the phone (at most 2048 pixels on the long side) and upload during sync.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/details-photo.webp"><img src="img/researcher/details-photo.webp" alt="A photo added to the record. The star marks the main photo." width="540" height="1040"></a><figcaption>A photo added to the record. The star marks the main photo.</figcaption></figure>
+<figure><a href="img/researcher/butterfly-w01.webp"><img src="img/researcher/butterfly-w01.webp" alt="Some species need a photo. A line says so before you save, with an Add photo button." width="540" height="1040"></a><figcaption>Some species need a photo. A line says so before you save, with an Add photo button.</figcaption></figure>
+</div>
+<p><strong>Species that need a photo.</strong> An admin can mark a species as needing a photo. When you choose it, the sheet says <em>This species needs a photo. The record will wait for validation.</em> Add one with <span class="btn">Add photo</span> if you can. You can still save without a photo, because the butterfly may have flown off. You can add it later, and the Finish screen reminds you.</p>
+
+<h3 id="visit-plants">Plants and habitat during a walk</h3>
+<p>The visit screen also has <span class="btn">Add plant</span> and <span class="btn">Add habitat</span>. Records made here belong to this visit. The forms are explained in <a href="#plants">Plants and habitat</a>.</p>
+<div class="box tip"><span class="tag">Tip</span>Plants are not part of the standard count. If stopping would disturb your walk, pause first, or record plants after you finish, from the <span class="btn">Plants &amp; habitat</span> tile.</div>
+
+<h3 id="finish">Finish the visit</h3>
+<p>At the end of the transect, tap <span class="btn">Finish</span>. Going back from this screen changes nothing, so you can carry on walking if you tapped it too early.</p>
+<div class="shots">
+<figure><a href="img/researcher/finish-summary.webp"><img src="img/researcher/finish-summary.webp" alt="The summary: time, distance, species, individuals, and the count per section." width="540" height="1040"></a><figcaption>The summary: time, distance, species, individuals, and the count per section.</figcaption></figure>
+<figure><a href="img/researcher/finish-warning.webp"><img src="img/researcher/finish-warning.webp" alt="Warnings tell you what is missing or unusual." width="540" height="1040"></a><figcaption>Warnings tell you what is missing or unusual.</figcaption></figure>
+<figure><a href="img/researcher/finish-weather.webp"><img src="img/researcher/finish-weather.webp" alt="The weather at the end. When it is filled in, that warning disappears." width="540" height="1040"></a><figcaption>The weather at the end. When it is filled in, that warning disappears.</figcaption></figure>
+<figure><a href="img/researcher/visit-saved.webp"><img src="img/researcher/visit-saved.webp" alt="After Finish and save you are back on the transect, with a confirmation." width="540" height="1040"></a><figcaption>After Finish and save you are back on the transect, with a confirmation.</figcaption></figure>
+</div>
+<ol class="steps">
+  <li><strong>Check the summary.</strong> Does it match what you remember?</li>
+  <li><strong>Read the warnings.</strong> See the table below.</li>
+  <li><strong>Enter the weather at the end:</strong> <span class="btn">Temperature</span>, <span class="btn">Wind</span> and <span class="btn">Cloud cover</span>. If you really could not, say why in <span class="btn">If you could not record the weather, say why</span>.</li>
+  <li><strong>If you saw no butterflies,</strong> tick the true-zero box. See below.</li>
+  <li>Tap <span class="btn">Finish and save</span>. Recording stops, and the app tries to sync.</li>
+</ol>
+<div class="tablewrap"><table>
+<tr><th>Warning</th><th>What it means</th><th>What to do</th></tr>
+<tr><td><em>The end weather is missing</em></td><td>Temperature or wind is empty. <strong>This blocks finishing</strong> until you fill it in or give a reason.</td><td>Fill it in or give a reason.</td></tr>
+<tr><td><em>The end weather is outside the protocol</em></td><td>The weather turned bad during the walk.</td><td>Nothing, if it is correct. It is recorded as it was.</td></tr>
+<tr><td><em>The route covers … % of the transect</em></td><td>Your GPS route covers less than the required share (80 % by default), so the visit may not count as valid.</td><td>Walk the rest if you stopped too early. If you cannot, finish or cancel as appropriate.</td></tr>
+<tr><td><em>Too few GPS points to work out the coverage</em></td><td>Almost no route was recorded.</td><td>Check location settings for next time.</td></tr>
+<tr><td><em>No GPS 10:42–10:48 (6 min)</em></td><td>A gap in the route outside your pauses.</td><td>Nothing. It is noted so the gap can be explained.</td></tr>
+<tr><td><em>Outside the season…</em> or a time window warning</td><td>The visit started outside the protocol's window.</td><td>Nothing, if that is what happened.</td></tr>
+<tr><td><strong>Photos missing</strong></td><td>A species that needs a photo has none. One line per record.</td><td>Tap a line to open that record and add a photo. Back returns here with your typing kept.</td></tr>
+<tr><td>A butterfly with a rule message</td><td>A record breaks an input rule, for example its time is outside the visit.</td><td>Open and correct it, or ask an admin.</td></tr>
+</table></div>
+
+<h4 id="true-zero">Confirm a true zero</h4>
+<p>If the visit has no butterfly records, a box appears: <em>No butterfly was seen during the complete standardised visit.</em> Tick it only if you walked the visit properly. You cannot finish a visit with no butterflies without it. If you did not walk it properly, use <span class="btn">Cancel visit</span> instead.</p>
+<div class="shots">
+<figure><a href="img/researcher/finish-zero.webp"><img src="img/researcher/finish-zero.webp" alt="The true-zero confirmation appears only for a visit with no butterflies." width="540" height="1040"></a><figcaption>The true-zero confirmation appears only for a visit with no butterflies.</figcaption></figure>
+</div>
+
+<h3 id="cancel">Cancel a visit</h3>
+<p>Use <span class="btn">Cancel visit</span> at the bottom of the Finish screen when the walk could not be completed properly. Choose a reason, add a note if useful, and confirm. <span class="btn">Back</span> returns without changing anything.</p>
+<div class="shots">
+<figure><a href="img/researcher/cancel-sheet.webp"><img src="img/researcher/cancel-sheet.webp" alt="The reasons for cancelling a visit that was started." width="540" height="1040"></a><figcaption>The reasons for cancelling a visit that was started.</figcaption></figure>
+<figure><a href="img/researcher/visit-cancelled.webp"><img src="img/researcher/visit-cancelled.webp" alt="Afterwards the visit shows as Cancelled, with its reason, in My visits." width="540" height="1040"></a><figcaption>Afterwards the visit shows as Cancelled, with its reason, in My visits.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Reason</th><th>Use it when</th></tr>
+<tr><td>Aborted (weather)</td><td>You stopped because the weather turned, for example a storm came in.</td></tr>
+<tr><td>Aborted (other reason)</td><td>You stopped for any other reason, for example an injury or the transect was blocked.</td></tr>
+<tr><td>Invalid (protocol not followed)</td><td>You walked, but not by the method, for example the wrong route.</td></tr>
+</table></div>
+<p>The butterflies you recorded before cancelling are kept, but the visit does not count as valid. A cancelled visit cannot be restarted. Start a new one if you walk the transect again.</p>
+
+<h3 id="not-conducted">Record a visit that did not happen</h3>
+<p>If a planned visit did not take place at all, you can record that. Missed visits are useful information too.</p>
+<ol class="steps">
+  <li>Open the start form for the transect.</li>
+  <li>Tap <span class="btn">Not conducted…</span> at the top right.</li>
+  <li>Add a note if useful and tap <span class="btn">Record as not conducted</span>.</li>
+</ol>
+<div class="shots">
+<figure><a href="img/researcher/not-conducted.webp"><img src="img/researcher/not-conducted.webp" alt="Recording a visit that was planned but not walked. No weather or GPS is needed." width="540" height="1040"></a><figcaption>Recording a visit that was planned but not walked. No weather or GPS is needed.</figcaption></figure>
+</div>
+
+<h2 id="review">After the walk: review and correct</h2>
+<h3 id="review-visit">Look at a visit</h3>
+<p>Open <span class="btn">Transects</span>, tap the transect, and tap the visit under <strong>My visits</strong>. A draft reopens the start form, and a visit in progress reopens the visit screen. Any other visit opens this read-only page:</p>
+<div class="shots">
+<figure><a href="img/researcher/visit-detail-1.webp"><img src="img/researcher/visit-detail-1.webp" alt="The transect, the times, the observers, the status and the summary, including route coverage." width="540" height="1040"></a><figcaption>The transect, the times, the observers, the status and the summary, including route coverage.</figcaption></figure>
+<figure><a href="img/researcher/visit-detail-2.webp"><img src="img/researcher/visit-detail-2.webp" alt="The weather at the start and the end, and your route on the map." width="540" height="1040"></a><figcaption>The weather at the start and the end, and your route on the map.</figcaption></figure>
+<figure><a href="img/researcher/visit-detail-3.webp"><img src="img/researcher/visit-detail-3.webp" alt="The butterflies, grouped by section. Tap one to open it." width="540" height="624"></a><figcaption>The butterflies, grouped by section. Tap one to open it.</figcaption></figure>
+</div>
+<div class="box note"><span class="tag">Good to know</span>Routes are stored on the phone that recorded them and are sent to the server, but they are not sent back to phones. On another phone, or after removing the app's data, a visit has no route on the map and no route coverage. The server still has it.</div>
+<p>To see what each status means, see <a href="#statuses">Visit statuses</a>.</p>
+
+<h3 id="edit-observation">Correct a record</h3>
+<p>Tap a butterfly in the visit to open it. To change something, tap the pencil at the top right.</p>
+<div class="shots">
+<figure><a href="img/researcher/observation-1.webp"><img src="img/researcher/observation-1.webp" alt="A record: species, count, time, position, section, source and confidence." width="540" height="1040"></a><figcaption>A record: species, count, time, position, section, source and confidence.</figcaption></figure>
+<figure><a href="img/researcher/observation-2.webp"><img src="img/researcher/observation-2.webp" alt="Further down: the details, the photos, and buttons to add more photos." width="540" height="1040"></a><figcaption>Further down: the details, the photos, and buttons to add more photos.</figcaption></figure>
+<figure><a href="img/researcher/edit-sheet.webp"><img src="img/researcher/edit-sheet.webp" alt="The edit sheet. You can change the species, the count and all the details." width="540" height="1040"></a><figcaption>The edit sheet. You can change the species, the count and all the details.</figcaption></figure>
+</div>
+<ul>
+  <li>You can change the species, count and all details. The time and position stay as recorded.</li>
+  <li>You can edit until the visit is <strong>locked</strong>. On a locked visit the pencil is gone. Ask an admin to unlock it if something must change.</li>
+  <li>Changing the species or confidence of a record that has not yet been decided can send it to validation, or take it out again.</li>
+  <li>The message <em>This observation has a sync problem. Open the sync screen first.</em> means an earlier change to this record is stuck. See <a href="#sync-errors">Errors</a>.</li>
+</ul>
+
+<h3 id="manage-photos">Manage photos</h3>
+<p>On a record, the <strong>Photos</strong> section has <span class="btn">Take photo</span> and <span class="btn">From gallery</span>. Photos added here are saved right away. Tap a photo to view it full screen, and pinch to zoom. The icons at the top let you make it the main photo (star) or delete it (bin).</p>
+<div class="shots">
+<figure><a href="img/researcher/photo-viewer.webp"><img src="img/researcher/photo-viewer.webp" alt="A photo full screen. It can be zoomed." width="540" height="1040"></a><figcaption>A photo full screen. It can be zoomed.</figcaption></figure>
+<figure><a href="img/researcher/observation-photo.webp"><img src="img/researcher/observation-photo.webp" alt="A photo marked uploaded has reached the server." width="540" height="1040"></a><figcaption>A photo marked uploaded has reached the server.</figcaption></figure>
+</div>
+<p>A photo from another phone is fetched from the server when you open it, so it needs a connection. Without one you see the small preview if it has already been downloaded.</p>
+<div class="box later"><span class="tag">Coming later</span>You will be able to <strong>add a forgotten butterfly to a finished visit</strong>. Today, Add butterfly exists only while the visit is in progress.</div>
+<h2 id="plants">Plants and habitat</h2>
+<p>Besides butterflies, you can record the plants they depend on and describe the habitat. Open the <span class="btn">Plants &amp; habitat</span> tile, or use <span class="btn">Add plant</span> and <span class="btn">Add habitat</span> during a visit.</p>
+<ul>
+  <li>From the <strong>visit screen</strong>, the record belongs to that visit.</li>
+  <li>From the <strong>tile</strong>, the record stands alone, with no visit.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/plants-habitat.webp"><img src="img/researcher/plants-habitat.webp" alt="Your plant records and habitat features together, newest first." width="540" height="1040"></a><figcaption>Your plant records and habitat features together, newest first.</figcaption></figure>
+<figure><a href="img/researcher/plants-list.webp"><img src="img/researcher/plants-list.webp" alt="The Plants filter. Each row shows the relation, the date and, for a patch, its area." width="540" height="1040"></a><figcaption>The Plants filter. Each row shows the relation, the date and, for a patch, its area.</figcaption></figure>
+<figure><a href="img/researcher/habitat-list.webp"><img src="img/researcher/habitat-list.webp" alt="The Habitat filter." width="540" height="1040"></a><figcaption>The Habitat filter.</figcaption></figure>
+</div>
+<p>The chips <span class="btn">All</span>, <span class="btn">Plants</span> and <span class="btn">Habitat</span> filter the list. Tap a row to view and change it. You see only your own records.</p>
+<div class="box later"><span class="tag">Coming later</span>Members of a project will <strong>see each other's plants and habitat features</strong>, read-only, so everyone benefits from what the project already knows.</div>
+
+<h3 id="plant-record">Add a plant record</h3>
+<div class="shots">
+<figure><a href="img/researcher/plant-form.webp"><img src="img/researcher/plant-form.webp" alt="The top of the form, filled in." width="540" height="1040"></a><figcaption>The top of the form, filled in.</figcaption></figure>
+<figure><a href="img/researcher/plant-picker.webp"><img src="img/researcher/plant-picker.webp" alt="Choosing the plant. Recent plants are listed first. Unidentified plant is at the top." width="540" height="1040"></a><figcaption>Choosing the plant. Recent plants are listed first. Unidentified plant is at the top.</figcaption></figure>
+<figure><a href="img/researcher/plant-relation.webp"><img src="img/researcher/plant-relation.webp" alt="The relation says how the plant matters to butterflies." width="540" height="1040"></a><figcaption>The relation says how the plant matters to butterflies.</figcaption></figure>
+<figure><a href="img/researcher/plant-form-2.webp"><img src="img/researcher/plant-form-2.webp" alt="Further down: eggs, larvae, damage, photos, location and notes." width="540" height="1040"></a><figcaption>Further down: eggs, larvae, damage, photos, location and notes.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>Choices</th><th>Needed?</th></tr>
+<tr><td><span class="btn">Pick the plant</span></td><td>Search the list. Or choose <strong>Unidentified plant</strong>, in which case you must describe it in the notes.</td><td>Unidentified needs notes</td></tr>
+<tr><td><span class="btn">Relation to butterflies</span></td><td>Larval host plant, Nectar source, Oviposition plant, Resting plant, Unknown association</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Abundance</span></td><td>Individuals or flowering stems in the patch: 1, 2-10, 11-100, 101-1000, More than 1000</td><td>No</td></tr>
+<tr><td><span class="btn">Phenology</span></td><td>Vegetative, Budding, Flowering, Fruiting, Senescent</td><td>No</td></tr>
+<tr><td><span class="btn">Flowering</span></td><td>None, Low, Medium, High</td><td>No</td></tr>
+<tr><td><span class="btn">Eggs</span>, <span class="btn">Larvae</span>, <span class="btn">Feeding damage</span></td><td>Unknown, Yes, No. Unknown means you did not check, which is different from No.</td><td>No</td></tr>
+<tr><td><strong>Photos</strong></td><td><span class="btn">Photo</span> or <span class="btn">Gallery</span></td><td>No</td></tr>
+<tr><td><span class="btn">Location</span></td><td>A point or a drawn patch. See below. It starts at your current position.</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Free text</td><td>Only for an unidentified plant</td></tr>
+</table></div>
+<p><span class="btn">Save</span> stays grey until the required fields are filled in.</p>
+
+<h3 id="location">Set a location: point, patch or line</h3>
+<p>Tap <span class="btn">Location</span> to open the map. Choose a method at the top, draw, then tap the tick at the top right to keep it. The back arrow leaves without changing the location. Changing the method clears what you drew, and the app asks first.</p>
+<div class="shots">
+<figure><a href="img/researcher/geometry-point.webp"><img src="img/researcher/geometry-point.webp" alt="Point: tap the map, or tap Use my position." width="540" height="1040"></a><figcaption>Point: tap the map, or tap Use my position.</figcaption></figure>
+<figure><a href="img/researcher/polygon-tap.webp"><img src="img/researcher/polygon-tap.webp" alt="Polygon (tap): tap each corner. The line below shows the corners and the area." width="540" height="1040"></a><figcaption>Polygon (tap): tap each corner. The line below shows the corners and the area.</figcaption></figure>
+<figure><a href="img/researcher/polygon-closed.webp"><img src="img/researcher/polygon-closed.webp" alt="Close finishes the shape. Then tap the tick at the top right." width="540" height="1040"></a><figcaption>Close finishes the shape. Then tap the tick at the top right.</figcaption></figure>
+<figure><a href="img/researcher/polygon-walk.webp"><img src="img/researcher/polygon-walk.webp" alt="Polygon (walk): walk around the patch with GPS." width="540" height="1040"></a><figcaption>Polygon (walk): walk around the patch with GPS.</figcaption></figure>
+<figure><a href="img/researcher/geometry-line.webp"><img src="img/researcher/geometry-line.webp" alt="Line: for habitat features only, such as a hedge or a ditch." width="540" height="1040"></a><figcaption>Line: for habitat features only, such as a hedge or a ditch.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Method</th><th>How</th><th>Best for</th></tr>
+<tr><td><span class="btn">Point</span></td><td>Tap the map to place it, or <span class="btn">Use my position</span>.</td><td>A single plant or small clump. Fastest.</td></tr>
+<tr><td><span class="btn">Polygon (tap)</span></td><td>Tap the corners in order. <span class="btn">Undo</span> removes the last corner, <span class="btn">Clear</span> removes all, <span class="btn">Close</span> finishes. You need at least three.</td><td>A patch you can see on the map. Works well after the walk.</td></tr>
+<tr><td><span class="btn">Polygon (walk)</span></td><td><span class="btn">Start walking</span>, walk along the edge, <span class="btn">Stop walking</span>, then <span class="btn">Close</span>. A corner is kept about every 2 m. During a visit it uses the visit's GPS, so walk slowly.</td><td>A larger patch you can walk around.</td></tr>
+<tr><td><span class="btn">Line</span></td><td>Tap points along the line. Habitat features only.</td><td>A hedge, ditch or path edge.</td></tr>
+</table></div>
+<p>The screen warns you about shapes that cannot be saved or are unreliable:</p>
+<ul>
+  <li><em>The edges cross. Undo the last points or start again.</em> The outline crosses itself.</li>
+  <li><em>The corners are on one line. Add a corner to the side.</em> The shape has no area.</li>
+  <li><em>This patch is only about … m across, which is too small for GPS.</em> A walked shape this small is unreliable. Use tap mode.</li>
+</ul>
+<div class="box tip"><span class="tag">Tip</span>A point with an abundance class is much quicker than a polygon. Draw a patch only when its size matters.</div>
+
+<h3 id="habitat-record">Add a habitat feature</h3>
+<div class="shots">
+<figure><a href="img/researcher/habitat-form.webp"><img src="img/researcher/habitat-form.webp" alt="The top of the form. Shrub cover has been recorded and the others are not recorded." width="540" height="1040"></a><figcaption>The top of the form. Shrub cover has been recorded and the others are not recorded.</figcaption></figure>
+<figure><a href="img/researcher/habitat-type.webp"><img src="img/researcher/habitat-type.webp" alt="The habitat types come from the project&#x27;s lists." width="540" height="1040"></a><figcaption>The habitat types come from the project's lists.</figcaption></figure>
+<figure><a href="img/researcher/habitat-form-2.webp"><img src="img/researcher/habitat-form-2.webp" alt="Further down: flowers, grazing, mowing, disturbance, location and notes." width="540" height="1040"></a><figcaption>Further down: flowers, grazing, mowing, disturbance, location and notes.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>Choices</th><th>Needed?</th></tr>
+<tr><td><span class="btn">Habitat type</span></td><td>From the project's list, for example Dry grassland or Wet meadow</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Management</span></td><td>From the project's list, for example Mown, Grazed or Abandoned</td><td>No</td></tr>
+<tr><td><span class="btn">Vegetation height (cm)</span></td><td>A number</td><td>No</td></tr>
+<tr><td><span class="btn">Shrub cover</span>, <span class="btn">Tree cover</span>, <span class="btn">Bare ground</span></td><td>Tap <span class="btn">Record</span>, then slide from 0 to 100 %. <span class="btn">Clear</span> returns to Not recorded. 0 % means you checked and there was none, which is different from Not recorded.</td><td>No</td></tr>
+<tr><td><span class="btn">Flower abundance</span></td><td>None, Low, Medium, High</td><td>No</td></tr>
+<tr><td><span class="btn">Grazing</span></td><td>None, Low, Medium, High</td><td>No</td></tr>
+<tr><td><span class="btn">Mowing</span></td><td>Unmown, Recently mown, Mown this season, Unknown</td><td>No</td></tr>
+<tr><td><span class="btn">Disturbance</span></td><td>None, Trampling, Vehicle tracks, Fire, Erosion, Dumping, Other</td><td>No</td></tr>
+<tr><td><span class="btn">Location</span></td><td>A point, polygon or line</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Free text</td><td>No</td></tr>
+</table></div>
+<p>Habitat features have no photos.</p>
+
+<h3 id="edit-plants">Change or delete a plant or habitat record</h3>
+<p>Tap the row to open the form, change what you need and tap <span class="btn">Save</span>.</p>
+<div class="shots">
+<figure><a href="img/researcher/plant-edit.webp"><img src="img/researcher/plant-edit.webp" alt="An existing plant record. The bin at the top right deletes it." width="540" height="1040"></a><figcaption>An existing plant record. The bin at the top right deletes it.</figcaption></figure>
+<figure><a href="img/researcher/habitat-edit.webp"><img src="img/researcher/habitat-edit.webp" alt="An existing habitat feature." width="540" height="1040"></a><figcaption>An existing habitat feature.</figcaption></figure>
+</div>
+<ul>
+  <li>The bin icon at the top right deletes the record after asking you. A plant's photos are deleted with it.</li>
+  <li>A plant linked to a butterfly cannot be deleted. The app says <em>Linked to … butterfly records. Remove the link first.</em></li>
+  <li>If the record's visit is locked, the form says the record cannot be changed.</li>
+</ul>
+
+<h2 id="map">The map</h2>
+<p>Open the <span class="btn">Map</span> tile to see everything in the project on one map.</p>
+<div class="shots">
+<figure><a href="img/researcher/map.webp"><img src="img/researcher/map.webp" alt="The project map. Numbers are clusters of records, and tapping one zooms in." width="540" height="1040"></a><figcaption>The project map. Numbers are clusters of records, and tapping one zooms in.</figcaption></figure>
+<figure><a href="img/researcher/map-layers.webp"><img src="img/researcher/map-layers.webp" alt="Layers: turn each kind of data on or off." width="540" height="1040"></a><figcaption>Layers: turn each kind of data on or off.</figcaption></figure>
+<figure><a href="img/researcher/map-filters.webp"><img src="img/researcher/map-filters.webp" alt="Filters narrow down which butterfly records are shown." width="540" height="1040"></a><figcaption>Filters narrow down which butterfly records are shown.</figcaption></figure>
+<figure><a href="img/researcher/map-route.webp"><img src="img/researcher/map-route.webp" alt="One visit selected with its route shown." width="540" height="1040"></a><figcaption>One visit selected with its route shown.</figcaption></figure>
+</div>
+<h3 id="map-symbols">What you see</h3>
+<div class="tablewrap"><table>
+<tr><th>On the map</th><th>Meaning</th></tr>
+<tr><td>Coloured lines</td><td>The transects, with each section in its own colour</td></tr>
+<tr><td>Dark green circle with a number</td><td>A cluster of records. Tap it to zoom in</td></tr>
+<tr><td>Orange dot</td><td>One butterfly record</td></tr>
+<tr><td>Green marker or green area</td><td>A plant record, as a point or patch</td></tr>
+<tr><td>Brown marker, line or area</td><td>A habitat feature</td></tr>
+<tr><td>Dark line</td><td>The route of the selected visit</td></tr>
+</table></div>
+<h3 id="map-popups">Tap something for details</h3>
+<p>Tap a line or marker to see a short summary. <span class="btn">Open</span> goes to the full record.</p>
+<div class="shots">
+<figure><a href="img/researcher/map-popup-observation.webp"><img src="img/researcher/map-popup-observation.webp" alt="A butterfly record." width="540" height="1040"></a><figcaption>A butterfly record.</figcaption></figure>
+<figure><a href="img/researcher/map-popup-section.webp"><img src="img/researcher/map-popup-section.webp" alt="A section of a transect, with its habitat." width="540" height="1040"></a><figcaption>A section of a transect, with its habitat.</figcaption></figure>
+</div>
+<h3 id="map-layers">Layers and filters</h3>
+<ul>
+  <li>The <strong>layers icon</strong> turns on or off: Transects, Sections, Observations, Plants, Habitats, Visit route and the Basemap.</li>
+  <li>The <strong>funnel icon</strong> filters butterfly records by Visit, Species, Dates, Life stage, Behaviour and Habitat type. The sheet shows how many records match, such as <em>3 of 83</em>. <span class="btn">Clear all</span> resets them. A number on the funnel shows how many filters are active.</li>
+  <li><strong>To see a route:</strong> choose a visit under Filters, then turn on <span class="btn">Visit route</span> in Layers. If it says <em>Route not on this phone</em>, the visit was recorded on another phone.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/map-filter-applied.webp"><img src="img/researcher/map-filter-applied.webp" alt="Filtered to one visit: 3 of 83 records match." width="540" height="1040"></a><figcaption>Filtered to one visit: 3 of 83 records match.</figcaption></figure>
+</div>
+<h3 id="map-offline">Maps without a connection</h3>
+<p>Your transects, sections and records always show. The background map comes from OpenStreetMap over the internet, but the phone keeps the parts you have already viewed for a while. So look at your study area at home before you leave. Without those stored tiles, your lines still draw on a plain background.</p>
+<div class="box later"><span class="tag">Coming later</span>An <strong>offline basemap</strong> for the study area will be downloaded with the project.</div>
+
+<h2 id="sync">Sync</h2>
+<p>Sync sends your changes to the server and fetches what is new. You rarely need to think about it.</p>
+<h3 id="sync-when">When it happens</h3>
+<ul>
+  <li>When you log in or open the app</li>
+  <li>When the app comes back to the foreground</li>
+  <li>Every 15 minutes while the app is open</li>
+  <li>When the phone gets a connection back</li>
+  <li>Right after you finish or cancel a visit</li>
+  <li>When you pull down the project list, or tap <span class="btn">Sync now</span></li>
+</ul>
+<div class="box note"><span class="tag">Good to know</span>Sync does not run while the app is closed. After a field day, open the app with a connection and let it finish.</div>
+
+<h3 id="sync-screen">The Unsynced data screen</h3>
+<p>Open the <span class="btn">Unsynced data</span> tile.</p>
+<div class="shots">
+<figure><a href="img/researcher/sync-pending.webp"><img src="img/researcher/sync-pending.webp" alt="Two changes are waiting. The screen also shows the photos waiting and when the last sync happened." width="540" height="1040"></a><figcaption>Two changes are waiting. The screen also shows the photos waiting and when the last sync happened.</figcaption></figure>
+<figure><a href="img/researcher/sync-failed.webp"><img src="img/researcher/sync-failed.webp" alt="Sync now without a connection. Nothing is lost." width="540" height="1040"></a><figcaption>Sync now without a connection. Nothing is lost.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Line</th><th>Meaning</th></tr>
+<tr><td><strong>Changes</strong></td><td>How many changes are waiting, by type of record</td></tr>
+<tr><td><strong>Photos</strong></td><td>How many photos wait for upload, and their size</td></tr>
+<tr><td><strong>Photos on this phone</strong></td><td>How much space the app's photos use</td></tr>
+<tr><td><strong>Last successful sync</strong></td><td>How long ago sync last finished</td></tr>
+<tr><td><strong>Data of the last sync</strong></td><td>How much data it used</td></tr>
+<tr><td><strong>Errors</strong></td><td>Changes the server refused. See below</td></tr>
+<tr><td><strong>Conflicts</strong></td><td>Changes that collided with a change on the server. See below</td></tr>
+</table></div>
+<p><em>Sync did not finish. Changes stay on this phone.</em> means there was no connection or the server did not answer. Nothing is lost, and the app tries again later.</p>
+
+<h3 id="sync-errors">Errors: the server refused a change</h3>
+<p>Sometimes the server refuses a change, for example because an admin locked the visit in the meantime. The change stays on your phone under <strong>Errors</strong> with the reason.</p>
+<div class="shots">
+<figure><a href="img/researcher/sync-errors.webp"><img src="img/researcher/sync-errors.webp" alt="An error at the top: the visit was locked. A conflict below it waits for an admin." width="540" height="1040"></a><figcaption>An error at the top: the visit was locked. A conflict below it waits for an admin.</figcaption></figure>
+<figure><a href="img/researcher/sync-discard.webp"><img src="img/researcher/sync-discard.webp" alt="Discard asks you first. The server&#x27;s version then comes back to your phone." width="540" height="1040"></a><figcaption>Discard asks you first. The server's version then comes back to your phone.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="btn">Retry</span> sends it again. Use it once the cause is gone. For a locked visit, that means after an admin has unlocked it.</li>
+  <li><span class="btn">Discard local change</span> removes your change. The server's version comes back on the next sync.</li>
+</ul>
+<p>A photo the server refused appears here too, with <span class="btn">Try again</span> and <span class="btn">Delete photo</span>. See <a href="#messages-sync">the list of sync messages</a>.</p>
+
+<h3 id="sync-conflicts">Conflicts: you and an admin changed the same thing</h3>
+<p>A conflict happens when you change a value offline and someone changes <strong>the same value</strong> on the server before your change arrives. If you changed different fields, both changes are simply combined.</p>
+<p>You cannot resolve a conflict in the app. An admin looks at both versions and decides. Until then, the card says <em>An admin will resolve this.</em> Afterwards it says which version won, with the admin's note.</p>
+<div class="shots">
+<figure><a href="img/researcher/sync-resolved.webp"><img src="img/researcher/sync-resolved.webp" alt="A resolved conflict: the admin accepted your value and explained why." width="540" height="1040"></a><figcaption>A resolved conflict: the admin accepted your value and explained why.</figcaption></figure>
+</div>
+
+<h3 id="sync-wifi">Save mobile data</h3>
+<p>In <a href="#settings">Settings</a>, turn on <span class="btn">Upload photos on Wi-Fi only</span>. Records still sync over mobile data, but photos wait for Wi-Fi.</p>
+<div class="box warn"><span class="tag">Careful</span>Photos that are not uploaded exist only on your phone. They are lost if you clear the app's data.</div>
+
+<h2 id="settings">Settings</h2>
+<p>Tap the gear on the project list or the project home screen.</p>
+<div class="shots">
+<figure><a href="img/researcher/settings.webp"><img src="img/researcher/settings.webp" alt="Settings: your account, sync, the GPS interval, Wi-Fi only, logging out, and the server address." width="540" height="1040"></a><figcaption>Settings: your account, sync, the GPS interval, Wi-Fi only, logging out, and the server address.</figcaption></figure>
+<figure><a href="img/researcher/logout-dialog.webp"><img src="img/researcher/logout-dialog.webp" alt="Logging out with unsynced changes offers to sync first." width="540" height="1040"></a><figcaption>Logging out with unsynced changes offers to sync first.</figcaption></figure>
+<figure><a href="img/researcher/remove-data.webp"><img src="img/researcher/remove-data.webp" alt="Remove data asks for confirmation, and it really deletes everything." width="540" height="1040"></a><figcaption>Remove data asks for confirmation, and it really deletes everything.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Setting</th><th>What it does</th></tr>
+<tr><td><strong>Your name and email</strong></td><td>The account logged in. It says <em>offline</em> when the server cannot be reached.</td></tr>
+<tr><td><strong>Sync</strong></td><td>The last sync time, what is pending, and <span class="btn">Sync now</span>.</td></tr>
+<tr><td><strong>GPS interval</strong></td><td>How often this phone records a route point. <em>Project</em> follows the project's protocol and is the right choice normally. The others are 1, 2, 5, 10, 15 or 30 seconds. It applies from the next visit or app restart.</td></tr>
+<tr><td><strong>Upload photos on Wi-Fi only</strong></td><td>Photos wait until Wi-Fi is connected.</td></tr>
+<tr><td><span class="btn">Log out</span></td><td>Ends your session. Your records stay on the phone. If changes are waiting, you can choose <span class="btn">Sync first</span>, <span class="btn">Log out anyway</span> or <span class="btn">Cancel</span>.</td></tr>
+<tr><td><span class="btn">Remove data</span></td><td>Deletes everything the app stores on this phone, including what has not synced, and logs you out. See the warning below.</td></tr>
+<tr><td><strong>URL</strong></td><td>The server address, with <span class="btn">Test Connection</span> and <span class="btn">Save</span>. Change it only if your admin tells you to.</td></tr>
+</table></div>
+<div class="box warn"><span class="tag">Careful</span><strong>Remove data cannot be undone.</strong> Anything not yet synced is gone for good, including routes. Your routes are also not downloaded again afterwards, so past visits will show no route on this phone. Use it only when you hand the phone to someone else, and sync first.</div>
+<div class="box note"><span class="tag">Good to know</span>Uninstalling the app also deletes everything on the phone. Sync first. To move to a new phone, sync the old one, then install the app on the new one, log in and download your project. Your records come back from the server, without the routes on the map.</div>
+
+<h2 id="statuses">Visit statuses</h2>
+<p>A visit moves through these statuses. You will see them in <strong>My visits</strong>.</p>
+<figure class="diagram"><img src="img/visit-states.svg" alt="Draft becomes In progress when started, Completed when finished, Synced when it reaches the server, Reviewed or Locked by an admin. A draft or a visit in progress can be cancelled." width="780" height="310"></figure>
+<div class="tablewrap"><table>
+<tr><th>Status</th><th>Meaning</th><th>Can you change it?</th></tr>
+<tr><td><strong>Draft</strong></td><td>Saved but not started.</td><td>Yes, continue or record it as not conducted.</td></tr>
+<tr><td><strong>In progress</strong></td><td>You are walking it.</td><td>Yes.</td></tr>
+<tr><td><strong>Completed</strong></td><td>Finished, not yet on the server.</td><td>You can correct its butterfly records.</td></tr>
+<tr><td><strong>Synced</strong></td><td>Finished and on the server.</td><td>You can correct its butterfly records.</td></tr>
+<tr><td><strong>Reviewed</strong></td><td>An admin has looked at it.</td><td>You can still correct its butterfly records.</td></tr>
+<tr><td><strong>Locked</strong></td><td>An admin has made it final.</td><td>No. Ask an admin to unlock it.</td></tr>
+<tr><td><strong>Cancelled</strong></td><td>Not completed, or never walked. The reason is shown next to it.</td><td>You can correct records of a visit that was started, until an admin locks it.</td></tr>
+</table></div>
+
+<h2 id="reference">Reference: the Beaufort scale</h2>
+<p>The wind list in the app shows these hints. The default project limit is 5.</p>
+<div class="tablewrap"><table>
+<tr><th>Force</th><th>Name</th><th>What it looks like</th></tr>
+<tr><td>0</td><td>Calm</td><td>Smoke rises straight up</td></tr>
+<tr><td>1</td><td>Light air</td><td>Smoke drifts, leaves still</td></tr>
+<tr><td>2</td><td>Light breeze</td><td>Leaves rustle, wind felt on the face</td></tr>
+<tr><td>3</td><td>Gentle breeze</td><td>Leaves and twigs move constantly</td></tr>
+<tr><td>4</td><td>Moderate breeze</td><td>Small branches move, dust is raised</td></tr>
+<tr><td>5</td><td>Fresh breeze</td><td>Small trees sway</td></tr>
+<tr><td>6</td><td>Strong breeze</td><td>Large branches move</td></tr>
+<tr><td>7</td><td>Near gale</td><td>Whole trees move, hard to walk against</td></tr>
+<tr><td>8</td><td>Gale</td><td>Twigs break off trees</td></tr>
+<tr><td>9</td><td>Strong gale</td><td>Slight damage to buildings</td></tr>
+<tr><td>10</td><td>Storm</td><td>Trees uprooted</td></tr>
+<tr><td>11</td><td>Violent storm</td><td>Widespread damage</td></tr>
+<tr><td>12</td><td>Hurricane</td><td>Devastation</td></tr>
+</table></div>
+
+<h2 id="messages">Messages and what they mean</h2>
+<h3 id="messages-entry">When saving a record or finishing a visit</h3>
+<div class="tablewrap"><table>
+<tr><th>The app says</th><th>What it means and what to do</th></tr>
+<tr><td><em>The count must be at least 1</em></td><td>Set a count of 1 or more.</td></tr>
+<tr><td><em>The time and the position are required</em></td><td>The record has no position. Wait for GPS, or set the location on the map.</td></tr>
+<tr><td><em>A butterfly can only be added to a visit that is in progress or finished</em></td><td>The visit is a draft or was never started.</td></tr>
+<tr><td><em>The observation time is outside the visit's time</em></td><td>The record's time is more than the allowed tolerance (5 minutes by default) outside the visit. Check the phone's clock, or ask an admin.</td></tr>
+<tr><td><em>The weather at the start and at the end, or a reason, is required</em> or <em>To finish, fill in the end weather or give a reason.</em></td><td>Fill in the weather, or write why you could not.</td></tr>
+<tr><td><em>Tick the true-zero confirmation.</em></td><td>A visit with no butterflies needs the tick, or use Cancel visit.</td></tr>
+<tr><td><em>The true-zero confirmation does not match the butterfly records</em></td><td>A visit confirmed as having no butterflies cannot have butterfly records.</td></tr>
+<tr><td><em>A value is not one of the allowed choices</em></td><td>The app may be out of date. Update it.</td></tr>
+<tr><td><em>The position is not valid</em></td><td>The location or shape cannot be used. Set it again.</td></tr>
+<tr><td><em>Notes are required when the plant is not identified</em></td><td>Describe the unidentified plant in Notes.</td></tr>
+<tr><td><em>This species needs a photo. The record will wait for validation</em></td><td>A warning only. Add a photo if you can.</td></tr>
+<tr><td><em>Low GPS accuracy</em></td><td>A warning only. Wait a moment for a better fix if you can.</td></tr>
+<tr><td><em>Egg-laying: link the host plant</em> or <em>Larva: link the host plant</em></td><td>A suggestion only. Link the plant if you can.</td></tr>
+<tr><td><em>The visit is no longer in progress.</em></td><td>It was finished or cancelled, possibly by a sync. Go back and check its status.</td></tr>
+<tr><td><em>The visit is locked.</em></td><td>An admin locked it. Ask them to unlock it if something must change.</td></tr>
+<tr><td><em>The transect or the project's protocol is not on this phone. Sync first.</em></td><td>Download or update the project.</td></tr>
+</table></div>
+<h3 id="messages-sync">In the Errors section of Unsynced data</h3>
+<div class="tablewrap"><table>
+<tr><th>The app says</th><th>What it means and what to do</th></tr>
+<tr><td><em>An admin has locked this visit, so this change was not accepted.</em></td><td>Discard it, or retry after an admin unlocks the visit.</td></tr>
+<tr><td><em>Not accepted: …</em></td><td>A value broke a rule. The message names it. Correct the record and retry, or discard the change.</td></tr>
+<tr><td><em>This record no longer exists on the server.</em> or <em>This record was deleted on the server.</em></td><td>An admin removed it. Discard your change.</td></tr>
+<tr><td><em>You are not allowed to change this record.</em></td><td>It is not yours, or you are no longer in the project. Ask an admin.</td></tr>
+<tr><td><em>The visit's status can't change this way</em></td><td>The visit has already moved on. Discard the change.</td></tr>
+<tr><td><em>The change clashes with data already on the server.</em></td><td>Discard it and check the record after the next sync.</td></tr>
+<tr><td><em>A value is too long or out of range.</em></td><td>Shorten or correct the value, then retry.</td></tr>
+<tr><td><em>This app version can't send this kind of change.</em></td><td>Update the app.</td></tr>
+<tr><td><em>Photo could not be uploaded</em></td><td><span class="btn">Try again</span>. If it keeps failing, use <span class="btn">Delete photo</span>. The record stays.</td></tr>
+</table></div>
+
+<h2 id="faq">Problems and answers</h2>
+<h4>I logged in but see no projects.</h4>
+<p>Pull the list down to refresh. If it stays empty, an admin has not added you to a project yet.</p>
+<h4>A project disappeared from my list.</h4>
+<p>An admin may have removed you from it. The records you already synced are safe on the server. Ask your admin.</p>
+<h4>The distance to the transect is wrong.</h4>
+<p>Tap the location icon on the transect list to take a new position. Indoors, or just after turning on GPS, the position can be poor.</p>
+<h4>The app does not record my route when the screen is off.</h4>
+<p>Your phone is probably saving battery too aggressively. In Android's settings for the app, set battery use to <em>Unrestricted</em>, and check that notifications are allowed. Do a short test walk at home.</p>
+<h4>My route has straight jumps.</h4>
+<p>Those are GPS gaps, for example from dense forest or a phone deep in a bag. Keep the phone near the top of a pocket or in your hand. Check that battery saver is off.</p>
+<h4>The battery ran out during a walk.</h4>
+<p>Everything recorded up to then is safe. Charge the phone and open the app. The visit continues, and the Finish screen shows the gap. If you could not complete the walk, cancel it with a reason.</p>
+<h4>I forgot to tap Finish.</h4>
+<p>The visit stays in progress and the app keeps recording. Open it and tap <span class="btn">Finish</span>. If the walking time is now much too long, tell your admin, who can correct the times.</p>
+<h4>I forgot to tap Start and have already walked.</h4>
+<p>Start the visit now and note what happened in the notes, or walk it again if you can. The app takes the time from the phone, so records cannot be dated back.</p>
+<h4>I recorded the wrong species.</h4>
+<p>Within 10 seconds, tap <span class="btn">Undo</span>. Later, open the record and tap the pencil, then <span class="btn">Change species</span>. See <a href="#edit-observation">Correct a record</a>.</p>
+<h4>I forgot a butterfly and the visit is finished.</h4>
+<p>You cannot add it to a finished visit yet, and neither can an admin. Tell your admin so that there is a note of it. Before you tap <span class="btn">Finish and save</span>, you can still go back and add it.</p>
+<h4>Sync never finishes or always fails.</h4>
+<p>Check your connection, and try opening a website on the phone. If that works, the server may be off, so ask your admin. Your data stays safe on the phone.</p>
+<h4>A photo stays "waiting".</h4>
+<p>If <span class="btn">Upload photos on Wi-Fi only</span> is on, connect to Wi-Fi. Otherwise open <span class="btn">Unsynced data</span>, tap <span class="btn">Sync now</span> and check <strong>Errors</strong>.</p>
+<h4>I have a new phone.</h4>
+<p>Sync the old phone first and check that nothing is waiting. Install the app on the new phone, log in and download your project. Your visits and records come back, but routes do not appear on the new phone's map. They are safe on the server.</p>
+<h4>Can other people see my records?</h4>
+<p>Other researchers cannot. Admins can see everything in the projects, to check and export it.</p>
+
+<h2 id="coming-later">Coming later</h2>
+<p>These features are planned. Plans can change as the project develops.</p>
+<div class="tablewrap"><table>
+<tr><th>Feature</th><th>What it will do</th></tr>
+<tr><td>Download page and public server</td><td>Install the app from a website and log in, with no server setup at all.</td></tr>
+<tr><td>Free observation</td><td>Record butterflies outside a standard walk: incidental sightings, larval searches and host-plant searches. It will also open by pressing and holding on the map.</td></tr>
+<tr><td>Statistics</td><td>Your own figures offline: visits, true zeros, species, individuals per km and per hour, top 10 species and a weekly chart for a species.</td></tr>
+<tr><td>Add to a finished visit</td><td>Add a forgotten butterfly to a visit you have finished.</td></tr>
+<tr><td>Route proposals</td><td>Record a better route in the field for an admin to accept.</td></tr>
+<tr><td>Shared plants and habitat</td><td>See what other project members recorded, read-only, and link your butterflies to it.</td></tr>
+<tr><td>Offline basemap</td><td>A background map of the study area downloaded with the project.</td></tr>
+<tr><td>Automatic weather and sensors</td><td>In the project's second phase: fill in the weather automatically, and show nearby monitoring stations on the map.</td></tr>
+<tr><td>Focal-follow sessions</td><td>In the project's second phase: follow one butterfly and record its path and behaviour.</td></tr>
+</table></div>
+<p class="credits">Example data only. Map data © OpenStreetMap contributors. Photo credits are on the <a href="index.html#credits">start page</a>.</p>
+</main>
+</div>
+</body>
+</html>

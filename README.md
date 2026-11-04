@@ -56,7 +56,7 @@ Never run `$DC down -v`: it deletes the database and the stored photos.
 
 | Address | Service |
 |---|---|
-| `http://localhost:8080` | nginx: `/api/`, `/admin/`, `/static/` (Django) and `/ogc/` (pygeoapi; admins only, [how to log in](docs/setup/ogc-access.md)) |
+| `http://localhost:8080` | nginx: `/api/`, `/admin/`, `/static/` (Django), `/ogc/` (pygeoapi; admins only, [how to log in](docs/setup/ogc-access.md)) and `/manual/` (the user manuals, [docs/manual](docs/manual/index.html)) |
 | `http://localhost:9001` | MinIO console (this machine only) |
 | `localhost:5432` | PostgreSQL, for `psql` and QGIS (this machine only) |
 

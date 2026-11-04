@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 310" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" role="img" aria-labelledby="t">
+  <title id="t">The statuses of a visit and who moves it from one to the next</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#55615a"/></marker>
+  </defs>
+  <g stroke="#55615a" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M100 152h38"/>
+    <path d="M250 152h38"/>
+    <path d="M400 152h38"/>
+    <path d="M530 140 648 88"/>
+    <path d="M530 164 648 216"/>
+    <path d="M690 104v94"/>
+    <path d="M720 198v-92"/>
+    <path d="M55 174v98h83"/>
+    <path d="M195 174v74"/>
+    <path d="M345 130V30h360v28"/>
+    <path d="M345 174v106h360v-34"/>
+  </g>
+  <g fill="#eaf2fb" stroke="#2563a8">
+    <rect x="10" y="130" width="90" height="44" rx="8"/>
+    <rect x="140" y="130" width="110" height="44" rx="8"/>
+    <rect x="290" y="130" width="110" height="44" rx="8"/>
+  </g>
+  <rect x="440" y="130" width="90" height="44" rx="8" fill="#f1f4f2" stroke="#55615a"/>
+  <g fill="#eef5f0" stroke="#2f7d52">
+    <rect x="650" y="60" width="110" height="44" rx="8"/>
+    <rect x="650" y="200" width="110" height="44" rx="8"/>
+  </g>
+  <rect x="140" y="250" width="110" height="44" rx="8" fill="#fdf0ee" stroke="#c0392b"/>
+  <g fill="#1d2420" text-anchor="middle" font-weight="600">
+    <text x="55" y="157">Draft</text>
+    <text x="195" y="157">In progress</text>
+    <text x="345" y="157">Completed</text>
+    <text x="485" y="157">Synced</text>
+    <text x="705" y="87">Reviewed</text>
+    <text x="705" y="227">Locked</text>
+    <text x="195" y="277">Cancelled</text>
+  </g>
+  <g fill="#55615a" font-size="12.5">
+    <text x="119" y="144" text-anchor="middle">Start</text>
+    <text x="269" y="144" text-anchor="middle">Finish</text>
+    <text x="419" y="144" text-anchor="middle">sync</text>
+    <text x="580" y="100" text-anchor="end">Mark as reviewed</text>
+    <text x="582" y="212" text-anchor="end">Lock</text>
+    <text x="684" y="155" text-anchor="end">Lock</text>
+    <text x="728" y="155">Unlock</text>
+    <text x="525" y="24" text-anchor="middle">an admin can review before sync</text>
+    <text x="525" y="298" text-anchor="middle">an admin can lock before sync</text>
+    <text x="96" y="290" text-anchor="middle">Not conducted</text>
+    <text x="205" y="215">Cancel visit</text>
+  </g>
+  <g fill="#1d2420" font-size="13">
+    <rect x="10" y="10" width="14" height="14" rx="3" fill="#eaf2fb" stroke="#2563a8"/><text x="30" y="22">Set on the phone</text>
+    <rect x="10" y="34" width="14" height="14" rx="3" fill="#f1f4f2" stroke="#55615a"/><text x="30" y="46">Set by the server</text>
+    <rect x="10" y="58" width="14" height="14" rx="3" fill="#eef5f0" stroke="#2f7d52"/><text x="30" y="70">Set by an admin</text>
+  </g>
+</svg>

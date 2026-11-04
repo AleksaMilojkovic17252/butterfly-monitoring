@@ -114,6 +114,7 @@ services:
     volumes:
       - ./infrastructure/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - staticfiles:/srv/static:ro
+      - ./docs/manual:/srv/manual:ro
     # Auth cache (T069): its keys hold the Authorization header, so keep it off disk.
     tmpfs:
       - /var/cache/nginx/auth

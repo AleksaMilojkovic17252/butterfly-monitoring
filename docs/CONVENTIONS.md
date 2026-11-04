@@ -26,6 +26,7 @@ Phone (Flutter, Android) ──HTTPS──► Tailscale (tailscale serve, https:
                                          ▼
                                    nginx :8080 ─┬─ /api/*, /admin/*  → django (gunicorn) :8000
                                                 ├─ /static/*         → collected static files
+                                                ├─ /manual/*         → the user manuals, plain files from docs/manual (no login)
                                                 ├─ /ogc/*            → pygeoapi :5000 (auth_request → django /api/v1/auth/verify)
                                                 └─ /sta/* (Phase 2)  → FROST :8080 (auth_request, admin-only)
 django ──► PostgreSQL 17 + PostGIS 3.5 (+ MobilityDB 1.3 in Phase 2)   [image: mobilitydb/mobilitydb]

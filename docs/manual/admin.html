@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin manual · Butterfly Monitoring</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="site" href="index.html">Butterfly Monitoring</a>
+  <span class="here">Admin manual</span>
+  <a class="other" href="researcher.html">Researcher manual</a>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+<details open>
+<summary>Contents</summary>
+<ol>
+  <li><a href="#about">About this manual</a>
+    <ol>
+      <li><a href="#conventions">How to read the boxes</a></li>
+    </ol>
+  </li>
+  <li><a href="#role">Your role</a>
+  </li>
+  <li><a href="#season">A season, step by step</a>
+    <ol>
+      <li><a href="#season-before">Before the season</a></li>
+      <li><a href="#season-during">During the season</a></li>
+      <li><a href="#season-after">After the season</a></li>
+    </ol>
+  </li>
+  <li><a href="#tour">The web admin</a>
+    <ol>
+      <li><a href="#tour-login">Log in</a></li>
+      <li><a href="#tour-home">The home page</a></li>
+      <li><a href="#tour-lists">List pages</a></li>
+      <li><a href="#tour-times">Times are in UTC</a></li>
+      <li><a href="#tour-save">Saving and the change reason</a></li>
+      <li><a href="#tour-delete">Nothing is really deleted</a></li>
+      <li><a href="#tour-history">History: who changed what</a></li>
+      <li><a href="#tour-readonly">Pages you can only view</a></li>
+    </ol>
+  </li>
+  <li><a href="#users">Users</a>
+    <ol>
+      <li><a href="#user-create">Create an account</a></li>
+      <li><a href="#user-password">Reset a password</a></li>
+      <li><a href="#user-leave">When someone leaves</a></li>
+    </ol>
+  </li>
+  <li><a href="#projects">Projects</a>
+    <ol>
+      <li><a href="#project-create">Create a project</a></li>
+      <li><a href="#area">The study area</a></li>
+      <li><a href="#protocol">The protocol</a></li>
+      <li><a href="#members">Add and remove members</a></li>
+    </ol>
+  </li>
+  <li><a href="#transects">Transects and sections</a>
+    <ol>
+      <li><a href="#transect-steps">The usual order of work</a></li>
+      <li><a href="#transect-add">Add a transect</a></li>
+      <li><a href="#import-line">Import a line from a file</a></li>
+      <li><a href="#generate-sections">Generate sections</a></li>
+      <li><a href="#sections">Edit sections</a></li>
+    </ol>
+  </li>
+  <li><a href="#catalogues">Catalogues</a>
+    <ol>
+      <li><a href="#catalogues-taxa">Butterflies (Taxons)</a></li>
+      <li><a href="#catalogues-rename">When a name changes</a></li>
+      <li><a href="#catalogues-versions">Releases of the list (Taxon list versions)</a></li>
+      <li><a href="#catalogues-plants">Plants (Plant taxons)</a></li>
+      <li><a href="#catalogues-codes">Habitat and management types</a></li>
+      <li><a href="#catalogues-csv">Import and export lists as CSV</a></li>
+    </ol>
+  </li>
+  <li><a href="#visits">Reviewing visits</a>
+    <ol>
+      <li><a href="#statuses">Visit statuses</a></li>
+      <li><a href="#review-visit">Open and check a visit</a></li>
+      <li><a href="#visit-correct">Correct a visit</a></li>
+      <li><a href="#mark-reviewed">Mark as reviewed</a></li>
+      <li><a href="#lock">Lock and unlock</a></li>
+    </ol>
+  </li>
+  <li><a href="#records">Records from the field</a>
+    <ol>
+      <li><a href="#observations">Butterfly observations</a></li>
+      <li><a href="#plant-records">Plant records and habitat features</a></li>
+      <li><a href="#photos">Photos</a></li>
+    </ol>
+  </li>
+  <li><a href="#validation">Validation</a>
+    <ol>
+      <li><a href="#queue-what">What goes in the queue</a></li>
+      <li><a href="#queue-decide">Decide a record</a></li>
+      <li><a href="#queue-bulk">Decide many at once</a></li>
+      <li><a href="#queue-history">History of decisions</a></li>
+      <li><a href="#send-back">Send a record back</a></li>
+    </ol>
+  </li>
+  <li><a href="#conflicts">Sync conflicts</a>
+    <ol>
+      <li><a href="#conflict-resolve">Resolve a conflict</a></li>
+    </ol>
+  </li>
+  <li><a href="#exports">Exports</a>
+    <ol>
+      <li><a href="#export-what">What you can export</a></li>
+      <li><a href="#export-how">Step 1: find the project's ID</a></li>
+      <li><a href="#export-curl">Step 2: download with curl</a></li>
+      <li><a href="#export-options">Options</a></li>
+      <li><a href="#export-swagger">Without curl: the API page</a></li>
+      <li><a href="#export-read">Reading the files</a></li>
+    </ol>
+  </li>
+  <li><a href="#ogc">OGC API: QGIS, R and Python</a>
+    <ol>
+      <li><a href="#ogc-browser">Look at it in a browser</a></li>
+      <li><a href="#ogc-token">Create a token</a></li>
+      <li><a href="#ogc-qgis">Connect QGIS</a></li>
+      <li><a href="#ogc-filter">Filter the data</a></li>
+      <li><a href="#ogc-python">Python and R</a></li>
+      <li><a href="#ogc-limits">Limits</a></li>
+    </ol>
+  </li>
+  <li><a href="#server">Running the server</a>
+    <ol>
+      <li><a href="#server-parts">What runs</a></li>
+      <li><a href="#server-start">Start and stop</a></li>
+      <li><a href="#server-backup">Back up and restore</a></li>
+      <li><a href="#server-phones">Connecting phones and computers</a></li>
+      <li><a href="#server-apk">Build the app</a></li>
+      <li><a href="#server-demo">Example data</a></li>
+    </ol>
+  </li>
+  <li><a href="#onboard">Getting a new researcher started</a>
+  </li>
+  <li><a href="#faq">Problems and answers</a>
+  </li>
+  <li><a href="#coming-later">Coming later</a>
+  </li>
+</ol>
+</details>
+</nav>
+<main>
+<h1>Admin manual</h1>
+<p class="lead">How to set up projects, manage people and species lists, check the data that comes in from the field, and get it out again.</p>
+
+<h2 id="about">About this manual</h2>
+<p>This manual is for people who run a monitoring project with the web admin. It assumes no programming knowledge, except in the last chapters on <a href="#exports">exports</a>, <a href="#ogc">OGC access</a> and <a href="#server">running the server</a>, which use a few commands.</p>
+<p>New admins should read <a href="#role">Your role</a> and <a href="#season">A season, step by step</a>, then look around in <a href="#tour">the web admin</a>. To understand what researchers do in the field, read the <a href="researcher.html">researcher manual</a> too. Walking one visit yourself is the best training.</p>
+<p>Every screenshot comes from the real system, using an invented example project called <em>Demo – User Manual</em>.</p>
+
+<h3 id="conventions">How to read the boxes</h3>
+<div class="box tip"><span class="tag">Tip</span>A shortcut or a good habit.</div>
+<div class="box note"><span class="tag">Good to know</span>An explanation of why something works the way it does.</div>
+<div class="box warn"><span class="tag">Careful</span>Something that can lose data or spoil a record.</div>
+<div class="box today"><span class="tag">For now</span>How something works today, while the system is still being built.</div>
+<div class="box later"><span class="tag">Coming later</span>A planned feature that is not in the system yet.</div>
+<p>Words written like <span class="btn">Lock…</span> are the exact labels of buttons, actions and fields.</p>
+
+<h2 id="role">Your role</h2>
+<p>The system has two roles and nothing in between.</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>Researcher</th><th>Admin</th></tr>
+<tr><td><strong>Uses</strong></td><td>The Android app only</td><td>The web admin, and the app if they wish</td></tr>
+<tr><td><strong>Projects</strong></td><td>Only those they were added to</td><td>All projects</td></tr>
+<tr><td><strong>Records in the app</strong></td><td>Their own</td><td>Their own. The app treats an admin like a researcher who can see every project</td></tr>
+<tr><td><strong>Records on the server</strong></td><td>No access</td><td>Everything</td></tr>
+<tr><td><strong>Exports and OGC API</strong></td><td>No access</td><td>Full access</td></tr>
+</table></div>
+<p>As an admin you are responsible for:</p>
+<ul>
+  <li><strong>People:</strong> creating accounts and adding them to projects</li>
+  <li><strong>Setup:</strong> projects, field protocol, study areas, transects and sections</li>
+  <li><strong>Lists:</strong> butterfly and plant lists, habitat and management types</li>
+  <li><strong>Quality:</strong> reviewing visits, validating uncertain records, resolving sync conflicts, locking final data</li>
+  <li><strong>Data:</strong> exports and access for QGIS, R and Python</li>
+</ul>
+<figure class="diagram"><img src="img/workflow.svg" alt="The admin prepares the project. The researcher downloads it, walks visits and syncs. The admin validates, reviews and exports." width="860" height="300"></figure>
+<div class="box note"><span class="tag">Good to know</span><strong>Data comes from phones, and phones may be offline for days.</strong> A record can reach the server long after it was made. That is why almost nothing is ever really deleted, why every change is recorded, and why locking a visit is a deliberate step.</div>
+
+<h2 id="season">A season, step by step</h2>
+<p>Use this as a checklist. Each step links to the details.</p>
+<h3 id="season-before">Before the season</h3>
+<ol class="steps">
+  <li><a href="#catalogues">Check the species lists</a>: butterflies, plants, habitat types and management types. Mark species that need a photo.</li>
+  <li><a href="#project-create">Create the project</a> and draw or import its study area.</li>
+  <li><a href="#protocol">Set the protocol</a>: season dates, time window, weather limits, GPS settings.</li>
+  <li><a href="#transects">Add transects</a>, import or draw their lines, generate sections, and set habitat and management per section.</li>
+  <li><a href="#users">Create accounts</a> and <a href="#members">add researchers to the project</a>.</li>
+  <li><a href="#onboard">Get each researcher started</a>, and ask them to download the project.</li>
+  <li>Walk one test visit yourself. <a href="#server-backup">Make a backup</a>.</li>
+</ol>
+<h3 id="season-during">During the season</h3>
+<ol class="steps">
+  <li>Check the <a href="#visits">Survey visits</a> list for new visits and anything odd.</li>
+  <li>Work through the <a href="#validation">Validation queue</a>.</li>
+  <li>Look at <a href="#conflicts">Sync conflicts</a> and resolve any that are open.</li>
+  <li><a href="#review-visit">Mark visits as reviewed</a> as you check them.</li>
+  <li><a href="#server-backup">Back up</a> after field sessions.</li>
+</ol>
+<h3 id="season-after">After the season</h3>
+<ol class="steps">
+  <li>Ask everyone to sync, so that nothing is left on phones.</li>
+  <li>Finish validation and conflicts.</li>
+  <li><a href="#lock">Lock</a> the visits you consider final.</li>
+  <li><a href="#exports">Export</a> the data and make a final <a href="#server-backup">backup</a>.</li>
+</ol>
+
+<h2 id="tour">The web admin</h2>
+<h3 id="tour-login">Log in</h3>
+<p>Open <code>/admin/</code> on your server, for example <code>http://localhost:8080/admin/</code> on the machine that runs it. Log in with your email and password. Researchers cannot log in here.</p>
+<figure class="small"><a href="img/admin/login.webp"><img src="img/admin/login.webp" alt="The login page of the web admin." width="780" height="630"></a><figcaption>The login page of the web admin.</figcaption></figure>
+
+<h3 id="tour-home">The home page</h3>
+<figure class="wide"><a href="img/admin/index-full.webp"><img src="img/admin/index-full.webp" alt="The home page lists everything you can manage, grouped by topic. Add creates a new item, and Change or View opens the list." width="1300" height="1396"></a><figcaption>The home page lists everything you can manage, grouped by topic. Add creates a new item, and Change or View opens the list.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Group</th><th>Contains</th><th>In this manual</th></tr>
+<tr><td><strong>Projects</strong></td><td>Projects, with their protocol and members</td><td><a href="#projects">Projects</a></td></tr>
+<tr><td><strong>Transects</strong></td><td>Transects and transect sections</td><td><a href="#transects">Transects</a></td></tr>
+<tr><td><strong>Surveys</strong></td><td>Survey visits</td><td><a href="#visits">Reviewing visits</a></td></tr>
+<tr><td><strong>Observations</strong></td><td>Butterfly observations and photos</td><td><a href="#records">Records from the field</a></td></tr>
+<tr><td><strong>Resources</strong></td><td>Habitat features and plant records (read-only)</td><td><a href="#records">Records from the field</a></td></tr>
+<tr><td><strong>Validation</strong></td><td>The validation queue</td><td><a href="#validation">Validation</a></td></tr>
+<tr><td><strong>Sync</strong></td><td>Sync conflicts</td><td><a href="#conflicts">Sync conflicts</a></td></tr>
+<tr><td><strong>Catalogues</strong></td><td>Taxons, taxon list versions, plant taxons, habitat and management types</td><td><a href="#catalogues">Catalogues</a></td></tr>
+<tr><td><strong>Accounts</strong></td><td>Users</td><td><a href="#users">Users</a></td></tr>
+<tr><td><strong>Auth Token</strong></td><td>Personal tokens for OGC access</td><td><a href="#ogc-token">Create a token</a></td></tr>
+</table></div>
+<p>At the top right are <span class="btn">Change password</span>, <span class="btn">Log out</span> and a switch for light and dark colours. <span class="btn">View site</span> leads nowhere useful, because the system has no public website, so ignore it.</p>
+
+<h3 id="tour-lists">List pages</h3>
+<p>Every kind of data has a list page that works the same way.</p>
+<figure class="wide"><a href="img/admin/tour-list-sidebar.webp"><img src="img/admin/tour-list-sidebar.webp" alt="A list page. The sidebar on the left jumps to other lists. The panel on the right filters. The rows are in the middle." width="1300" height="902"></a><figcaption>A list page. The sidebar on the left jumps to other lists. The panel on the right filters. The rows are in the middle.</figcaption></figure>
+<ul>
+  <li><strong>Search:</strong> the box at the top. What it searches depends on the list.</li>
+  <li><strong>Filter:</strong> the panel on the right. <span class="btn">Clear all filters</span> resets them. Filter by project first when a list is long.</li>
+  <li><strong>Sort:</strong> click a column heading.</li>
+  <li><strong>Open a record:</strong> click the link in the first column.</li>
+  <li><strong>Actions:</strong> tick rows, choose from the <span class="btn">Action</span> menu and click <span class="btn">Go</span>. This is how you lock visits, generate sections and more.</li>
+  <li><strong>Sidebar:</strong> the small arrows at the far left hide or show it.</li>
+</ul>
+
+<h3 id="tour-times">Times are in UTC</h3>
+<div class="box warn"><span class="tag">Careful</span>The web admin and the exports show times in <strong>UTC</strong>. The phone shows local time. A visit that started at 13:53 in Serbia in November shows as 12:53 in the admin, and in summer the difference is two hours. Dates near midnight can look a day off.</div>
+
+<h3 id="tour-save">Saving and the change reason</h3>
+<p>When you save a change to an existing record, a small dialog asks for a <strong>reason</strong>. It is optional but valuable: it is stored in the record's history, so that anyone can later see why you changed it.</p>
+<figure class="wide"><a href="img/admin/change-reason-dialog.webp"><img src="img/admin/change-reason-dialog.webp" alt="The dialog that appears when you save a change. Write a short reason and click Save." width="1300" height="902"></a><figcaption>The dialog that appears when you save a change. Write a short reason and click Save.</figcaption></figure>
+
+<h3 id="tour-delete">Nothing is really deleted</h3>
+<p>Phones work offline, so a record that disappears from the server would confuse them. So records are not erased. Instead they get a mark that says they are deleted, which is called a <strong>soft delete</strong>.</p>
+<ul>
+  <li><span class="btn">Soft delete selected</span> in the Action menu hides a record. Phones remove it at their next sync.</li>
+  <li><span class="btn">Restore selected (undo soft delete)</span> brings it back, and phones get it again at their next sync.</li>
+  <li>To see deleted records, use the <strong>By deleted</strong> filter on the right and choose <em>Yes</em>.</li>
+</ul>
+<p>A restore can be refused if a live record has since taken the same code. The message names the record.</p>
+
+<h3 id="tour-history">History: who changed what</h3>
+<p>Almost every record has a <span class="btn">History</span> button at the top right. It lists each change with the date, the user, the fields that changed and the reason.</p>
+<figure class="wide"><a href="img/admin/visit-history.webp"><img src="img/admin/visit-history.webp" alt="The history of a visit. Each row shows who changed what, and why." width="1300" height="592"></a><figcaption>The history of a visit. Each row shows who changed what, and why.</figcaption></figure>
+<div class="box note"><span class="tag">Good to know</span>History is read-only, and you cannot go back to an old version with one click. Reverting would bypass the system that keeps phones up to date. To undo a change, make the correction by hand and give a reason.</div>
+
+<h3 id="tour-readonly">Pages you can only view</h3>
+<p>Some pages have no save button. Plant records, habitat features, photos and locked visits can only be viewed, and resolved conflicts are closed. On the home page these show <span class="btn">View</span> instead of <span class="btn">Change</span>.</p>
+
+<h2 id="users">Users</h2>
+<p>There is no sign-up form. You create every account.</p>
+<h3 id="user-create">Create an account</h3>
+<ol class="steps">
+  <li>On the home page, click <span class="btn">Add</span> next to <strong>Users</strong>.</li>
+  <li>Enter the <span class="btn">Email</span> (this is the login), the <span class="btn">Name</span> and a password twice. Click <span class="btn">Save and continue editing</span>.</li>
+  <li>Fill in <span class="btn">Organization</span> if useful.</li>
+  <li>Under <strong>Groups</strong>, choose <strong>researcher</strong> or <strong>admin</strong> in the left box and click the arrow to move it right. Every account needs one.</li>
+  <li>Click <span class="btn">Save</span>.</li>
+  <li>Give the person their email and password in a safe way, and <a href="#members">add them to a project</a>.</li>
+</ol>
+<figure class="wide"><a href="img/admin/user-add.webp"><img src="img/admin/user-add.webp" alt="Step 1: email, name and password." width="1300" height="582"></a><figcaption>Step 1: email, name and password.</figcaption></figure>
+<figure class="wide"><a href="img/admin/user-change.webp"><img src="img/admin/user-change.webp" alt="Step 2: profile and group. Here, researcher has been moved to the chosen groups." width="1300" height="1400"></a><figcaption>Step 2: profile and group. Here, researcher has been moved to the chosen groups.</figcaption></figure>
+<figure class="wide"><a href="img/admin/users-list.webp"><img src="img/admin/users-list.webp" alt="The list of users." width="1300" height="902"></a><figcaption>The list of users.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Group</th><th>Effect</th></tr>
+<tr><td><strong>researcher</strong></td><td>Can log in to the app, in the projects they were added to. Cannot open the web admin.</td></tr>
+<tr><td><strong>admin</strong></td><td>Everything in this manual. Being in this group automatically gives access to the web admin, and leaving it removes that access.</td></tr>
+</table></div>
+<div class="box warn"><span class="tag">Careful</span>Leave <span class="btn">Superuser status</span> off. It skips all permission checks and is meant only for the person running the server. Give admins the <strong>admin</strong> group instead.</div>
+
+<h3 id="user-password">Reset a password</h3>
+<p>Nobody can see a password, and there is no reset by email. Open the user and click <span class="btn">Reset password</span> under the Password field, enter a new one, and give it to the person. They cannot change it themselves in the app. Admins can use <span class="btn">Change password</span> at the top right of the web admin.</p>
+<p>After five failed logins, an account is blocked for 15 minutes. The block ends by itself.</p>
+
+<h3 id="user-leave">When someone leaves</h3>
+<p>Open the user and untick <span class="btn">Active</span>. They can no longer log in or sync, and their records stay. Do not delete the account, because records point to it.</p>
+
+<h2 id="projects">Projects</h2>
+<p>A project is one monitoring programme. It holds the protocol, the study area, the transects, the members and the choice of butterfly list.</p>
+<h3 id="project-create">Create a project</h3>
+<ol class="steps">
+  <li>Click <span class="btn">Add</span> next to <strong>Projects</strong>.</li>
+  <li>Fill in the fields below. Click <span class="btn">Save and continue editing</span>.</li>
+  <li>The page now also shows the <strong>Project protocol</strong> and <strong>Project memberships</strong> sections. Fill those in and save again.</li>
+</ol>
+<figure class="wide"><a href="img/admin/project-add.webp"><img src="img/admin/project-add.webp" alt="A new project. The study area can be drawn on the map." width="1300" height="1998"></a><figcaption>A new project. The study area can be drawn on the map.</figcaption></figure>
+<figure class="wide"><a href="img/admin/project-list.webp"><img src="img/admin/project-list.webp" alt="The project list." width="1300" height="902"></a><figcaption>The project list.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>What it is</th></tr>
+<tr><td><span class="btn">Name</span></td><td>The short name researchers see in the app.</td></tr>
+<tr><td><span class="btn">Description</span></td><td>Optional notes: aim, site, partners.</td></tr>
+<tr><td><span class="btn">Owner</span></td><td>The account responsible for the project. Starts as you.</td></tr>
+<tr><td><span class="btn">Start date</span>, <span class="btn">End date</span></td><td>The project's period, shown in the app. Its start year sets the default season. Leave the end empty while it is ongoing.</td></tr>
+<tr><td><span class="btn">Default crs</span></td><td>The coordinate system code. Keep 4326, which is GPS coordinates (WGS 84).</td></tr>
+<tr><td><span class="btn">Active</span></td><td>See the box below.</td></tr>
+<tr><td><span class="btn">Area</span></td><td>The study area. Optional. See below.</td></tr>
+<tr><td><span class="btn">Taxon list version</span></td><td>Which release of the butterfly list this project uses. New projects get the current one.</td></tr>
+</table></div>
+<div class="box today"><span class="tag">For now</span><span class="btn">Active</span> is stored, but unticking it does not hide the project or stop new visits yet, whatever the hint on the page says.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Close project</strong> and <strong>Reopen project</strong> actions will stop new visits in a finished project, with a required reason. Existing visits can still be finished and synced. Until then, a project remains open for its members. To stop someone adding to it, <a href="#members">remove them from the project</a>.</div>
+
+<h3 id="area">The study area</h3>
+<p>The study area is optional, but it is the basis for a planned quality check on records outside it. There are two ways to set it.</p>
+<p><strong>Draw it on the map.</strong> The <strong>?</strong> at the top right of the map explains the controls:</p>
+<ul>
+  <li><strong>Draw:</strong> click each corner, then double-click to finish. Hold <kbd>Shift</kbd> and drag to draw freehand.</li>
+  <li><strong>Reshape:</strong> drag a corner, or drag an edge to add a corner. Hold <kbd>Shift</kbd> and click a corner to remove it.</li>
+  <li><strong>Remove one polygon:</strong> click inside it, then <span class="btn">Delete selected polygon</span>. <span class="btn">Delete all Features</span> removes everything.</li>
+</ul>
+<figure class="wide"><a href="img/admin/map-help.webp"><img src="img/admin/map-help.webp" alt="The map&#x27;s help popup explains how to draw and edit." width="924" height="651"></a><figcaption>The map's help popup explains how to draw and edit.</figcaption></figure>
+<p><strong>Or load a file.</strong> On the project list, tick the project, choose <span class="btn">Import study area from GeoJSON/KML</span> and click <span class="btn">Go</span>. Choose the file. The new area replaces the old one.</p>
+<figure class="wide"><a href="img/admin/project-import-area.webp"><img src="img/admin/project-import-area.webp" alt="Importing a study area from a GeoJSON or KML file." width="1300" height="234"></a><figcaption>Importing a study area from a GeoJSON or KML file.</figcaption></figure>
+
+<h3 id="protocol">The protocol</h3>
+<p>The protocol holds the project's rules. It is created with the project, using the defaults below. The app shows it to researchers and checks against it. <strong>The app warns, it does not forbid:</strong> a visit outside these limits is still saved.</p>
+<figure class="wide"><a href="img/admin/project-protocol.webp"><img src="img/admin/project-protocol.webp" alt="The protocol section of a project. Every field has a short explanation under it." width="1300" height="2063"></a><figcaption>The protocol section of a project. Every field has a short explanation under it.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>Default</th><th>What it controls</th></tr>
+<tr><td><span class="btn">Protocol version</span></td><td>1.0</td><td>A label stored with each visit. Raise it when you change limits in the middle of a study.</td></tr>
+<tr><td><span class="btn">Survey method</span></td><td>Pollard walk</td><td>The method used.</td></tr>
+<tr><td><span class="btn">Season start</span>, <span class="btn">Season end</span></td><td>1 April and 30 September of the project's start year</td><td>A visit outside these dates gets a warning. <strong>Check these two.</strong></td></tr>
+<tr><td><span class="btn">Time zone</span></td><td>Europe/Belgrade</td><td>The study site's zone, for reading the season and the daily window on the server.</td></tr>
+<tr><td><span class="btn">Day start time</span>, <span class="btn">Day end time</span></td><td>10:00, 17:00</td><td>The daily window for starting a visit.</td></tr>
+<tr><td><span class="btn">Min temperature c</span></td><td>13.0</td><td>Lowest temperature when cloud cover is within the limit below.</td></tr>
+<tr><td><span class="btn">Sunny temperature c</span></td><td>17.0</td><td>From this temperature, any cloud cover is fine.</td></tr>
+<tr><td><span class="btn">Max cloud cover pct if cool</span></td><td>40</td><td>Most cloud allowed below the sunny temperature.</td></tr>
+<tr><td><span class="btn">Max wind beaufort</span></td><td>5</td><td>Strongest wind allowed.</td></tr>
+<tr><td><span class="btn">Allow precipitation</span></td><td>Off</td><td>Tick only if visits in rain are acceptable.</td></tr>
+<tr><td><span class="btn">Target visits per season</span></td><td>8</td><td>How many visits each transect should get.</td></tr>
+<tr><td><span class="btn">Max distance from transect m</span></td><td>20</td><td>How far from the line a record can be and still get a section. Also used to work out route coverage.</td></tr>
+<tr><td><span class="btn">Observation time tolerance min</span></td><td>5</td><td>How far outside the visit's start and end a record's time may be.</td></tr>
+<tr><td><span class="btn">Gps interval s</span></td><td>5</td><td>Seconds between GPS points while walking.</td></tr>
+<tr><td><span class="btn">Gps interval battery saver s</span></td><td>15</td><td>Seconds between points in battery saver mode.</td></tr>
+<tr><td><span class="btn">Gps accuracy warning m</span></td><td>25</td><td>A position worse than this shows a warning and may not count for the route.</td></tr>
+<tr><td><span class="btn">Gps gap s</span></td><td>60</td><td>A pause in GPS longer than this is reported as a gap.</td></tr>
+<tr><td><span class="btn">High count threshold</span></td><td>50</td><td>Reserved for the planned quality flags.</td></tr>
+<tr><td><span class="btn">Min coverage pct</span></td><td>80</td><td>The share of the transect the route must cover for a valid visit.</td></tr>
+</table></div>
+<div class="box note"><span class="tag">Good to know</span>Phones receive protocol changes at their next sync. A changed limit applies to new visits and does not change visits already recorded. The app reads the season and daily window using the phone's own time zone, which is the same as long as researchers are at the site.</div>
+
+<h3 id="members">Add and remove members</h3>
+<p>Only members see a project in the app. On the project page, scroll to <strong>Project memberships</strong>.</p>
+<ol class="steps">
+  <li>In an empty row, start typing the person's name or email in <span class="btn">User</span> and pick them. Use <span class="btn">Add another Project membership</span> for more rows.</li>
+  <li>Click <span class="btn">Save</span>. The person sees the project at their next sync or list refresh.</li>
+</ol>
+<figure class="wide"><a href="img/admin/project-members.webp"><img src="img/admin/project-members.webp" alt="The members of a project." width="1300" height="279"></a><figcaption>The members of a project.</figcaption></figure>
+<p><strong>To remove someone,</strong> tick <span class="btn">Delete</span> on their row and save. The project disappears from their app at the next sync. Their records stay on the server, and what is on their phone is not erased.</p>
+<h2 id="transects">Transects and sections</h2>
+<p>A transect is the fixed route that researchers walk. It is divided into numbered sections, usually one habitat each. Researchers cannot create or change these on the phone, so getting them right is your job.</p>
+<h3 id="transect-steps">The usual order of work</h3>
+<ol class="steps">
+  <li>Add the transect and save it with its line: draw it, or draw a rough line and replace it with <span class="btn">Import line</span>.</li>
+  <li>Generate equal sections with the action on the transect list.</li>
+  <li>Open the transect and set habitat and management for each section.</li>
+  <li>Check the page for a warning about section lengths.</li>
+</ol>
+<div class="box warn"><span class="tag">Careful</span><strong>Draw the line in the direction it is walked.</strong> Sections are numbered along the line from its first point. A line drawn backwards numbers the sections backwards.</div>
+
+<h3 id="transect-add">Add a transect</h3>
+<p>Click <span class="btn">Add</span> next to <strong>Transects</strong>.</p>
+<figure class="wide"><a href="img/admin/transect-add.webp"><img src="img/admin/transect-add.webp" alt="A new transect." width="1300" height="1898"></a><figcaption>A new transect.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>What it is</th></tr>
+<tr><td><span class="btn">Project</span></td><td>The project it belongs to.</td></tr>
+<tr><td><span class="btn">Code</span></td><td>A short code, unique in the project, for example FG1. Researchers search by it.</td></tr>
+<tr><td><span class="btn">Name</span></td><td>A readable name, for example Dry slope.</td></tr>
+<tr><td><span class="btn">Description</span></td><td>Free text about the route, shown in the app.</td></tr>
+<tr><td><span class="btn">Target length m</span></td><td>The planned length in metres.</td></tr>
+<tr><td><span class="btn">Habitat summary</span></td><td>A short text about the habitats, shown in the app.</td></tr>
+<tr><td><span class="btn">Active</span></td><td>Untick when the transect is no longer walked. The app then refuses new visits on it, and past visits stay.</td></tr>
+<tr><td><span class="btn">Geometry</span></td><td>The route on the map. Click points along it and double-click to finish. The <strong>?</strong> on the map explains the controls.</td></tr>
+</table></div>
+<figure class="wide"><a href="img/admin/transect-main.webp"><img src="img/admin/transect-main.webp" alt="A saved transect. Import line and History are at the top right." width="1300" height="1589"></a><figcaption>A saved transect. Import line and History are at the top right.</figcaption></figure>
+<figure class="wide"><a href="img/admin/transect-list.webp"><img src="img/admin/transect-list.webp" alt="The transect list, with length and number of sections." width="1300" height="902"></a><figcaption>The transect list, with length and number of sections.</figcaption></figure>
+
+<h3 id="import-line">Import a line from a file</h3>
+<p>If you have the route from a GPS device, open a saved transect, click <span class="btn">Import line</span> at the top right, and choose a GPX, KML or GeoJSON file. The first line or track in the file replaces the transect's line.</p>
+<figure class="wide"><a href="img/admin/transect-import-line.webp"><img src="img/admin/transect-import-line.webp" alt="Importing a line." width="1300" height="255"></a><figcaption>Importing a line.</figcaption></figure>
+<p>After an import, check that the sections still follow the line. The page warns you if the lengths no longer match.</p>
+
+<h3 id="generate-sections">Generate sections</h3>
+<ol class="steps">
+  <li>On the transect list, tick <strong>one</strong> transect.</li>
+  <li>Choose <span class="btn">Generate N equal sections…</span> and click <span class="btn">Go</span>.</li>
+  <li>Enter the <span class="btn">Number of sections</span> and a <span class="btn">Code prefix</span>. With prefix S you get S1, S2, and so on.</li>
+  <li>If the transect already has sections, tick <span class="btn">Replace existing sections</span>. They are soft-deleted, not erased.</li>
+  <li>Click <span class="btn">Generate</span>, then open the transect to fill in the habitat.</li>
+</ol>
+<figure class="wide"><a href="img/admin/transect-generate.webp"><img src="img/admin/transect-generate.webp" alt="Generating equal sections." width="1300" height="337"></a><figcaption>Generating equal sections.</figcaption></figure>
+
+<h3 id="sections">Edit sections</h3>
+<p>On the transect page, open <strong>Transect sections</strong> near the bottom. Each section has these fields:</p>
+<figure class="wide"><a href="img/admin/transect-sections.webp"><img src="img/admin/transect-sections.webp" alt="The sections of a transect. The map shows the transect dashed, with the section as a solid line on top." width="1300" height="1567"></a><figcaption>The sections of a transect. The map shows the transect dashed, with the section as a solid line on top.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>What it is</th></tr>
+<tr><td><span class="btn">Section code</span></td><td>Unique within the transect, for example S1.</td></tr>
+<tr><td><span class="btn">Sequence number</span></td><td>The order along the route, starting at 1.</td></tr>
+<tr><td><span class="btn">Habitat type</span>, <span class="btn">Management type</span></td><td>Chosen from the <a href="#catalogues-codes">catalogues</a>. Shown to researchers and used in the exports.</td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Free text, shown in the app.</td></tr>
+<tr><td><span class="btn">Geometry</span></td><td>The section's line. It must stay within <strong>5 m</strong> of the transect line along its whole length. Otherwise saving is refused.</td></tr>
+<tr><td><span class="btn">Remove</span></td><td>Tick to soft-delete this section when you save.</td></tr>
+</table></div>
+<p>You can also open one section on its own from the <strong>Transect sections</strong> list. New points snap to the dashed transect line there, which helps you draw sections by hand.</p>
+<figure class="wide"><a href="img/admin/section-change.webp"><img src="img/admin/section-change.webp" alt="One section on its own page." width="1300" height="1589"></a><figcaption>One section on its own page.</figcaption></figure>
+<div class="box note"><span class="tag">Good to know</span>If the sections add up to more than 2 % more or less than the transect, a yellow warning appears at the top of the transect page. Check the section lines. Changes to transects and sections reach phones at the next sync.</div>
+<div class="box warn"><span class="tag">Careful</span>Changing a line or the sections after visits have been walked does not change existing records, but it changes what those records are compared with. Avoid it during a season. If a route has to change, consider a new transect.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Route proposals:</strong> researchers will record a better route in the field, and you will accept or reject it here.</div>
+
+<h2 id="catalogues">Catalogues</h2>
+<p>Catalogues are the lists researchers choose from: butterflies, plants, habitat types and management types. They are shared by all projects. Changes reach phones at the next sync.</p>
+<h3 id="catalogues-taxa">Butterflies (Taxons)</h3>
+<p>Open <strong>Taxons</strong>. Search by scientific, Serbian or English name. Filter by rank, family, active and more.</p>
+<figure class="wide"><a href="img/admin/taxon-list.webp"><img src="img/admin/taxon-list.webp" alt="The butterfly list. Active and Photo required can be changed right in the list. Click Save at the bottom." width="1300" height="902"></a><figcaption>The butterfly list. Active and Photo required can be changed right in the list. Click Save at the bottom.</figcaption></figure>
+<ul>
+  <li><span class="btn">Photo required</span>: when ticked, a record of this species asks for a photo in the app and always goes to the <a href="#validation">validation queue</a>. Use it for species that are hard to tell apart.</li>
+  <li><span class="btn">Active</span>: when unticked, the species no longer appears in the app's list. Records that already use it are kept.</li>
+  <li><strong>Other fields</strong> (author, family, names, identification notes) are on the species page.</li>
+  <li><span class="btn">Add</span> creates a new species, with a scientific name, rank and the release it first appears in.</li>
+</ul>
+<div class="box note"><span class="tag">Good to know</span>The list comes from GBIF occurrence records for Serbia. It is a working list, not a checked species list, so it can hold misidentifications and vagrants and miss rare species. Review it before a real season.</div>
+
+<h3 id="catalogues-rename">When a name changes</h3>
+<p>A species' scientific name is fixed once created, because records point to it. To rename or merge, use one of the two actions on the list, which retire the old name and keep the link to it.</p>
+<div class="tablewrap"><table>
+<tr><th>Action</th><th>Use it when</th><th>What happens</th></tr>
+<tr><td><span class="btn">Rename / synonymise…</span></td><td>The accepted name is <strong>not</strong> in the list yet.</td><td>Creates a new species with the new name. Retires the old one in the release you choose. Select exactly one.</td></tr>
+<tr><td><span class="btn">Synonymise into existing…</span></td><td>The accepted name <strong>is</strong> already in the list.</td><td>Retires the selected names as synonyms of the existing species. You can select several.</td></tr>
+</table></div>
+<div class="shots">
+<figure style="flex:1 1 420px"><a href="img/admin/taxon-rename.webp"><img src="img/admin/taxon-rename.webp" alt="Rename: enter the new name, the release, and optionally a reason." width="1300" height="363"></a><figcaption>Rename: enter the new name, the release, and optionally a reason.</figcaption></figure>
+<figure style="flex:1 1 420px"><a href="img/admin/taxon-synonymise.webp"><img src="img/admin/taxon-synonymise.webp" alt="Synonymise: pick the existing accepted species and the release." width="1300" height="399"></a><figcaption>Synonymise: pick the existing accepted species and the release.</figcaption></figure>
+</div>
+<p>Old records keep the name they were recorded with. They are never rewritten.</p>
+
+<h3 id="catalogues-versions">Releases of the list (Taxon list versions)</h3>
+<p>Each change to the list belongs to a release. One release is the current one, and each project says which one it uses.</p>
+<ol class="steps">
+  <li>Open <strong>Taxon list versions</strong> and click <span class="btn">Publish new release</span>.</li>
+  <li>Enter the <span class="btn">Version label</span>, the <span class="btn">Source</span>, the date and notes.</li>
+  <li>Under <span class="btn">Projects to switch</span>, tick the projects that should move to this release. Others stay on theirs.</li>
+  <li>Save. The new release becomes the current one.</li>
+</ol>
+<figure class="wide"><a href="img/admin/taxon-versions.webp"><img src="img/admin/taxon-versions.webp" alt="The releases. A green tick marks the current one." width="1300" height="902"></a><figcaption>The releases. A green tick marks the current one.</figcaption></figure>
+<figure class="wide"><a href="img/admin/taxon-publish.webp"><img src="img/admin/taxon-publish.webp" alt="Publishing a release." width="1300" height="815"></a><figcaption>Publishing a release.</figcaption></figure>
+
+<h3 id="catalogues-plants">Plants (Plant taxons)</h3>
+<p>The list researchers choose host and nectar plants from. Search and filter as above, tick <span class="btn">Active</span> in the list to show or hide a plant, and use <span class="btn">Add</span> for a new one. A name ending in <code>spp.</code> stands for a whole genus.</p>
+<figure class="wide"><a href="img/admin/plant-taxa.webp"><img src="img/admin/plant-taxa.webp" alt="The plant list." width="1300" height="902"></a><figcaption>The plant list.</figcaption></figure>
+
+<h3 id="catalogues-codes">Habitat and management types</h3>
+<p>These two short lists feed the habitat fields in the app and on sections. Each entry has a code, English and Serbian names and a sort order. Habitat types can also hold a EUNIS code. <span class="btn">Sort order</span> and <span class="btn">Active</span> can be changed in the list.</p>
+<figure class="wide"><a href="img/admin/habitat-types.webp"><img src="img/admin/habitat-types.webp" alt="Habitat types." width="1300" height="902"></a><figcaption>Habitat types.</figcaption></figure>
+<figure class="wide"><a href="img/admin/management-types.webp"><img src="img/admin/management-types.webp" alt="Management types." width="1300" height="902"></a><figcaption>Management types.</figcaption></figure>
+
+<h3 id="catalogues-csv">Import and export lists as CSV</h3>
+<p>All four lists have <span class="btn">Import</span> and <span class="btn">Export</span> buttons at the top right.</p>
+<ol class="steps">
+  <li>Click <span class="btn">Export</span> first, to get a file with the right columns.</li>
+  <li>Edit it in a spreadsheet and save it as CSV.</li>
+  <li>Click <span class="btn">Import</span> and choose the file and format. You get a <strong>preview</strong> of exactly what would be created or changed. Nothing is saved yet.</li>
+  <li>Check the preview, then confirm.</li>
+</ol>
+<div class="shots">
+<figure style="flex:1 1 420px"><a href="img/admin/taxon-export.webp"><img src="img/admin/taxon-export.webp" alt="Export: choose the columns and download." width="1300" height="670"></a><figcaption>Export: choose the columns and download.</figcaption></figure>
+<figure style="flex:1 1 420px"><a href="img/admin/taxon-import.webp"><img src="img/admin/taxon-import.webp" alt="Import: the page lists the columns it expects." width="1300" height="443"></a><figcaption>Import: the page lists the columns it expects.</figcaption></figure>
+</div>
+<div class="box tip"><span class="tag">Tip</span>To hide something from researchers, untick <span class="btn">Active</span> rather than deleting it. Existing records keep showing it, and new records can no longer choose it.</div>
+
+<h2 id="visits">Reviewing visits</h2>
+<p>Every walk appears under <strong>Survey visits</strong>. Visits are created on phones, so there is no Add button.</p>
+<figure class="wide"><a href="img/admin/visit-list.webp"><img src="img/admin/visit-list.webp" alt="The visit list, filtered to one project." width="1300" height="902"></a><figcaption>The visit list, filtered to one project.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Column</th><th>Meaning</th></tr>
+<tr><td>Transect, Observer</td><td>The route and the person who walked it.</td></tr>
+<tr><td>Started at</td><td>In UTC.</td></tr>
+<tr><td>Duration</td><td>Walking time as hours:minutes, without pauses.</td></tr>
+<tr><td>Distance</td><td>The length of the GPS route, worked out on the server.</td></tr>
+<tr><td>Observations</td><td>The number of butterfly records.</td></tr>
+<tr><td>Status</td><td>See <a href="#statuses">Visit statuses</a>.</td></tr>
+<tr><td>Flags</td><td>Quality flags. Empty for now.</td></tr>
+<tr><td>Outcome</td><td>What the visit came to, as used in exports. See below.</td></tr>
+<tr><td>Last modified</td><td>The last save on the server, not the time of the edit on the phone.</td></tr>
+</table></div>
+<div class="tablewrap"><table>
+<tr><th>Outcome</th><th>Meaning</th></tr>
+<tr><td><code>completed_with_records</code></td><td>Finished, with butterflies.</td></tr>
+<tr><td><code>true_zero</code></td><td>Finished, with the observer confirming no butterflies were seen.</td></tr>
+<tr><td><code>cancelled:not_conducted</code></td><td>Planned but never walked.</td></tr>
+<tr><td><code>cancelled:aborted_weather</code></td><td>Stopped because of the weather.</td></tr>
+<tr><td><code>cancelled:aborted_other</code></td><td>Stopped for another reason.</td></tr>
+<tr><td><code>cancelled:invalid_protocol</code></td><td>Walked, but not by the method.</td></tr>
+<tr><td>Empty</td><td>A draft or a visit still in progress.</td></tr>
+</table></div>
+
+<h3 id="statuses">Visit statuses</h3>
+<figure class="diagram"><img src="img/visit-states.svg" alt="Draft becomes In progress when started, Completed when finished, Synced when it reaches the server. An admin moves it to Reviewed or Locked. A draft or visit in progress can be cancelled." width="780" height="310"></figure>
+<div class="tablewrap"><table>
+<tr><th>Status</th><th>Meaning</th><th>Set by</th></tr>
+<tr><td><strong>Draft</strong></td><td>Saved but not started.</td><td>Phone</td></tr>
+<tr><td><strong>In progress</strong></td><td>Being walked. A visit that stays here long was probably never finished. Check with the researcher, whose phone may not have synced.</td><td>Phone</td></tr>
+<tr><td><strong>Completed</strong></td><td>Finished on the phone. It normally becomes Synced as soon as it reaches the server.</td><td>Phone</td></tr>
+<tr><td><strong>Synced</strong></td><td>Finished and on the server. Ready for your review.</td><td>Server</td></tr>
+<tr><td><strong>Reviewed</strong></td><td>You have looked at it. Researchers can still correct records.</td><td>Admin</td></tr>
+<tr><td><strong>Locked</strong></td><td>Final. Nobody can change it or its records, unless it is unlocked.</td><td>Admin</td></tr>
+<tr><td><strong>Cancelled</strong></td><td>Stopped or not walked. Its reason is stored. Records made before cancelling are kept.</td><td>Phone</td></tr>
+</table></div>
+
+<h3 id="review-visit">Open and check a visit</h3>
+<p>Click a visit to open it. The page has the visit's fields, then its butterfly records, its environmental snapshots and a map of its route.</p>
+<figure class="wide"><a href="img/admin/visit-change-top.webp"><img src="img/admin/visit-change-top.webp" alt="The top of a visit&#x27;s page." width="1300" height="1589"></a><figcaption>The top of a visit's page.</figcaption></figure>
+<figure class="wide"><a href="img/admin/visit-route.webp"><img src="img/admin/visit-route.webp" alt="The route: the track as recorded, with the transect dashed. The caption says how many track points there are." width="1300" height="534"></a><figcaption>The route: the track as recorded, with the transect dashed. The caption says how many track points there are.</figcaption></figure>
+<figure class="wide"><a href="img/admin/visit-observations.webp"><img src="img/admin/visit-observations.webp" alt="The butterfly records of the visit. Change opens one." width="1300" height="309"></a><figcaption>The butterfly records of the visit. Change opens one.</figcaption></figure>
+<figure class="wide"><a href="img/admin/visit-snapshots.webp"><img src="img/admin/visit-snapshots.webp" alt="The environmental snapshots, derived from the weather the observer entered. They are read-only." width="1300" height="298"></a><figcaption>The environmental snapshots, derived from the weather the observer entered. They are read-only.</figcaption></figure>
+<p>What to look for when you review:</p>
+<ul>
+  <li><strong>Route:</strong> does it follow the dashed transect from end to end? A short route or a route elsewhere means the visit may not be valid.</li>
+  <li><strong>Weather:</strong> is it believable, and within the limits? <span class="btn">Weather suitable</span> shows the result of the check, and <span class="btn">Weather missing reason</span> holds any reason.</li>
+  <li><strong>True zero:</strong> a visit with <span class="btn">Zero observation confirmed</span> should have a route covering the transect. The example below is such a visit.</li>
+  <li><strong>Time:</strong> are the date and duration sensible? Remember that times are in UTC.</li>
+  <li><strong>Records:</strong> do the number and species seem plausible? Are unusual records in the validation queue?</li>
+</ul>
+<figure class="wide"><a href="img/admin/visit-zero.webp"><img src="img/admin/visit-zero.webp" alt="A true-zero visit." width="1300" height="1162"></a><figcaption>A true-zero visit.</figcaption></figure>
+<div class="box today"><span class="tag">For now</span>Route coverage is worked out by the app and shown to the researcher at Finish, not stored on the server. So you judge coverage from the map. The Flags column stays empty too.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Quality flags</strong> will mark records outside the study area or far from the transect, unusually high counts, and GPS gaps, and flagged records will appear in the validation queue. <strong>Server-side route coverage</strong> will apply the valid-visit rule for you.</div>
+
+<h3 id="visit-correct">Correct a visit</h3>
+<p>Change a field and save, and give a reason in the dialog. Fields such as the status, project, distance and pauses cannot be edited here.</p>
+<p>The rules from the app also apply here. You see a clear message if a change is refused:</p>
+<ul>
+  <li>A finished visit needs its weather, or a reason it is missing.</li>
+  <li><span class="btn">Zero observation confirmed</span> cannot be ticked on a visit with butterfly records.</li>
+  <li>The cancel reason must fit <span class="btn">Started at</span>: <em>Not conducted</em> means empty, and the others need a start time.</li>
+  <li><em>This visit was changed after you opened it…</em> means a phone or another admin saved it while you were editing. Reload the page and make your change again.</li>
+</ul>
+
+<h3 id="mark-reviewed">Mark as reviewed</h3>
+<p>Tick the visits on the list, choose <span class="btn">Mark as reviewed</span> and click <span class="btn">Go</span>. It works on Completed and Synced visits. Other visits are named in a <em>Not changed</em> message and the rest still change.</p>
+
+<h3 id="lock">Lock and unlock</h3>
+<p>Locking makes a visit and all its records read-only, for you and for phones. Use it when the data is final.</p>
+<ol class="steps">
+  <li>Tick the visits, choose <span class="btn">Lock…</span> and click <span class="btn">Go</span>.</li>
+  <li>Write a <span class="btn">Reason</span> of at least 10 characters. It is stored in the visit's history.</li>
+  <li>Confirm. The visit now opens read-only, with a red note saying who locked it and why.</li>
+</ol>
+<figure class="wide"><a href="img/admin/visit-lock-form.webp"><img src="img/admin/visit-lock-form.webp" alt="The lock form. The visits are listed above the reason." width="1300" height="357"></a><figcaption>The lock form. The visits are listed above the reason.</figcaption></figure>
+<figure class="wide"><a href="img/admin/visit-locked.webp"><img src="img/admin/visit-locked.webp" alt="A locked visit opens read-only, with who locked it and why at the top." width="1300" height="948"></a><figcaption>A locked visit opens read-only, with who locked it and why at the top.</figcaption></figure>
+<ul>
+  <li><strong>Which visits:</strong> Completed, Synced or Reviewed. Drafts, visits in progress and cancelled visits cannot be locked.</li>
+  <li><strong>Missing route points:</strong> if a phone has recorded more points than the server has, locking is refused: <em>The server has … of … track points; wait for the phone to sync…</em> Ask the researcher to sync. Only if the phone is lost or wiped, tick <span class="btn">Lock even if track points are missing</span>.</li>
+  <li><strong>On the phone:</strong> after the next sync, the researcher sees a lock icon and cannot edit. A change they made offline in the meantime is refused and shows under Errors with a clear message.</li>
+</ul>
+<p><strong>To unlock,</strong> use <span class="btn">Unlock…</span> in the same way, also with a reason. The visit becomes Reviewed and can be changed again.</p>
+<div class="box tip"><span class="tag">Tip</span>Ask researchers to sync before you lock. It avoids refused changes and the missing points message.</div>
+
+<h2 id="records">Records from the field</h2>
+<h3 id="observations">Butterfly observations</h3>
+<p>All butterfly records are under <strong>Butterfly observations</strong>. Records come from phones, so there is no Add button. You can search by species, by recorder's email and in the notes, and filter by project, validation status, source and confidence.</p>
+<figure class="wide"><a href="img/admin/observation-list.webp"><img src="img/admin/observation-list.webp" alt="The observation list, filtered to one project." width="1300" height="902"></a><figcaption>The observation list, filtered to one project.</figcaption></figure>
+<figure class="wide"><a href="img/admin/observation-change.webp"><img src="img/admin/observation-change.webp" alt="A record&#x27;s page. The validation fields are read-only here. Validation happens in the queue." width="1300" height="1589"></a><figcaption>A record's page. The validation fields are read-only here. Validation happens in the queue.</figcaption></figure>
+<p><strong>Correcting a record.</strong> For an unlocked visit you can change the species, count, section, position, details and notes. The same rules apply as on the phone. To check a species, use the <a href="#validation">validation queue</a> instead: a validator's decision keeps the observer's original entry next to it, while an edit here overwrites it.</p>
+<p><strong>Actions on the list:</strong></p>
+<ul>
+  <li><span class="btn">Reassign sections</span>: works out the section of each selected record again from its position. Use it after changing a transect's sections. The message reports how many changed.</li>
+  <li><span class="btn">Send back to queue…</span>: returns a decided record to the validation queue. See <a href="#send-back">Send a record back</a>.</li>
+  <li><span class="btn">Soft delete selected</span> and <span class="btn">Restore selected (undo soft delete)</span>: remove a record that should not exist, such as a duplicate, and bring it back. The app has no delete for butterfly records, so researchers need you for this.</li>
+</ul>
+<div class="box note"><span class="tag">Good to know</span>A record's <strong>section</strong> comes from the phone, or else from the nearest section within the protocol's distance. Phone GPS has an error of 5 to 15 m, so records near a boundary can land in the neighbouring section.</div>
+
+<h3 id="plant-records">Plant records and habitat features</h3>
+<p>Under <strong>Resources</strong>, these two lists show what researchers recorded. You can view them on a map, but not change them. Soft deleting isn't available here either, so ask the researcher to change or delete their own record in the app.</p>
+<figure class="wide"><a href="img/admin/plant-list.webp"><img src="img/admin/plant-list.webp" alt="Plant records." width="1300" height="902"></a><figcaption>Plant records.</figcaption></figure>
+<figure class="wide"><a href="img/admin/plant-record.webp"><img src="img/admin/plant-record.webp" alt="A plant record drawn as a patch, with its area worked out by the server." width="1300" height="1589"></a><figcaption>A plant record drawn as a patch, with its area worked out by the server.</figcaption></figure>
+<figure class="wide"><a href="img/admin/habitat-list.webp"><img src="img/admin/habitat-list.webp" alt="Habitat features." width="1300" height="902"></a><figcaption>Habitat features.</figcaption></figure>
+<figure class="wide"><a href="img/admin/habitat-record.webp"><img src="img/admin/habitat-record.webp" alt="A habitat feature." width="1300" height="1589"></a><figcaption>A habitat feature.</figcaption></figure>
+<div class="box later"><span class="tag">Coming later</span>Admins will be able to <strong>add and correct plant records on a map</strong>, for example from a paper form.</div>
+
+<h3 id="photos">Photos</h3>
+<p><strong>Photos</strong> lists all uploaded pictures. The list and pages are view-only. A thumbnail opens the original. Photos also appear on their record's page, where they are easier to work with. The <span class="btn">Upload status</span> filter finds photos still waiting. A photo with status Pending has been announced by a phone but has not arrived yet.</p>
+<figure class="wide"><a href="img/admin/photo-list.webp"><img src="img/admin/photo-list.webp" alt="The photo list." width="1300" height="699"></a><figcaption>The photo list.</figcaption></figure>
+
+<h2 id="validation">Validation</h2>
+<p>Validation means an expert checks a record that needs it. The original entry always stays. Your decision is stored next to it, and exports show both.</p>
+<h3 id="queue-what">What goes in the queue</h3>
+<p>A record waits in <strong>Validation queue</strong> when its status is Pending. That happens when:</p>
+<ul>
+  <li>the species is marked <span class="btn">Photo required</span> in the catalogue, or</li>
+  <li>the observer chose the confidence <em>Photo required</em>, <em>Genus only</em>, <em>Unknown</em> or <em>Expert review required</em>, or</li>
+  <li>an admin sent it back.</li>
+</ul>
+<p>Once decided, a record leaves the queue. Its status stays on the observation.</p>
+<figure class="wide"><a href="img/admin/queue-list.webp"><img src="img/admin/queue-list.webp" alt="The queue, filtered to one project. Thumbnails show the first photo." width="1300" height="902"></a><figcaption>The queue, filtered to one project. Thumbnails show the first photo.</figcaption></figure>
+<p>You can filter by project, family, confidence, flag and date. Search works on species names.</p>
+
+<h3 id="queue-decide">Decide a record</h3>
+<ol class="steps">
+  <li>Click the species name to open the record.</li>
+  <li>Check the details, the map and the photos at full size. A click on a photo opens the original.</li>
+  <li>At the bottom, write a comment if useful, then choose a decision.</li>
+</ol>
+<figure class="wide"><a href="img/admin/queue-record.webp"><img src="img/admin/queue-record.webp" alt="The record&#x27;s page: everything the observer entered, with a map and then the photos." width="1300" height="1751"></a><figcaption>The record's page: everything the observer entered, with a map and then the photos.</figcaption></figure>
+<figure class="wide"><a href="img/admin/queue-decision.webp"><img src="img/admin/queue-decision.webp" alt="The decision panel at the bottom of the page." width="1300" height="249"></a><figcaption>The decision panel at the bottom of the page.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>Button</th><th>Use it when</th><th>New status</th></tr>
+<tr><td><span class="btn">Confirm</span></td><td>The species is right.</td><td>Confirmed</td></tr>
+<tr><td><span class="btn">Change taxon</span></td><td>It is really another species. Choose it and write why. The comment is required.</td><td>Confirmed, with the validated species</td></tr>
+<tr><td><span class="btn">Mark unconfirmed</span></td><td>The evidence does not support it.</td><td>Unconfirmed</td></tr>
+<tr><td><span class="btn">Mark undeterminable</span></td><td>It cannot be identified from what is available.</td><td>Undeterminable</td></tr>
+</table></div>
+<figure class="wide"><a href="img/admin/queue-change-taxon.webp"><img src="img/admin/queue-change-taxon.webp" alt="Change taxon: the species you choose becomes the validated species. The observer&#x27;s entry stays as entered." width="1300" height="389"></a><figcaption>Change taxon: the species you choose becomes the validated species. The observer's entry stays as entered.</figcaption></figure>
+
+<h3 id="queue-bulk">Decide many at once</h3>
+<p>On the queue list, tick rows and use the actions <span class="btn">Confirm</span>, <span class="btn">Mark unconfirmed</span>, <span class="btn">Mark undeterminable</span> or <span class="btn">Change taxon…</span>. If a record is refused, for example because its visit is locked, it is named in a <em>Not changed</em> message and the others still change.</p>
+
+<h3 id="queue-history">History of decisions</h3>
+<p>Every decision is kept for good. Open the observation (the queue page has a link, <em>Open the observation</em>) and scroll to <strong>Validation events</strong>.</p>
+<figure class="wide"><a href="img/admin/validation-history.webp"><img src="img/admin/validation-history.webp" alt="Each decision: when, who, the status before and after, and the comment." width="1300" height="368"></a><figcaption>Each decision: when, who, the status before and after, and the comment.</figcaption></figure>
+
+<h3 id="send-back">Send a record back</h3>
+<p>To undo a decision, go to <strong>Butterfly observations</strong>, tick the record, choose <span class="btn">Send back to queue…</span>, write the required comment and confirm. The status returns to Pending, and the validated species and comment are cleared. The decision stays in the history.</p>
+<figure class="wide"><a href="img/admin/send-back.webp"><img src="img/admin/send-back.webp" alt="Sending a decided record back to the queue." width="1300" height="332"></a><figcaption>Sending a decided record back to the queue.</figcaption></figure>
+
+<div class="box note"><span class="tag">Good to know</span>
+<ul>
+<li><strong>Researchers do not see validation</strong> in the app, so tell them if you want them to know a result.</li>
+<li><strong>A locked visit's records cannot be validated.</strong> Unlock it first. So validate before you lock.</li>
+<li><strong>A confirmed record can still change:</strong> if the observer later edits the species, the decision stays. Lock visits once validation is done to prevent this.</li>
+<li><strong>Which species counts:</strong> the validated species if there is one, otherwise the observer's. Exports call this the <em>effective</em> species.</li>
+</ul>
+</div>
+
+<h2 id="conflicts">Sync conflicts</h2>
+<p>A conflict happens when a phone sends a change to a value that someone has also changed on the server since that phone last synced. Typically, you corrected a record while the researcher edited it offline. The system does not guess who is right. It keeps the server's value and asks you.</p>
+<div class="box note"><span class="tag">Good to know</span>If the two changes touch <strong>different</strong> fields, there is no conflict. Both are simply applied. A change to a locked visit is not a conflict either. It is refused, and the researcher sees it under Errors.</div>
+<h3 id="conflict-resolve">Resolve a conflict</h3>
+<ol class="steps">
+  <li>Open <strong>Sync conflicts</strong>. Filter <strong>By status</strong> to <em>Open</em>.</li>
+  <li>Open the conflict. The <strong>Changes</strong> table lists every field, with the fields in conflict at the top and highlighted.</li>
+  <li>Decide with the observer if you are unsure.</li>
+  <li>Click <span class="btn">Accept server</span> or <span class="btn">Accept client</span> at the top right.</li>
+  <li>Write the required <span class="btn">Note</span> saying why, and click <span class="btn">Resolve</span>.</li>
+</ol>
+<figure class="wide"><a href="img/admin/conflict-list.webp"><img src="img/admin/conflict-list.webp" alt="The list of conflicts." width="1300" height="902"></a><figcaption>The list of conflicts.</figcaption></figure>
+<figure class="wide"><a href="img/admin/conflict-detail.webp"><img src="img/admin/conflict-detail.webp" alt="A conflict. In the Changes table, count was 1 (Base), an admin made it 3 (Server), and the phone made it 2 (Client)." width="1300" height="1589"></a><figcaption>A conflict. In the Changes table, count was 1 (Base), an admin made it 3 (Server), and the phone made it 2 (Client).</figcaption></figure>
+<figure class="wide"><a href="img/admin/conflict-resolve.webp"><img src="img/admin/conflict-resolve.webp" alt="Resolving for the phone&#x27;s value. The note is required." width="1300" height="309"></a><figcaption>Resolving for the phone's value. The note is required.</figcaption></figure>
+<div class="tablewrap"><table>
+<tr><th>In the table</th><th>Meaning</th></tr>
+<tr><td><strong>Base</strong></td><td>The value both sides started from.</td></tr>
+<tr><td><strong>Server</strong></td><td>The value on the server when the phone's change arrived.</td></tr>
+<tr><td><strong>Client</strong></td><td>The value the phone sent. A dash means the phone did not change this field.</td></tr>
+</table></div>
+<div class="tablewrap"><table>
+<tr><th>Choice</th><th>What happens</th></tr>
+<tr><td><span class="btn">Accept server</span></td><td>The server's version stays and the phone's change is dropped. The phone gets the server's version at its next sync.</td></tr>
+<tr><td><span class="btn">Accept client</span></td><td>The phone's change is applied, but only the fields it changed. The usual rules apply, so this is refused if the visit is locked or a value is invalid.</td></tr>
+</table></div>
+<p>The researcher's <span class="btn">Unsynced data</span> screen shows the result and your note at their next sync. If the page warns that <em>the record has changed since this conflict was recorded</em>, open the record with <span class="btn">Open the record</span> and check the latest values before you decide.</p>
+<h2 id="exports">Exports</h2>
+<p>Exports give you the data as files for R, Python, QGIS or a spreadsheet. Only admins can export.</p>
+<div class="box today"><span class="tag">For now</span>Exports have no buttons in the web admin yet. You download them through the API, with a tool such as <code>curl</code> or the API's documentation page.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Export buttons</strong> on the lists, an <strong>Export project bundle (ZIP)</strong> button on the project page, and <strong>GeoPackage</strong> output for QGIS.</div>
+
+<h3 id="export-what">What you can export</h3>
+<div class="tablewrap"><table>
+<tr><th>Dataset name</th><th>Contents</th><th>In the bundle?</th></tr>
+<tr><td><code>survey_visits</code></td><td>One row per visit: times, effort, weather, status, outcome</td><td>Yes</td></tr>
+<tr><td><code>butterfly_observations</code></td><td>One row per record, with the recorded and the effective species</td><td>Yes</td></tr>
+<tr><td><code>plant_resources</code></td><td>Plant records</td><td>Yes</td></tr>
+<tr><td><code>habitat_features</code></td><td>Habitat features</td><td>Yes</td></tr>
+<tr><td><code>transects</code></td><td>Transects</td><td>Yes</td></tr>
+<tr><td><code>transect_sections</code></td><td>Sections with habitat and management</td><td>Yes</td></tr>
+<tr><td><code>environmental_snapshots</code></td><td>Weather at the start and end of visits</td><td>Yes</td></tr>
+<tr><td><code>validation_history</code></td><td>Every validation decision</td><td>Yes</td></tr>
+<tr><td><code>track_points</code></td><td>Every GPS point. This can be very large</td><td>Only when asked for</td></tr>
+</table></div>
+
+<h3 id="export-how">Step 1: find the project's ID</h3>
+<p>Open the project in the web admin. The ID is the long code in the page's address: <code>/admin/projects/project/<strong>4a9089c9-2cd1-48c6-8b7a-1ccd297d53ca</strong>/change/</code>.</p>
+
+<h3 id="export-curl">Step 2: download with curl</h3>
+<p>First log in to get a temporary access key. It is valid for 15 minutes. Replace the email and password with yours:</p>
+<pre><code>curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.org","password":"your-password"}'</code></pre>
+<p>The answer contains <code>"access":"…"</code>. Copy the long value and use it below in place of <code>ACCESS_KEY</code>.</p>
+<p><strong>Everything for one project, as a ZIP of CSV files:</strong></p>
+<pre><code>curl -H "Authorization: Bearer ACCESS_KEY" \
+  "http://localhost:8080/api/v1/exports/bundle?project=PROJECT_ID" \
+  -o project.zip</code></pre>
+<p><strong>One dataset, as one file:</strong></p>
+<pre><code>curl -H "Authorization: Bearer ACCESS_KEY" \
+  "http://localhost:8080/api/v1/exports/butterfly_observations?project=PROJECT_ID&amp;format=geojson&amp;from=2026-06-01&amp;to=2026-07-31" \
+  -o observations.geojson</code></pre>
+
+<h3 id="export-options">Options</h3>
+<p>Add these to the address after a <code>?</code>, joined with <code>&amp;</code>.</p>
+<div class="tablewrap"><table>
+<tr><th>Option</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><code>project</code></td><td>Only this project. Required for the bundle.</td><td><code>project=4a90…</code></td></tr>
+<tr><td><code>format</code></td><td><code>csv</code> (the default), <code>geojson</code> or <code>json</code>. For single datasets only. The bundle is always CSV.</td><td><code>format=geojson</code></td></tr>
+<tr><td><code>from</code>, <code>to</code></td><td>First and last day to include, in UTC. Both days count. Transects and sections ignore them.</td><td><code>from=2026-06-01</code></td></tr>
+<tr><td><code>na</code></td><td>What to write for a missing value in CSV. The default is <code>NA</code>, which suits R. It may be empty.</td><td><code>na=</code></td></tr>
+<tr><td><code>excel</code></td><td>Adds a marker so that Excel reads Serbian letters correctly.</td><td><code>excel=1</code></td></tr>
+<tr><td><code>track_points</code></td><td>Adds the GPS points to the bundle.</td><td><code>track_points=1</code></td></tr>
+</table></div>
+
+<h3 id="export-swagger">Without curl: the API page</h3>
+<p>If you prefer a browser, open <code>/api/v1/docs/</code>.</p>
+<ol class="steps">
+  <li>Open <strong>auth → POST /api/v1/auth/login</strong>, click <span class="btn">Try it out</span>, enter your email and password, and click <span class="btn">Execute</span>. Copy the <code>access</code> value from the answer.</li>
+  <li>Click <span class="btn">Authorize</span> at the top, paste the value, and confirm.</li>
+  <li>Open <strong>exports</strong>, choose the dataset or bundle, click <span class="btn">Try it out</span>, fill in the options, and click <span class="btn">Execute</span>. A <span class="btn">Download file</span> link appears.</li>
+</ol>
+<figure class="wide"><a href="img/admin/swagger.webp"><img src="img/admin/swagger.webp" alt="The API page. It also documents everything the app uses." width="1300" height="902"></a><figcaption>The API page. It also documents everything the app uses.</figcaption></figure>
+
+<h3 id="export-read">Reading the files</h3>
+<ul>
+  <li><strong>The bundle includes <code>metadata.json</code>,</strong> which describes every column, the filters used, who exported it and when.</li>
+  <li><strong>Coordinates</strong> are WGS 84 (EPSG:4326), longitude and latitude.</li>
+  <li><strong>Times</strong> are UTC.</li>
+  <li><strong><code>taxon_scientific_name</code></strong> is what the observer entered. <strong><code>effective_taxon_scientific_name</code></strong> is the validated species if there is one, otherwise the observer's. Use the effective one for analysis.</li>
+  <li><strong>Lists</strong> such as behaviours are joined with <code>;</code> in CSV.</li>
+</ul>
+
+<h2 id="ogc">OGC API: QGIS, R and Python</h2>
+<p>The system also publishes data live through <strong>OGC API – Features</strong>, an open standard that GIS tools understand. It always shows the current data, and it is read-only. Only admins can reach it.</p>
+<div class="tablewrap"><table>
+<tr><th>Collection</th><th>Contents</th></tr>
+<tr><td><code>transects</code></td><td>Transect routes, one line per transect</td></tr>
+<tr><td><code>transect-sections</code></td><td>Sections with habitat and management</td></tr>
+<tr><td><code>butterfly-observations</code></td><td>Butterfly records, with the recorded and the validated species</td></tr>
+<tr><td><code>plant-resources</code></td><td>Plants as points or patches</td></tr>
+<tr><td><code>habitat-features</code></td><td>Habitat features as points, lines or polygons</td></tr>
+</table></div>
+<h3 id="ogc-browser">Look at it in a browser</h3>
+<p>Open <code>/ogc/</code>, for example <code>http://localhost:8080/ogc/</code>. The browser asks for a login, so enter your admin email and password.</p>
+<div class="shots">
+<figure style="flex:1 1 420px"><a href="img/admin/ogc-landing.webp"><img src="img/admin/ogc-landing.webp" alt="The start page of the service." width="1215" height="1290"></a><figcaption>The start page of the service.</figcaption></figure>
+<figure style="flex:1 1 420px"><a href="img/admin/ogc-collections.webp"><img src="img/admin/ogc-collections.webp" alt="The five collections." width="1300" height="902"></a><figcaption>The five collections.</figcaption></figure>
+</div>
+<figure class="wide"><a href="img/admin/ogc-items.webp"><img src="img/admin/ogc-items.webp" alt="The records of a collection, on a map and in a table." width="1300" height="1153"></a><figcaption>The records of a collection, on a map and in a table.</figcaption></figure>
+
+<h3 id="ogc-token">Create a token</h3>
+<p>Tools such as QGIS need a key. A personal token works for this, and only for this: it opens the OGC API and nothing else.</p>
+<ol class="steps">
+  <li>In the web admin, click <span class="btn">Add</span> next to <strong>Auth Token → Tokens</strong>.</li>
+  <li>Pick your user and save. Each user has one token.</li>
+  <li>Copy the <strong>key</strong> from the list.</li>
+</ol>
+<figure class="small"><a href="img/admin/token-add.webp"><img src="img/admin/token-add.webp" alt="Creating a token." width="1300" height="286"></a><figcaption>Creating a token.</figcaption></figure>
+<div class="box warn"><span class="tag">Careful</span>A token works like a password. Do not put it in a shared script, a repository or a screenshot. To revoke it, delete it in the same list. It can keep working for up to a minute afterwards.</div>
+
+<h3 id="ogc-qgis">Connect QGIS</h3>
+<ol class="steps">
+  <li>In <strong>Settings → Options → Authentication</strong>, click <strong>+</strong>, choose the type <strong>API Header</strong>, and add one header: name <code>Authorization</code>, value <code>Token YOUR_KEY</code>.</li>
+  <li>Choose <strong>Layer → Add Layer → Add WFS / OGC API – Features Layer</strong>, then <strong>New</strong>.</li>
+  <li>Enter the URL <code>http://localhost:8080/ogc</code> and choose the authentication you just made.</li>
+  <li>Connect, pick a collection and add it.</li>
+</ol>
+<p>If your QGIS has no API Header type, use <strong>Basic</strong> with your admin email and password.</p>
+
+<h3 id="ogc-filter">Filter the data</h3>
+<p>You can add filters to the address, in the browser or a script:</p>
+<div class="tablewrap"><table>
+<tr><th>Filter</th><th>Example</th></tr>
+<tr><td>By project</td><td><code>?project_id=PROJECT_ID</code></td></tr>
+<tr><td>By species</td><td><code>?effective_scientific_name=Maniola jurtina</code></td></tr>
+<tr><td>By time (observations, plants, habitat)</td><td><code>?datetime=2026-06-01/2026-07-31</code></td></tr>
+<tr><td>By area</td><td><code>?bbox=19.82,45.15,19.86,45.17</code> (west, south, east, north)</td></tr>
+<tr><td>Number of results</td><td><code>?limit=100&amp;offset=100</code></td></tr>
+<tr><td>Format</td><td><code>?f=json</code> or <code>?f=csv</code></td></tr>
+</table></div>
+<p>Any column of a collection can be used as a filter in the same way. Combine filters with <code>&amp;</code>.</p>
+
+<h3 id="ogc-python">Python and R</h3>
+<pre><code>import requests
+
+r = requests.get(
+    "http://localhost:8080/ogc/collections/butterfly-observations/items",
+    params={"f": "json", "limit": 100, "project_id": "PROJECT_ID"},
+    headers={"Authorization": "Token YOUR_KEY"},
+    timeout=30,
+)
+r.raise_for_status()
+features = r.json()["features"]</code></pre>
+<p>For R with <code>sf</code> or <code>httr2</code>, and for GDAL, see <code>docs/setup/ogc-access.md</code> in the project's files.</p>
+
+<h3 id="ogc-limits">Limits</h3>
+<ul>
+  <li>After revoking a token, or removing someone from the admin group, access can continue for up to 60 seconds.</li>
+  <li>Five failed password logins in 15 minutes block that email here too, separately from the app.</li>
+  <li>For now, the service's own links point to <code>http://localhost:8080</code>, so it is simplest to use it on the server machine itself. To browse from elsewhere, see <code>docs/setup/ogc-access.md</code>.</li>
+</ul>
+
+<h2 id="server">Running the server</h2>
+<p>You only need this chapter if you look after the server itself. Commands assume a terminal in the project's main folder. More detail is in the <code>docs/setup</code> folder of the project and in its <code>README.md</code>.</p>
+<div class="box today"><span class="tag">For now</span>The server runs on the developer's laptop with Docker. <strong>It has to be on for phones to sync,</strong> though the field work does not depend on it, because phones keep their data until they can reach it.</div>
+<div class="box later"><span class="tag">Coming later</span>When the system is finished, the server moves to a rented machine (a VPS) with a public address, and the app can be downloaded from a website. Starting, stopping and backups work the same way there. Tailscale and USB will no longer be needed.</div>
+
+<h3 id="server-parts">What runs</h3>
+<div class="tablewrap"><table>
+<tr><th>Service</th><th>Job</th></tr>
+<tr><td><code>nginx</code></td><td>The front door on port 8080. It sends each request to the right service, and serves this manual at <code>/manual/</code>.</td></tr>
+<tr><td><code>django</code></td><td>The application: web admin, API, sync.</td></tr>
+<tr><td><code>db</code></td><td>The PostgreSQL database with PostGIS.</td></tr>
+<tr><td><code>minio</code></td><td>Stores the photos.</td></tr>
+<tr><td><code>pygeoapi</code></td><td>The OGC API.</td></tr>
+</table></div>
+
+<h3 id="server-start">Start and stop</h3>
+<p>On the development setup, the full command is long because it names the two configuration files. For the very first start on an empty database, follow <code>README.md</code> instead, because the database must be prepared first.</p>
+<pre><code># Start, or restart after changes
+docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml up -d --build
+
+# See whether everything runs. All five should say "healthy"
+docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml ps
+
+# Read the application's log
+docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml logs -f django
+
+# Stop. Your data is kept
+docker compose --project-directory . -f infrastructure/compose.yaml -f infrastructure/compose.dev.yaml down</code></pre>
+<div class="box warn"><span class="tag">Careful</span><strong>Never add <code>-v</code> to the <code>down</code> command.</strong> <code>down -v</code> deletes the database and all photos.</div>
+<p><strong>Quick health check:</strong> open <code>http://localhost:8080/api/v1/health/</code>. It should answer <code>{"status":"ok","db":true,"storage":true}</code>. If <code>storage</code> is false, see <code>docs/setup/minio.md</code>.</p>
+
+<h3 id="server-backup">Back up and restore</h3>
+<p>There is no automatic schedule. Back up before demos and after field sessions.</p>
+<pre><code>scripts/backup.sh /path/to/backup-disk/butterfly-backups</code></pre>
+<p>This creates a dated folder with the database, all photos and a small description file. The newest 7 backups in that folder are kept, and <strong>older ones in the same folder are deleted</strong>. Keep the folder on a separate disk. The backup can also be encrypted, as described in <code>docs/setup/backup.md</code>.</p>
+<pre><code>scripts/restore.sh /path/to/backup-disk/butterfly-backups/butterfly-&lt;time&gt;</code></pre>
+<div class="box warn"><span class="tag">Careful</span><strong>Restore deletes all current data</strong> and replaces it with the backup. It asks you to type <code>restore</code> first. Changes made after the backup are lost from the server, unless phones still hold them and sync them again.</div>
+
+<h3 id="server-phones">Connecting phones and computers</h3>
+<p>Phones reach the server through its address, set in the app's <strong>Settings → URL</strong>. Today there are two ways. The app has a button for each that fills in the address:</p>
+<div class="tablewrap"><table>
+<tr><th>Way</th><th>How</th><th>Good for</th></tr>
+<tr><td><strong>Tailscale</strong></td><td>A private network across the internet. The laptop and the phone both join it. See <code>docs/setup/tailscale.md</code>.</td><td>Real use, from anywhere with a connection</td></tr>
+<tr><td><strong>USB</strong></td><td>Plug the phone in, turn on USB debugging, and run <code>adb reverse tcp:8080 tcp:8080</code>. The app then uses <code>http://localhost:8080</code>.</td><td>Demonstrations with no network</td></tr>
+</table></div>
+<p>The web admin and OGC API can be opened at the same addresses. Port 8080 is the only one meant for general use.</p>
+
+<h3 id="server-apk">Build the app</h3>
+<p>Until the download page exists, you build the APK yourself and send it to researchers. On a machine with Flutter, from the <code>mobile</code> folder:</p>
+<pre><code>flutter build apk --debug</code></pre>
+<p>The file is <code>mobile/build/app/outputs/flutter-apk/app-debug.apk</code>.</p>
+<div class="box warn"><span class="tag">Careful</span>When updating a phone that holds data, do not uninstall the old version first. That deletes all its local data. Install over it with <code>adb install -r app-debug.apk</code> or by opening the new APK on the phone.</div>
+
+<h3 id="server-demo">Example data</h3>
+<p>For a new development setup, four commands fill the database with a butterfly list, plants, habitat types and a demo project. See <code>docs/setup/seed-data.md</code>. They are for development and demonstrations, not for real projects.</p>
+
+<h2 id="onboard">Getting a new researcher started</h2>
+<ol class="steps">
+  <li><a href="#user-create">Create the account</a> with the group <strong>researcher</strong>.</li>
+  <li><a href="#members">Add them to the project</a>.</li>
+  <li>Send them the link to the app. <em>For now, this means sending the APK file and the server address.</em></li>
+  <li>Send them their email and password in a safe way, and a link to the <a href="researcher.html">researcher manual</a> (<code>/manual/</code> on your server).</li>
+  <li>Ask them to log in, download the project, and walk a short test visit.</li>
+  <li>Check that their visit appears under <a href="#visits">Survey visits</a>, with a route on the map.</li>
+  <li>If it was only a test, <a href="#tour-delete">soft delete</a> it.</li>
+</ol>
+
+<h2 id="faq">Problems and answers</h2>
+<h4>A researcher logged in but sees no projects.</h4>
+<p>Add them to the project under <a href="#members">Project memberships</a>, and check that their account has the <strong>researcher</strong> group. Then they pull down the list in the app.</p>
+<h4>A researcher cannot log in.</h4>
+<p>Check that <span class="btn">Active</span> is ticked. After five failed tries the account is blocked for 15 minutes. If they forgot the password, <a href="#user-password">reset it</a>. Also check that the server is running.</p>
+<h4>A new transect or changed protocol does not appear on a phone.</h4>
+<p>Phones get changes at their next sync. Ask the researcher to open the app with a connection, or pull down the project list. Also check that the transect has <span class="btn">Active</span> ticked and belongs to the right project.</p>
+<h4>A visit has no route on the map.</h4>
+<p>The phone may not have sent the points yet, because they come in batches. The caption under the map says how many it has. Ask the researcher to sync. If it stays empty, GPS may not have recorded. Check location permission and battery settings with them.</p>
+<h4>A visit stays "In progress" for days.</h4>
+<p>Either the researcher never tapped Finish, or their phone has not synced since. Ask them. They can finish or cancel it on the phone.</p>
+<h4>I cannot lock a visit: track points are missing.</h4>
+<p>Ask the researcher to sync. If the phone is lost, tick <span class="btn">Lock even if track points are missing</span>.</p>
+<h4>"Not changed: …" after an action.</h4>
+<p>That record was refused and the message says why. The other selected records were changed.</p>
+<h4>A section is refused when I save.</h4>
+<p>The section must lie within 5 m of the transect line along its whole length. Redraw it, or use <a href="#generate-sections">Generate N equal sections</a>.</p>
+<h4>A researcher recorded something by mistake.</h4>
+<p>They can correct butterfly records themselves until the visit is locked. To remove one, <a href="#observations">soft delete it</a>. They can delete their own plant and habitat records in the app.</p>
+<h4>A researcher wants to add a forgotten butterfly to a finished visit.</h4>
+<p>Neither the app nor the web admin can do this yet. It is planned. Note it in the visit's notes for now.</p>
+<h4>The times look wrong.</h4>
+<p>The web admin and exports use UTC, and the phone uses local time. See <a href="#tour-times">Times are in UTC</a>.</p>
+<h4>The OGC API asks for a login over and over, or answers 403.</h4>
+<p>Only active users in the <strong>admin</strong> group can use it. Check the token or password. Researchers get 403.</p>
+<h4>Photos do not open, or the health check says "storage": false.</h4>
+<p>The photo storage is not reachable. Check that <code>minio</code> is healthy, and see <code>docs/setup/minio.md</code>.</p>
+<h4>A researcher's phone is lost or broken.</h4>
+<p>Whatever it synced is safe. Anything it never synced is gone. Set them up on a new phone, and consider changing their password.</p>
+
+<h2 id="coming-later">Coming later</h2>
+<p>These features are planned. Plans can change as the project develops.</p>
+<div class="tablewrap"><table>
+<tr><th>Feature</th><th>What it will do</th></tr>
+<tr><td>Automatic quality flags</td><td>Mark records outside the study area, far from the transect or with unusually high counts, and visits with GPS gaps. Flagged records enter the validation queue, and the Flag filters start to work.</td></tr>
+<tr><td>Server-side route coverage</td><td>Work out coverage on the server, flag low coverage, and apply the valid-visit rule.</td></tr>
+<tr><td>Indicators and reports</td><td>Per transect and year: visits, true zeros, effort, species, individuals per km and per hour, target against actual. Also phenology and behaviour tables, browsable in the web admin.</td></tr>
+<tr><td>Export buttons</td><td>Export selected rows as CSV or GeoJSON from any list, and a project ZIP button.</td></tr>
+<tr><td>GeoPackage export</td><td>One file with all spatial layers for QGIS.</td></tr>
+<tr><td>Close a project</td><td>Stop new visits in a finished project, with a reason, without deleting anything.</td></tr>
+<tr><td>Edit plant records</td><td>Add and correct plant records on a map in the web admin.</td></tr>
+<tr><td>Route proposals</td><td>Review routes proposed from the field and turn them into transects.</td></tr>
+<tr><td>Shared plants and habitat</td><td>Project members see each other's plant and habitat records.</td></tr>
+<tr><td>Offline basemap</td><td>Upload a background map file for a project, which phones download.</td></tr>
+<tr><td>Public server and download page</td><td>A permanent server address and a website to download the app.</td></tr>
+<tr><td>Second phase</td><td>Microclimate stations through the OGC SensorThings API, weather through OGC API – EDR, and butterfly movement tracks through OGC API – Moving Features.</td></tr>
+</table></div>
+<p class="credits">Example data only. Map data © OpenStreetMap contributors. Photo credits are on the <a href="index.html#credits">start page</a>.</p>
+</main>
+</div>
+</body>
+</html>
