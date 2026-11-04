@@ -1,10 +1,12 @@
+from zoneinfo import available_timezones
+
 from django import forms
 from django.contrib import admin, messages
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
-from apps.core.widgets import EditableMapWidget
+from apps.core.widgets import EditableMapWidget, SearchableSelect
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 from apps.projects.services import AreaFileError, multipolygon_from_file
 
@@ -24,14 +26,60 @@ class HelpTextMixin:
         return field
 
 
+def time_zone_choices():
+    """Region/City names (Europe/Belgrade) plus UTC, for the protocol's time zone list.
+
+    The old aliases (Cuba, GB, EST5EDT, Etc/GMT+5 ...) are left out: a researcher picks a place.
+    """
+    names = [
+        name
+        for name in available_timezones()
+        if "/" in name and not name.startswith(("Etc/", "posix/", "right/"))
+    ]
+    return [(name, name) for name in sorted(names + ["UTC"])]
+
+
+class ProjectProtocolForm(forms.ModelForm):
+    """Keeps the stored time zone selectable when it is not in the shortened list.
+
+    A zone saved earlier as free text (Etc/UTC, Cuba ...) is still valid for the model, so it is
+    added at the top of the choices. Otherwise every edit of that protocol would be refused.
+    """
+
+    class Meta:
+        model = ProjectProtocol
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        stored = self.instance.time_zone if self.instance.pk else None
+        field = self.fields.get("time_zone")
+        if field is not None and stored and stored not in dict(field.choices):
+            field.choices = [(stored, stored), *field.choices]
+
+
 class ProjectProtocolInline(HelpTextMixin, admin.StackedInline):
     """One protocol per project. It is created with the project (signal), so there is no add."""
 
     model = ProjectProtocol
+    form = ProjectProtocolForm
     can_delete = False
     max_num = 1
     extra = 0
     exclude = ["server_version", "deleted_at", "created_by", "updated_by"]
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "time_zone":
+            # A list with a search box instead of a text box, so a typo is not possible.
+            return forms.ChoiceField(
+                choices=time_zone_choices(),
+                initial=db_field.default,
+                label=_("Time zone"),
+                widget=SearchableSelect(attrs={"class": "searchable-select"}),
+                help_text=self.help_texts["time_zone"],
+            )
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
     help_texts = {
         "protocol_version": (
             "Label for this set of rules, e.g. 1.0. Raise it when you change thresholds mid-study."
@@ -46,7 +94,7 @@ class ProjectProtocolInline(HelpTextMixin, admin.StackedInline):
         ),
         "season_end": "Last day of the monitoring season. Visits after it get a warning.",
         "time_zone": (
-            "Time zone of the study site (IANA name, e.g. Europe/Belgrade). The season dates and "
+            "Time zone of the study site. Type to search, e.g. Belgrade. The season dates and "
             "the daily window below are read in it."
         ),
         "day_start_time": "Earliest local time of day a visit should start.",

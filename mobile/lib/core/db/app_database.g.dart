@@ -12764,6 +12764,18 @@ class $ProjectProtocolsTable extends ProjectProtocols
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _timeZoneMeta = const VerificationMeta(
+    'timeZone',
+  );
+  @override
+  late final GeneratedColumn<String> timeZone = GeneratedColumn<String>(
+    'time_zone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Europe/Belgrade'),
+  );
   static const VerificationMeta _serverVersionMeta = const VerificationMeta(
     'serverVersion',
   );
@@ -12810,6 +12822,7 @@ class $ProjectProtocolsTable extends ProjectProtocols
     gpsGapS,
     highCountThreshold,
     minCoveragePct,
+    timeZone,
     serverVersion,
     deletedAt,
   ];
@@ -13052,6 +13065,12 @@ class $ProjectProtocolsTable extends ProjectProtocols
     } else if (isInserting) {
       context.missing(_minCoveragePctMeta);
     }
+    if (data.containsKey('time_zone')) {
+      context.handle(
+        _timeZoneMeta,
+        timeZone.isAcceptableOrUnknown(data['time_zone']!, _timeZoneMeta),
+      );
+    }
     if (data.containsKey('server_version')) {
       context.handle(
         _serverVersionMeta,
@@ -13164,6 +13183,10 @@ class $ProjectProtocolsTable extends ProjectProtocols
         DriftSqlType.int,
         data['${effectivePrefix}min_coverage_pct'],
       )!,
+      timeZone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time_zone'],
+      )!,
       serverVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}server_version'],
@@ -13204,6 +13227,9 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
   final int gpsGapS;
   final int highCountThreshold;
   final int minCoveragePct;
+
+  /// IANA name of the study site's zone; the season and the daily window are read in it (T104).
+  final String timeZone;
   final int? serverVersion;
   final DateTime? deletedAt;
   const ProjectProtocol({
@@ -13229,6 +13255,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
     required this.gpsGapS,
     required this.highCountThreshold,
     required this.minCoveragePct,
+    required this.timeZone,
     this.serverVersion,
     this.deletedAt,
   });
@@ -13263,6 +13290,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
     map['gps_gap_s'] = Variable<int>(gpsGapS);
     map['high_count_threshold'] = Variable<int>(highCountThreshold);
     map['min_coverage_pct'] = Variable<int>(minCoveragePct);
+    map['time_zone'] = Variable<String>(timeZone);
     if (!nullToAbsent || serverVersion != null) {
       map['server_version'] = Variable<int>(serverVersion);
     }
@@ -13296,6 +13324,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
       gpsGapS: Value(gpsGapS),
       highCountThreshold: Value(highCountThreshold),
       minCoveragePct: Value(minCoveragePct),
+      timeZone: Value(timeZone),
       serverVersion: serverVersion == null && nullToAbsent
           ? const Value.absent()
           : Value(serverVersion),
@@ -13345,6 +13374,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
       gpsGapS: serializer.fromJson<int>(json['gpsGapS']),
       highCountThreshold: serializer.fromJson<int>(json['highCountThreshold']),
       minCoveragePct: serializer.fromJson<int>(json['minCoveragePct']),
+      timeZone: serializer.fromJson<String>(json['timeZone']),
       serverVersion: serializer.fromJson<int?>(json['serverVersion']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -13381,6 +13411,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
       'gpsGapS': serializer.toJson<int>(gpsGapS),
       'highCountThreshold': serializer.toJson<int>(highCountThreshold),
       'minCoveragePct': serializer.toJson<int>(minCoveragePct),
+      'timeZone': serializer.toJson<String>(timeZone),
       'serverVersion': serializer.toJson<int?>(serverVersion),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -13409,6 +13440,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
     int? gpsGapS,
     int? highCountThreshold,
     int? minCoveragePct,
+    String? timeZone,
     Value<int?> serverVersion = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => ProjectProtocol(
@@ -13438,6 +13470,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
     gpsGapS: gpsGapS ?? this.gpsGapS,
     highCountThreshold: highCountThreshold ?? this.highCountThreshold,
     minCoveragePct: minCoveragePct ?? this.minCoveragePct,
+    timeZone: timeZone ?? this.timeZone,
     serverVersion: serverVersion.present
         ? serverVersion.value
         : this.serverVersion,
@@ -13503,6 +13536,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
       minCoveragePct: data.minCoveragePct.present
           ? data.minCoveragePct.value
           : this.minCoveragePct,
+      timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
       serverVersion: data.serverVersion.present
           ? data.serverVersion.value
           : this.serverVersion,
@@ -13535,6 +13569,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
           ..write('gpsGapS: $gpsGapS, ')
           ..write('highCountThreshold: $highCountThreshold, ')
           ..write('minCoveragePct: $minCoveragePct, ')
+          ..write('timeZone: $timeZone, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -13565,6 +13600,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
     gpsGapS,
     highCountThreshold,
     minCoveragePct,
+    timeZone,
     serverVersion,
     deletedAt,
   ]);
@@ -13595,6 +13631,7 @@ class ProjectProtocol extends DataClass implements Insertable<ProjectProtocol> {
           other.gpsGapS == this.gpsGapS &&
           other.highCountThreshold == this.highCountThreshold &&
           other.minCoveragePct == this.minCoveragePct &&
+          other.timeZone == this.timeZone &&
           other.serverVersion == this.serverVersion &&
           other.deletedAt == this.deletedAt);
 }
@@ -13622,6 +13659,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
   final Value<int> gpsGapS;
   final Value<int> highCountThreshold;
   final Value<int> minCoveragePct;
+  final Value<String> timeZone;
   final Value<int?> serverVersion;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -13648,6 +13686,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
     this.gpsGapS = const Value.absent(),
     this.highCountThreshold = const Value.absent(),
     this.minCoveragePct = const Value.absent(),
+    this.timeZone = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -13675,6 +13714,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
     required int gpsGapS,
     required int highCountThreshold,
     required int minCoveragePct,
+    this.timeZone = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -13723,6 +13763,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
     Expression<int>? gpsGapS,
     Expression<int>? highCountThreshold,
     Expression<int>? minCoveragePct,
+    Expression<String>? timeZone,
     Expression<int>? serverVersion,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -13757,6 +13798,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
       if (highCountThreshold != null)
         'high_count_threshold': highCountThreshold,
       if (minCoveragePct != null) 'min_coverage_pct': minCoveragePct,
+      if (timeZone != null) 'time_zone': timeZone,
       if (serverVersion != null) 'server_version': serverVersion,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -13786,6 +13828,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
     Value<int>? gpsGapS,
     Value<int>? highCountThreshold,
     Value<int>? minCoveragePct,
+    Value<String>? timeZone,
     Value<int?>? serverVersion,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -13818,6 +13861,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
       gpsGapS: gpsGapS ?? this.gpsGapS,
       highCountThreshold: highCountThreshold ?? this.highCountThreshold,
       minCoveragePct: minCoveragePct ?? this.minCoveragePct,
+      timeZone: timeZone ?? this.timeZone,
       serverVersion: serverVersion ?? this.serverVersion,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -13905,6 +13949,9 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
     if (minCoveragePct.present) {
       map['min_coverage_pct'] = Variable<int>(minCoveragePct.value);
     }
+    if (timeZone.present) {
+      map['time_zone'] = Variable<String>(timeZone.value);
+    }
     if (serverVersion.present) {
       map['server_version'] = Variable<int>(serverVersion.value);
     }
@@ -13942,6 +13989,7 @@ class ProjectProtocolsCompanion extends UpdateCompanion<ProjectProtocol> {
           ..write('gpsGapS: $gpsGapS, ')
           ..write('highCountThreshold: $highCountThreshold, ')
           ..write('minCoveragePct: $minCoveragePct, ')
+          ..write('timeZone: $timeZone, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -25180,6 +25228,7 @@ typedef $$ProjectProtocolsTableCreateCompanionBuilder =
       required int gpsGapS,
       required int highCountThreshold,
       required int minCoveragePct,
+      Value<String> timeZone,
       Value<int?> serverVersion,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
@@ -25208,6 +25257,7 @@ typedef $$ProjectProtocolsTableUpdateCompanionBuilder =
       Value<int> gpsGapS,
       Value<int> highCountThreshold,
       Value<int> minCoveragePct,
+      Value<String> timeZone,
       Value<int?> serverVersion,
       Value<DateTime?> deletedAt,
       Value<int> rowid,
@@ -25351,6 +25401,11 @@ class $$ProjectProtocolsTableFilterComposer
 
   ColumnFilters<int> get minCoveragePct => $composableBuilder(
     column: $table.minCoveragePct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timeZone => $composableBuilder(
+    column: $table.timeZone,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -25502,6 +25557,11 @@ class $$ProjectProtocolsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get timeZone => $composableBuilder(
+    column: $table.timeZone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
     builder: (column) => ColumnOrderings(column),
@@ -25644,6 +25704,9 @@ class $$ProjectProtocolsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get timeZone =>
+      $composableBuilder(column: $table.timeZone, builder: (column) => column);
+
   GeneratedColumn<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
     builder: (column) => column,
@@ -25728,6 +25791,7 @@ class $$ProjectProtocolsTableTableManager
                 Value<int> gpsGapS = const Value.absent(),
                 Value<int> highCountThreshold = const Value.absent(),
                 Value<int> minCoveragePct = const Value.absent(),
+                Value<String> timeZone = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -25754,6 +25818,7 @@ class $$ProjectProtocolsTableTableManager
                 gpsGapS: gpsGapS,
                 highCountThreshold: highCountThreshold,
                 minCoveragePct: minCoveragePct,
+                timeZone: timeZone,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -25782,6 +25847,7 @@ class $$ProjectProtocolsTableTableManager
                 required int gpsGapS,
                 required int highCountThreshold,
                 required int minCoveragePct,
+                Value<String> timeZone = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -25808,6 +25874,7 @@ class $$ProjectProtocolsTableTableManager
                 gpsGapS: gpsGapS,
                 highCountThreshold: highCountThreshold,
                 minCoveragePct: minCoveragePct,
+                timeZone: timeZone,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,

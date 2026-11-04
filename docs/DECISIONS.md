@@ -1292,10 +1292,9 @@ one coalesced create with `status = completed` (D-051), ahead of its observation
 `visit_warnings` (W06, W07) for the spec and tests; no service calls it because warnings are not stored.
 **Time zone (decided with the developer):** every stored time is UTC. Only the protocol's wall-clock settings (the daily window and the season
 dates) need a zone, so `ProjectProtocol.time_zone` (an IANA name, validated with `zoneinfo`, default `Europe/Belgrade`, set per project in the
-admin) holds the study site's zone and W07 on the server reads it. A project abroad picks its own. The **app still uses the phone's zone** for
-W07, which is the site's zone while the researcher is there; reading the protocol's zone in the app needs a zone database (the `timezone`
-package) and a Drift column: ticket T104. Existing protocol rows keep their `server_version`, so phones are not sent the new field
-until a row changes; harmless while the app ignores it, to be checked by the ticket that reads it.
+admin) holds the study site's zone and W07 on the server reads it. A project abroad picks its own. The app first used the phone's zone for
+W07; since T104 it reads the protocol's zone too (see D-094). Existing protocol rows kept their `server_version`, so phones were not sent the
+new field until a row changed; D-094 resets the pull cursors to fix that.
 **App wiring:** `createQuick` and `VisitRepository._create`/`_update` run the rules and throw a `StateError` with the messages (today only
 V07 can fire on a visit write, because the app cannot complete a visit before T040). `PositionLine` uses `isPoorAccuracy` (W02). The quick
 sheet shows the W01 line for a photo-required species. `weather_check.dart` (W06) and `protocol_window.dart` (W07) moved from the visits and
@@ -1997,3 +1996,24 @@ Four flags mark records for an admin and never reject data: `outside_project_are
 **A flag can now clear**, so a record whose flag clears leaves the validation queue unless it is `pending` (`queue_filter`'s docstring is updated).
 **Not handled.** A changed threshold, project area or transect line, or a visit moved to another transect (`apply_visit_changes` allows it), needs a recompute of its records; nothing does it automatically. Existing rows have no flags until
 `recompute_flags` runs (no backfill migration). The phone's trailing gap stays a phone warning. T100 adds `low_coverage` to `visit_flags`.
+
+## D-094 · App reads the protocol's time zone (T104): `timezone` with the full database, lazy loading, UTC-midnight season dates
+2026-11-04 · accepted · T104, *builds on D-067*
+The app now evaluates W07 in the protocol's `time_zone`, as the server does.
+1. **`timezone` 0.11.2, exact pin, `latest_all`** (about 440 KB). Dart has no IANA database, and the full one means every name the server's
+   `zoneinfo` accepts resolves on the phone.
+2. **Loaded lazily in `protocol_window.dart`, on first use.** `getLocation` throws `LocationNotFoundException` before initialisation, so a forgotten
+   `main()` or test set-up would silently fall back to the phone's zone. Lazy loading rules that out and keeps `core/validation` self-contained.
+3. **Unknown zone name: fall back to the phone's zone** (`instant.toLocal()`). The admin refuses invalid names, so this only covers a name the
+   database lacks; the unit test covers it.
+4. **Pull cursors reset in `from14To15`**, the pattern of `from13To14`: the server added `time_zone` without bumping any `server_version`, so pull
+   would never send it. Rows waiting in the queue are not touched; no server data migration.
+5. **Season dates are UTC midnight.** The phone stored `DateTime.parse('2026-04-01')` as local midnight with the phone's offset and Drift read it
+   back with `.toLocal()`, so a phone whose zone moved west showed 31 March. The pull now parses `${date}T00:00:00Z`, the rules read the stored date
+   in UTC (`_seasonDay`), and the migration rewrites existing rows to the first ten characters plus `T00:00:00.000Z`. Added to T104 at the
+   developer's request.
+6. **Shown** as one line, "Time zone: <zone>", in `ProtocolSummary`, which the transect detail and the start-visit form both use. A name the phone does not know says so on that line ("not known to this app, using the phone's zone").
+7. **The admin picks the zone from a searchable list** (added at the developer's request). `ProjectProtocolInline` swaps the text box for a
+   `ChoiceField` with `SearchableSelect` (`core/widgets.py`, `core/static/core/searchable_select.js`), which uses the select2 build Django's admin
+   already ships, so no dependency. The list is the `Region/City` names from `zoneinfo.available_timezones()` plus `UTC`; legacy aliases (`Cuba`,
+   `EST5EDT`, `Etc/*`) are left out; a zone already stored but not in the list is added to the choices (`ProjectProtocolForm`), so the protocol still saves. A form-only change: the model keeps `validate_time_zone`, so there is no migration and the API is unchanged.

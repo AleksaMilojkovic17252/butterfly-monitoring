@@ -330,8 +330,8 @@ class PullApplier {
       projectId: json['project'] as String,
       protocolVersion: json['protocol_version'] as String,
       surveyMethod: json['survey_method'] as String,
-      seasonStart: DateTime.parse(json['season_start'] as String),
-      seasonEnd: DateTime.parse(json['season_end'] as String),
+      seasonStart: _utcDate(json['season_start'] as String),
+      seasonEnd: _utcDate(json['season_end'] as String),
       dayStartTime: json['day_start_time'] as String,
       dayEndTime: json['day_end_time'] as String,
       minTemperatureC: _decimal(json['min_temperature_c']),
@@ -349,6 +349,7 @@ class PullApplier {
       gpsGapS: json['gps_gap_s'] as int,
       highCountThreshold: json['high_count_threshold'] as int,
       minCoveragePct: json['min_coverage_pct'] as int,
+      timeZone: Value(json['time_zone'] as String),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),
     );
@@ -690,6 +691,10 @@ class PullApplier {
 
   /// A decimal arrives as a string (`"13.0"`).
   static double _decimal(Object? value) => double.parse(value as String);
+
+  /// "2026-04-01" → that day at UTC midnight, whatever the phone's zone is.
+  static DateTime _utcDate(String value) =>
+      DateTime.parse('${value}T00:00:00Z');
 
   static double? _decimalOrNull(Object? value) =>
       value == null ? null : _decimal(value);

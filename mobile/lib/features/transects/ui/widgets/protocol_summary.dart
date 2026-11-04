@@ -24,6 +24,13 @@ class ProtocolSummary extends StatelessWidget {
           'Daily window ${timeWindowLabel(p)}',
         ),
         ProtocolSummaryLine(
+          Icons.public,
+          timeZoneKnown(p)
+              ? 'Time zone: ${p.timeZone}'
+              : 'Time zone: ${p.timeZone} (not known to this app, '
+                    "using the phone's zone)",
+        ),
+        ProtocolSummaryLine(
           Icons.thermostat_outlined,
           '≥ ${_number(p.minTemperatureC)} °C with ≤ '
           '${p.maxCloudCoverPctIfCool} % cloud, or '

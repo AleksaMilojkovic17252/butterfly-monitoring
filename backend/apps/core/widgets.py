@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib.gis.forms.widgets import OSMWidget
 
 
@@ -26,3 +27,21 @@ class LineMapWidget(EditableMapWidget):
     """
 
     template_name = "core/widgets/line_map.html"
+
+
+class SearchableSelect(forms.Select):
+    """A drop-down with a search box, for long lists such as time zones (T104).
+
+    Uses the select2 build Django's admin already ships, so nothing is added to the project.
+    """
+
+    class Media:
+        css = {"all": ("admin/css/vendor/select2/select2.min.css",)}
+        js = (
+            "admin/js/vendor/jquery/jquery.min.js",
+            "admin/js/vendor/select2/select2.full.min.js",
+            # As in Django's own autocomplete widget: select2 loads before jquery.init.js hands
+            # jQuery over to django.jQuery, so django.jQuery has the select2 plugin.
+            "admin/js/jquery.init.js",
+            "core/searchable_select.js",
+        )

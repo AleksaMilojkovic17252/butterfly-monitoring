@@ -3,7 +3,9 @@ import 'package:mobile/core/db/projects.dart';
 
 /// Local copy of the server's `project_protocol` table: the survey protocol of
 /// one project. A read-only reference table written only by pull, so it has no
-/// `syncStatus` column (D-042). Times of day are `HH:MM:SS` text.
+/// `syncStatus` column (D-042). Times of day are `HH:MM:SS` text. Season dates
+/// are stored as UTC midnight, so the calendar day never depends on the
+/// phone's zone (T104).
 class ProjectProtocols extends Table {
   TextColumn get projectId => text().references(Projects, #id)();
   TextColumn get id => text()();
@@ -27,6 +29,10 @@ class ProjectProtocols extends Table {
   IntColumn get gpsGapS => integer()();
   IntColumn get highCountThreshold => integer()();
   IntColumn get minCoveragePct => integer()();
+
+  /// IANA name of the study site's zone; the season and the daily window are read in it (T104).
+  TextColumn get timeZone =>
+      text().withDefault(const Constant('Europe/Belgrade'))();
 
   @override
   Set<Column> get primaryKey => {id};

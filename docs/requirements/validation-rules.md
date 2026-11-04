@@ -89,7 +89,6 @@ confidence of an undecided record (D-091). App code:
 - **W07.** The season is compared by local calendar date (both end days are inside), the daily window by
   local wall-clock minute (both ends are inside). "Local" is the time zone of the study site, which the
   protocol holds as `time_zone` (an IANA name, default `Europe/Belgrade`, set per project in the admin). The
-  server reads it from the protocol. The app uses the phone's time zone for now, which is the site's zone
-  while the researcher is at the site; reading the protocol's zone in the app needs a zone database
-  (a `timezone` package) and is ticket T104. All stored times stay UTC; the zone only matters for these
-  two wall-clock settings.
+  server and the app both read it from the protocol (T104, D-094): the app converts the instant to the
+  protocol's zone with the `timezone` package. An unknown zone name falls back to the phone's zone. All
+  stored times stay UTC; the zone only matters for these two wall-clock settings.

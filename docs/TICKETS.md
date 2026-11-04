@@ -139,7 +139,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
-| T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | todo |
+| T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | done |
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
@@ -1939,7 +1939,7 @@ the transect and its offset from it. This gives an abundance profile along the r
 Out of scope: storing the values (views only, no sync or Drift change). On a transect that loops back on itself, `ST_LineLocatePoint` can pick the wrong pass: document it.
 
 ### T104 · App reads the protocol's time zone (rule W07)
-[#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) · E08 · added 2026-10-28 · P1 · should · labels: `mobile`, `should` · implements F30 (extends T055) · est. 1 d · **todo**
+[#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) · E08 · added 2026-10-28 · P1 · should · labels: `mobile`, `should` · implements F30 (extends T055) · est. 1 d · **done**
 
 Depends on: T055, T035
 
@@ -1953,6 +1953,8 @@ Why: the season dates and the daily window are local times at the study site. T0
 - [ ] `validation-rules.md` (W07 note) and D-067 updated.
 
 Needs a new dependency, the `timezone` package (Dart has no IANA database in the core library): ask the developer when the ticket is built. An unknown zone name falls back to the phone's zone.
+
+Note (2026-11-04, agreed with the developer): `timezone` 0.11.2 approved (exact pin, full database). Season dates moved to UTC midnight in the app (pull, migration `from14To15`, rules), which the ticket text did not mention (D-094). The admin's Time zone field became a searchable list. All criteria met; none skipped.
 
 ### T105 · Project home: the Start visit tile, and tiles not built yet
 [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) · E02 · added 2026-10-30 as a follow-up to T017 · P1 · must · labels: `mobile`, `must` · est. 0.5 d · **done**

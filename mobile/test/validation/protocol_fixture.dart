@@ -5,14 +5,15 @@ import 'package:mobile/core/db/app_database.dart';
 ProjectProtocol makeProtocol({
   bool allowPrecipitation = false,
   double accuracyWarningM = 25,
+  String timeZone = 'Europe/Belgrade',
 }) {
   return ProjectProtocol(
     projectId: 'project',
     id: 'protocol',
     protocolVersion: '1.0',
     surveyMethod: 'pollard_walk',
-    seasonStart: DateTime(2026, 4, 1),
-    seasonEnd: DateTime(2026, 9, 30),
+    seasonStart: DateTime.utc(2026, 4, 1),
+    seasonEnd: DateTime.utc(2026, 9, 30),
     dayStartTime: '10:00:00',
     dayEndTime: '17:00:00',
     minTemperatureC: 13,
@@ -29,5 +30,6 @@ ProjectProtocol makeProtocol({
     gpsGapS: 60,
     highCountThreshold: 50,
     minCoveragePct: 80,
+    timeZone: timeZone,
   );
 }

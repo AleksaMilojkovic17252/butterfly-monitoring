@@ -53,7 +53,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -168,6 +168,26 @@ class AppDatabase extends _$AppDatabase {
         // so pull skipped them and moved its cursor past them. Start every pull
         // from the beginning, as from12To13 did. Rows waiting in the queue are
         // not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from14To15: (m, schema) async {
+        await m.addColumn(
+          schema.projectProtocol,
+          schema.projectProtocol.timeZone,
+        );
+        // Season dates were stored as local midnight with the phone's offset.
+        // The first ten characters are the calendar date, so keep those at UTC
+        // midnight: a phone that has not pulled yet still reads the right days.
+        await m.database.customStatement(
+          "UPDATE project_protocol SET "
+          "season_start = substr(season_start, 1, 10) || 'T00:00:00.000Z', "
+          "season_end = substr(season_end, 1, 10) || 'T00:00:00.000Z'",
+        );
+        // The server added time_zone without changing any row's server_version,
+        // so pull would never send it. Start every pull from the beginning, as
+        // from13To14 did. Rows waiting in the queue are not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

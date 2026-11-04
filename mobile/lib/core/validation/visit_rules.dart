@@ -201,7 +201,7 @@ bool _weatherFails(
 }
 
 bool _w07OutsideWindow(VisitInput input, ProjectProtocol protocol) {
-  // W07: outside the season, or outside the daily window (phone's time zone).
+  // W07: outside the season, or outside the daily window (read in the protocol's time zone).
   final startedAt = input.startedAt;
   if (startedAt == null) return false;
   return seasonWarning(protocol, startedAt) != null ||
