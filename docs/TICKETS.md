@@ -91,7 +91,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T053 | [#70](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/70) | HabitatFeature model and API | P1 | should | T020, T026 | 1.5 d | done |
 | T054 | [#71](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/71) | App habitat feature entry | P1 | should | T052, T053 | 1.5 d | done |
 | T055 | [#72](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/72) | Input validation rules (shared by app and server) | P1 | must | T016, T034, T044 | 2 d | done |
-| T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | todo |
+| T056 | [#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) | Automatic quality flags | P1 | should | T036, T048, T055 | 1.5 d | done |
 | T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | done |
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | done |
 | T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | done |
@@ -1152,7 +1152,7 @@ Depends on: T016, T034, T044
 Note: the tests are written (developer's choice, an exception to D-021): 37 on the server (`manage.py test apps.observations apps.surveys`) and 50 in the app (`flutter test`). The API smoke script `tmp/t055/smoke.py` (not committed) pushed and POSTed bad payloads for V01-V08 and W01 and got the rule IDs back in `fields`; a good payload was still applied. The developer's phone run on 2026-10-28 passed: start form (W06/W07) after the file move, quick entry, W01 (the line, then `validation_status = pending`), V03 on the sync screen (readable text, Discard), and W02 once (a poor fix could not be repeated). W03/W04 have tests only, no UI (T051, T046). V06 is enforced on the server in one direction only, and W07 on the server reads the new `ProjectProtocol.time_zone`. W05 is out of scope. No criterion was skipped as test/CI only. See D-067.
 
 ### T056 · Automatic quality flags
-[#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) · E08 · P1 · should · labels: `backend`, `should` · implements F31 · est. 1.5 d · **todo**
+[#73](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/73) · E08 · P1 · should · labels: `backend`, `should` · implements F31 · est. 1.5 d · **done**
 
 From T039 (D-063): a pause stops GPS, so it leaves a gap in the track points. Only the total `paused_seconds` is stored, not when the pauses were, so the points alone cannot tell a pause from a GPS gap. `gps_gap` "outside pauses" needs the pause intervals, which nothing records yet (T038 decides).
 
@@ -1170,6 +1170,8 @@ Depends on: T036, T048, T055
 - [ ] Changing a protocol threshold and recomputing changes the flags (tested).
 
 Note from T057: the validation queue's `FlagFilter` (`apps/validation/admin.py`) lists the three codes `outside_project_area`, `far_from_transect` and `high_count`; the "Has flag" filter here can share them.
+
+Note (T056): the "(tested)" criterion is shown by `tmp/t056/smoke.py` (not committed) and by hand, with no automated test (D-021): it changes `high_count_threshold`, `gps_gap_s` and `max_distance_from_transect_m`, recomputes, sees the flags change, restores them and sees them return. The flags are set just before the save, not after it, so one push is one history row (D-093).
 
 ### T057 · Admin validation queue
 [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) · E08 · P1 · should · labels: `admin`, `should` · implements F32 · est. 2 d · **done**

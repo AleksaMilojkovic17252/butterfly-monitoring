@@ -13,9 +13,11 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.core.admin import _RULE_ID, HistoryAdmin, SyncableAdmin, add_validation_errors
 from apps.environment.models import EnvironmentalSnapshot
 from apps.observations.models import ButterflyObservation
+from apps.projects.services import projects_for
 from apps.surveys import services
 from apps.surveys.models import CancelReason, SurveyVisit
 from apps.surveys.state import VisitLocked, ensure_unlocked
+from apps.validation.services import recompute_visit
 
 
 def _label(field_name):
@@ -287,7 +289,7 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     ordering = ["-started_at"]
     list_select_related = ["transect", "observer", "project"]
     inlines = [ObservationInline, EnvironmentalSnapshotInline]
-    actions = ["mark_reviewed_selected", "lock_selected", "unlock_selected"]
+    actions = ["mark_reviewed_selected", "lock_selected", "unlock_selected", "recompute_flags"]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -467,6 +469,30 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
             visit_ids,
             lambda visit: services.mark_reviewed(visit, request.user),
             _("Marked %(count)d visit(s) reviewed."),
+        )
+
+    @admin.action(description=_("Recompute flags"), permissions=["change"])
+    def recompute_flags(self, request, queryset):
+        """Work the quality flags out again for the selected visits (T056, D-093). Each one is
+        saved on its own, and only when its flags change; a locked visit is skipped. The ids are
+        read first: the list's Count annotation cannot combine with FOR UPDATE."""
+        ids = list(
+            queryset.filter(
+                deleted_at__isnull=True, project__in=projects_for(request.user)
+            ).values_list("pk", flat=True)
+        )
+        counts = {"changed": 0, "unchanged": 0, "locked": 0}
+        for visit_id in ids:
+            outcome = recompute_visit(visit_id, request.user)
+            if outcome is not None:
+                counts[outcome] += 1
+        self.message_user(
+            request,
+            _(
+                "Flags recomputed: %(changed)d changed, %(unchanged)d unchanged, "
+                "%(locked)d skipped (locked visit)."
+            )
+            % counts,
         )
 
     @admin.action(description=_("Lock…"), permissions=["change"])

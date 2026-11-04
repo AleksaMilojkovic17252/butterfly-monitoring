@@ -23,9 +23,10 @@ from apps.observations.models import (
 )
 from apps.projects.services import projects_for
 from apps.surveys.state import VisitLocked
+from apps.validation.filters import FlagFilter
 from apps.validation.inlines import ValidationEventInline
 from apps.validation.models import Decision
-from apps.validation.services import DECIDED_STATUSES, decide
+from apps.validation.services import DECIDED_STATUSES, decide, recompute_observation
 
 
 def _explain_rule(observation, field, rule_id):
@@ -219,12 +220,23 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
         "validation_status",
         "photo_count",
     ]
-    list_filter = ["project", "validation_status", "source", "identification_confidence"]
+    list_filter = [
+        "project",
+        "validation_status",
+        "source",
+        "identification_confidence",
+        FlagFilter,
+    ]
     search_fields = ["taxon__scientific_name", "recorded_by__email", "notes"]
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
     raw_id_fields = ["taxon", "transect_section", "host_plant_record", "nectar_plant_record"]
-    actions = [*SyncableAdmin.actions, "reassign_sections", "send_back_to_queue"]
+    actions = [
+        *SyncableAdmin.actions,
+        "reassign_sections",
+        "send_back_to_queue",
+        "recompute_flags",
+    ]
 
     def get_fields(self, request, obj=None):
         # Model order, editable or not; photo_count is computed, so it is added by name.
@@ -287,6 +299,29 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
                 _("Not changed: %(observations)s") % {"observations": "; ".join(refused)},
                 messages.ERROR,
             )
+
+    @admin.action(description=_("Recompute flags"), permissions=["change"])
+    def recompute_flags(self, request, queryset):
+        """Work the quality flags out again for the selected observations (T056, D-093). Each one
+        is saved on its own, and only when its flags change; one of a locked visit is skipped."""
+        ids = list(
+            queryset.filter(
+                deleted_at__isnull=True, project__in=projects_for(request.user)
+            ).values_list("pk", flat=True)
+        )
+        counts = {"changed": 0, "unchanged": 0, "locked": 0}
+        for observation_id in ids:
+            outcome = recompute_observation(observation_id, request.user)
+            if outcome is not None:
+                counts[outcome] += 1
+        self.message_user(
+            request,
+            _(
+                "Flags recomputed: %(changed)d changed, %(unchanged)d unchanged, "
+                "%(locked)d skipped (locked visit)."
+            )
+            % counts,
+        )
 
     @admin.action(description=_("Send back to queue…"), permissions=["change"])
     def send_back_to_queue(self, request, queryset):

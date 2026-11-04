@@ -17,6 +17,7 @@ from apps.observations import services as observation_services
 from apps.observations.admin import PhotoInline, _refusal_text, _thumbnail_link
 from apps.observations.models import ButterflyObservation, Photo, UploadStatus
 from apps.projects.services import projects_for
+from apps.validation.filters import FlagFilter
 from apps.validation.inlines import ValidationEventInline
 from apps.validation.models import Decision, ValidationQueueItem
 from apps.validation.services import decide, queue_filter
@@ -24,24 +25,6 @@ from apps.validation.services import decide, queue_filter
 # The decisions the record's page may post directly. Change taxon needs its own form, and reset
 # is the observation list's Send back action.
 PAGE_DECISIONS = [Decision.CONFIRMED, Decision.UNCONFIRMED, Decision.UNDETERMINABLE]
-
-
-class FlagFilter(admin.SimpleListFilter):
-    title = _("flag")
-    parameter_name = "flag"
-
-    def lookups(self, request, model_admin):
-        # The codes T056 raises on an observation (docs/requirements/codelists.md).
-        return [
-            ("outside_project_area", _("Outside project area")),
-            ("far_from_transect", _("Far from transect")),
-            ("high_count", _("High count")),
-        ]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(quality_flags__contains=[self.value()])
-        return queryset
 
 
 class ChangeTaxonForm(forms.Form):

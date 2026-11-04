@@ -39,6 +39,7 @@ from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
 from apps.sync.handlers import current_push_reason, soft_delete_pushed
 from apps.transects.services import nearest_section_id
+from apps.validation import flags
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /observations
 REASSIGN_REASON = "reassign sections"  # history_change_reason of the admin action (T048)
@@ -204,6 +205,8 @@ def save_observation(observation, user, history_reason):
     errors = rules.validate_observation(_rule_data(observation), _rule_context(observation))
     if errors:
         raise exceptions.ValidationError(errors)
+    # Set just before the save, so one save writes one history row and one version (D-093).
+    observation.quality_flags = flags.observation_flags(observation)
     try:
         observation.validate_constraints()
     except DjangoValidationError as error:

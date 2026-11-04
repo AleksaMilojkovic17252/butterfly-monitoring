@@ -1965,3 +1965,35 @@ does not change a `photo_required` taxon's status (`initial_validation_status` c
 ## D-092 · User manuals: plain files in `docs/manual`, served at `/manual/` without a login, no upkeep rule
 2026-11-04 · accepted · no ticket (the developer asked for it directly; documentation is not ticketed, F85)
 `docs/manual/` holds `index.html`, `researcher.html`, `admin.html`, `style.css` and `img/`: plain HTML and CSS in English, no framework, no JavaScript and no build step, one long page per manual, so browser search and printing to PDF cover a whole manual. nginx serves the folder at `/manual/` (a read-only mount in `compose.yaml`). There is no login: the pages hold invented example data only, and the phone's real location, gallery and home screen are kept out of the screenshots. The manuals describe what works today, with "Coming later" boxes for planned features and "For now" boxes for the current laptop, Tailscale and USB setup, because the developer plans a VPS and an APK download site when the project is finished. **The developer chose no rule to keep the manual current** (not in CLAUDE.md or `/finish-ticket`), so it is refreshed on request and may lag behind tickets.
+
+## D-093 · Automatic quality flags (T056): set just before the save, a recompute that can clear them
+2026-11-04 · accepted · T056, *amends D-091's "a flag never clears"; builds on D-068 and D-084*
+Four flags mark records for an admin and never reject data: `outside_project_area`, `far_from_transect` and `high_count` on observations,
+`gps_gap` on visits. They are worked out by `validation/flags.py`, a leaf module (models only, never a `services` module, because
+`surveys.services` and `observations.services` import it). The `quality_flags` columns already existed, so there is no migration.
+1. **Set just before the save, not after it** (the ticket says "after save"). `save_observation` and `save_visit` compute them once the input rules pass, so
+   one save is one history row and one `server_version` (a second save would bump the version twice per push), and REST and admin edits are covered: an admin
+   who corrects a count gets the right flag. `decide` saves with `save_with_reason`, so a validation decision leaves the flags alone.
+2. **A recompute skips locked visits and their observations** and counts them as skipped. A lock freezes the record (T042); unlock, then recompute.
+3. **`gps_gap` is computed only once the walk is over:** `completed`, `synced`, `reviewed`, `cancelled`. A visit in progress may have a running pause the
+   server has not been told about, which would raise a false flag and bump the version on each batch. `draft` and `in_progress` have none; `locked` keeps what it has.
+4. **Consecutive points only.** The phone's `trailingGpsGap` (last point to the end of the visit) stays a phone warning.
+5. **A flag-only save skips the input rules** (D-091's reasoning): it changes a server-owned field, so V03, V04 or V05 must not refuse it, and a track batch is
+   never rejected because a flag changed. `surveys.services.refresh_distance` became `refresh_after_points`: if the distance changed it saves through
+   `save_visit` (which sets the flags too), else it saves only when the flags differ. That is where a visit finished offline gets its `gps_gap` (its create
+   arrives before its points, D-051). No change, no save, no version bump; a resent batch changes nothing.
+6. **A recompute leaves `updated_by` alone** (nobody edited the data, and the command has no user). The history row carries the reason `recompute flags` and
+   the admin (null from the command); `updated_at` still moves. It saves the instance, never `QuerySet.update()`: with no history row the next stale push
+   has no snapshot and becomes a false conflict (`sync.services._history_at`). A stale push still merges, because `quality_flags` and `updated_at` are in
+   `SERVER_OWNED_FIELDS` and a history row exists at each version.
+7. **The filter keeps the title "flag"** (Django shows "By flag"); `FlagFilter` moved to `validation/filters.py` and the observation list uses it.
+   `surveys.admin.QualityFlagFilter` is unchanged: it lists the flags in use, so it picks up `gps_gap` (and T100's `low_coverage`).
+8. **Each admin action handles its own rows** (observations or visits); `manage.py recompute_flags --project <uuid>` does both for a project. The ids are read
+   first, one transaction per row, so a long run does not block pushes and the visit list's `Count` annotation never meets `FOR UPDATE`. The UUID is the only
+   way to name a project: names are not unique.
+9. **Definitions.** `outside_project_area` uses `covers`, so a point on the boundary is inside; a null area skips it. `far_from_transect` applies to
+   `source = transect` with a visit, in metres on the `::geography`, strictly greater than the limit (a point exactly at the limit agrees with
+   `ST_DWithin` of D-084). `gps_gap` compares whole seconds after subtracting the pauses, as the phone's `gps_gaps.dart` does: 60.9 s is not a gap.
+**A flag can now clear**, so a record whose flag clears leaves the validation queue unless it is `pending` (`queue_filter`'s docstring is updated).
+**Not handled.** A changed threshold, project area or transect line, or a visit moved to another transect (`apply_visit_changes` allows it), needs a recompute of its records; nothing does it automatically. Existing rows have no flags until
+`recompute_flags` runs (no backfill migration). The phone's trailing gap stays a phone warning. T100 adds `low_coverage` to `visit_flags`.

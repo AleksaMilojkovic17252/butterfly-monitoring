@@ -5,10 +5,17 @@ from rest_framework.exceptions import APIException, PermissionDenied
 
 from apps.core.history import save_with_reason
 from apps.observations.models import ButterflyObservation, ValidationStatus
+from apps.projects.models import Project
 from apps.projects.services import projects_for
-from apps.surveys.models import SurveyVisit
-from apps.surveys.state import ensure_unlocked
+from apps.surveys.models import SurveyVisit, VisitStatus
+from apps.surveys.state import VisitLocked, ensure_unlocked
+from apps.validation import flags
 from apps.validation.models import Decision, ValidationEvent
+
+RECOMPUTE_REASON = "recompute flags"  # history_change_reason of a flag recompute (T056, D-093)
+CHANGED = "changed"  # the outcomes of a recompute
+UNCHANGED = "unchanged"
+LOCKED = "locked"  # skipped: the visit is locked, and a lock freezes the record (T042)
 
 DECISION_STATUS = {  # Decision -> the status it leaves the observation in
     Decision.CONFIRMED: ValidationStatus.CONFIRMED,
@@ -62,7 +69,8 @@ def record_decision(observation, decision, new_status, decided_by, new_taxon=Non
 
 def queue_filter():
     """The records that wait for a validator (D-091): pending, or flagged and still not
-    required. A decided record leaves the queue, since a flag never clears."""
+    required. A decided record leaves the queue. A flag can clear (a recompute, T056, D-093), so a
+    record whose flag clears leaves the queue unless it is `pending`."""
     return Q(validation_status=ValidationStatus.PENDING) | (
         Q(validation_status=ValidationStatus.NOT_REQUIRED) & ~Q(quality_flags=[])
     )
@@ -129,3 +137,86 @@ def _lock_visit(observation):
     visit = SurveyVisit.objects.select_for_update().get(pk=observation.survey_visit_id)
     ensure_unlocked(visit)
     observation.survey_visit = visit
+
+
+# Recompute flags (T056, D-093)
+
+
+def recompute_observation(observation_id, user, project=None):
+    """Work out one observation's flags again and save them only if they differ. Returns
+    `CHANGED`, `UNCHANGED` or `LOCKED` (its visit is locked), or None if it was deleted.
+
+    `project` may be passed (with its protocol loaded) so a whole-project run does not fetch it
+    for every row.
+    """
+    with transaction.atomic():
+        observation = (
+            ButterflyObservation.objects.alive()
+            .select_for_update()
+            .filter(pk=observation_id)
+            .first()
+        )
+        if observation is None:
+            return None
+        if project is not None:
+            observation.project = project
+        try:
+            _lock_visit(observation)  # the same lock order as decide and push: observation, visit
+        except VisitLocked:
+            return LOCKED
+        return _save_flags(observation, flags.observation_flags(observation), user)
+
+
+def recompute_visit(visit_id, user):
+    """The same for one visit. A locked visit is skipped (`LOCKED`)."""
+    with transaction.atomic():
+        visit = SurveyVisit.objects.alive().select_for_update().filter(pk=visit_id).first()
+        if visit is None:
+            return None
+        if visit.status == VisitStatus.LOCKED:
+            return LOCKED
+        return _save_flags(visit, flags.visit_flags(visit), user)
+
+
+def recompute_project(project_id, user=None):
+    """Recompute every live observation and visit of a project. Returns
+    `{"observations": counts, "visits": counts}`, where `counts` is a plain dict
+    `{CHANGED: n, UNCHANGED: n, LOCKED: n}`. One transaction per row, so a long run does not
+    block pushes. The project is reloaded with its protocol, so a threshold changed a moment ago
+    is seen."""
+    project = Project.objects.select_related("protocol").get(pk=project_id)
+    observation_ids = list(
+        ButterflyObservation.objects.alive().filter(project=project).values_list("pk", flat=True)
+    )
+    visit_ids = list(
+        SurveyVisit.objects.alive().filter(project=project).values_list("pk", flat=True)
+    )
+    observations = _empty_counts()
+    for observation_id in observation_ids:
+        outcome = recompute_observation(observation_id, user, project)
+        if outcome is not None:
+            observations[outcome] += 1
+    visits = _empty_counts()
+    for visit_id in visit_ids:
+        outcome = recompute_visit(visit_id, user)
+        if outcome is not None:
+            visits[outcome] += 1
+    return {"observations": observations, "visits": visits}
+
+
+def _empty_counts():
+    return {CHANGED: 0, UNCHANGED: 0, LOCKED: 0}
+
+
+def _save_flags(record, new_flags, user):
+    """Save new flags on a record loaded `select_for_update()`, or do nothing when they are the
+    same. Saved as an instance, so a history row exists for the next stale push to merge against
+    (`sync.services._history_at`): never `QuerySet.update()`. Not `save_with_reason`, which would
+    set `updated_by`: nobody edited the data, and the command has no user."""
+    if new_flags == record.quality_flags:
+        return UNCHANGED
+    record.quality_flags = new_flags
+    record._change_reason = RECOMPUTE_REASON
+    record._history_user = user
+    record.save()
+    return CHANGED

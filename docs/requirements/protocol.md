@@ -65,8 +65,11 @@ snapshot (T063).
 ## 5. Distance from the transect
 
 - A transect observation farther than **20 m** from its transect line gets the flag
-  `far_from_transect` (T056, `max_distance_from_transect_m`). It is never rejected.
-- Observations outside the project's study area get `outside_project_area`.
+  `far_from_transect` (T056, `max_distance_from_transect_m`). It is never rejected. It applies to observations with
+  `source = transect` and a visit; the distance is metres on the `::geography`, strictly greater than the limit (a point
+  exactly at the limit is not flagged, as for the section search below).
+- Observations outside the project's study area get `outside_project_area`. A point exactly on the boundary is inside
+  (`ST_Covers`); a project without an area is not checked.
 
 **Section of an observation** (T048, D-084). A transect observation is linked to the section it was seen in.
 The phone's guess is kept (it must be a live section of the visit's transect). When the phone sends none, the server
@@ -118,7 +121,9 @@ observations of an aborted visit are kept, but the visit is not a valid visit (Â
 - Fix accuracy worse than 25 m raises warning W02 (`gps_accuracy_warning_m`).
 - A gap longer than 60 s between fixes (outside pauses) sets the visit flag `gps_gap` (`gps_gap_s`). The pauses are recorded in
   `survey_visit.pauses` (a list of `{started_at, ended_at}`, T040, D-068), so "outside pauses" can be checked: for two consecutive
-  points, the time between them minus its overlap with the pauses. The Finish screen lists such gaps; T056 sets the flag.
+  points, the time between them minus its overlap with the pauses. The Finish screen lists such gaps; the server sets the flag
+  (T056, D-093) once the walk is over (`completed`, `synced`, `reviewed`, `cancelled`), and compares whole seconds, as the phone does:
+  60.9 s is not a gap. Only consecutive points count; the stretch after the last point stays a phone warning.
 - Points are stored raw and never thinned.
 
 ## 9. Simulated field day (paper walk-through)

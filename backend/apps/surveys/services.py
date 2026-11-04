@@ -25,6 +25,7 @@ from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, Vis
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.surveys.state import InvalidTransition, ensure_unlocked, move_to, transition
 from apps.sync.handlers import current_push_reason, insert_batch
+from apps.validation import flags
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /survey-visits
 
@@ -155,6 +156,9 @@ def save_visit(visit, user, history_reason, check_rules=True):
         errors = rules.validate_visit(_rule_data(visit), _rule_context(visit))
         if errors:
             raise exceptions.ValidationError(errors)
+    # Outside `check_rules`: the unlock passes False and moves the visit to `reviewed`, which is
+    # when its flags may change. One save, one history row, one version (D-093).
+    visit.quality_flags = flags.visit_flags(visit)
     try:
         visit.validate_constraints()
     except DjangoValidationError as error:
@@ -239,7 +243,7 @@ def push_track_points(user, visit_id, rows):
         for values in serializer.validated_data
     ]
     insert_batch(SurveyTrackPoint, points)
-    refresh_distance(visit, user)
+    refresh_after_points(visit, user)
 
 
 def walked_distance_m(visit):
@@ -277,15 +281,25 @@ def set_distance_if_finished(visit):
         visit.distance_walked_m = distance_m
 
 
-def refresh_distance(visit, user):
-    """After new points: work the distance out again if the visit is already finished, and save
-    only when it changed. A visit created and finished offline reaches the server as one create
-    before its points (the phone's queue merges the two, D-051), so this is where it gets its
-    distance."""
+def refresh_after_points(visit, user):
+    """After new points: work the distance and the flags out again if the visit is already
+    finished, and save only when something changed. A visit created and finished offline reaches
+    the server as one create before its points (the phone's queue merges the two, D-051), so this
+    is where it gets its distance and its `gps_gap`.
+
+    A flag-only change skips the input rules: it changes a server-owned field, so a rule such as
+    V03 must not refuse a track batch because a flag changed (D-093). No change, no save, so no
+    version bump."""
     before = visit.distance_walked_m
     set_distance_if_finished(visit)
     if visit.distance_walked_m != before:
-        save_visit(visit, user, current_push_reason())
+        save_visit(visit, user, current_push_reason())  # sets the flags too
+        return
+    new_flags = flags.visit_flags(visit)
+    if new_flags != visit.quality_flags:
+        visit.quality_flags = new_flags
+        save_with_reason(visit, user, current_push_reason())
+        visit.refresh_from_db(fields=["server_version"])
 
 
 def route_geojson(visit):
