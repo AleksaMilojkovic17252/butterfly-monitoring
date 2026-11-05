@@ -8,7 +8,8 @@ from apps.validation.services import recompute_project
 
 class Command(BaseCommand):
     help = (
-        "Work out the quality flags (T056) of every live observation and visit of a project again. "
+        "Work out the quality flags (T056) of every live observation and visit of a project again, "
+        "and the route coverage (T100) of its visits. "
         "Run it after changing a protocol threshold, the project area or a transect line. "
         "Locked visits and their observations are skipped."
     )

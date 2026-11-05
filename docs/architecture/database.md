@@ -60,6 +60,10 @@ The current views and the migration that creates each:
 A view's migration lives in the
 app that owns its main table. Views hide soft-deleted rows and the rows of soft-deleted parents (D-078).
 
+`public.survey_visit_validity` (T100, `surveys/0006_survey_visit_validity`) is the one view outside `geo`: the valid-visit rule of
+protocol §6 for the reports (T061, T101). It is in `public`, which has no default grant, so `pygeoapi_ro` is refused; do not grant it.
+It reads columns of `survey_visit` and `project_protocol`, so changing one needs a hand-written drop and recreate.
+
 PostGIS's own `geometry_columns`, `geography_columns` and `spatial_ref_sys` in `public` are readable by
 `PUBLIC`, so `pygeoapi_ro` can read them. That is not a grant of ours, and they hold no project data.
 

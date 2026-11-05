@@ -8,7 +8,15 @@ from apps.surveys.models import SurveyTrackPoint, SurveyVisit
 
 # Never sent to the phone: who saved it, and the lock and quality data the server owns. The phone
 # learns about a lock from `status = locked`.
-_NOT_SYNCED = ["created_by", "updated_by", "locked_at", "locked_by", "lock_reason", "quality_flags"]
+_NOT_SYNCED = [
+    "created_by",
+    "updated_by",
+    "locked_at",
+    "locked_by",
+    "lock_reason",
+    "quality_flags",
+    "route_coverage_pct",
+]
 
 _MAX_PAUSES = 500
 

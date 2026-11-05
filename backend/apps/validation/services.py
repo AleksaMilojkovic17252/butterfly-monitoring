@@ -7,6 +7,7 @@ from apps.core.history import save_with_reason
 from apps.observations.models import ButterflyObservation, ValidationStatus
 from apps.projects.models import Project
 from apps.projects.services import projects_for
+from apps.surveys import coverage
 from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.state import VisitLocked, ensure_unlocked
 from apps.validation import flags
@@ -175,7 +176,8 @@ def recompute_visit(visit_id, user):
             return None
         if visit.status == VisitStatus.LOCKED:
             return LOCKED
-        return _save_flags(visit, flags.visit_flags(visit), user)
+        coverage_changed = coverage.refresh_route_coverage(visit)
+        return _save_flags(visit, flags.visit_flags(visit), user, force=coverage_changed)
 
 
 def recompute_project(project_id, user=None):
@@ -208,12 +210,14 @@ def _empty_counts():
     return {CHANGED: 0, UNCHANGED: 0, LOCKED: 0}
 
 
-def _save_flags(record, new_flags, user):
+def _save_flags(record, new_flags, user, force=False):
     """Save new flags on a record loaded `select_for_update()`, or do nothing when they are the
-    same. Saved as an instance, so a history row exists for the next stale push to merge against
-    (`sync.services._history_at`): never `QuerySet.update()`. Not `save_with_reason`, which would
-    set `updated_by`: nobody edited the data, and the command has no user."""
-    if new_flags == record.quality_flags:
+    same and `force` is false (`force`: another server-owned field changed too, as the route
+    coverage of a visit, T100). Saved as an instance, so a history row exists for the next stale
+    push to merge against (`sync.services._history_at`): never `QuerySet.update()`. Not
+    `save_with_reason`, which would set `updated_by`: nobody edited the data, and the command has
+    no user."""
+    if new_flags == record.quality_flags and not force:
         return UNCHANGED
     record.quality_flags = new_flags
     record._change_reason = RECOMPUTE_REASON

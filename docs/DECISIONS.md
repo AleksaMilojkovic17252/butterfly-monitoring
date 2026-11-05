@@ -2017,3 +2017,30 @@ The app now evaluates W07 in the protocol's `time_zone`, as the server does.
    `ChoiceField` with `SearchableSelect` (`core/widgets.py`, `core/static/core/searchable_select.js`), which uses the select2 build Django's admin
    already ships, so no dependency. The list is the `Region/City` names from `zoneinfo.available_timezones()` plus `UTC`; legacy aliases (`Cuba`,
    `EST5EDT`, `Etc/*`) are left out; a zone already stored but not in the list is added to the choices (`ProjectProtocolForm`), so the protocol still saves. A form-only change: the model keeps `validate_time_zone`, so there is no migration and the API is unchanged.
+
+## D-095 · Server-side route coverage and the valid-visit view (T100): computed in `save_visit`, `low_coverage` flag, weather justification is `weather_missing_reason`
+2026-11-05 · accepted · T100, *reverses the v4 cut of the server-side coverage flag; builds on D-060, D-068, D-084 and D-093*
+`SurveyVisit.route_coverage_pct` (`numeric(5,1)`, null) is server-owned: in `_NOT_SYNCED`, `SERVER_OWNED_FIELDS` and the admin's `fixed_fields`, so it is
+neither pushed nor pulled, and no Drift change was needed. `surveys/coverage.py` computes it in SQL with the definition of the phone's `route_coverage.dart`.
+1. **Reverses the v4 cut.** v4 left the coverage flag to the app (T056: "shown in app only"). Without a server value T061 and T101 cannot filter on valid visits,
+   and comparing the app with the server is Q7 evidence. `low_coverage` is set when the stored, rounded value is strictly below `min_coverage_pct`; it never rejects.
+2. **Two fixes to the issue's SQL.** `r.n` (the count of usable points) is returned, and fewer than 2 gives null: the issue's version gave `0.0` for no points and
+   mishandled exactly one. `NULLIF(ST_Length(...), 0)` stops a zero-length transect from dividing by zero, which would have rejected a track batch;
+   `LEAST` then ignores the NULL and gives one sample at fraction 1.0, the phone's one sample.
+3. **`reviewed` computes** although `FINISHED_STATUSES` (distance) leaves it out: late batches already refresh a reviewed visit's `gps_gap`, and the recompute
+   must fill the reviewed rows that exist. `FINISHED_STATUSES` is unchanged. `locked` keeps its value; other statuses get null.
+4. **In `save_visit`**, outside `check_rules`, right before the flags: one place covers REST, push, admin edits (including a changed transect), mark reviewed and
+   unlock. `refresh_after_points` saves with `save_with_reason`, skipping the input rules, when coverage or flags changed, so a track batch is never refused for
+   them (D-093.5); no change, no save, no version bump. `recompute_visit` forces the instance save when coverage changed. A batch that changes the distance still
+   goes through `save_visit` and its input rules, as before T100; a visit that breaks V05 refuses such a batch (shown in the smoke check, not changed here).
+5. **Weather justification is `weather_missing_reason` only.** Protocol §6 mentioned an admin "review note"; there is no such field and none was added. An admin can
+   edit `weather_missing_reason` on the visit page. §6 is reworded.
+6. **The view `public.survey_visit_validity`** (`survey_visit_id`, `is_valid`, `reasons`) is the valid-visit rule: reasons `cancelled`, `not_finished`, `weather`,
+   `no_coverage`, `low_coverage`. Weather mirrors `weather_suitable` and W06: an incomplete set is skipped and every complete set must pass. **A visit with no complete
+   set counts as not within**, so only a justification makes it valid. The `weather_suitable` column is not used: the phone sets it at the start only (51 of 514 dev
+   rows). It is in `public`, not `geo`, with no grant to `pygeoapi_ro` (`public` has no default grant); `report_transect_indicators.valid_visits` belongs to T061.
+7. **Export:** `route_coverage_pct` is a column of the visit export, next to the distance (outside the ticket's criteria, agreed).
+8. **Checked against the app** on 13 dev visits (`evaluation/results/coverage-check.md`): largest difference 1.0 percentage point (one sample of 102 on a visit with 4
+   usable points; the phone measures on the sphere, the server in UTM). The replay comparison through the phone is a note under T072.
+**Not handled.** No backfill migration: locked rows from before T100 keep `null` and show as `no_coverage` until unlocked and recomputed. A changed transect line or
+protocol threshold still needs a recompute (D-093). The view depends on columns of `survey_visit` and `project_protocol`; changing one needs a hand-written drop and recreate.

@@ -6,6 +6,7 @@ from django.db import connection, transaction
 from django.db.models import Count, FloatField, Func, Max, OuterRef, Prefetch, Q, Subquery, Sum
 from django.db.models.functions import Coalesce
 
+from apps.core.geo import utm_srid
 from apps.core.geo_files import open_datasource
 from apps.core.history import save_with_reason
 from apps.projects.services import projects_for
@@ -143,13 +144,6 @@ def _first_line(geom: OGRGeometry):
     geos = geom.geos
     line = geos[0] if geos.geom_type == "MultiLineString" else geos
     return None if line.empty else line
-
-
-def utm_srid(geometry):
-    """EPSG code of the WGS 84 UTM zone that holds the centre of a 4326 geometry."""
-    centre = geometry.centroid
-    zone = int((centre.x + 180) // 6) % 60 + 1
-    return (32600 if centre.y >= 0 else 32700) + zone
 
 
 def split_line(line, parts):

@@ -20,6 +20,7 @@ OUTSIDE_PROJECT_AREA = "outside_project_area"
 FAR_FROM_TRANSECT = "far_from_transect"
 HIGH_COUNT = "high_count"
 GPS_GAP = "gps_gap"
+LOW_COVERAGE = "low_coverage"
 
 # code -> label, in the order they are stored; the observation filter reads this
 OBSERVATION_FLAGS = {
@@ -75,12 +76,20 @@ def _is_far_from_transect(observation, protocol):
 
 def visit_flags(visit):
     """The flags of a visit. A locked visit keeps what it has; `gps_gap` is set once the walk is
-    over. T100 adds `low_coverage` here."""
+    over. `low_coverage` (T100) reads the stored `route_coverage_pct`, so call
+    `surveys.coverage.refresh_route_coverage` first. It is set when the rounded value is strictly
+    below the protocol's `min_coverage_pct`; no value, no flag."""
     if visit.status == VisitStatus.LOCKED:
         return list(visit.quality_flags)
     if visit.status not in GAP_STATUSES:
         return []
-    return [GPS_GAP] if has_gps_gap(visit) else []
+    result = []
+    if has_gps_gap(visit):
+        result.append(GPS_GAP)
+    coverage_pct = visit.route_coverage_pct
+    if coverage_pct is not None and coverage_pct < visit.project.protocol.min_coverage_pct:
+        result.append(LOW_COVERAGE)
+    return result
 
 
 def has_gps_gap(visit):

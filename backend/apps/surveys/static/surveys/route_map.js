@@ -1,10 +1,14 @@
 // Read-only route map on the visit page (T036): the track as a solid line over the transect
-// line, dashed in the same style as the reference line of editable_map.js. Pan and zoom only.
+// line, dashed in the same style as the reference line of editable_map.js, and the uncovered
+// parts of the transect in orange (T100). Pan and zoom only.
 /* global ol */
 "use strict";
 {
     const routeStyle = new ol.style.Style({
         stroke: new ol.style.Stroke({color: "#c2255c", width: 3}),
+    });
+    const uncoveredStyle = new ol.style.Style({
+        stroke: new ol.style.Stroke({color: "#e8590c", width: 6}),
     });
     const transectStyle = new ol.style.Style({
         stroke: new ol.style.Stroke({color: "#417690", width: 4, lineDash: [10, 8]}),
@@ -26,10 +30,11 @@
     function drawRouteMap(element) {
         const format = new ol.format.GeoJSON();
         const transect = layerOf(element.dataset.transectId, transectStyle, format);
+        const uncovered = layerOf(element.dataset.uncoveredId, uncoveredStyle, format);
         const route = layerOf(element.dataset.routeId, routeStyle, format);
         const map = new ol.Map({
             target: element,
-            layers: [new ol.layer.Tile({source: new ol.source.OSM()}), transect, route],
+            layers: [new ol.layer.Tile({source: new ol.source.OSM()}), transect, uncovered, route],
             view: new ol.View(),
         });
         const extent = route.getSource().getExtent();

@@ -67,7 +67,8 @@ Optional until the visit progresses: `started_at` (M from `in_progress`), `ended
 Sent by the phone (T040, D-068): `pauses` (list of `{started_at, ended_at}` in UTC, default `[]`) and `track_point_count`
 (points the phone recorded, set when the visit is finished; null when finished before T040 or through REST).
 `cancel_reason`: M when `status = cancelled`, empty otherwise.
-Server-owned: `locked_at`, `locked_by`, `lock_reason`, `quality_flags`.
+Server-owned: `locked_at`, `locked_by`, `lock_reason`, `quality_flags`, `route_coverage_pct` (T100: percent of the transect covered by the
+track, `numeric(5,1)`, null; read-only in the API, neither pushed nor pulled).
 
 ## SurveyTrackPoint ⟳ (T036; not audited)
 `survey_visit` M · `recorded_at` M · `geometry` M Point · `sequence_number` M (unique per visit) ·

@@ -14,7 +14,7 @@ from apps.core.admin import _RULE_ID, HistoryAdmin, SyncableAdmin, add_validatio
 from apps.environment.models import EnvironmentalSnapshot
 from apps.observations.models import ButterflyObservation
 from apps.projects.services import projects_for
-from apps.surveys import services
+from apps.surveys import coverage, services
 from apps.surveys.models import CancelReason, SurveyVisit
 from apps.surveys.state import VisitLocked, ensure_unlocked
 from apps.validation.services import recompute_visit
@@ -253,6 +253,7 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
         "status",
         "cancel_reason",
         "distance_walked_m",
+        "route_coverage_pct",
         "pauses",
         "track_point_count",
         "locked_at",
@@ -365,12 +366,19 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     @admin.display(description=_("Route"))
     def route_map(self, visit):
         route, point_count = services.route_geojson(visit)
+        # Only with a stored percentage, so the map and the number agree (T100).
+        uncovered = None
+        if visit.route_coverage_pct is not None:
+            uncovered = coverage.uncovered_geojson(visit)
         return render_to_string(
             "admin/surveys/surveyvisit/route_map.html",
             {
                 "route": route,
                 "point_count": point_count,
                 "transect_line": json.loads(visit.transect.geometry.geojson),
+                "uncovered": uncovered,
+                "route_coverage_pct": visit.route_coverage_pct,
+                "uncovered_id": f"uncovered-{visit.pk}",
                 "route_id": f"route-{visit.pk}",
                 "transect_id": f"transect-{visit.pk}",
             },

@@ -82,5 +82,5 @@ Only `none` is within the protocol thresholds.
 
 ## Quality flags (stored in `quality_flags`)
 
-`outside_project_area`, `far_from_transect`, `high_count` (observation); `gps_gap` (visit). Not an
+`outside_project_area`, `far_from_transect`, `high_count` (observation); `gps_gap`, `low_coverage` (visit, T100). Not an
 enum in the database; documented here so the app and server agree.

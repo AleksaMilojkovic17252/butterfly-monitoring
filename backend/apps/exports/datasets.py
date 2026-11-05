@@ -136,6 +136,7 @@ VISIT_COLUMNS = tuple(
         Column("duration_seconds", "duration_seconds"),
         Column("paused_seconds", "paused_seconds"),
         Column("distance_walked_m", "distance_walked_m"),
+        Column("route_coverage_pct", "route_coverage_pct"),
         Column("observer_count", "observer_count"),
         Column("observer_names", "observer_names"),
         Column("temperature_start_c", "temperature_start_c"),

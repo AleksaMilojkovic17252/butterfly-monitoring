@@ -49,6 +49,7 @@ SERVER_OWNED_FIELDS = frozenset(
         "updated_at",
         "deleted_at",
         "quality_flags",
+        "route_coverage_pct",
     }
 )
 SERVER_OWNED_PREFIXES = ("validation_", "locked_")

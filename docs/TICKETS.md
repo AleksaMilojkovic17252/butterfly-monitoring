@@ -135,7 +135,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
 | T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
 | T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | todo |
-| T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | todo |
+| T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | done |
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
@@ -1234,6 +1234,8 @@ Depends on: T031, T059
 
 From T100 (added 2026-10-27): if T100 is done, `report_transect_indicators` also has `valid_visits`, using T100's valid-visit rule
 (protocol §6, rules 1–3). If T100 is done after this ticket, T100 adds the column.
+Note (T100, done 2026-11-05): the rule is the view `public.survey_visit_validity` (`is_valid`, `reasons`); join it on `survey_visit_id` for `valid_visits`.
+`report_transect_indicators.valid_visits` is built here, not in T100.
 
 Depends on: T041, T044, T058
 
@@ -1452,6 +1454,8 @@ Notes: plants/habitats generated when T051/T053 are done
 [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F80 · est. 1.5 d · **todo**
 
 Depends on: T037
+Notes: from T100 (2026-11-05): once replay works, run a replayed visit and compare the app's coverage with the server's `route_coverage_pct` (within 1 percentage
+point), and add the result to `evaluation/results/coverage-check.md`. T100 compared stored dev tracks only.
 
 - [ ] In the dev flavour only, Settings → "Location source: Device GPS | Replay GPX" with a file picker or bundled transect GPX, and speed 1×, 5× or 20×.
 - [ ] `ReplaySource` implements `LocationSource` (T037), emitting positions with timestamps, accuracy and `provider = simulated`.
@@ -1859,7 +1863,7 @@ Out of scope: closing automatically at the season end (an admin closes it); expo
 back; closing deletes nothing and keeps all members.
 
 ### T100 · Server-side route coverage and the valid-visit rule
-[#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) · E08 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements protocol §6, F31 · est. 1 d · **todo**
+[#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) · E08 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements protocol §6, F31 · est. 1 d · **done**
 
 Depends on: T036, T040, T056
 
@@ -1875,13 +1879,17 @@ app's and the server's values is also Q7 evidence. The issue has the full SQL.
 - [ ] The admin visit page shows the coverage and draws the uncovered parts of the transect (`ST_Difference(transect, ST_Buffer(route_points, d))` in UTM).
 - [ ] Checked once against the app with a replayed track (T072): within 1 percentage point. Result recorded in the evaluation notes.
 
+Note (T100, 2026-11-05): the replay comparison is deferred to T072 (a note there); T100 compared stored dev tracks instead
+(`evaluation/results/coverage-check.md`, 13 visits, largest difference 1.0 percentage point). `report_transect_indicators.valid_visits` is built in T061 (a note
+there); T100 provides the view `public.survey_visit_validity`. The weather justification is `weather_missing_reason` only (D-095).
+
 Out of scope: effort (a route that doubles back counts once) and time (pauses don't matter).
 
 ### T101 · Research-question analysis views (Q1, Q3, Q4, Q6)
 [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) · E09 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements outline §4 · est. 2.5 d · **todo**
 
 Depends on: T044, T048, T051, T053, T061, T071
-Notes: valid-visit filter from T100 if done
+Notes: valid-visit filter from T100 if done: join the view `public.survey_visit_validity` (T100) on `survey_visit_id` and keep `is_valid`
 
 Why: the outline's goal is that two or three research questions (§4) can be demonstrated. No ticket computes any of them. One SQL view
 per question, built like the T061 views, answers it with a PostGIS join. On simulated data the generator plants known effects, and the

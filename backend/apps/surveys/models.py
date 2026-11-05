@@ -113,6 +113,16 @@ class SurveyVisit(SyncableModel):
         blank=True,
         help_text="Distance walked in metres, from the GPS track",
     )
+    # Server-owned: neither pushed nor pulled (T100, surveys.coverage.refresh_route_coverage).
+    route_coverage_pct = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text=(
+            "Share of the transect covered by the GPS track, in percent (computed by the server)"
+        ),
+    )
     observer_count = models.PositiveSmallIntegerField(
         default=1, help_text="Number of observers on the walk"
     )

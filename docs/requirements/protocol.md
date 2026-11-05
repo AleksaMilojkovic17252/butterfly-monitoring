@@ -86,18 +86,26 @@ approximate near boundaries.
 A visit counts as **valid** for analysis when all of these hold:
 
 1. status is `completed` (or later: `synced`, `reviewed`, `locked`);
-2. weather is within the thresholds of §3, **or** a justification (`weather_missing_reason`, or the
-   admin's review note) is recorded;
+2. weather is within the thresholds of §3, **or** a justification is recorded in `weather_missing_reason` (an admin can edit
+   that field on the visit page; there is no separate review note). Weather is within the thresholds when every complete set of start
+   and end values passes (an incomplete set is skipped, as in rule W06); a visit with no complete set is not within;
 3. the GPS route covers **≥ 80 %** of the transect length (`min_coverage_pct`).
 
 Everything else is stored but is not valid: `cancelled` visits, and completed visits that fail 2 or 3.
-Coverage is shown in the app and computed in indicators (T061); it is not a rejection rule.
+The server works coverage out and stores it as `route_coverage_pct` (T100, D-095). Below `min_coverage_pct` the visit gets the
+quality flag `low_coverage`; neither a low nor a missing coverage rejects a visit or a track batch. The rule is one view,
+`public.survey_visit_validity` (`survey_visit_id`, `is_valid`, `reasons`), which T061 and T101 reuse. The reasons are `cancelled`,
+`not_finished`, `weather`, `no_coverage` (no stored value) and `low_coverage`. The view is in `public` and `pygeoapi_ro` has no
+access to it.
 
 **Coverage** (T040, D-068): the transect is sampled every 10 m along its line, starting at 0 m, plus its end point. A sample is
 covered when a **usable** track point lies within `max_distance_from_transect_m` of it (point to point, not point to route segment).
 A point is usable by the accuracy rule of D-060: no accuracy, or an accuracy of at most 2 × `gps_accuracy_warning_m`. Coverage is the
 covered samples divided by all samples, in percent with one decimal. With fewer than 2 usable points there is no coverage (`null`).
-The phone works it out at Finish, from the points it recorded; the server does the same in T100.
+The phone works it out at Finish, from the points it recorded; the server does the same (T100) after every track batch of a
+finished visit and whenever the visit is saved in the status `completed`, `synced` or `reviewed`. A locked visit keeps its value.
+The server measures in the transect's UTM zone (D-046), the phone point to point on the sphere; on 13 dev visits the two agreed within
+1 percentage point (`evaluation/results/coverage-check.md`).
 
 ## 7. True zero, cancelled and missing
 

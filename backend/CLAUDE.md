@@ -29,9 +29,9 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_demo
 # Sync (T026): drop stored push mutations older than the retry window
 $DC exec django python manage.py prune_sync_mutations --older-than 180d
 
-# Quality flags (T056, D-093): work them out again for a project (<uuid>); after changing a protocol threshold,
-# the project area or a transect line. Locked visits are skipped.
-$DC exec django python manage.py recompute_flags --project <uuid>
+# Quality flags (T056, D-093) and route coverage (T100, D-095): work them out again for a project (<uuid>); after
+# changing a protocol threshold, the project area or a transect line. Locked visits are skipped.
+$DC exec django python manage.py recompute_flags --project <uuid>   # also redoes the route coverage of visits (T100)
 ```
 
 Dependencies are pip + `requirements.txt`, installed in the image: after a change, rebuild with
@@ -68,9 +68,13 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `decide` loads `ButterflyObservation`. The read-only `ValidationEventInline` (in `inlines.py`) on the observation admin and the
   `validation_history` export read the events.
 - `apps/validation/flags.py` (T056, D-093) works out the automatic quality flags (`outside_project_area`, `far_from_transect`,
-  `high_count` on observations, `gps_gap` on visits). It is a **leaf module** (models only, never a `services` module), because
+  `high_count` on observations, `gps_gap` and `low_coverage` on visits; the latter reads the stored `route_coverage_pct`). It is a **leaf module** (models only, never a `services` module), because
   `save_observation` and `save_visit` call it and set the flags just before the save. `validation.services.recompute_*` (the admin
   actions and `recompute_flags`) apply it to stored rows: saved as instances so history applies, never `QuerySet.update()`.
+- `apps/surveys/coverage.py` (T100, D-095) works out `SurveyVisit.route_coverage_pct` in SQL (a leaf module: models and `core.geo` only).
+  `save_visit` and `refresh_after_points` call `refresh_route_coverage`, which is server-owned (`_NOT_SYNCED`, `SERVER_OWNED_FIELDS`, the
+  admin's `fixed_fields`). The view `public.survey_visit_validity` is the valid-visit rule of protocol §6 for T061 and T101; it is not in
+  `geo`, and `pygeoapi_ro` must not get it. `apps/core/geo.py` holds `utm_srid`, which `transects.services` and `surveys.coverage` share.
 - `apps/accounts/` has `OgcVerifyView` (`/api/v1/auth/verify`, T069, D-080): nginx `auth_request` calls it for `/ogc`, and
   `authentication.py` adds Basic auth with its own failed-login counter. Personal tokens (`rest_framework.authtoken`) are accepted there only.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all
