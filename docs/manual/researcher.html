@@ -86,6 +86,7 @@
       <li><a href="#review-visit">Look at a visit</a></li>
       <li><a href="#edit-observation">Correct a record</a></li>
       <li><a href="#manage-photos">Manage photos</a></li>
+      <li><a href="#late-observation">Add a butterfly to a finished visit</a></li>
     </ol>
   </li>
   <li><a href="#plants">Plants and habitat</a>
@@ -694,7 +695,17 @@
 <figure><a href="img/researcher/observation-photo.webp"><img src="img/researcher/observation-photo.webp" alt="A photo marked uploaded has reached the server." width="540" height="1040"></a><figcaption>A photo marked uploaded has reached the server.</figcaption></figure>
 </div>
 <p>A photo from another phone is fetched from the server when you open it, so it needs a connection. Without one you see the small preview if it has already been downloaded.</p>
-<div class="box later"><span class="tag">Coming later</span>You will be able to <strong>add a forgotten butterfly to a finished visit</strong>. Today, Add butterfly exists only while the visit is in progress.</div>
+<h3 id="late-observation">Add a butterfly to a finished visit</h3>
+<p>If you remember a butterfly after you have finished, you can still add it to your own visit. Open the visit from <strong>My visits</strong> and tap <span class="btn">Add observation</span> under <strong>Observations</strong>. The button shows only on your own finished visits (completed, synced or reviewed). It is not there for a cancelled or draft visit, for someone else's visit, or for a visit that an admin has locked.</p>
+<ol>
+<li><strong>Time.</strong> The app starts at the end of the visit. Tap <span class="btn">Change</span> to pick when you saw it. The time must be between the start and the end of the visit. Otherwise the app says <em>Pick a time between &hellip; and &hellip;</em> and keeps the old time.</li>
+<li><strong>Place.</strong> Tap <span class="btn">Place on map</span> and tap where it was. The map shows the transect. The app does not use your GPS here, because you may be anywhere. <span class="btn">Save</span> stays grey until a point is placed.</li>
+<li><strong>Species and count.</strong> Pick the species and the count as in a quick record. <span class="btn">Details</span> and photos work the same way.</li>
+</ol>
+<p>The record goes in the visit, in the section nearest to the point you placed. It counts in the visit's species and individuals, and shows on the project map. In the visit's list it is marked <em>added after the visit</em>, so everyone can tell it was entered later. You can still tap <span class="btn">Undo</span> within 10 seconds, and correct it later with the pencil. See <a href="#edit-observation">Correct a record</a>.</p>
+<div class="box note"><span class="tag">Good to know</span>The route, the distance and the walking time do not change, because they come from the GPS points of the walk. Only the butterfly counts change.</div>
+<div class="box warn"><span class="tag">Careful</span>If you finished the visit as a <strong>true zero</strong> (no butterflies), adding one removes that confirmation. The app asks first. If you tap <span class="btn">Undo</span> afterwards, the confirmation does not come back.</div>
+<div class="box today"><span class="tag">For now</span>If an admin locks the visit before your phone has synced, the app still lets you save the record, but the server refuses it. It then shows under <strong>Errors</strong> on the <span class="btn">Unsynced data</span> screen of that project. Choose <span class="btn">Discard local change</span>, or ask the admin to unlock the visit and tap <span class="btn">Retry</span>.</div>
 <h2 id="plants">Plants and habitat</h2>
 <p>Besides butterflies, you can record the plants they depend on and describe the habitat. Open the <span class="btn">Plants &amp; habitat</span> tile, or use <span class="btn">Add plant</span> and <span class="btn">Add habitat</span> during a visit.</p>
 <ul>
@@ -989,7 +1000,7 @@
 <h4>I recorded the wrong species.</h4>
 <p>Within 10 seconds, tap <span class="btn">Undo</span>. Later, open the record and tap the pencil, then <span class="btn">Change species</span>. See <a href="#edit-observation">Correct a record</a>.</p>
 <h4>I forgot a butterfly and the visit is finished.</h4>
-<p>You cannot add it to a finished visit yet, and neither can an admin. Tell your admin so that there is a note of it. Before you tap <span class="btn">Finish and save</span>, you can still go back and add it.</p>
+<p>Open the visit from <strong>My visits</strong> and tap <span class="btn">Add observation</span>. Pick the time you saw it and place the point on the map. See <a href="#late-observation">Add a butterfly to a finished visit</a>. This works on your own visit until an admin locks it.</p>
 <h4>Sync never finishes or always fails.</h4>
 <p>Check your connection, and try opening a website on the phone. If that works, the server may be off, so ask your admin. Your data stays safe on the phone.</p>
 <h4>A photo stays "waiting".</h4>
@@ -1005,7 +1016,6 @@
 <tr><th>Feature</th><th>What it will do</th></tr>
 <tr><td>Download page and public server</td><td>Install the app from a website and log in, with no server setup at all.</td></tr>
 <tr><td>Statistics</td><td>Your own figures offline: visits, true zeros, species, individuals per km and per hour, top 10 species and a weekly chart for a species.</td></tr>
-<tr><td>Add to a finished visit</td><td>Add a forgotten butterfly to a visit you have finished.</td></tr>
 <tr><td>Route proposals</td><td>Record a better route in the field for an admin to accept.</td></tr>
 <tr><td>Shared plants and habitat</td><td>See what other project members recorded, read-only, and link your butterflies to it.</td></tr>
 <tr><td>Offline basemap</td><td>A background map of the study area downloaded with the project.</td></tr>

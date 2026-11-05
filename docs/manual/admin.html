@@ -903,7 +903,8 @@ docker compose --project-directory . -f infrastructure/compose.yaml -f infrastru
 <h4>A researcher recorded something by mistake.</h4>
 <p>They can correct butterfly records themselves until the visit is locked. To remove one, <a href="#observations">soft delete it</a>. They can delete their own plant and habitat records in the app.</p>
 <h4>A researcher wants to add a forgotten butterfly to a finished visit.</h4>
-<p>Neither the app nor the web admin can do this yet. It is planned. Note it in the visit's notes for now.</p>
+<p>The researcher can do it in the app: on their own finished visit, <strong>Add observation</strong> in the visit detail lets them pick a time inside the visit and place the point on the map. It stays a transect observation on that visit, and its <code>created_at</code> is after the visit's end, so the app marks it <em>added after the visit</em>. If the visit was finished as a true zero, the app clears the true-zero confirmation in the same step.</p>
+<p>It does not work on a <strong>locked</strong> visit. Unlock it first if the researcher must add something. The web admin has no Add for butterfly observations yet. It is planned, so for now ask the researcher to add it, or note it in the visit's notes.</p>
 <h4>The times look wrong.</h4>
 <p>The web admin and exports use UTC, and the phone uses local time. See <a href="#tour-times">Times are in UTC</a>.</p>
 <h4>The OGC API asks for a login over and over, or answers 403.</h4>
