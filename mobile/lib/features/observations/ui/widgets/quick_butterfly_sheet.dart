@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
+import 'package:mobile/core/validation/observation_values.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
@@ -20,7 +21,10 @@ import 'package:mobile/features/observations/ui/widgets/observation_details_form
 import 'package:mobile/features/observations/ui/widgets/photo_prompt_dialog.dart';
 import 'package:mobile/features/observations/ui/widgets/position_line.dart';
 import 'package:mobile/features/observations/ui/widgets/taxon_picker.dart';
+import 'package:mobile/features/resources/domain/captured_geometry.dart';
+import 'package:mobile/features/resources/ui/geometry_capture_screen.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
+import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/visits/domain/current_section.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
 
@@ -32,16 +36,31 @@ typedef SavedObservation = ({String id, String label});
 /// Position, time and section fill in by themselves. The Details button swaps
 /// the species list for the optional details (T046): sex, behaviour, photos
 /// and so on. Opened from Add butterfly on the active visit screen with [show].
+///
+/// With no [visit] it is the Free observation entry (T047), opened with
+/// [showFree] as a full screen with an app bar instead of a sheet: a source
+/// picker and a location row replace the position line, and the record has no
+/// visit and no section.
 class QuickButterflySheet extends ConsumerStatefulWidget {
   const QuickButterflySheet({
     super.key,
-    required this.visit,
-    required this.accuracyWarningM,
+    required this.projectId,
+    this.visit,
+    this.accuracyWarningM,
+    this.placedAt,
   });
-  final SurveyVisit visit;
+  final String projectId;
 
-  /// Accuracy in metres above which the position gets a warning.
-  final double accuracyWarningM;
+  /// The visit the butterfly is seen on, or null for a free observation.
+  final SurveyVisit? visit;
+
+  /// Accuracy in metres above which the position gets a warning. Used only
+  /// with a [visit].
+  final double? accuracyWarningM;
+
+  /// A point placed on the map before the sheet opened (the map long press).
+  /// Free observation only.
+  final LatLng? placedAt;
 
   /// Opens the sheet and returns what was saved, or null when it was closed
   /// without saving.
@@ -54,8 +73,26 @@ class QuickButterflySheet extends ConsumerStatefulWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) =>
-          QuickButterflySheet(visit: visit, accuracyWarningM: accuracyWarningM),
+      builder: (context) => QuickButterflySheet(
+        projectId: visit.projectId,
+        visit: visit,
+        accuracyWarningM: accuracyWarningM,
+      ),
+    );
+  }
+
+  /// Opens the free observation (T047) as a full screen and returns what was
+  /// saved, or null. [placedAt] starts it with that point placed on the map.
+  static Future<SavedObservation?> showFree(
+    BuildContext context, {
+    required String projectId,
+    LatLng? placedAt,
+  }) {
+    return Navigator.of(context).push<SavedObservation>(
+      MaterialPageRoute(
+        builder: (context) =>
+            QuickButterflySheet(projectId: projectId, placedAt: placedAt),
+      ),
     );
   }
 
@@ -75,6 +112,13 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
 
   /// Starts at 1 each time the sheet opens.
   int _count = 1;
+
+  /// The source of a free observation.
+  String _source = freeObservationSources.first;
+
+  /// The point placed on the map for a free observation; null means "read the
+  /// GPS when saving".
+  late LatLng? _placed = widget.placedAt;
 
   /// True while Save waits for a GPS fix and writes the observation.
   bool _saving = false;
@@ -98,6 +142,53 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   void initState() {
     super.initState();
     _photos = ref.read(photoRepositoryProvider);
+    // A free observation asks for the GPS fix as soon as the sheet opens, so it
+    // is usually there by the time the user has picked a species.
+    if (widget.visit == null && _placed == null) _startFix();
+  }
+
+  /// The GPS fix of a free observation, asked for when the sheet opens. Null
+  /// until it arrives.
+  Position? _fix;
+
+  /// The request for [_fix]; Save waits for it when it is still running.
+  Future<Position>? _fixRequest;
+
+  /// A fix older than this is not used by Save: the user may have walked on.
+  static const _maxFixAge = Duration(seconds: 30);
+
+  /// Asks for a fix in the background and keeps it in [_fix]. A failure is not
+  /// shown here: Save asks again and shows the reason then. The old fix is
+  /// dropped, so call it inside `setState` once the sheet is on screen.
+  void _startFix() {
+    _fix = null;
+    final request = ref.read(currentPositionProvider)();
+    _fixRequest = request;
+    request.then(
+      (position) {
+        if (mounted && identical(_fixRequest, request)) {
+          setState(() => _fix = position);
+        }
+      },
+      onError: (_) {
+        if (mounted && identical(_fixRequest, request)) {
+          setState(() => _fixRequest = null);
+        }
+      },
+    );
+  }
+
+  /// The fix for Save: the one asked for earlier when it is recent, waiting for
+  /// it if it is still coming, or a new request when it is old or there is none
+  /// (it failed earlier).
+  Future<Position> _fixForSave() {
+    final fix = _fix;
+    if (fix != null && DateTime.now().difference(fix.timestamp) <= _maxFixAge) {
+      return Future.value(fix);
+    }
+    if (fix == null && _fixRequest != null) return _fixRequest!;
+    setState(_startFix);
+    return _fixRequest!;
   }
 
   /// The sheet can be closed in several ways (swipe down, Back, tapping
@@ -200,7 +291,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   /// paused visit has a fix too, but an old one.
   Position? _liveFix(TrackingState tracking) {
     final live =
-        tracking.visitId == widget.visit.id &&
+        tracking.visitId == widget.visit?.id &&
         tracking.recording &&
         !tracking.paused;
     return live ? tracking.lastPosition : null;
@@ -223,34 +314,52 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
 
     try {
       final visit = widget.visit;
-      var position = _liveFix(ref.read(trackingControllerProvider));
-      String? sectionId;
-      if (position != null) {
-        sectionId = ref.read(currentSectionProvider(visit.id))?.id;
+      final repository = ref.read(observationRepositoryProvider);
+      final String id;
+      if (visit == null) {
+        // A placed point has no accuracy. Without one, the GPS fix is used.
+        final placed = _placed;
+        final position = placed == null ? await _fixForSave() : null;
+        id = await repository.createFree(
+          projectId: widget.projectId,
+          source: _source,
+          taxonId: taxon.id,
+          count: _count,
+          lat: placed?.latitude ?? position!.latitude,
+          lon: placed?.longitude ?? position!.longitude,
+          accuracyM: position?.accuracy,
+          recordedById: recordedById,
+          photos: _drafts,
+          details: _details,
+        );
       } else {
-        position = await ref.read(currentPositionProvider)();
-        // The section of the fresh fix, not of the old position that the
-        // tracker still holds.
-        sectionId = sectionAt(
-          LatLng(position.latitude, position.longitude),
-          ref.read(transectSectionsProvider(visit.transectId)).value ?? [],
-          ref.read(projectProtocolProvider(visit.projectId)).value,
-        )?.id;
+        var position = _liveFix(ref.read(trackingControllerProvider));
+        String? sectionId;
+        if (position != null) {
+          sectionId = ref.read(currentSectionProvider(visit.id))?.id;
+        } else {
+          position = await ref.read(currentPositionProvider)();
+          // The section of the fresh fix, not of the old position that the
+          // tracker still holds.
+          sectionId = sectionAt(
+            LatLng(position.latitude, position.longitude),
+            ref.read(transectSectionsProvider(visit.transectId)).value ?? [],
+            ref.read(projectProtocolProvider(visit.projectId)).value,
+          )?.id;
+        }
+        id = await repository.createQuick(
+          visit: visit,
+          taxonId: taxon.id,
+          count: _count,
+          lat: position.latitude,
+          lon: position.longitude,
+          accuracyM: position.accuracy,
+          sectionId: sectionId,
+          recordedById: recordedById,
+          photos: _drafts,
+          details: _details,
+        );
       }
-      final id = await ref
-          .read(observationRepositoryProvider)
-          .createQuick(
-            visit: visit,
-            taxonId: taxon.id,
-            count: _count,
-            lat: position.latitude,
-            lon: position.longitude,
-            accuracyM: position.accuracy,
-            sectionId: sectionId,
-            recordedById: recordedById,
-            photos: _drafts,
-            details: _details,
-          );
       _saved = true;
       if (!mounted) return;
       Navigator.pop(context, (id: id, label: '${taxonTitle(taxon)} × $_count'));
@@ -272,169 +381,274 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     });
   }
 
+  /// Opens the map capture to place (or move) the point of a free observation.
+  /// The project's transects are drawn as a guide. Closing it without saving
+  /// keeps the point as it was.
+  Future<void> _pickLocation() async {
+    // Read once from the repository, not through the provider's `.value`: a
+    // provider nobody listens to has no value (see `openStartVisit`).
+    final transects = await ref
+        .read(transectRepositoryProvider)
+        .watchTransects(widget.projectId)
+        .first;
+    if (!mounted) return;
+    final placed = _placed;
+    final shape = await showGeometryCapture(
+      context,
+      modes: const {GeometryMode.point},
+      initial: placed == null ? null : CapturedGeometry.point(placed),
+      referenceLines: [for (final t in transects) parseLineString(t.geometry)],
+    );
+    if (shape == null || !mounted) return;
+    // The placed point is the way out of a GPS error, so the error goes.
+    setState(() {
+      _placed = shape.points.first;
+      _error = null;
+    });
+  }
+
+  /// What the location row says while the phone's own position is used: the
+  /// fix once it is there, with its accuracy.
+  String _gpsText() {
+    final fix = _fix;
+    if (fix != null) {
+      return 'My position: ${fix.latitude.toStringAsFixed(5)}, '
+          '${fix.longitude.toStringAsFixed(5)} (±${fix.accuracy.round()} m)';
+    }
+    if (_fixRequest != null) return 'Finding my position…';
+    return 'My position, found on save';
+  }
+
+  /// The top of a free observation: the source picker and where the butterfly
+  /// was seen.
+  Widget _freeHeader() {
+    final placed = _placed;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String>(
+          initialValue: _source,
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Source'),
+          items: [
+            for (final source in freeObservationSources)
+              DropdownMenuItem(
+                value: source,
+                child: Text(observationValueLabel(source)),
+              ),
+          ],
+          onChanged: _saving
+              ? null
+              : (value) => setState(() => _source = value ?? _source),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.place_outlined),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                placed == null
+                    ? _gpsText()
+                    : 'Placed on map: ${placed.latitude.toStringAsFixed(5)}, '
+                          '${placed.longitude.toStringAsFixed(5)}',
+              ),
+            ),
+            TextButton(
+              onPressed: _saving ? null : _pickLocation,
+              child: Text(placed == null ? 'Place on map' : 'Move'),
+            ),
+            if (placed != null)
+              TextButton(
+                onPressed: _saving
+                    ? null
+                    : () => setState(() {
+                        _placed = null;
+                        _startFix();
+                      }),
+                child: const Text('My position'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tracking = ref.watch(trackingControllerProvider);
-    final fix = _liveFix(tracking);
-    final section = ref.watch(currentSectionProvider(widget.visit.id));
+    final visit = widget.visit;
+    // The current section is keyed by visit id, so a free observation has none.
+    final fix = visit == null
+        ? null
+        : _liveFix(ref.watch(trackingControllerProvider));
+    final section = visit == null
+        ? null
+        : ref.watch(currentSectionProvider(visit.id));
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
-    return PopScope(
-      // Closing while Save waits for a fix would save it unseen.
-      canPop: !_saving,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: keyboardHeight),
-        child: SizedBox(
-          height: screenHeight * 0.9 - keyboardHeight,
-          // Keeps Save clear of the system navigation bar.
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: PositionLine(
+    // Read here, above the Scaffold: it uses up the keyboard inset for its body.
+    final keyboardOpen = keyboardHeight > 0;
+    // Keeps Save clear of the system navigation bar.
+    final content = SafeArea(
+      top: false,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: visit == null
+                ? _freeHeader()
+                : PositionLine(
                     fix: fix,
-                    accuracyWarningM: widget.accuracyWarningM,
+                    accuracyWarningM: widget.accuracyWarningM ?? 0,
                     sectionCode: fix == null ? null : section?.sectionCode,
                   ),
-                ),
-                Expanded(
-                  child: _detailsOpen
-                      ? Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: () =>
-                                    setState(() => _detailsOpen = false),
-                                icon: const Icon(Icons.chevron_left),
-                                label: const Text('Back to species'),
-                              ),
-                            ),
-                            Expanded(
-                              child: ObservationDetailsForm(
-                                details: _details,
-                                onChanged: (details) =>
-                                    setState(() => _details = details),
-                                photos: _photoSlot(),
-                                hasPhoto: _drafts.isNotEmpty,
-                                onPhotoNeeded: _askForPhoto,
-                                projectId: widget.visit.projectId,
-                                visitId: widget.visit.id,
-                                showFacing: true,
-                              ),
-                            ),
-                          ],
-                        )
-                      : TaxonPicker(
-                          projectId: widget.visit.projectId,
-                          selectedId: _selected?.id,
-                          onSelected: (taxon) =>
-                              setState(() => _selected = taxon),
-                        ),
-                ),
-                const Divider(height: 1),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+          ),
+          Expanded(
+            child: _detailsOpen
+                ? Column(
                     children: [
-                      if (_error != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            _error!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                      // W01 only warns: Save works without a photo, because the
-                      // butterfly may have flown off. The photo buttons are in
-                      // the Details form, so the line offers to open it.
-                      if ((_selected?.photoRequired ?? false) &&
-                          _drafts.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.photo_camera_outlined),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text('${ruleMessage('W01')}.')),
-                              if (!_detailsOpen)
-                                TextButton(
-                                  onPressed: () =>
-                                      setState(() => _detailsOpen = true),
-                                  child: const Text('Add photo'),
-                                ),
-                            ],
-                          ),
-                        ),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton.icon(
-                          onPressed: () =>
-                              setState(() => _detailsOpen = !_detailsOpen),
-                          icon: Icon(
-                            _detailsOpen
-                                ? Icons.expand_more
-                                : Icons.expand_less,
-                          ),
-                          label: Text(
-                            _detailsOpen ? 'Hide details' : 'Details',
-                          ),
+                          onPressed: () => setState(() => _detailsOpen = false),
+                          icon: const Icon(Icons.chevron_left),
+                          label: const Text('Back to species'),
                         ),
                       ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _selected == null
-                                  ? 'Pick a species'
-                                  : taxonTitle(_selected!),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          CountStepper(
-                            value: _count,
-                            onChanged: (count) =>
-                                setState(() => _count = count),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: _selected == null || _saving
-                              ? null
-                              : _save,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(0, 56),
-                          ),
-                          child: _saving
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : const Text('Save'),
+                      Expanded(
+                        child: ObservationDetailsForm(
+                          details: _details,
+                          onChanged: (details) =>
+                              setState(() => _details = details),
+                          photos: _photoSlot(),
+                          hasPhoto: _drafts.isNotEmpty,
+                          onPhotoNeeded: _askForPhoto,
+                          projectId: widget.projectId,
+                          visitId: visit?.id,
+                          // A placed point may not be where the user stands.
+                          showFacing: _placed == null,
                         ),
                       ),
                     ],
+                  )
+                : TaxonPicker(
+                    projectId: widget.projectId,
+                    selectedId: _selected?.id,
+                    onSelected: (taxon) {
+                      // Closes the keyboard, which brings back Save.
+                      FocusScope.of(context).unfocus();
+                      setState(() => _selected = taxon);
+                    },
                   ),
-                ),
-              ],
-            ),
           ),
-        ),
+          // On the free screen the species search gets the room above the
+          // keyboard: the count and Save come back when it closes.
+          if (visit != null || !keyboardOpen) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  // W01 only warns: Save works without a photo, because the
+                  // butterfly may have flown off. The photo buttons are in
+                  // the Details form, so the line offers to open it.
+                  if ((_selected?.photoRequired ?? false) && _drafts.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.photo_camera_outlined),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text('${ruleMessage('W01')}.')),
+                          if (!_detailsOpen)
+                            TextButton(
+                              onPressed: () =>
+                                  setState(() => _detailsOpen = true),
+                              child: const Text('Add photo'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () =>
+                          setState(() => _detailsOpen = !_detailsOpen),
+                      icon: Icon(
+                        _detailsOpen ? Icons.expand_more : Icons.expand_less,
+                      ),
+                      label: Text(_detailsOpen ? 'Hide details' : 'Details'),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selected == null
+                              ? 'Pick a species'
+                              : taxonTitle(_selected!),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      CountStepper(
+                        value: _count,
+                        onChanged: (count) => setState(() => _count = count),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _selected == null || _saving ? null : _save,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 56),
+                      ),
+                      child: _saving
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 3),
+                            )
+                          : const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
+    );
+    return PopScope(
+      // Closing while Save waits for a fix would save it unseen.
+      canPop: !_saving,
+      child: visit == null
+          ? Scaffold(
+              appBar: AppBar(title: const Text('Free observation')),
+              body: content,
+            )
+          : Padding(
+              padding: EdgeInsets.only(bottom: keyboardHeight),
+              child: SizedBox(
+                height: screenHeight * 0.9 - keyboardHeight,
+                child: content,
+              ),
+            ),
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:mobile/features/map/domain/map_taxa.dart';
 import 'package:mobile/features/map/ui/map_popups.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
+import 'package:mobile/features/observations/ui/free_observation_entry.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/resources/domain/habitat_names.dart';
@@ -530,6 +531,9 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     return FlutterMap(
       options: MapOptions(
         initialCameraFit: fit,
+        // A long press on the ground starts a free observation there (T047).
+        onLongPress: (_, point) =>
+            openFreeObservation(context, ref, projectId, placedAt: point),
         minZoom: 3,
         maxZoom: 19,
         backgroundColor: const Color(0xFFE6E8E3),

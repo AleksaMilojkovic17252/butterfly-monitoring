@@ -77,27 +77,35 @@ class _TaxonPickerState extends ConsumerState<TaxonPicker> {
           ),
         ),
         Expanded(
-          child: ListView(
-            children: query.trim().isEmpty
-                ? [
-                    const SheetListTitle('Recent'),
-                    ..._tilesOrHint(
-                      recentTaxa(taxa, usage),
-                      'Species you save show up here.',
-                      tile,
-                    ),
-                    const SheetListTitle('Favourites'),
-                    ..._tilesOrHint(
-                      favouriteTaxa(taxa, usage),
-                      'Tap a star to keep a species here.',
-                      tile,
-                    ),
-                  ]
-                : _tilesOrHint(
-                    results,
-                    'No species matches "${query.trim()}".',
-                    tile,
-                  ),
+          // A tile paints its selected colour on the nearest Material, which is
+          // the sheet, so a short list (keyboard open) would colour the rows
+          // below it. This Material, clipped, keeps the colour inside the list.
+          child: ClipRect(
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListView(
+                children: query.trim().isEmpty
+                    ? [
+                        const SheetListTitle('Recent'),
+                        ..._tilesOrHint(
+                          recentTaxa(taxa, usage),
+                          'Species you save show up here.',
+                          tile,
+                        ),
+                        const SheetListTitle('Favourites'),
+                        ..._tilesOrHint(
+                          favouriteTaxa(taxa, usage),
+                          'Tap a star to keep a species here.',
+                          tile,
+                        ),
+                      ]
+                    : _tilesOrHint(
+                        results,
+                        'No species matches "${query.trim()}".',
+                        tile,
+                      ),
+              ),
+            ),
           ),
         ),
       ],

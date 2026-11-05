@@ -2044,3 +2044,24 @@ neither pushed nor pulled, and no Drift change was needed. `surveys/coverage.py`
    usable points; the phone measures on the sphere, the server in UTM). The replay comparison through the phone is a note under T072.
 **Not handled.** No backfill migration: locked rows from before T100 keep `null` and show as `no_coverage` until unlocked and recomputed. A changed transect line or
 protocol threshold still needs a recompute (D-093). The view depends on columns of `survey_visit` and `project_protocol`; changing one needs a hand-written drop and recreate.
+
+## D-096 · Free observations (T047): one generalised sheet, GPS at Save or a placed point, no section, no server change
+2026-11-05 · accepted · T047, *builds on D-084 and D-074*
+A butterfly seen outside a visit is saved with `survey_visit = null` and a source of `incidental`, `larval_search` or `host_plant_search`.
+1. **One widget, a screen for free records.** `QuickButterflySheet` takes a nullable `visit` (and a `projectId`) so the species list, count, Details and Save are not
+   copied. `show` keeps the bottom sheet of the active visit; `showFree` pushes it as a full screen with an app bar ("Free observation"), because a sheet
+   stops below the app bar and the source and location block left no room for the species list when the keyboard opened (developer's call during the phone test).
+   On that screen the count and Save are hidden while the keyboard is open, and picking a species closes it. T108 reuses it.
+2. **Position.** The default is the GPS, read at Save. "Place on map" opens `showGeometryCapture` in point mode (tap, drag, "use my position"). A map long
+   press starts the sheet with that point placed. Any placed point has `location_accuracy_m = null`, including one from the capture's "use my position",
+   because `CapturedGeometry` carries no accuracy.
+3. **`observed_at` is the moment of Save.** There is no time picker; the ticket does not ask for one.
+4. **Section is always null** for a free record, on the phone and on the server (D-084). The phone does no section lookup.
+5. **Source picker is a dropdown**, default `incidental` (chips reflow the form, as found on T035).
+6. **No server or Drift change.** `survey_visit` was already nullable and only `source = transect` needs a visit (`obs_transect_needs_visit`); V03, V04
+   and V06 skip a free record; exports and the `geo.butterfly_observations` view already carry `source` and join the visit optionally.
+7. **Indicators:** per-km and per-hour figures count `source = transect` only; species lists include free records (notes under T061 and T062).
+8. **Free observation starts the GPS fix when the screen opens**, so Save is usually instant; Save uses a fix under 30 s old, else asks again, and "My position" always
+   asks again. Small changes made on the developer's request during the phone test, outside the ticket's criteria: the "Location is off, please turn it on."
+   wording (shared `locationMessage`), the species shown under Change species in the Edit sheet (T046), and the species picker's selected colour clipped to its
+   list (`taxon_picker.dart`, T045), which the keyboard had made spill over the Details row.

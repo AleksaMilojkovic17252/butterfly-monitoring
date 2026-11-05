@@ -115,94 +115,166 @@ class ObservationRepository {
   }) {
     return _db.transaction(() async {
       final current = await _checkVisit(visit.id);
-      final extras = details.trimmed();
-
-      final id = const Uuid().v4();
-      final now = DateTime.now().toUtc();
-      // The server stores one decimal (`Decimal(6,1)`).
-      final accuracy = accuracyM == null
-          ? null
-          : double.parse(accuracyM.toStringAsFixed(1));
-
-      final errors = validateObservation(
-        ObservationInput(
-          observedAt: now,
-          count: count,
-          lat: lat,
-          lon: lon,
-          accuracyM: accuracy,
-          sex: extras.sex,
-          lifeStage: extras.lifeStage,
-          confidence: extras.confidence,
-          behaviour: extras.behaviour,
-          hostPlantRecordId: extras.hostPlantRecordId,
-        ),
-        await _ruleContext(current.projectId, current, taxonId, photos.length),
-      );
-      if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
-
-      await _sync.write(
+      return _insert(
         projectId: visit.projectId,
-        entityType: _entityType,
-        entityId: id,
-        operation: SyncOperation.create,
-        payload: {
-          'project': visit.projectId,
-          'survey_visit': visit.id,
-          'transect_section': sectionId,
-          'observed_at': now.toIso8601String(),
-          'taxon': taxonId,
-          'count': count,
-          'geometry': {
-            'type': 'Point',
-            'coordinates': [lon, lat],
-          },
-          'location_accuracy_m': accuracy,
-          ...extras.toPayload(),
-          'recorded_by': recordedById,
-          'source': 'transect',
-          'created_at': now.toIso8601String(),
-        },
-        writeRow: () => _db
-            .into(_db.butterflyObservations)
-            .insert(
-              ButterflyObservationsCompanion.insert(
-                id: id,
-                projectId: visit.projectId,
-                surveyVisitId: Value(visit.id),
-                transectSectionId: Value(sectionId),
-                observedAt: now,
-                taxonId: taxonId,
-                count: Value(count),
-                lat: lat,
-                lon: lon,
-                locationAccuracyM: Value(accuracy),
-                identificationConfidence: extras.confidence,
-                sex: Value(extras.sex),
-                lifeStage: Value(extras.lifeStage),
-                behaviour: Value(extras.behaviourJson),
-                microhabitat: Value(extras.microhabitat),
-                flightDirectionDeg: Value(extras.flightDirectionDeg),
-                notes: Value(extras.notes),
-                hostPlantRecordId: Value(extras.hostPlantRecordId),
-                nectarPlantRecordId: Value(extras.nectarPlantRecordId),
-                recordedById: recordedById,
-                createdAt: now,
-              ),
-            ),
+        visit: current,
+        source: 'transect',
+        sectionId: sectionId,
+        taxonId: taxonId,
+        count: count,
+        lat: lat,
+        lon: lon,
+        accuracyM: accuracyM,
+        recordedById: recordedById,
+        photos: photos,
+        details: details,
       );
-      await _photos.addDrafts(
-        parent: PhotoParent.observation(
-          id: id,
-          projectId: visit.projectId,
-          surveyVisitId: visit.id,
-        ),
-        drafts: photos,
-        firstIsPrimary: true,
-      );
-      await _taxa.recordUse(visit.projectId, taxonId);
-      return id;
     });
+  }
+
+  /// Saves a free observation (T047): [count] butterflies of [taxonId] seen at
+  /// ([lat], [lon]), now, with no visit, and returns its id. [source] is one of
+  /// `freeObservationSources`. [accuracyM] is null for a point placed on the map.
+  /// The section stays empty (D-096). [photos] and [details] work as in
+  /// [createQuick].
+  ///
+  /// Throws a [StateError] when a rule of `core/validation` refuses the entry.
+  Future<String> createFree({
+    required String projectId,
+    required String source,
+    required String taxonId,
+    required int count,
+    required double lat,
+    required double lon,
+    required double? accuracyM,
+    required String recordedById,
+    List<DraftPhoto> photos = const [],
+    ObservationDetails details = const ObservationDetails(),
+  }) {
+    return _db.transaction(
+      () => _insert(
+        projectId: projectId,
+        visit: null,
+        source: source,
+        sectionId: null,
+        taxonId: taxonId,
+        count: count,
+        lat: lat,
+        lon: lon,
+        accuracyM: accuracyM,
+        recordedById: recordedById,
+        photos: photos,
+        details: details,
+      ),
+    );
+  }
+
+  /// The write shared by [createQuick] and [createFree]; the caller has opened
+  /// the transaction and checked the visit. [visit] is null for a free
+  /// observation.
+  Future<String> _insert({
+    required String projectId,
+    required SurveyVisit? visit,
+    required String source,
+    required String? sectionId,
+    required String taxonId,
+    required int count,
+    required double lat,
+    required double lon,
+    required double? accuracyM,
+    required String recordedById,
+    required List<DraftPhoto> photos,
+    required ObservationDetails details,
+  }) async {
+    final extras = details.trimmed();
+
+    final id = const Uuid().v4();
+    final now = DateTime.now().toUtc();
+    // The server stores one decimal (`Decimal(6,1)`).
+    final accuracy = accuracyM == null
+        ? null
+        : double.parse(accuracyM.toStringAsFixed(1));
+
+    final errors = validateObservation(
+      ObservationInput(
+        observedAt: now,
+        count: count,
+        lat: lat,
+        lon: lon,
+        accuracyM: accuracy,
+        source: source,
+        sex: extras.sex,
+        lifeStage: extras.lifeStage,
+        confidence: extras.confidence,
+        behaviour: extras.behaviour,
+        hostPlantRecordId: extras.hostPlantRecordId,
+      ),
+      await _ruleContext(projectId, visit, taxonId, photos.length),
+    );
+    if (errors.isNotEmpty) throw StateError(ruleErrorText(errors));
+
+    await _sync.write(
+      projectId: projectId,
+      entityType: _entityType,
+      entityId: id,
+      operation: SyncOperation.create,
+      payload: {
+        'project': projectId,
+        'survey_visit': visit?.id,
+        'transect_section': sectionId,
+        'observed_at': now.toIso8601String(),
+        'taxon': taxonId,
+        'count': count,
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [lon, lat],
+        },
+        'location_accuracy_m': accuracy,
+        ...extras.toPayload(),
+        'recorded_by': recordedById,
+        'source': source,
+        'created_at': now.toIso8601String(),
+      },
+      writeRow: () => _db
+          .into(_db.butterflyObservations)
+          .insert(
+            ButterflyObservationsCompanion.insert(
+              id: id,
+              projectId: projectId,
+              surveyVisitId: Value(visit?.id),
+              transectSectionId: Value(sectionId),
+              observedAt: now,
+              taxonId: taxonId,
+              count: Value(count),
+              lat: lat,
+              lon: lon,
+              locationAccuracyM: Value(accuracy),
+              identificationConfidence: extras.confidence,
+              sex: Value(extras.sex),
+              lifeStage: Value(extras.lifeStage),
+              behaviour: Value(extras.behaviourJson),
+              microhabitat: Value(extras.microhabitat),
+              flightDirectionDeg: Value(extras.flightDirectionDeg),
+              notes: Value(extras.notes),
+              hostPlantRecordId: Value(extras.hostPlantRecordId),
+              nectarPlantRecordId: Value(extras.nectarPlantRecordId),
+              source: Value(source),
+              recordedById: recordedById,
+              createdAt: now,
+            ),
+          ),
+    );
+    await _photos.addDrafts(
+      parent: PhotoParent.observation(
+        id: id,
+        projectId: projectId,
+        surveyVisitId: visit?.id,
+      ),
+      drafts: photos,
+      firstIsPrimary: true,
+    );
+    await _taxa.recordUse(projectId, taxonId);
+    return id;
   }
 
   /// Changes the species, count and details of [opened] and queues an `update`

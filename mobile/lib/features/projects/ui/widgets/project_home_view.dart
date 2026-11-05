@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/observations/ui/free_observation_entry.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/projects/ui/project_period.dart';
 import 'package:mobile/features/projects/ui/widgets/project_home_tile.dart';
@@ -33,10 +34,10 @@ class ProjectHomeView extends ConsumerWidget {
         label: 'Transects',
         onTap: () => context.push('/projects/${project.id}/transects'),
       ),
-      // Free observation: enabled by T047.
-      const ProjectHomeTile(
+      ProjectHomeTile(
         icon: Icons.add_location_alt_outlined,
         label: 'Free observation',
+        onTap: () => openFreeObservation(context, ref, project.id),
       ),
       ProjectHomeTile(
         icon: Icons.local_florist_outlined,

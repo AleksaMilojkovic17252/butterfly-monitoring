@@ -82,7 +82,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T044 | [#61](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/61) | ButterflyObservation model and API | P1 | must | T019, T026, T034 | 2.5 d | done |
 | T045 | [#62](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/62) | App quick butterfly entry | P1 | must | T039, T044 | 2.5 d | done |
 | T046 | [#63](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/63) | App extended entry | P1 | should | T045 | 1.5 d | done |
-| T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | todo |
+| T047 | [#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) | Incidental and other-source observations | P1 | should | T045 | 1 d | done |
 | T048 | [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) | Automatic section assignment | P1 | should | T044 | 1 d | done |
 | T049 | [#66](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/66) | Photo model and upload API with SHA-256 deduplication | P1 | must | T003, T044 | 2.5 d | done |
 | T050 | [#67](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/67) | App photo capture, compression and upload | P1 | must | T030, T045, T049, T106 | 2.5 d | done |
@@ -966,7 +966,7 @@ Note: checked on the phone on 2026-11-02 (quick path, Details on create, prompts
 Deferred (agreed 2026-11-02): the working "Link to host plant" (picking or creating a plant record) moves to T052; T046 shows the prompts with the button disabled. Added with the developer's agreement: Edit also changes count and species.
 
 ### T047 · Incidental and other-source observations
-[#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) · E06 · P1 · should · labels: `mobile`, `backend`, `should` · implements F17 · est. 1 d · **todo**
+[#64](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/64) · E06 · P1 · should · labels: `mobile`, `backend`, `should` · implements F17 · est. 1 d · **done**
 
 Depends on: T045
 
@@ -979,6 +979,9 @@ map popup (T059) and open T106's observation detail.
 
 From T108 (added 2026-10-30): the route-recording screen of T108 reuses this entry sheet (source `incidental`), so butterflies seen
 while proposing a route are kept but are not a standardised count.
+
+Deferred: part of criterion 3 waits for T061 and T062, because the indicators are not built yet. Those tickets must count `source = transect` only
+for per-km and per-hour figures. Exports and OGC were shown including free records.
 
 ### T048 · Automatic section assignment
 [#65](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/65) · E06 · P1 · should · labels: `backend`, `should` · implements F19 · est. 1 d · **done**
@@ -1234,6 +1237,9 @@ Depends on: T031, T059
 
 From T100 (added 2026-10-27): if T100 is done, `report_transect_indicators` also has `valid_visits`, using T100's valid-visit rule
 (protocol §6, rules 1–3). If T100 is done after this ticket, T100 adds the column.
+
+From T047 (added 2026-11-05): the criterion already limits per-km and per-hour figures to transect records. Species lists include free
+records (`source` other than `transect`, no visit).
 Note (T100, done 2026-11-05): the rule is the view `public.survey_visit_validity` (`is_valid`, `reasons`); join it on `survey_visit_id` for `valid_visits`.
 `report_transect_indicators.valid_visits` is built here, not in T100.
 
@@ -1255,6 +1261,8 @@ Depends on: T041, T044
 - [ ] A weekly phenology bar chart for a chosen species (`fl_chart`).
 - [ ] A note on screen: "Your records only. Project-wide figures are in the admin reports."
 - [ ] Uses the same definitions as T061; a Dart unit test uses the same fixture numbers as T061's test.
+
+From T047 (added 2026-11-05): per-km and per-hour figures count `source = transect` only; species lists include free records.
 
 ### T063 · EnvironmentalSnapshot model with manual source
 [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) · E09 · P1 · must · labels: `backend`, `database`, `must`, `p2-compat` · implements F74 · est. 1 d · **done**
@@ -2036,7 +2044,8 @@ Out of scope: downloading every photo ahead of time; seeing other phones' photos
 [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) · E03 · added 2026-10-30 · P1 · should · labels: `backend`, `mobile`, `admin`, `sync`, `should` · est. 2 d · **todo**
 
 Depends on: T022, T026, T037
-Notes: the Free observation button on the recording screen needs T047; without it the screen has no button
+Notes: the Free observation button on the recording screen needs T047; without it the screen has no button. T047 is built: the button calls
+`openFreeObservation` (`features/observations/ui/free_observation_entry.dart`), with `incidental` as the default source
 
 Why: transects are drawn in Django admin, often without anyone having walked them. In the field a route can turn out to cross
 private land, a cliff or impassable vegetation. Today the researcher can only cancel the visit (`invalid_protocol`) and tell the

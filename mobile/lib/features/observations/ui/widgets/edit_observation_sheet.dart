@@ -199,6 +199,9 @@ class _EditObservationSheetState extends ConsumerState<EditObservationSheet> {
                             ListTile(
                               leading: const Icon(Icons.swap_horiz),
                               title: const Text('Change species'),
+                              subtitle: Text(
+                                taxon == null ? '…' : taxonTitle(taxon),
+                              ),
                               onTap: () =>
                                   setState(() => _changingSpecies = true),
                             ),

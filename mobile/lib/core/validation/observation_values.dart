@@ -32,6 +32,14 @@ const sourceValues = [
   'host_plant_search',
 ];
 
+/// The sources of a record without a visit, offered by the Free observation
+/// sheet (T047). `transect` needs a visit.
+const freeObservationSources = [
+  'incidental',
+  'larval_search',
+  'host_plant_search',
+];
+
 const confidenceValues = [
   'confirmed_in_field',
   'probable',
