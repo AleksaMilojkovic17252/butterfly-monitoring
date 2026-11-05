@@ -25,7 +25,9 @@ import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/resources/ui/geometry_capture_screen.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
+import 'package:mobile/features/visits/data/track_point_repository.dart';
 import 'package:mobile/features/visits/domain/current_section.dart';
+import 'package:mobile/features/visits/domain/local_time.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
 
 /// What the sheet hands back after a save: the new observation's id (for
@@ -41,6 +43,10 @@ typedef SavedObservation = ({String id, String label});
 /// [showFree] as a full screen with an app bar instead of a sheet: a source
 /// picker and a location row replace the position line, and the record has no
 /// visit and no section.
+///
+/// With [afterVisit] it adds a butterfly to a finished visit (T110), opened
+/// with [showAfterVisit] as a full screen: the time is picked inside the
+/// visit's window and the position is placed on the map (no GPS is read).
 class QuickButterflySheet extends ConsumerStatefulWidget {
   const QuickButterflySheet({
     super.key,
@@ -48,6 +54,7 @@ class QuickButterflySheet extends ConsumerStatefulWidget {
     this.visit,
     this.accuracyWarningM,
     this.placedAt,
+    this.afterVisit = false,
   });
   final String projectId;
 
@@ -61,6 +68,9 @@ class QuickButterflySheet extends ConsumerStatefulWidget {
   /// A point placed on the map before the sheet opened (the map long press).
   /// Free observation only.
   final LatLng? placedAt;
+
+  /// True when [visit] is finished and the butterfly is added afterwards.
+  final bool afterVisit;
 
   /// Opens the sheet and returns what was saved, or null when it was closed
   /// without saving.
@@ -96,10 +106,33 @@ class QuickButterflySheet extends ConsumerStatefulWidget {
     );
   }
 
+  /// Opens the entry for a finished [visit] (T110) as a full screen and
+  /// returns what was saved, or null.
+  static Future<SavedObservation?> showAfterVisit(
+    BuildContext context, {
+    required SurveyVisit visit,
+  }) {
+    return Navigator.of(context).push<SavedObservation>(
+      MaterialPageRoute(
+        builder: (context) => QuickButterflySheet(
+          projectId: visit.projectId,
+          visit: visit,
+          afterVisit: true,
+        ),
+      ),
+    );
+  }
+
   @override
   ConsumerState<QuickButterflySheet> createState() =>
       _QuickButterflySheetState();
 }
+
+/// Which of the three entries the sheet is: on the active visit, a free
+/// observation (no visit, T047) or a butterfly added to a finished visit
+/// (T110). Worked out once from [QuickButterflySheet.visit] and
+/// [QuickButterflySheet.afterVisit].
+enum _SheetMode { live, free, afterVisit }
 
 class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   Taxon? _selected;
@@ -119,6 +152,10 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   /// The point placed on the map for a free observation; null means "read the
   /// GPS when saving".
   late LatLng? _placed = widget.placedAt;
+
+  /// When the butterfly was seen, after-visit mode only. Starts at the end of
+  /// the visit.
+  late DateTime _observedAt = widget.visit?.endedAt ?? DateTime.now().toUtc();
 
   /// True while Save waits for a GPS fix and writes the observation.
   bool _saving = false;
@@ -144,7 +181,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     _photos = ref.read(photoRepositoryProvider);
     // A free observation asks for the GPS fix as soon as the sheet opens, so it
     // is usually there by the time the user has picked a species.
-    if (widget.visit == null && _placed == null) _startFix();
+    if (_mode == _SheetMode.free && _placed == null) _startFix();
   }
 
   /// The GPS fix of a free observation, asked for when the sheet opens. Null
@@ -287,6 +324,16 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     );
   }
 
+  _SheetMode get _mode {
+    if (widget.visit == null) return _SheetMode.free;
+    return widget.afterVisit ? _SheetMode.afterVisit : _SheetMode.live;
+  }
+
+  /// True for the two full-screen modes (free and after the visit): they have
+  /// an app bar and a location row, and the species search gets the room above
+  /// the keyboard.
+  bool get _fullScreen => _mode != _SheetMode.live;
+
   /// The newest fix when GPS is running for this visit, otherwise null. A
   /// paused visit has a fix too, but an old one.
   Position? _liveFix(TrackingState tracking) {
@@ -316,7 +363,38 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       final visit = widget.visit;
       final repository = ref.read(observationRepositoryProvider);
       final String id;
-      if (visit == null) {
+      if (visit != null && _mode == _SheetMode.afterVisit) {
+        var clearZero = false;
+        if (visit.zeroObservationConfirmed) {
+          clearZero = await _confirmClearZero();
+          if (!clearZero) {
+            if (mounted) setState(() => _saving = false);
+            return;
+          }
+        }
+        final placed = _placed!;
+        final sections = await ref
+            .read(transectRepositoryProvider)
+            .watchSections(visit.transectId)
+            .first;
+        final protocol = await ref
+            .read(transectRepositoryProvider)
+            .watchProtocol(visit.projectId)
+            .first;
+        id = await repository.createAfterVisit(
+          visit: visit,
+          observedAt: _observedAt,
+          taxonId: taxon.id,
+          count: _count,
+          lat: placed.latitude,
+          lon: placed.longitude,
+          sectionId: sectionAt(placed, sections, protocol)?.id,
+          recordedById: recordedById,
+          clearZeroConfirmation: clearZero,
+          photos: _drafts,
+          details: _details,
+        );
+      } else if (visit == null) {
         // A placed point has no accuracy. Without one, the GPS fix is used.
         final placed = _placed;
         final position = placed == null ? await _fixForSave() : null;
@@ -372,6 +450,82 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     }
   }
 
+  /// Asks before a late butterfly removes the true-zero confirmation of the
+  /// visit. True when the researcher agrees.
+  Future<bool> _confirmClearZero() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove true-zero confirmation?'),
+        content: const Text(
+          'This visit was finished with no butterflies. Adding one removes '
+          'the true-zero confirmation.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  /// Picks the time of day for [_observedAt]. The date is the local date of
+  /// the visit's start (the next day when the visit ran past midnight). A time
+  /// outside the visit is refused and the old one stays.
+  Future<void> _pickTime() async {
+    final visit = widget.visit!;
+    final start = visit.startedAt!.toLocal();
+    final end = visit.endedAt!.toLocal();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_observedAt.toLocal()),
+    );
+    if (picked == null || !mounted) return;
+    // The picker has no seconds, so the start is compared by the minute: a
+    // visit that began at 21:19:40 allows 21:19.
+    final startMinute = DateTime(
+      start.year,
+      start.month,
+      start.day,
+      start.hour,
+      start.minute,
+    );
+    var chosen = DateTime(
+      start.year,
+      start.month,
+      start.day,
+      picked.hour,
+      picked.minute,
+    );
+    // Before the start on the start's date: a visit across midnight.
+    if (chosen.isBefore(startMinute)) {
+      chosen = chosen.add(const Duration(days: 1));
+    }
+    if (chosen.isAfter(end)) {
+      setState(
+        () => _error =
+            'Pick a time between ${formatLocalTime(start)} and '
+            '${formatLocalTime(end)}.',
+      );
+      return;
+    }
+    // The picker has no seconds, so a pick in the start minute is 21:19:00 for
+    // a visit that began at 21:19:40. Move it to the start, so it never lies
+    // before the visit and does not depend on the protocol's tolerance.
+    if (chosen.isBefore(start)) chosen = start;
+    setState(() {
+      _observedAt = chosen.toUtc();
+      _error = null;
+    });
+  }
+
   /// Shows [message] in the sheet and lets the observer try again.
   void _fail(String message) {
     if (!mounted) return;
@@ -387,17 +541,35 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   Future<void> _pickLocation() async {
     // Read once from the repository, not through the provider's `.value`: a
     // provider nobody listens to has no value (see `openStartVisit`).
-    final transects = await ref
-        .read(transectRepositoryProvider)
-        .watchTransects(widget.projectId)
-        .first;
+    final transects = ref.read(transectRepositoryProvider);
+    final visit = widget.visit;
+    final lines = <List<LatLng>>[];
+    if (visit != null && _mode == _SheetMode.afterVisit) {
+      // The visit's transect, its sections and the walked route (T110).
+      final transect = await transects.watchTransect(visit.transectId).first;
+      final sections = await transects.watchSections(visit.transectId).first;
+      final route = await ref
+          .read(trackPointRepositoryProvider)
+          .watchRoute(visit.id)
+          .first;
+      if (transect != null) lines.add(parseLineString(transect.geometry));
+      for (final s in sections) {
+        lines.add(parseLineString(s.section.geometry));
+      }
+      if (route.length >= 2) {
+        lines.add([for (final p in route) LatLng(p.lat, p.lon)]);
+      }
+    } else {
+      final all = await transects.watchTransects(widget.projectId).first;
+      lines.addAll([for (final t in all) parseLineString(t.geometry)]);
+    }
     if (!mounted) return;
     final placed = _placed;
     final shape = await showGeometryCapture(
       context,
       modes: const {GeometryMode.point},
       initial: placed == null ? null : CapturedGeometry.point(placed),
-      referenceLines: [for (final t in transects) parseLineString(t.geometry)],
+      referenceLines: lines,
     );
     if (shape == null || !mounted) return;
     // The placed point is the way out of a GPS error, so the error goes.
@@ -474,16 +646,54 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     );
   }
 
+  /// The top of an observation added after the visit (T110): the time it was
+  /// seen and the place on the map. Both are the researcher's choice.
+  Widget _afterVisitHeader() {
+    final placed = _placed;
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.schedule),
+            const SizedBox(width: 8),
+            Expanded(child: Text('Seen at ${formatLocalTime(_observedAt)}')),
+            TextButton(
+              onPressed: _saving ? null : _pickTime,
+              child: const Text('Change'),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            const Icon(Icons.place_outlined),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                placed == null
+                    ? 'Tap Place on map'
+                    : 'Placed on map: ${placed.latitude.toStringAsFixed(5)}, '
+                          '${placed.longitude.toStringAsFixed(5)}',
+              ),
+            ),
+            TextButton(
+              onPressed: _saving ? null : _pickLocation,
+              child: Text(placed == null ? 'Place on map' : 'Move'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final visit = widget.visit;
     // The current section is keyed by visit id, so a free observation has none.
-    final fix = visit == null
-        ? null
-        : _liveFix(ref.watch(trackingControllerProvider));
-    final section = visit == null
-        ? null
-        : ref.watch(currentSectionProvider(visit.id));
+    // After the visit no live fix is used, so nothing is watched.
+    final live = _mode == _SheetMode.live;
+    final fix = live ? _liveFix(ref.watch(trackingControllerProvider)) : null;
+    // `live` means there is a visit, so `visit!` is safe here.
+    final section = live ? ref.watch(currentSectionProvider(visit!.id)) : null;
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -496,13 +706,15 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: visit == null
-                ? _freeHeader()
-                : PositionLine(
-                    fix: fix,
-                    accuracyWarningM: widget.accuracyWarningM ?? 0,
-                    sectionCode: fix == null ? null : section?.sectionCode,
-                  ),
+            child: switch (_mode) {
+              _SheetMode.afterVisit => _afterVisitHeader(),
+              _SheetMode.free => _freeHeader(),
+              _SheetMode.live => PositionLine(
+                fix: fix,
+                accuracyWarningM: widget.accuracyWarningM ?? 0,
+                sectionCode: fix == null ? null : section?.sectionCode,
+              ),
+            },
           ),
           Expanded(
             child: _detailsOpen
@@ -527,7 +739,8 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                           projectId: widget.projectId,
                           visitId: visit?.id,
                           // A placed point may not be where the user stands.
-                          showFacing: _placed == null,
+                          showFacing:
+                              _mode != _SheetMode.afterVisit && _placed == null,
                         ),
                       ),
                     ],
@@ -544,7 +757,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
           ),
           // On the free screen the species search gets the room above the
           // keyboard: the count and Save come back when it closes.
-          if (visit != null || !keyboardOpen) ...[
+          if (!_fullScreen || !keyboardOpen) ...[
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -614,7 +827,13 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: _selected == null || _saving ? null : _save,
+                      onPressed:
+                          _selected == null ||
+                              _saving ||
+                              (_mode == _SheetMode.afterVisit &&
+                                  _placed == null)
+                          ? null
+                          : _save,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(0, 56),
                       ),
@@ -637,9 +856,15 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     return PopScope(
       // Closing while Save waits for a fix would save it unseen.
       canPop: !_saving,
-      child: visit == null
+      child: _fullScreen
           ? Scaffold(
-              appBar: AppBar(title: const Text('Free observation')),
+              appBar: AppBar(
+                title: Text(
+                  _mode == _SheetMode.afterVisit
+                      ? 'Add to visit'
+                      : 'Free observation',
+                ),
+              ),
               body: content,
             )
           : Padding(

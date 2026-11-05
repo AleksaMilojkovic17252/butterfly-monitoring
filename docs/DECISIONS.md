@@ -2065,3 +2065,24 @@ A butterfly seen outside a visit is saved with `survey_visit = null` and a sourc
    asks again. Small changes made on the developer's request during the phone test, outside the ticket's criteria: the "Location is off, please turn it on."
    wording (shared `locationMessage`), the species shown under Change species in the Edit sheet (T046), and the species picker's selected colour clipped to its
    list (`taxon_picker.dart`, T045), which the keyboard had made spill over the Details row.
+
+## D-097 · Observations added after a visit (T110): a full screen, a placed point, the zero flag cleared in the same transaction, server unchanged
+2026-11-05 · accepted · T110, *builds on D-096 and D-074*
+A researcher can add a butterfly to their own finished visit (`completed`, `synced` or `reviewed`) from the visit detail. It is a `transect` observation on that visit.
+1. **No server change.** V03 already accepts the finished statuses, V04 checks `observed_at` against the visit with the protocol tolerance, and a locked visit is refused.
+   `created_at` is the time of writing, so a late entry has `created_at` after `ended_at`. The list shows "added after the visit" from that; there is **no quality flag**.
+2. **One widget, third mode.** `QuickButterflySheet` gets `afterVisit` and `showAfterVisit`: a full screen "Add to visit" (like D-096, the map picker and the time row need the room).
+   No live fix is read or watched.
+3. **Position is required and placed on the map.** The capture shows the transect, its sections and the walked route (if its points are on this phone). Accuracy is null.
+   The section is the nearest one (`sectionAt`). Save stays disabled until a point is placed.
+4. **Time.** Default is the visit's end. The picker works in local time; the date is the local date of `started_at` (plus one day if the time is before the start, for a visit across midnight).
+   A time outside start..end is refused without the protocol tolerance, so the server's V04 always agrees. The picker has no seconds, so a pick in the start minute is
+   moved to `started_at` itself (found on the phone: 21:19 on a visit that began 21:19:55 was stored 55 s before the visit).
+5. **Zero flag.** Rule V06 refuses a transect observation on a visit with `zero_observation_confirmed = true`. After a confirm dialog the repository writes, in one transaction,
+   a visit `update {zero_observation_confirmed: false}` and then the observation `create`, so the queue sends them in that order and the server's V06 passes.
+   **Undo of the observation does not put the flag back:** the visit then has no butterflies and no zero flag. A true zero cannot be re-confirmed outside Finish; accepted for a "should" ticket.
+6. **Figures.** Route coverage, distance and walking time come from track points and the stored duration, so they do not change. Species and individual counts in the visit detail do.
+   The Finish screen is not shown again. Server coverage and the visit flags (`gps_gap`, `low_coverage`) do not read observations.
+7. **Locked while the phone is behind (shown by hand).** If an admin locks the visit before the phone syncs, the phone still accepts the entry locally. The push is refused
+   with `visit_locked` and the item shows under Errors of that project's Unsynced data screen, with Discard local change and Retry (after an unlock). Nothing reaches the server.
+8. **Not built:** an admin add (draft T113, D-065 still holds until it is filed).

@@ -145,7 +145,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
 | T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | done |
-| T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | todo |
+| T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | done |
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | todo |
 | T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants and habitat features | P1 | could | T051, T052, T053, T054 | 3 d | todo |
 
@@ -2107,10 +2107,12 @@ with no error anywhere. Seen with T063: `admin@demo` did not see the Environment
 Out of scope: a custom permission framework (CLAUDE.md); changing which permissions the group holds; tests (D-021).
 
 ### T110 · App adds an observation to a finished visit
-[#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) · E06 · added 2026-11-02 as a follow-up to T045 and T106 · P1 · should · labels: `mobile`, `should` · est. 1.5 d · **todo**
+[#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) · E06 · added 2026-11-02 as a follow-up to T045 and T106 · P1 · should · labels: `mobile`, `should` · est. 1.5 d · **done**
 
 Depends on: T045, T046, T106
-Notes: draft; the open questions below are to be settled with the developer before building.
+Notes: settled 2026-11-05, see D-097. (1) Zero flag: a visit finished as a true zero gets `zero_observation_confirmed = false` in the same transaction, after a confirm dialog; Undo does not put it back.
+(2) Route coverage, distance and walking time do not change; species and individual counts do. (3) No quality flag; "added after the visit" is enough.
+(4) Admin add is not built here: draft `tmp/ticket-drafts/T113-admin-add-observation.md`.
 
 Why: Add butterfly exists only on the active visit screen, and `ObservationRepository._checkVisit` refuses any visit that is not `in_progress`
 ("The visit is no longer in progress."). A researcher who finishes a visit and then remembers a butterfly, or finishes too early, cannot add it.

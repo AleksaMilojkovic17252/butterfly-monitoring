@@ -7,7 +7,8 @@ import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/visits/domain/local_time.dart';
 
 /// The observations of a visit (T106), grouped by section in walking order and
-/// then "No section". A row shows the species, the count and the time, and
+/// then "No section". A row shows the species, the count and the time (and
+/// "added after the visit" for a late entry, T110), and
 /// opens the observation detail.
 class VisitObservationList extends ConsumerWidget {
   const VisitObservationList({
@@ -70,7 +71,12 @@ class VisitObservationList extends ConsumerWidget {
               for (final o in rows)
                 ListTile(
                   title: Text(names[o.taxonId] ?? '…'),
-                  subtitle: Text(formatLocalTime(o.observedAt)),
+                  subtitle: Text(
+                    // Created after the visit ended: a late entry (T110).
+                    visit.endedAt != null && o.createdAt.isAfter(visit.endedAt!)
+                        ? '${formatLocalTime(o.observedAt)} · added after the visit'
+                        : formatLocalTime(o.observedAt),
+                  ),
                   trailing: Text('× ${o.count}'),
                   onTap: () => context.push(
                     '/projects/${visit.projectId}/observations/${o.id}',

@@ -132,6 +132,78 @@ class ObservationRepository {
     });
   }
 
+  /// Saves an observation added after the visit was finished (T110): [count]
+  /// butterflies of [taxonId] seen at ([lat], [lon]) at [observedAt], on the
+  /// transect, and returns its id. `created_at` is now, which is how the app
+  /// tells a late entry apart. The visit must be completed, synced or reviewed
+  /// and not locked. [photos] and [details] work as in [createQuick].
+  ///
+  /// A visit finished as a true zero cannot hold a butterfly (V06). With
+  /// [clearZeroConfirmation] the same transaction first queues a visit `update`
+  /// that clears the flag, so the server gets it before the observation. Without
+  /// it the call throws; the UI asks the researcher first.
+  ///
+  /// Throws a [StateError] when the visit is gone, locked or not finished, or
+  /// when a rule of `core/validation` refuses the entry.
+  Future<String> createAfterVisit({
+    required SurveyVisit visit,
+    required DateTime observedAt,
+    required String taxonId,
+    required int count,
+    required double lat,
+    required double lon,
+    required String? sectionId,
+    required String recordedById,
+    required bool clearZeroConfirmation,
+    List<DraftPhoto> photos = const [],
+    ObservationDetails details = const ObservationDetails(),
+  }) {
+    return _db.transaction(() async {
+      var current = await _checkFinishedVisit(visit.id);
+      if (current.zeroObservationConfirmed) {
+        if (!clearZeroConfirmation) {
+          throw StateError(
+            'This visit was finished with no butterflies. Confirm to remove '
+            'the true-zero confirmation first.',
+          );
+        }
+        // Queued before the observation, so the server clears the flag first.
+        await _sync.write(
+          projectId: current.projectId,
+          entityType: 'survey_visit',
+          entityId: current.id,
+          operation: SyncOperation.update,
+          payload: {'zero_observation_confirmed': false},
+          baseVersion: current.serverVersion,
+          writeRow: () =>
+              (_db.update(
+                _db.surveyVisits,
+              )..where((v) => v.id.equals(current.id))).write(
+                const SurveyVisitsCompanion(
+                  zeroObservationConfirmed: Value(false),
+                ),
+              ),
+        );
+        current = current.copyWith(zeroObservationConfirmed: false);
+      }
+      return _insert(
+        projectId: current.projectId,
+        visit: current,
+        source: 'transect',
+        sectionId: sectionId,
+        taxonId: taxonId,
+        count: count,
+        lat: lat,
+        lon: lon,
+        accuracyM: null,
+        recordedById: recordedById,
+        photos: photos,
+        details: details,
+        observedAt: observedAt.toUtc(),
+      );
+    });
+  }
+
   /// Saves a free observation (T047): [count] butterflies of [taxonId] seen at
   /// ([lat], [lon]), now, with no visit, and returns its id. [source] is one of
   /// `freeObservationSources`. [accuracyM] is null for a point placed on the map.
@@ -169,7 +241,7 @@ class ObservationRepository {
     );
   }
 
-  /// The write shared by [createQuick] and [createFree]; the caller has opened
+  /// The write shared by [createQuick], [createAfterVisit] and [createFree]; the caller has opened
   /// the transaction and checked the visit. [visit] is null for a free
   /// observation.
   Future<String> _insert({
@@ -185,11 +257,15 @@ class ObservationRepository {
     required String recordedById,
     required List<DraftPhoto> photos,
     required ObservationDetails details,
+    DateTime? observedAt,
   }) async {
     final extras = details.trimmed();
 
     final id = const Uuid().v4();
     final now = DateTime.now().toUtc();
+    // Now, unless the caller gives the time it was seen (T110). `created_at`
+    // is always now.
+    final seenAt = observedAt ?? now;
     // The server stores one decimal (`Decimal(6,1)`).
     final accuracy = accuracyM == null
         ? null
@@ -197,7 +273,7 @@ class ObservationRepository {
 
     final errors = validateObservation(
       ObservationInput(
-        observedAt: now,
+        observedAt: seenAt,
         count: count,
         lat: lat,
         lon: lon,
@@ -222,7 +298,7 @@ class ObservationRepository {
         'project': projectId,
         'survey_visit': visit?.id,
         'transect_section': sectionId,
-        'observed_at': now.toIso8601String(),
+        'observed_at': seenAt.toIso8601String(),
         'taxon': taxonId,
         'count': count,
         'geometry': {
@@ -243,7 +319,7 @@ class ObservationRepository {
               projectId: projectId,
               surveyVisitId: Value(visit?.id),
               transectSectionId: Value(sectionId),
-              observedAt: now,
+              observedAt: seenAt,
               taxonId: taxonId,
               count: Value(count),
               lat: lat,
@@ -497,6 +573,24 @@ class ObservationRepository {
     }
     if (current.status != 'in_progress') {
       throw StateError('The visit is no longer in progress.');
+    }
+    return current;
+  }
+
+  /// Returns the visit as it is now. Throws a [StateError] unless it is still
+  /// on the phone, finished (completed, synced or reviewed) and not locked.
+  Future<SurveyVisit> _checkFinishedVisit(String visitId) async {
+    final current = await (_db.select(
+      _db.surveyVisits,
+    )..where((v) => v.id.equals(visitId))).getSingleOrNull();
+    if (current == null || current.deletedAt != null) {
+      throw StateError('The visit is no longer on this phone.');
+    }
+    if (visitIsLocked(current.status)) {
+      throw StateError('The visit is locked.');
+    }
+    if (!const {'completed', 'synced', 'reviewed'}.contains(current.status)) {
+      throw StateError('This visit is not finished.');
     }
     return current;
   }
