@@ -73,6 +73,14 @@
       <li><a href="#not-conducted">Record a visit that did not happen</a></li>
     </ol>
   </li>
+  <li><a href="#free">Butterflies outside a walk</a>
+    <ol>
+      <li><a href="#free-open">Open the Free observation screen</a></li>
+      <li><a href="#free-record">Record the butterfly</a></li>
+      <li><a href="#free-position">Choose where it was</a></li>
+      <li><a href="#free-after">After saving</a></li>
+    </ol>
+  </li>
   <li><a href="#review">After the walk: review and correct</a>
     <ol>
       <li><a href="#review-visit">Look at a visit</a></li>
@@ -263,10 +271,10 @@
 <tr><td><span class="btn">Plants &amp; habitat</span></td><td>Your plant records and habitat features. See <a href="#plants">Plants and habitat</a>.</td></tr>
 <tr><td><span class="btn">Map</span></td><td>Everything on one map, with layers and filters. See <a href="#map">The map</a>.</td></tr>
 <tr><td><span class="btn">Unsynced data</span></td><td>What is waiting to sync, errors and conflicts. See <a href="#sync">Sync</a>.</td></tr>
-<tr><td><span class="btn">Free observation</span></td><td>Shows <em>Coming later</em>. Not available yet.</td></tr>
+<tr><td><span class="btn">Free observation</span></td><td>Record a butterfly you see outside a standard walk. See <a href="#free">Butterflies outside a walk</a>.</td></tr>
 <tr><td><span class="btn">Statistics</span></td><td>Shows <em>Coming later</em>. Not available yet.</td></tr>
 </table></div>
-<div class="box later"><span class="tag">Coming later</span><strong>Free observation</strong> will record butterflies seen outside a standard walk, such as incidental sightings and larval or host-plant searches, without a visit. <strong>Statistics</strong> will show your own figures offline: visits, true zeros, species, individuals per km and per hour, your top species and a weekly chart.</div>
+<div class="box later"><span class="tag">Coming later</span><strong>Statistics</strong> will show your own figures offline: visits, true zeros, species, individuals per km and per hour, your top species and a weekly chart.</div>
 
 <h2 id="protocol">The field method in short</h2>
 <p>The app records data, but the method is what makes it useful. This is the short version. The numbers below are the standard defaults, and <strong>each project can set its own</strong>. To see your project's values, open a transect and scroll to <strong>Protocol</strong>, or look at the start form.</p>
@@ -595,6 +603,65 @@
 <figure><a href="img/researcher/not-conducted.webp"><img src="img/researcher/not-conducted.webp" alt="Recording a visit that was planned but not walked. No weather or GPS is needed." width="540" height="1040"></a><figcaption>Recording a visit that was planned but not walked. No weather or GPS is needed.</figcaption></figure>
 </div>
 
+<h2 id="free">Butterflies outside a walk</h2>
+<p>Sometimes you see a butterfly when you are not walking a transect: an unusual species on the way to the field, a search for caterpillars, or a look at a host plant. A <strong>free observation</strong> records it without a visit. You need no transect and no start form, and it works without a connection.</p>
+<div class="box note"><span class="tag">Good to know</span>A free observation has no walk behind it: no route, no timed count and no transect section. It is kept as a record and shown on the map, but it is not part of the standardised counts that visits give, such as butterflies per kilometre or per hour.</div>
+
+<h3 id="free-open">Open the Free observation screen</h3>
+<p>There are two ways in:</p>
+<ul>
+  <li>On the project home screen, tap <span class="btn">Free observation</span>. The app takes your position for you.</li>
+  <li>Or open the <span class="btn">Map</span>, and <strong>press and hold</strong> on the ground where you saw the butterfly. The screen opens with that spot already chosen.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/home.webp"><img src="img/researcher/home.webp" alt="The project home screen. Free observation is now an ordinary tile." width="540" height="1040"></a><figcaption>The project home screen. Free observation is now an ordinary tile.</figcaption></figure>
+<figure><a href="img/researcher/free-longpress.webp"><img src="img/researcher/free-longpress.webp" alt="After pressing and holding on the map, the screen opens with the spot you pressed." width="540" height="1040"></a><figcaption>After pressing and holding on the map, the screen opens with the spot you pressed.</figcaption></figure>
+</div>
+<p>Pressing and holding works anywhere on the map, also on a line, a plant or another record. It does not open a popup.</p>
+
+<h3 id="free-record">Record the butterfly</h3>
+<div class="shots">
+<figure><a href="img/researcher/free-screen.webp"><img src="img/researcher/free-screen.webp" alt="The Free observation screen. The top shows the source and where the butterfly was." width="540" height="1040"></a><figcaption>The Free observation screen. The top shows the source and where the butterfly was.</figcaption></figure>
+<figure><a href="img/researcher/free-source.webp"><img src="img/researcher/free-source.webp" alt="Source: Incidental, Larval search or Host plant search." width="540" height="1040"></a><figcaption>Source: Incidental, Larval search or Host plant search.</figcaption></figure>
+<figure><a href="img/researcher/free-search.webp"><img src="img/researcher/free-search.webp" alt="Type part of a name to search. The source and position stay in view." width="540" height="1040"></a><figcaption>Type part of a name to search. The source and position stay in view.</figcaption></figure>
+<figure><a href="img/researcher/free-ready.webp"><img src="img/researcher/free-ready.webp" alt="The chosen species and the count are above Save." width="540" height="1040"></a><figcaption>The chosen species and the count are above Save.</figcaption></figure>
+</div>
+<ol class="steps">
+  <li><strong>Choose the source.</strong> It starts as <em>Incidental</em>, a sighting by chance. Choose <em>Larval search</em> if you were looking for caterpillars or eggs, or <em>Host plant search</em> if you were looking at host plants.</li>
+  <li><strong>Choose the species</strong> from <strong>Recent</strong> or <strong>Favourites</strong>, or type in <span class="btn">Search a species</span>. When you pick one, the keyboard closes and the count and <span class="btn">Save</span> come back.</li>
+  <li><strong>Set the count</strong> with − and +, as for a visit. Press and hold the number to type a large one.</li>
+  <li><strong>Add details if you like.</strong> <span class="btn">Details</span> works as in a visit: sex, life stage, behaviour, notes and photos. See <a href="#details">Add details</a> and <a href="#photos">Add photos</a>. <em>Facing direction</em> is only offered when your own position is used, because a spot you placed on the map may not be where you stood.</li>
+  <li><strong>Tap <span class="btn">Save</span>.</strong></li>
+</ol>
+
+<h3 id="free-position">Choose where it was</h3>
+<p>The line under the source says where the butterfly will be placed. The default is <strong>your position</strong>.</p>
+<ul>
+  <li><strong>My position.</strong> The app asks for your GPS position as soon as the screen opens, so it is usually ready when you have chosen the species. It shows the position and how accurate it is, for example <em>(±5 m)</em>. If you wait a long time before saving, the app asks again so the position is current. Without a position yet, the line says <em>My position, found on save</em>.</li>
+  <li><strong>Place on map.</strong> Tap <span class="btn">Place on map</span> to put the butterfly somewhere else, for example when you saw it across a field. Tap the map or drag the pin, then tap the tick at the top right. The line then says <em>Placed on map</em> with the position.</li>
+  <li><strong>Move</strong> opens the map again with the pin where it is. <span class="btn">My position</span> goes back to your own GPS position.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/free-capture.webp"><img src="img/researcher/free-capture.webp" alt="Place on map. Tap or drag the pin, then tap the tick. Use my position puts the pin where you are." width="540" height="1040"></a><figcaption>Place on map. Tap or drag the pin, then tap the tick. Use my position puts the pin where you are.</figcaption></figure>
+</div>
+<div class="box note"><span class="tag">Good to know</span>A place you chose on the map has <strong>no GPS accuracy</strong>, so the record shows <em>accuracy unknown</em>. This is correct: the app cannot know how well you placed it. The same is true if you use <span class="btn">Use my position</span> inside the map screen.</div>
+<p>If location is switched off, Save stays open and says <em>Location is off, please turn it on.</em> Either turn Location on in Android and tap Save again, or tap <span class="btn">Place on map</span> and choose the spot yourself. When you have placed a point, the message goes away.</p>
+
+<h3 id="free-after">After saving</h3>
+<ul>
+  <li>The screen closes and a message offers <span class="btn">Undo</span> for 10 seconds, as for a visit.</li>
+  <li><strong>Time:</strong> the moment you tapped Save. There is no time field, so save the record when you see the butterfly. For an older sighting, mention the real time in the notes under <span class="btn">Details</span>.</li>
+  <li><strong>Section:</strong> always empty, because there is no transect.</li>
+  <li>The record shows on the <span class="btn">Map</span> as an orange dot. Tap it, then <span class="btn">Open</span> to see it. It is not listed under a visit, because it has none.</li>
+  <li>You can correct it like any record, with the pencil: species, count and details. See <a href="#edit-observation">Correct a record</a>. The position and the source stay as recorded.</li>
+  <li>It syncs with everything else. A point outside the project area is flagged for an admin to check, and a species that needs a photo waits for validation, as in a visit.</li>
+</ul>
+<div class="shots">
+<figure><a href="img/researcher/free-popup.webp"><img src="img/researcher/free-popup.webp" alt="On the map, the new record shows its species and time. Open shows the whole record." width="540" height="1040"></a><figcaption>On the map, the new record shows its species and time. Open shows the whole record.</figcaption></figure>
+<figure><a href="img/researcher/free-detail.webp"><img src="img/researcher/free-detail.webp" alt="The record. Source says Larval search, Section is empty and the position says accuracy unknown." width="540" height="1040"></a><figcaption>The record. Source says Larval search, Section is empty and the position says accuracy unknown.</figcaption></figure>
+</div>
+<div class="box later"><span class="tag">Coming later</span>Butterflies seen while recording a better route for a transect will use this same screen.</div>
+
 <h2 id="review">After the walk: review and correct</h2>
 <h3 id="review-visit">Look at a visit</h3>
 <p>Open <span class="btn">Transects</span>, tap the transect, and tap the visit under <strong>My visits</strong>. A draft reopens the start form, and a visit in progress reopens the visit screen. Any other visit opens this read-only page:</p>
@@ -721,7 +788,7 @@
 </ul>
 
 <h2 id="map">The map</h2>
-<p>Open the <span class="btn">Map</span> tile to see everything in the project on one map.</p>
+<p>Open the <span class="btn">Map</span> tile to see everything in the project on one map. Press and hold on the ground to record a butterfly there. See <a href="#free">Butterflies outside a walk</a>.</p>
 <div class="shots">
 <figure><a href="img/researcher/map.webp"><img src="img/researcher/map.webp" alt="The project map. Numbers are clusters of records, and tapping one zooms in." width="540" height="1040"></a><figcaption>The project map. Numbers are clusters of records, and tapping one zooms in.</figcaption></figure>
 <figure><a href="img/researcher/map-layers.webp"><img src="img/researcher/map-layers.webp" alt="Layers: turn each kind of data on or off." width="540" height="1040"></a><figcaption>Layers: turn each kind of data on or off.</figcaption></figure>
@@ -876,6 +943,7 @@
 <tr><td><em>Tick the true-zero confirmation.</em></td><td>A visit with no butterflies needs the tick, or use Cancel visit.</td></tr>
 <tr><td><em>The true-zero confirmation does not match the butterfly records</em></td><td>A visit confirmed as having no butterflies cannot have butterfly records.</td></tr>
 <tr><td><em>A value is not one of the allowed choices</em></td><td>The app may be out of date. Update it.</td></tr>
+<tr><td><em>Location is off, please turn it on.</em></td><td>Save needs your GPS position. Turn on Location in Android's quick settings and tap Save again. For a free observation you can also tap Place on map and choose the spot.</td></tr>
 <tr><td><em>The position is not valid</em></td><td>The location or shape cannot be used. Set it again.</td></tr>
 <tr><td><em>Notes are required when the plant is not identified</em></td><td>Describe the unidentified plant in Notes.</td></tr>
 <tr><td><em>This species needs a photo. The record will wait for validation</em></td><td>A warning only. Add a photo if you can.</td></tr>
@@ -904,6 +972,8 @@
 <p>Pull the list down to refresh. If it stays empty, an admin has not added you to a project yet.</p>
 <h4>A project disappeared from my list.</h4>
 <p>An admin may have removed you from it. The records you already synced are safe on the server. Ask your admin.</p>
+<h4>I saw a butterfly but I am not on a walk.</h4>
+<p>Use <span class="btn">Free observation</span> on the project home screen, or press and hold on the map. See <a href="#free">Butterflies outside a walk</a>.</p>
 <h4>The distance to the transect is wrong.</h4>
 <p>Tap the location icon on the transect list to take a new position. Indoors, or just after turning on GPS, the position can be poor.</p>
 <h4>The app does not record my route when the screen is off.</h4>
@@ -934,7 +1004,6 @@
 <div class="tablewrap"><table>
 <tr><th>Feature</th><th>What it will do</th></tr>
 <tr><td>Download page and public server</td><td>Install the app from a website and log in, with no server setup at all.</td></tr>
-<tr><td>Free observation</td><td>Record butterflies outside a standard walk: incidental sightings, larval searches and host-plant searches. It will also open by pressing and holding on the map.</td></tr>
 <tr><td>Statistics</td><td>Your own figures offline: visits, true zeros, species, individuals per km and per hour, top 10 species and a weekly chart for a species.</td></tr>
 <tr><td>Add to a finished visit</td><td>Add a forgotten butterfly to a visit you have finished.</td></tr>
 <tr><td>Route proposals</td><td>Record a better route in the field for an admin to accept.</td></tr>
