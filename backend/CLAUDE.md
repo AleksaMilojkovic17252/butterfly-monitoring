@@ -81,6 +81,10 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `save_visit` and `refresh_after_points` call `refresh_route_coverage`, which is server-owned (`_NOT_SYNCED`, `SERVER_OWNED_FIELDS`, the
   admin's `fixed_fields`). The view `public.survey_visit_validity` is the valid-visit rule of protocol §6 for T061 and T101; it is not in
   `geo`, and `pygeoapi_ro` must not get it. `apps/core/geo.py` holds `utm_srid`, which `transects.services` and `surveys.coverage` share.
+- `apps/reports/` (T061, D-099) has three unmanaged models over the views `public.report_transect_indicators`, `report_species_phenology` and
+  `report_behaviour_counts` (created in `0001_initial`, no `pygeoapi_ro` grant) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action.
+  Years and ISO weeks are in the project's time zone. A column change in a source table (`survey_visit`, `butterfly_observation`, `project_protocol`, `transect`) needs a
+  hand-written migration that drops and recreates the views.
 - `apps/accounts/` has `OgcVerifyView` (`/api/v1/auth/verify`, T069, D-080): nginx `auth_request` calls it for `/ogc`, and
   `authentication.py` adds Basic auth with its own failed-login counter. Personal tokens (`rest_framework.authtoken`) are accepted there only.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all

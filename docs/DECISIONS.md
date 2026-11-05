@@ -2126,3 +2126,28 @@ A researcher who finds a transect unwalkable records a **proposal**; an admin tu
     decision (a proposal is only a suggestion). Drawn only: a recorded line cannot be edited afterwards.
 14. **The new transect's code is looked up locally** by `created_transect` in the transects table; until the pull brings the transect the row says "Accepted. Sync to get the new
     transect." The notification channel of the recording is still named "Visit tracking" (`location_source.dart`).
+
+## D-099 · Indicators (T061): three views in `public`, local-time years and weeks, transect-only figures, a small CSV action
+2026-11-05 · accepted · T061, *builds on D-094, D-095 and D-096*
+`report_transect_indicators`, `report_species_phenology` and `report_behaviour_counts` are created in `reports/0001_initial` (`CreateView`, in `public`, no grant to
+`pygeoapi_ro`, never `security_invoker`). `apps/reports` has three unmanaged models over them (single-column key `row_id`, `project` and `transect`/`taxon` as
+`DO_NOTHING` foreign keys without a constraint, so the admin shows names and filters on them) and read-only admins limited to `projects_for(user)`.
+1. **Year and ISO week are in the project's time zone** (`project_protocol.time_zone`, D-094): `started_at AT TIME ZONE time_zone`. A visit at 23:30 UTC on 31 December
+   belongs to January at the study site. Phenology uses `isoyear` and `week` (ISO week 1 can start in December), so its `year` is the ISO year.
+2. **Transect indicators:** only finished visits (`completed`, `synced`, `reviewed`, `locked`, not deleted) and only live `source = transect` records for individuals,
+   observations, species, confirmed, to-review, per-km and per-hour. Effective taxon is `COALESCE(validated_taxon_id, taxon_id)`. `confirmed_obs` is
+   `validation_status = 'confirmed'`, `to_review_obs` is `'pending'`. Transects are joined even when soft-deleted, so their history still counts.
+   Visits are pre-aggregated, so duration and distance are not counted once per observation.
+3. **`valid_visits`** counts rows of `survey_visit_validity` (D-095) with `is_valid`; a visit with no row there counts as not valid.
+4. **Phenology and behaviour** use records of every source, free records included (D-096), and skip deleted records and records of a cancelled or deleted visit.
+5. **Behaviour view has a `year` column** (project × year × behaviour) so the admin's year filter works. One row per distinct value in a record's `behaviour`, plus a
+   synthetic `reproductive` row: `behaviour && {courtship, mating, oviposition}` or `life_stage` in egg, larva, pupa. `records` counts observation records, so a record
+   with two behaviours is in two rows, and `reproductive` is not the sum of anything.
+6. **CSV:** the three admins get their own action "Export selected as CSV" (`csv_chunks` of `apps/exports/writers.py`, relations as `project_id`, no `row_id`).
+   T065 may replace it with the shared export service. The `admin` group gets add/change/delete permissions on the models like on any model (D-085); the admin
+   classes refuse them, and the action needs only `view`.
+7. **The ticket's automated-test criterion is skipped (D-021).** `tmp/t061/smoke.py` (not committed) seeds a fixture in a rolled-back transaction and checks 37 numbers; the
+   fixture is written under T062 so the Dart test can use it.
+**Not handled.** Unconfirmed and undeterminable records still count (a known limit; filter by `validation_status` in the admin to see them). No per-section figures,
+no statistical modelling (done in R). The views read columns of `survey_visit`, `butterfly_observation`, `project_protocol` and `transect`: changing one needs a
+hand-written drop and recreate.

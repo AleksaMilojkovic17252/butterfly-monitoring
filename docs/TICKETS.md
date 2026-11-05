@@ -96,7 +96,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | done |
 | T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | done |
 | T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | todo |
-| T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | todo |
+| T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | done |
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | todo |
 | T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
 | T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | done |
@@ -1233,7 +1233,7 @@ Depends on: T031, T059
 - [ ] The file size is shown before download. Typical: 20–80 MB for a few km².
 
 ### T061 · Indicators: server SQL views and admin report
-[#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) · E09 · P1 · should · labels: `backend`, `admin`, `database`, `should` · implements F35 · est. 1.5 d · **todo**
+[#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) · E09 · P1 · should · labels: `backend`, `admin`, `database`, `should` · implements F35 · est. 1.5 d · **done**
 
 From T100 (added 2026-10-27): if T100 is done, `report_transect_indicators` also has `valid_visits`, using T100's valid-visit rule
 (protocol §6, rules 1–3). If T100 is done after this ticket, T100 adds the column.
@@ -1242,6 +1242,9 @@ From T047 (added 2026-11-05): the criterion already limits per-km and per-hour f
 records (`source` other than `transect`, no visit).
 Note (T100, done 2026-11-05): the rule is the view `public.survey_visit_validity` (`is_valid`, `reasons`); join it on `survey_visit_id` for `valid_visits`.
 `report_transect_indicators.valid_visits` is built here, not in T100.
+
+Note (T061, 2026-11-05): the test criterion is skipped (D-021); it was checked with `tmp/t061/smoke.py` (37 checks, rolled-back fixture). The CSV export is a small
+action of its own on the three report admins (D-099), so T065 does not need to add it for them. Year and ISO week use the project's time zone; see D-099.
 
 Depends on: T041, T044, T058
 
@@ -1254,6 +1257,15 @@ Depends on: T041, T044, T058
 
 ### T062 · App statistics screen
 [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) · E09 · P1 · should · labels: `mobile`, `should` · implements F35 · est. 1.5 d · **todo**
+
+Note (T061, 2026-11-05): use the T061 definitions (D-099): finished visits only, `source = transect` for individuals, species, per-km and per-hour, year and week in the
+project's time zone, ISO weeks for phenology. T061's fixture and expected numbers (project in Europe/Belgrade, target 8):
+V1 (T1, completed 2026-06-01 09:00Z, 3600 s, 1000 m): O1 taxon A ×3 confirmed; O2 taxon B validated as C ×2 pending; O3 taxon A ×1 deleted.
+V2 (T1, completed 2026-06-08, 1800 s, 500 m, zero confirmed). V3 (T1, cancelled) with O4 taxon A ×4. V4 (T1, in progress). V5 (T2, completed 2025-12-31 23:30Z, 600 s, 0 m).
+F: free record, no visit, taxon D ×1, 2026-06-03 10:00Z.
+T1 / 2026: visits 2, true zeros 1, hours 1.50, km 1.50, species 2 (A, C), individuals 5, observations 2, confirmed 1, to review 1, per km 3.33, per hour 3.33.
+T2: year 2026 (not 2025), km 0.00, per km empty, per hour 0.00, individuals 0.
+Phenology, 2026 ISO week 23: A 3 individuals / 1 record, C 2 / 1, D 1 / 1 (free record counts); none for B. Behaviour 2026: mating 1, flying 1, reproductive 2.
 
 Depends on: T041, T044
 
@@ -1319,6 +1331,8 @@ Found while checking: the demo data has one observation stored at lon 0.0002, la
 [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) · E09 · P1 · should · labels: `admin`, `should` · implements F67 · est. 1 d · **todo**
 
 Depends on: T064
+
+Note (T061, 2026-11-05): the three report admins already have their own "Export selected as CSV" action (`apps/reports/admin.py`, D-099). Switch it to the shared export service here, or leave it and say so.
 
 - [ ] Actions **Export selected as CSV** and **Export selected as GeoJSON** on visits, observations, plant resources, habitat features, transects, validation events and the report views.
 - [ ] An **Export project bundle (ZIP)** button on the project change page (small `change_form` template override with an object-tools link).
