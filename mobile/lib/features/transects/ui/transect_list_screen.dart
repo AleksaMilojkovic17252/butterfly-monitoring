@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
+import 'package:mobile/features/proposals/data/route_recording_repository.dart';
+import 'package:mobile/features/proposals/ui/draw_proposal_entry.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/ui/widgets/transect_tile.dart';
+import 'package:mobile/features/visits/data/visit_repository.dart';
 
 /// The two orders of the list.
 enum _Sort { code, distance }
@@ -101,6 +105,7 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
                   )
                 : const Icon(Icons.my_location),
           ),
+          _proposalsMenu(),
         ],
       ),
       body: SafeArea(
@@ -110,6 +115,51 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
           AsyncError(:final error) => Center(child: Text('$error')),
           _ => const Center(child: CircularProgressIndicator()),
         },
+      ),
+    );
+  }
+
+  /// The app bar menu of route proposals (T108). Propose a route is off while
+  /// a visit is in progress: one GPS stream at a time (D-087).
+  Widget _proposalsMenu() {
+    final visitRunning = ref.watch(deviceVisitInProgressProvider).value != null;
+    final base = '/projects/${widget.projectId}/proposals';
+    return PopupMenuButton<String>(
+      tooltip: 'Route proposals',
+      onSelected: (value) => switch (value) {
+        'record' => context.push('$base/record'),
+        'draw' => openDrawProposal(context, ref, widget.projectId),
+        _ => context.push(base),
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'record',
+          enabled: !visitRunning,
+          child: Text(
+            visitRunning
+                ? 'Propose a route (finish the visit in progress first)'
+                : 'Propose a route',
+          ),
+        ),
+        // Drawing needs no GPS, so it is allowed during a visit.
+        const PopupMenuItem(value: 'draw', child: Text('Draw a route on map')),
+        const PopupMenuItem(value: 'list', child: Text('My proposals')),
+      ],
+    );
+  }
+
+  /// The card shown while a route recording is open, to get back to it.
+  Widget _recordingCard(RouteRecording recording) {
+    final replaces = recording.replacesTransectId;
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.fiber_manual_record, color: Colors.red),
+        title: const Text('Route recording in progress'),
+        trailing: const Text('Open'),
+        onTap: () => context.push(
+          '/projects/${recording.projectId}/proposals/record'
+          '${replaces == null ? '' : '?replaces=$replaces'}',
+        ),
       ),
     );
   }
@@ -170,8 +220,11 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
     }
     // Sorting by code needs nothing: the query already returns that order.
 
+    final recording = ref.watch(openRecordingProvider).value;
+
     return Column(
       children: [
+        if (recording != null) _recordingCard(recording),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
           child: TextField(

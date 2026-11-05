@@ -11,6 +11,8 @@ import 'package:mobile/core/db/plant_resource_observations.dart';
 import 'package:mobile/core/db/plant_taxa.dart';
 import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
+import 'package:mobile/core/db/route_recording_points.dart';
+import 'package:mobile/core/db/route_recordings.dart';
 import 'package:mobile/core/db/survey_track_points.dart';
 import 'package:mobile/core/db/survey_visits.dart';
 import 'package:mobile/core/db/sync_conflicts.dart';
@@ -21,6 +23,7 @@ import 'package:mobile/core/db/search_text.dart';
 import 'package:mobile/core/db/taxa.dart';
 import 'package:mobile/core/db/taxon_list_versions.dart';
 import 'package:mobile/core/db/taxon_usages.dart';
+import 'package:mobile/core/db/transect_proposals.dart';
 import 'package:mobile/core/db/transect_sections.dart';
 import 'package:mobile/core/db/transects.dart';
 
@@ -45,15 +48,18 @@ part 'app_database.g.dart';
     Taxa,
     TaxonListVersions,
     TaxonUsages,
+    TransectProposals,
     TransectSections,
     Transects,
+    RouteRecordings,
+    RouteRecordingPoints,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -188,6 +194,18 @@ class AppDatabase extends _$AppDatabase {
         // The server added time_zone without changing any row's server_version,
         // so pull would never send it. Start every pull from the beginning, as
         // from13To14 did. Rows waiting in the queue are not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from15To16: (m, schema) async {
+        await m.createTable(schema.transectProposal);
+        await m.createTable(schema.routeRecording);
+        await m.createTable(schema.routeRecordingPoint);
+        // Proposals the server sent before this version had no table here, so
+        // pull skipped them and moved its cursor past them. Start every pull
+        // from the beginning, as from13To14 did. Rows waiting in the queue are
+        // not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

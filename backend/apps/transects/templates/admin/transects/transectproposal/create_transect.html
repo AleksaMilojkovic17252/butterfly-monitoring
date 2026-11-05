@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Make an <strong>inactive</strong> transect from the route proposal
+  <strong>{{ proposal.name }}</strong> ({{ proposal.project }}, {{ proposal.length_m|default_if_none:"?" }} m).
+  Afterwards, cut its sections, then tick Active and save.</p>
+{% if proposal.replaces_transect %}
+<p>It proposes to replace <strong>{{ proposal.replaces_transect }}</strong>. That transect's line is
+  never changed.</p>
+{% endif %}
+<p>Codes already used in {{ proposal.project }} (a deleted transect keeps its code):
+  {% for code, deleted in used_codes %}<code>{{ code }}</code>{% if deleted %} (deleted){% endif %}{% if not forloop.last %}, {% endif %}{% empty %}none{% endfor %}</p>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="create_transect">
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ proposal.pk }}">
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Create transect">
+  <a href="{% url 'admin:transects_transectproposal_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

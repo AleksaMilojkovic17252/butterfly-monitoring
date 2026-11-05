@@ -7,6 +7,7 @@ import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/location/walk_positions.dart';
+import 'package:mobile/features/proposals/domain/route_recorder.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -230,8 +231,11 @@ class _GeometryCaptureWidgetState extends ConsumerState<GeometryCaptureWidget> {
   /// is none.
   Future<LatLng?> _currentFix() async {
     final tracking = ref.read(trackingControllerProvider);
+    final recorder = ref.read(routeRecorderProvider);
     final live = tracking.recording && !tracking.paused
         ? tracking.lastPosition
+        : recorder.recording && !recorder.paused
+        ? recorder.lastPosition
         : null;
     if (live != null) return LatLng(live.latitude, live.longitude);
     try {
@@ -432,7 +436,9 @@ class _GeometryCaptureWidgetState extends ConsumerState<GeometryCaptureWidget> {
   /// new place unrequested until the user touched the map (found on the phone,
   /// T052).
   void _chooseStartCamera() {
-    final tracker = ref.read(trackingControllerProvider).lastPosition;
+    final tracker =
+        ref.read(trackingControllerProvider).lastPosition ??
+        ref.read(routeRecorderProvider).lastPosition;
     final lines = [for (final line in widget.referenceLines) ...line];
     if (_points.length == 1) {
       _startCenter = _points.first;
@@ -495,13 +501,26 @@ class _GeometryCaptureWidgetState extends ConsumerState<GeometryCaptureWidget> {
       ),
     );
 
+    // Whether a route recording (T108) owns the GPS.
+    final recorderRunning = ref.watch(
+      routeRecorderProvider.select((r) => r.recording && !r.paused),
+    );
+
     // Only while walking, and from only one source: geolocator keeps one
-    // stream for the app, so during a visit the tracker's fixes are used and
-    // our own stream is never started (D-087). Not listening lets the provider
-    // dispose, which releases the GPS.
+    // stream for the app, so during a visit the tracker's fixes are used, and
+    // during a route recording the recorder's, and our own stream is never
+    // started (D-087). Not listening lets the provider dispose, which
+    // releases the GPS.
     if (_walking) {
       if (tracker.running) {
         ref.listen(trackingControllerProvider.select((t) => t.lastPosition), (
+          _,
+          position,
+        ) {
+          if (position != null) _onFix(position);
+        });
+      } else if (recorderRunning) {
+        ref.listen(routeRecorderProvider.select((r) => r.lastPosition), (
           _,
           position,
         ) {
@@ -553,6 +572,9 @@ class _GeometryCaptureWidgetState extends ConsumerState<GeometryCaptureWidget> {
                   tracker.running
                       ? 'A fix every ${tracker.intervalS ?? '?'} s during a '
                             'visit. Walk slowly, or use tap for small patches.'
+                      : recorderRunning
+                      ? 'Fixes come from the route recording. Walk slowly, '
+                            'or use tap for small patches.'
                       : 'Walk along the edge of the patch. A corner is kept '
                             'about every 2 m.',
                   scheme.onSurfaceVariant,

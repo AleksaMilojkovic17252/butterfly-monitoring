@@ -57,6 +57,12 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   endpoints and the read-only admin (`ReadOnlyGeometryAdmin` is the shared base). Observations link to a plant record
   (`host_plant_record`, `nectar_plant_record`) and a `Photo` can belong to one (a habitat feature has no photos); `observations.services` imports
   `resources.services`, never the reverse.
+- `apps/transects/` also holds `TransectProposal` (T108, D-098): a route the phone recorded, pushed like a plant record (the
+  proposer is `created_by`; `status`, the review fields, `created_transect` and `length_m` are server-owned; `guard_proposal` refuses
+  any change after a review with `proposal_reviewed`). Its rules are `transects/rules.py`, and `services.accept_proposal` /
+  `reject_proposal` are the only review path: the admin actions "Create transect" (an inactive transect, the replaced one only
+  deactivated) and "Reject" call them. `ReadOnlyMapMixin.location_map_reference()` can draw a second, dashed geometry
+  (`data-reference-geojson` in `readonly_map.js`).
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
   `save_visit` calls for a finished visit (D-076).
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the

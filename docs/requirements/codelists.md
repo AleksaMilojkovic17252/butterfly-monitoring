@@ -49,6 +49,13 @@ allowed): `none`, `low`, `medium`, `high` **(proposed)**.
 **Disturbance** (`disturbance_type`; blank allowed): `none`, `trampling`, `vehicle_tracks`, `fire`,
 `erosion`, `dumping`, `other` **(proposed)**.
 
+## Route proposals
+
+**Proposal reason** (`TransectProposal.reason`): `private_property`, `unsafe`, `impassable`,
+`better_route`, `other`.
+
+**Proposal status** (`status`; set by the server, default `pending`): `pending`, `accepted`, `rejected`.
+
 ## Visit
 
 **Visit status** (`status`; default `draft`): `draft`, `in_progress`, `completed`, `synced`,

@@ -48,6 +48,8 @@ class PullApplier {
         _store(_db.plantResourceObservations, rows, _plantResource),
     'habitat_feature': (rows) =>
         _store(_db.habitatFeatures, rows, _habitatFeature),
+    'transect_proposal': (rows) =>
+        _store(_db.transectProposals, rows, _transectProposal),
   };
 
   /// Applies one page of [projectId] and saves its cursor, in one transaction:
@@ -681,6 +683,43 @@ class PullApplier {
       mowingStatus: Value(json['mowing_status'] as String),
       disturbanceType: Value(json['disturbance_type'] as String),
       notes: Value(json['notes'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      createdById: Value(json['created_by'] as String?),
+      syncStatus: const Value(SyncStatus.synced),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// A route proposal the caller made (T108). The geometry is a GeoJSON
+  /// LineString, kept as text. The review fields (`status`, `review_note`,
+  /// `reviewed_at`, `created_transect`) and `length_m` belong to the server and
+  /// are always written, so a proposal reviewed on the server shows it here.
+  /// `reviewed_by` is not kept.
+  static TransectProposalsCompanion _transectProposal(_Json json) {
+    final geometry = jsonEncode(json['geometry']);
+    final parsed = parseGeometry(geometry);
+    if (parsed == null || parsed.type != 'LineString') {
+      throw FormatException(
+        'Route proposal ${json['id']} has no usable geometry',
+      );
+    }
+    final reviewedAt = json['reviewed_at'] as String?;
+    return TransectProposalsCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      name: json['name'] as String,
+      reason: json['reason'] as String,
+      replacesTransectId: Value(json['replaces_transect'] as String?),
+      notes: Value(json['notes'] as String),
+      geometryGeojson: geometry,
+      recordedFrom: DateTime.parse(json['recorded_from'] as String),
+      recordedTo: DateTime.parse(json['recorded_to'] as String),
+      lengthM: Value(_decimalOrNull(json['length_m'])),
+      status: Value(json['status'] as String),
+      reviewNote: Value(json['review_note'] as String),
+      reviewedAt: Value(reviewedAt == null ? null : DateTime.parse(reviewedAt)),
+      createdTransectId: Value(json['created_transect'] as String?),
       createdAt: DateTime.parse(json['created_at'] as String),
       createdById: Value(json['created_by'] as String?),
       syncStatus: const Value(SyncStatus.synced),

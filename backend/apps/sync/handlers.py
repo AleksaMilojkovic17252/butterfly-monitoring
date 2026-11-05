@@ -47,7 +47,8 @@ class PushHandlers:
     update. A missing one fails at import, not on the first conflict.
     `guard`, when set, runs on the loaded row after the ownership and deleted checks and before the
     base_version check, so a row that may not change at all (a locked visit, T042) is rejected
-    instead of being merged or turned into a conflict.
+    instead of being merged or turned into a conflict. `guard_resent_create=False` exempts a resent
+    create.
     """
 
     create: Callable[..., Any] | None = None  # (user, entity_id, data) -> instance
@@ -56,6 +57,10 @@ class PushHandlers:
     create_batch: Callable[..., Any] | None = None  # (user, entity_id, rows) -> None
     project_of: Callable[..., Any] | None = None  # (instance) -> Project
     guard: Callable[..., Any] | None = None  # (user, instance) -> None; raises to reject
+    # False: `guard` is skipped for a resent create, so an exact resend of a create the server
+    # already applied is still answered `merged` after the row became unchangeable (a reviewed
+    # route proposal, T108). The update handler must then refuse any real change itself.
+    guard_resent_create: bool = True
 
     def __post_init__(self):
         if (self.create or self.update or self.delete) and self.project_of is None:

@@ -3,7 +3,7 @@
 Written for T055 from outline §13.1. Each rule has an ID. The server (Django) and the app (Dart) both
 implement it and name the ID in a comment, and each rule has a test on each side.
 
-- **Hard rules (V01–V08)** reject on the server and block the save in the app.
+- **Hard rules (V01–V09)** reject on the server and block the save in the app.
 - **Warnings (W01–W04, W06, W07)** never reject. The record is saved, and the app shows the warning.
 - **The server is authoritative.** The app repeats the rules only to answer straight away, offline.
 - **Error shape.** A hard rule comes back as
@@ -12,7 +12,7 @@ implement it and name the ID in a comment, and each rule has a test on each side
 - **W05** (species outside its known range) is out of scope: there is no distribution data.
 
 Server code: `backend/apps/observations/rules.py`, `backend/apps/surveys/rules.py` and, for plant records
-(T051) and habitat features (T053), `backend/apps/resources/rules.py`. The hard rules are called from
+(T051) and habitat features (T053), `backend/apps/resources/rules.py`, and for route proposals (T108) `backend/apps/transects/rules.py`. The hard rules are called from
 `save_observation`, `save_visit`, `save_plant_resource` and `save_habitat_feature`, so REST, push and admin are all covered. The warning
 functions (`observation_warnings`, `visit_warnings`) are not called by the services: warnings are not stored
 on the server, except W01, which sets `validation_status` on create (`photo_missing`) and again when a recorder changes the taxon or
@@ -24,13 +24,13 @@ confidence of an undecided record (D-091). App code:
 | ID | Level | Entity | Rule | Field(s) reported | Server function | App function | Where the app shows it |
 |---|---|---|---|---|---|---|---|
 | V01 | hard | observation | `count` ≥ 1 | `count` | `observations.rules._v01_count` | `observation_rules.dart` `_v01Count` | quick entry sheet (error text) |
-| V02 | hard | observation, plant record, habitat feature | `observed_at` and `geometry` are both present | `observed_at`, `geometry` | `observations.rules._v02_required`, `resources.rules._v02_required` | `_v02Required` (plant records: `plant_rules.dart`, T052) | quick entry sheet |
+| V02 | hard | observation, plant record, habitat feature, route proposal | `observed_at` and `geometry` are both present; for a route proposal `name`, `reason`, `geometry`, `recorded_from` and `recorded_to` | `observed_at`, `geometry`; proposal: the missing field | `observations.rules._v02_required`, `resources.rules._v02_required`, `transects.rules.validate_proposal` | `_v02Required` (plant records: `plant_rules.dart`, T052; proposals: `proposal_rules.dart`, T108) | quick entry sheet |
 | V03 | hard | observation | a `source = transect` observation is on a visit in `in_progress`, `completed`, `synced` or `reviewed`, or on a `cancelled` visit that was started (`started_at` is set); never `draft`, `locked`, or a `cancelled` visit that was never started | `survey_visit` | `observations.rules._v03_visit_status` | `_v03VisitStatus` | quick entry sheet; sync screen for a rejected item |
 | V04 | hard | observation | `observed_at` is in `[started_at − tol, ended_at + tol]` of its visit; with no `ended_at` only the lower bound applies; `tol` = `observation_time_tolerance_min` | `observed_at` | `observations.rules._v04_observed_at` | `_v04ObservedAt` | quick entry sheet |
 | V05 | hard | visit | in status `completed`, `synced`, `reviewed` or `locked`: start and end temperature, wind and cloud are all set, or `weather_missing_reason` is not blank | each missing weather field | `surveys.rules._v05_weather` | `visit_rules.dart` `_v05Weather` | visit write (finish form from T040) |
 | V06 | hard | visit and observation | true-zero consistency, see below | visit: `zero_observation_confirmed`; observation: `survey_visit` | `surveys.rules._v06_visit`, `observations.rules._v06_observation` | `_v06Visit`, `_v06Observation` | quick entry sheet; finish (T040/T041) |
-| V07 | hard | observation, visit, plant record, habitat feature | the value is in the codelist | the field | `observations.rules._v07_choices`, `surveys.rules._v07_choices`, `resources.rules._v07_choices` | `_v07Choices` (plant records: `plant_rules.dart`, T052) | any write |
-| V08 | hard | observation, plant record, habitat feature | `geometry` is a non-empty, valid Point with longitude −180..180 and latitude −90..90; for a plant record a Point or a Polygon, for a habitat feature a Point, a LineString or a Polygon, two-dimensional, all of it inside those limits | `geometry` | `observations.rules._v08_geometry`, `resources.rules._v08_geometry` | `_v08Geometry` (plant records: `plant_rules.dart`, T052; the ring test is `polygonSelfIntersects`) | quick entry sheet |
+| V07 | hard | observation, visit, plant record, habitat feature, route proposal | the value is in the codelist (proposal: `reason`) | the field | `observations.rules._v07_choices`, `surveys.rules._v07_choices`, `resources.rules._v07_choices`, `transects.rules.validate_proposal` | `_v07Choices` (plant records: `plant_rules.dart`, T052; proposals: `proposal_rules.dart`, T108) | any write |
+| V08 | hard | observation, plant record, habitat feature, route proposal | `geometry` is a non-empty, valid Point with longitude −180..180 and latitude −90..90; for a plant record a Point or a Polygon, for a habitat feature a Point, a LineString or a Polygon; for a route proposal a LineString of at least two distinct points (a line that crosses itself is valid); two-dimensional, all of it inside those limits | `geometry` | `observations.rules._v08_geometry`, `resources.rules._v08_geometry` (shared `is_valid_geometry`), `transects.rules.validate_proposal` | `_v08Geometry` (plant records: `plant_rules.dart`, T052; the ring test is `polygonSelfIntersects`; proposals: `proposal_rules.dart`, T108) | quick entry sheet |
 | V09 | hard | visit | in status `cancelled`: `cancel_reason = not_conducted` exactly when `started_at` is empty | `cancel_reason` | `surveys.rules._v09_cancel_reason` | `visit_rules.dart` `_v09CancelReason` | cancel sheet (Finish screen), "Not conducted…" on the start form |
 | W01 | warning | observation | the taxon has `photo_required` and the observation has no photo: `validation_status = pending` | – | `observations.rules.photo_missing` | `photoMissing` | line above Save in the quick entry sheet |
 | W02 | warning | observation | `location_accuracy_m` > `gps_accuracy_warning_m` | – | `observations.rules._w02_poor_accuracy` | `isPoorAccuracy` | position line in the quick entry sheet |
@@ -86,6 +86,12 @@ confidence of an undecided record (D-091). App code:
   covers it). The app's copy is `mobile/lib/core/validation/habitat_rules.dart` (T054: `validateHabitatFeature`, V08 for the
   three shapes with `polygonSelfIntersects`) with the values in `habitat_values.dart`, plus `vegetationHeightProblem` for the height (0 to
   32767, the server's smallint). The cover slider cannot produce a bad percentage.
+- **Route proposals (T108).** Only V02, V07 and V08 apply. V02 lists `name` (not blank), `reason`, `geometry`,
+  `recorded_from` and `recorded_to`; V07 is `reason`; V08 takes a LineString of two or more distinct points, so a
+  line of one point, of two identical points, a longitude of 500, a Z coordinate and a Point are all
+  `{"geometry": ["V08"]}`. A walked route may cross itself, and PostGIS accepts it, so there is no crossing test.
+  `recorded_to` before `recorded_from` is a plain sentence on `recorded_to`. The server rules are
+  `transects.rules.validate_proposal`, called by `save_proposal`.
 - **W07.** The season is compared by local calendar date (both end days are inside), the daily window by
   local wall-clock minute (both ends are inside). "Local" is the time zone of the study site, which the
   protocol holds as `time_zone` (an IANA name, default `Europe/Belgrade`, set per project in the admin). The

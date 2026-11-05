@@ -11,20 +11,30 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
+from apps.core.admin import HistoryAdmin, MapAdmin, ReadOnlyMapMixin, SyncableAdmin
 from apps.core.history import save_with_reason
 from apps.core.widgets import LineMapWidget
-from apps.transects.forms import GenerateSectionsForm, LineImportForm
-from apps.transects.models import Transect, TransectSection
+from apps.transects.forms import (
+    CreateTransectFromProposalForm,
+    GenerateSectionsForm,
+    LineImportForm,
+    RejectProposalForm,
+)
+from apps.transects.models import ProposalStatus, Transect, TransectProposal, TransectSection
 from apps.transects.services import (
     SECTION_TOLERANCE_M,
     LineFileError,
+    ProposalReviewError,
     SectionGenerationError,
+    accept_proposal,
     generate_sections,
     linestring_from_file,
+    reject_proposal,
     section_length_mismatch,
+    transect_codes_in_use,
     with_stats,
 )
 
@@ -121,7 +131,12 @@ class TransectAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     # Soft delete and restore are list actions, so the field is not edited on the form.
     exclude = ["deleted_at"]
     inlines = [TransectSectionInline]
-    actions = [*SyncableAdmin.actions, "generate_equal_sections"]
+    actions = [
+        *SyncableAdmin.actions,
+        "generate_equal_sections",
+        "activate_selected",
+        "deactivate_selected",
+    ]
     change_form_template = "admin/transects/transect_change_form.html"
     gis_widget = LineMapWidget
     gis_widget_kwargs = line_widget_kwargs(
@@ -231,6 +246,38 @@ class TransectAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
         }
         return TemplateResponse(request, "admin/transects/generate_sections.html", context)
 
+    @admin.action(description=_("Activate selected transects"), permissions=["change"])
+    def activate_selected(self, request, queryset):
+        """Set transects to active without opening each one (T108: the last step after cutting
+        the sections of a transect made from a route proposal). One save per row, so history
+        and the sync trigger fire. A transect without sections is activated but named."""
+        activated, without_sections = 0, []
+        # `section_count` comes from `with_stats` in get_queryset: no query per row.
+        for transect in queryset.filter(deleted_at__isnull=True, active=False):
+            transect.active = True
+            save_with_reason(transect, request.user, "Activated from the list")
+            activated += 1
+            if transect.section_count == 0:
+                without_sections.append(transect.code)
+        self.message_user(request, _("Activated %(n)d transect(s).") % {"n": activated})
+        if without_sections:
+            self.message_user(
+                request,
+                _("No sections yet: %(codes)s. Visits on them cannot be assigned to a section.")
+                % {"codes": ", ".join(without_sections)},
+                messages.WARNING,
+            )
+
+    @admin.action(description=_("Deactivate selected transects"), permissions=["change"])
+    def deactivate_selected(self, request, queryset):
+        """Set transects to inactive. Their lines and visits stay as they are."""
+        deactivated = 0
+        for transect in queryset.filter(deleted_at__isnull=True, active=True):
+            transect.active = False
+            save_with_reason(transect, request.user, "Deactivated from the list")
+            deactivated += 1
+        self.message_user(request, _("Deactivated %(n)d transect(s).") % {"n": deactivated})
+
     def save_formset(self, request, form, formset, change):
         # commit=False leaves removed rows in `deleted_objects` instead of erasing them. They go
         # first so that a code or number they held can be reused by a row saved in the same form.
@@ -318,3 +365,182 @@ class TransectSectionAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(TransectProposal)
+class TransectProposalAdmin(ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
+    """Route proposals recorded on the phone (T108). Read-only: the admin reviews them with the
+    two actions. "Create transect" makes an inactive transect from the line; the admin cuts its
+    sections (T022) and ticks Active. "Reject" needs a reason."""
+
+    list_display = [
+        "recorded_from",
+        "name",
+        "project",
+        "proposer",
+        "reason",
+        "status",
+        "length_m",
+        "replaces_transect",
+        "new_transect",
+    ]
+    list_filter = ["project", "status", "reason"]
+    search_fields = ["name", "notes"]
+    ordering = ["-recorded_from"]
+    list_select_related = [
+        "project",
+        "created_by",
+        "replaces_transect",
+        "created_transect",
+    ]
+    actions = ["create_transect", "reject_proposals"]
+
+    def get_fields(self, request, obj=None):
+        names = [field.name for field in self.model._meta.fields]
+        names.insert(names.index("geometry") + 1, "location_map")
+        # The links replace the plain foreign keys, which show only the transect's text.
+        names[names.index("replaces_transect")] = "replaced_transect_link"
+        names[names.index("created_transect")] = "created_transect_link"
+        return names
+
+    def get_readonly_fields(self, request, obj=None):
+        return [*self.get_fields(request, obj)]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        # The list actions need change permission, but a proposal has nothing to edit: its page
+        # is view-only.
+        return obj is None and super().has_change_permission(request)
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        # Soft delete and restore do not apply: a proposal is accepted or rejected.
+        for name in ("soft_delete_selected", "restore_selected"):
+            actions.pop(name, None)
+        return actions
+
+    def location_map_reference(self, record):
+        replaced = record.replaces_transect
+        return replaced.geometry if replaced is not None else None
+
+    @admin.display(description=_("Proposer"), ordering="created_by__email")
+    def proposer(self, proposal):
+        return proposal.created_by
+
+    @admin.display(description=_("New transect"), ordering="created_transect__code")
+    def new_transect(self, proposal):
+        return self._transect_link(proposal.created_transect)
+
+    @admin.display(description=_("Replaces transect"))
+    def replaced_transect_link(self, proposal):
+        return self._transect_link(proposal.replaces_transect)
+
+    @admin.display(description=_("Created transect"))
+    def created_transect_link(self, proposal):
+        return self._transect_link(proposal.created_transect)
+
+    @staticmethod
+    def _transect_link(transect):
+        if transect is None:
+            return "-"
+        return format_html(
+            '<a href="{}">{}</a>',
+            reverse("admin:transects_transect_change", args=[transect.pk]),
+            transect,
+        )
+
+    def _selected_pending(self, request, queryset):
+        return list(
+            queryset.filter(deleted_at__isnull=True, status=ProposalStatus.PENDING).select_related(
+                "project", "created_by", "replaces_transect"
+            )
+        )
+
+    @admin.action(description=_("Create transect from proposal…"), permissions=["change"])
+    def create_transect(self, request, queryset):
+        if queryset.count() != 1:
+            self.message_user(request, _("Select exactly one proposal."), messages.ERROR)
+            return None
+        proposals = self._selected_pending(request, queryset)
+        if not proposals:
+            self.message_user(
+                request, _("Only a pending proposal can be accepted."), messages.ERROR
+            )
+            return None
+        proposal = proposals[0]
+        applying = "apply" in request.POST
+        form = CreateTransectFromProposalForm(request.POST if applying else None, proposal=proposal)
+        # The changelist posts the action; the confirm page posts back with "apply".
+        if applying and form.is_valid():
+            data = form.cleaned_data
+            try:
+                transect = accept_proposal(
+                    proposal.pk,
+                    request.user,
+                    code=data["code"],
+                    name=data["name"],
+                    deactivate_replaced=data.get("deactivate_replaced", False),
+                )
+            except ProposalReviewError as exc:
+                form.add_error(None, str(exc))
+            else:
+                self.message_user(
+                    request,
+                    _(
+                        "Created transect %(code)s (inactive). Cut its sections, then tick "
+                        "Active and save."
+                    )
+                    % {"code": transect.code},
+                )
+                return redirect("admin:transects_transect_change", transect.pk)
+        context = {
+            **self.admin_site.each_context(request),
+            "title": _("Create transect from proposal"),
+            "opts": self.model._meta,
+            "proposal": proposal,
+            "used_codes": transect_codes_in_use(proposal.project_id),
+            "form": form,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        return TemplateResponse(
+            request, "admin/transects/transectproposal/create_transect.html", context
+        )
+
+    @admin.action(description=_("Reject…"), permissions=["change"])
+    def reject_proposals(self, request, queryset):
+        proposals = self._selected_pending(request, queryset)
+        skipped = queryset.filter(deleted_at__isnull=True).count() - len(proposals)
+        if not proposals:
+            self.message_user(request, _("Select at least one pending proposal."), messages.ERROR)
+            return None
+        applying = "apply" in request.POST
+        form = RejectProposalForm(request.POST if applying else None)
+        if applying and form.is_valid():
+            rejected = 0
+            for proposal in proposals:
+                try:
+                    reject_proposal(proposal.pk, request.user, form.cleaned_data["note"])
+                except ProposalReviewError as exc:
+                    self.message_user(request, f"{proposal.name}: {exc}", messages.WARNING)
+                else:
+                    rejected += 1
+            if skipped:
+                self.message_user(
+                    request,
+                    _("Skipped %(n)d proposal(s) that were not pending.") % {"n": skipped},
+                    messages.WARNING,
+                )
+            self.message_user(request, _("Rejected %(n)d proposal(s).") % {"n": rejected})
+            return None
+        context = {
+            **self.admin_site.each_context(request),
+            "title": _("Reject proposals"),
+            "opts": self.model._meta,
+            "proposals": proposals,
+            "skipped": skipped,
+            "form": form,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        return TemplateResponse(request, "admin/transects/transectproposal/reject.html", context)

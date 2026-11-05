@@ -16483,6 +16483,1117 @@ class TaxonUsagesCompanion extends UpdateCompanion<TaxonUsage> {
   }
 }
 
+class $TransectProposalsTable extends TransectProposals
+    with TableInfo<$TransectProposalsTable, TransectProposal> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransectProposalsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SyncStatus.pending.name),
+      ).withConverter<SyncStatus>($TransectProposalsTable.$convertersyncStatus);
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _replacesTransectIdMeta =
+      const VerificationMeta('replacesTransectId');
+  @override
+  late final GeneratedColumn<String> replacesTransectId =
+      GeneratedColumn<String>(
+        'replaces_transect_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _geometryGeojsonMeta = const VerificationMeta(
+    'geometryGeojson',
+  );
+  @override
+  late final GeneratedColumn<String> geometryGeojson = GeneratedColumn<String>(
+    'geometry_geojson',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordedFromMeta = const VerificationMeta(
+    'recordedFrom',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recordedFrom = GeneratedColumn<DateTime>(
+    'recorded_from',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordedToMeta = const VerificationMeta(
+    'recordedTo',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recordedTo = GeneratedColumn<DateTime>(
+    'recorded_to',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lengthMMeta = const VerificationMeta(
+    'lengthM',
+  );
+  @override
+  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
+    'length_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _reviewNoteMeta = const VerificationMeta(
+    'reviewNote',
+  );
+  @override
+  late final GeneratedColumn<String> reviewNote = GeneratedColumn<String>(
+    'review_note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _reviewedAtMeta = const VerificationMeta(
+    'reviewedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reviewedAt = GeneratedColumn<DateTime>(
+    'reviewed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdTransectIdMeta = const VerificationMeta(
+    'createdTransectId',
+  );
+  @override
+  late final GeneratedColumn<String> createdTransectId =
+      GeneratedColumn<String>(
+        'created_transect_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    name,
+    reason,
+    replacesTransectId,
+    notes,
+    geometryGeojson,
+    recordedFrom,
+    recordedTo,
+    lengthM,
+    status,
+    reviewNote,
+    reviewedAt,
+    createdTransectId,
+    createdAt,
+    createdById,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transect_proposal';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransectProposal> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('replaces_transect_id')) {
+      context.handle(
+        _replacesTransectIdMeta,
+        replacesTransectId.isAcceptableOrUnknown(
+          data['replaces_transect_id']!,
+          _replacesTransectIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('geometry_geojson')) {
+      context.handle(
+        _geometryGeojsonMeta,
+        geometryGeojson.isAcceptableOrUnknown(
+          data['geometry_geojson']!,
+          _geometryGeojsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_geometryGeojsonMeta);
+    }
+    if (data.containsKey('recorded_from')) {
+      context.handle(
+        _recordedFromMeta,
+        recordedFrom.isAcceptableOrUnknown(
+          data['recorded_from']!,
+          _recordedFromMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedFromMeta);
+    }
+    if (data.containsKey('recorded_to')) {
+      context.handle(
+        _recordedToMeta,
+        recordedTo.isAcceptableOrUnknown(data['recorded_to']!, _recordedToMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedToMeta);
+    }
+    if (data.containsKey('length_m')) {
+      context.handle(
+        _lengthMMeta,
+        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('review_note')) {
+      context.handle(
+        _reviewNoteMeta,
+        reviewNote.isAcceptableOrUnknown(data['review_note']!, _reviewNoteMeta),
+      );
+    }
+    if (data.containsKey('reviewed_at')) {
+      context.handle(
+        _reviewedAtMeta,
+        reviewedAt.isAcceptableOrUnknown(data['reviewed_at']!, _reviewedAtMeta),
+      );
+    }
+    if (data.containsKey('created_transect_id')) {
+      context.handle(
+        _createdTransectIdMeta,
+        createdTransectId.isAcceptableOrUnknown(
+          data['created_transect_id']!,
+          _createdTransectIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TransectProposal map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransectProposal(
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      syncStatus: $TransectProposalsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      )!,
+      replacesTransectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}replaces_transect_id'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      geometryGeojson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geometry_geojson'],
+      )!,
+      recordedFrom: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recorded_from'],
+      )!,
+      recordedTo: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recorded_to'],
+      )!,
+      lengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}length_m'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      reviewNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}review_note'],
+      )!,
+      reviewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}reviewed_at'],
+      ),
+      createdTransectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_transect_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+    );
+  }
+
+  @override
+  $TransectProposalsTable createAlias(String alias) {
+    return $TransectProposalsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class TransectProposal extends DataClass
+    implements Insertable<TransectProposal> {
+  /// Version the server last gave this row; null until pushed.
+  final int? serverVersion;
+  final SyncStatus syncStatus;
+
+  /// Set by a soft delete.
+  final DateTime? deletedAt;
+  final String id;
+  final String projectId;
+  final String name;
+
+  /// `private_property`, `unsafe`, `impassable`, `better_route` or `other`.
+  final String reason;
+
+  /// The transect this route would replace; null for a new route.
+  final String? replacesTransectId;
+  final String notes;
+
+  /// GeoJSON text of the LineString.
+  final String geometryGeojson;
+
+  /// Times of the first and last GPS fix in the line (UTC).
+  final DateTime recordedFrom;
+  final DateTime recordedTo;
+
+  /// Length in metres, worked out by the server; null until pull.
+  final double? lengthM;
+
+  /// `pending`, `accepted` or `rejected`; set by the server only.
+  final String status;
+  final String reviewNote;
+  final DateTime? reviewedAt;
+
+  /// The inactive transect an admin made from the proposal.
+  final String? createdTransectId;
+  final DateTime createdAt;
+
+  /// Who made the proposal; set when it is written here, and by pull.
+  final String? createdById;
+  const TransectProposal({
+    this.serverVersion,
+    required this.syncStatus,
+    this.deletedAt,
+    required this.id,
+    required this.projectId,
+    required this.name,
+    required this.reason,
+    this.replacesTransectId,
+    required this.notes,
+    required this.geometryGeojson,
+    required this.recordedFrom,
+    required this.recordedTo,
+    this.lengthM,
+    required this.status,
+    required this.reviewNote,
+    this.reviewedAt,
+    this.createdTransectId,
+    required this.createdAt,
+    this.createdById,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    {
+      map['sync_status'] = Variable<String>(
+        $TransectProposalsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['name'] = Variable<String>(name);
+    map['reason'] = Variable<String>(reason);
+    if (!nullToAbsent || replacesTransectId != null) {
+      map['replaces_transect_id'] = Variable<String>(replacesTransectId);
+    }
+    map['notes'] = Variable<String>(notes);
+    map['geometry_geojson'] = Variable<String>(geometryGeojson);
+    map['recorded_from'] = Variable<DateTime>(recordedFrom);
+    map['recorded_to'] = Variable<DateTime>(recordedTo);
+    if (!nullToAbsent || lengthM != null) {
+      map['length_m'] = Variable<double>(lengthM);
+    }
+    map['status'] = Variable<String>(status);
+    map['review_note'] = Variable<String>(reviewNote);
+    if (!nullToAbsent || reviewedAt != null) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt);
+    }
+    if (!nullToAbsent || createdTransectId != null) {
+      map['created_transect_id'] = Variable<String>(createdTransectId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    return map;
+  }
+
+  TransectProposalsCompanion toCompanion(bool nullToAbsent) {
+    return TransectProposalsCompanion(
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      syncStatus: Value(syncStatus),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      id: Value(id),
+      projectId: Value(projectId),
+      name: Value(name),
+      reason: Value(reason),
+      replacesTransectId: replacesTransectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replacesTransectId),
+      notes: Value(notes),
+      geometryGeojson: Value(geometryGeojson),
+      recordedFrom: Value(recordedFrom),
+      recordedTo: Value(recordedTo),
+      lengthM: lengthM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lengthM),
+      status: Value(status),
+      reviewNote: Value(reviewNote),
+      reviewedAt: reviewedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reviewedAt),
+      createdTransectId: createdTransectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdTransectId),
+      createdAt: Value(createdAt),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+    );
+  }
+
+  factory TransectProposal.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransectProposal(
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      syncStatus: $TransectProposalsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      name: serializer.fromJson<String>(json['name']),
+      reason: serializer.fromJson<String>(json['reason']),
+      replacesTransectId: serializer.fromJson<String?>(
+        json['replacesTransectId'],
+      ),
+      notes: serializer.fromJson<String>(json['notes']),
+      geometryGeojson: serializer.fromJson<String>(json['geometryGeojson']),
+      recordedFrom: serializer.fromJson<DateTime>(json['recordedFrom']),
+      recordedTo: serializer.fromJson<DateTime>(json['recordedTo']),
+      lengthM: serializer.fromJson<double?>(json['lengthM']),
+      status: serializer.fromJson<String>(json['status']),
+      reviewNote: serializer.fromJson<String>(json['reviewNote']),
+      reviewedAt: serializer.fromJson<DateTime?>(json['reviewedAt']),
+      createdTransectId: serializer.fromJson<String?>(
+        json['createdTransectId'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'syncStatus': serializer.toJson<String>(
+        $TransectProposalsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'name': serializer.toJson<String>(name),
+      'reason': serializer.toJson<String>(reason),
+      'replacesTransectId': serializer.toJson<String?>(replacesTransectId),
+      'notes': serializer.toJson<String>(notes),
+      'geometryGeojson': serializer.toJson<String>(geometryGeojson),
+      'recordedFrom': serializer.toJson<DateTime>(recordedFrom),
+      'recordedTo': serializer.toJson<DateTime>(recordedTo),
+      'lengthM': serializer.toJson<double?>(lengthM),
+      'status': serializer.toJson<String>(status),
+      'reviewNote': serializer.toJson<String>(reviewNote),
+      'reviewedAt': serializer.toJson<DateTime?>(reviewedAt),
+      'createdTransectId': serializer.toJson<String?>(createdTransectId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'createdById': serializer.toJson<String?>(createdById),
+    };
+  }
+
+  TransectProposal copyWith({
+    Value<int?> serverVersion = const Value.absent(),
+    SyncStatus? syncStatus,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? id,
+    String? projectId,
+    String? name,
+    String? reason,
+    Value<String?> replacesTransectId = const Value.absent(),
+    String? notes,
+    String? geometryGeojson,
+    DateTime? recordedFrom,
+    DateTime? recordedTo,
+    Value<double?> lengthM = const Value.absent(),
+    String? status,
+    String? reviewNote,
+    Value<DateTime?> reviewedAt = const Value.absent(),
+    Value<String?> createdTransectId = const Value.absent(),
+    DateTime? createdAt,
+    Value<String?> createdById = const Value.absent(),
+  }) => TransectProposal(
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    syncStatus: syncStatus ?? this.syncStatus,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    name: name ?? this.name,
+    reason: reason ?? this.reason,
+    replacesTransectId: replacesTransectId.present
+        ? replacesTransectId.value
+        : this.replacesTransectId,
+    notes: notes ?? this.notes,
+    geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+    recordedFrom: recordedFrom ?? this.recordedFrom,
+    recordedTo: recordedTo ?? this.recordedTo,
+    lengthM: lengthM.present ? lengthM.value : this.lengthM,
+    status: status ?? this.status,
+    reviewNote: reviewNote ?? this.reviewNote,
+    reviewedAt: reviewedAt.present ? reviewedAt.value : this.reviewedAt,
+    createdTransectId: createdTransectId.present
+        ? createdTransectId.value
+        : this.createdTransectId,
+    createdAt: createdAt ?? this.createdAt,
+    createdById: createdById.present ? createdById.value : this.createdById,
+  );
+  TransectProposal copyWithCompanion(TransectProposalsCompanion data) {
+    return TransectProposal(
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      name: data.name.present ? data.name.value : this.name,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      replacesTransectId: data.replacesTransectId.present
+          ? data.replacesTransectId.value
+          : this.replacesTransectId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      geometryGeojson: data.geometryGeojson.present
+          ? data.geometryGeojson.value
+          : this.geometryGeojson,
+      recordedFrom: data.recordedFrom.present
+          ? data.recordedFrom.value
+          : this.recordedFrom,
+      recordedTo: data.recordedTo.present
+          ? data.recordedTo.value
+          : this.recordedTo,
+      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
+      status: data.status.present ? data.status.value : this.status,
+      reviewNote: data.reviewNote.present
+          ? data.reviewNote.value
+          : this.reviewNote,
+      reviewedAt: data.reviewedAt.present
+          ? data.reviewedAt.value
+          : this.reviewedAt,
+      createdTransectId: data.createdTransectId.present
+          ? data.createdTransectId.value
+          : this.createdTransectId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransectProposal(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('name: $name, ')
+          ..write('reason: $reason, ')
+          ..write('replacesTransectId: $replacesTransectId, ')
+          ..write('notes: $notes, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('recordedFrom: $recordedFrom, ')
+          ..write('recordedTo: $recordedTo, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('status: $status, ')
+          ..write('reviewNote: $reviewNote, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('createdTransectId: $createdTransectId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    serverVersion,
+    syncStatus,
+    deletedAt,
+    id,
+    projectId,
+    name,
+    reason,
+    replacesTransectId,
+    notes,
+    geometryGeojson,
+    recordedFrom,
+    recordedTo,
+    lengthM,
+    status,
+    reviewNote,
+    reviewedAt,
+    createdTransectId,
+    createdAt,
+    createdById,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransectProposal &&
+          other.serverVersion == this.serverVersion &&
+          other.syncStatus == this.syncStatus &&
+          other.deletedAt == this.deletedAt &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.name == this.name &&
+          other.reason == this.reason &&
+          other.replacesTransectId == this.replacesTransectId &&
+          other.notes == this.notes &&
+          other.geometryGeojson == this.geometryGeojson &&
+          other.recordedFrom == this.recordedFrom &&
+          other.recordedTo == this.recordedTo &&
+          other.lengthM == this.lengthM &&
+          other.status == this.status &&
+          other.reviewNote == this.reviewNote &&
+          other.reviewedAt == this.reviewedAt &&
+          other.createdTransectId == this.createdTransectId &&
+          other.createdAt == this.createdAt &&
+          other.createdById == this.createdById);
+}
+
+class TransectProposalsCompanion extends UpdateCompanion<TransectProposal> {
+  final Value<int?> serverVersion;
+  final Value<SyncStatus> syncStatus;
+  final Value<DateTime?> deletedAt;
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> name;
+  final Value<String> reason;
+  final Value<String?> replacesTransectId;
+  final Value<String> notes;
+  final Value<String> geometryGeojson;
+  final Value<DateTime> recordedFrom;
+  final Value<DateTime> recordedTo;
+  final Value<double?> lengthM;
+  final Value<String> status;
+  final Value<String> reviewNote;
+  final Value<DateTime?> reviewedAt;
+  final Value<String?> createdTransectId;
+  final Value<DateTime> createdAt;
+  final Value<String?> createdById;
+  final Value<int> rowid;
+  const TransectProposalsCompanion({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.replacesTransectId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.geometryGeojson = const Value.absent(),
+    this.recordedFrom = const Value.absent(),
+    this.recordedTo = const Value.absent(),
+    this.lengthM = const Value.absent(),
+    this.status = const Value.absent(),
+    this.reviewNote = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
+    this.createdTransectId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransectProposalsCompanion.insert({
+    this.serverVersion = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    required String id,
+    required String projectId,
+    required String name,
+    required String reason,
+    this.replacesTransectId = const Value.absent(),
+    this.notes = const Value.absent(),
+    required String geometryGeojson,
+    required DateTime recordedFrom,
+    required DateTime recordedTo,
+    this.lengthM = const Value.absent(),
+    this.status = const Value.absent(),
+    this.reviewNote = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
+    this.createdTransectId = const Value.absent(),
+    required DateTime createdAt,
+    this.createdById = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       name = Value(name),
+       reason = Value(reason),
+       geometryGeojson = Value(geometryGeojson),
+       recordedFrom = Value(recordedFrom),
+       recordedTo = Value(recordedTo),
+       createdAt = Value(createdAt);
+  static Insertable<TransectProposal> custom({
+    Expression<int>? serverVersion,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? name,
+    Expression<String>? reason,
+    Expression<String>? replacesTransectId,
+    Expression<String>? notes,
+    Expression<String>? geometryGeojson,
+    Expression<DateTime>? recordedFrom,
+    Expression<DateTime>? recordedTo,
+    Expression<double>? lengthM,
+    Expression<String>? status,
+    Expression<String>? reviewNote,
+    Expression<DateTime>? reviewedAt,
+    Expression<String>? createdTransectId,
+    Expression<DateTime>? createdAt,
+    Expression<String>? createdById,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (name != null) 'name': name,
+      if (reason != null) 'reason': reason,
+      if (replacesTransectId != null)
+        'replaces_transect_id': replacesTransectId,
+      if (notes != null) 'notes': notes,
+      if (geometryGeojson != null) 'geometry_geojson': geometryGeojson,
+      if (recordedFrom != null) 'recorded_from': recordedFrom,
+      if (recordedTo != null) 'recorded_to': recordedTo,
+      if (lengthM != null) 'length_m': lengthM,
+      if (status != null) 'status': status,
+      if (reviewNote != null) 'review_note': reviewNote,
+      if (reviewedAt != null) 'reviewed_at': reviewedAt,
+      if (createdTransectId != null) 'created_transect_id': createdTransectId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (createdById != null) 'created_by_id': createdById,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransectProposalsCompanion copyWith({
+    Value<int?>? serverVersion,
+    Value<SyncStatus>? syncStatus,
+    Value<DateTime?>? deletedAt,
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? name,
+    Value<String>? reason,
+    Value<String?>? replacesTransectId,
+    Value<String>? notes,
+    Value<String>? geometryGeojson,
+    Value<DateTime>? recordedFrom,
+    Value<DateTime>? recordedTo,
+    Value<double?>? lengthM,
+    Value<String>? status,
+    Value<String>? reviewNote,
+    Value<DateTime?>? reviewedAt,
+    Value<String?>? createdTransectId,
+    Value<DateTime>? createdAt,
+    Value<String?>? createdById,
+    Value<int>? rowid,
+  }) {
+    return TransectProposalsCompanion(
+      serverVersion: serverVersion ?? this.serverVersion,
+      syncStatus: syncStatus ?? this.syncStatus,
+      deletedAt: deletedAt ?? this.deletedAt,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      name: name ?? this.name,
+      reason: reason ?? this.reason,
+      replacesTransectId: replacesTransectId ?? this.replacesTransectId,
+      notes: notes ?? this.notes,
+      geometryGeojson: geometryGeojson ?? this.geometryGeojson,
+      recordedFrom: recordedFrom ?? this.recordedFrom,
+      recordedTo: recordedTo ?? this.recordedTo,
+      lengthM: lengthM ?? this.lengthM,
+      status: status ?? this.status,
+      reviewNote: reviewNote ?? this.reviewNote,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
+      createdTransectId: createdTransectId ?? this.createdTransectId,
+      createdAt: createdAt ?? this.createdAt,
+      createdById: createdById ?? this.createdById,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $TransectProposalsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (replacesTransectId.present) {
+      map['replaces_transect_id'] = Variable<String>(replacesTransectId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (geometryGeojson.present) {
+      map['geometry_geojson'] = Variable<String>(geometryGeojson.value);
+    }
+    if (recordedFrom.present) {
+      map['recorded_from'] = Variable<DateTime>(recordedFrom.value);
+    }
+    if (recordedTo.present) {
+      map['recorded_to'] = Variable<DateTime>(recordedTo.value);
+    }
+    if (lengthM.present) {
+      map['length_m'] = Variable<double>(lengthM.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (reviewNote.present) {
+      map['review_note'] = Variable<String>(reviewNote.value);
+    }
+    if (reviewedAt.present) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt.value);
+    }
+    if (createdTransectId.present) {
+      map['created_transect_id'] = Variable<String>(createdTransectId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransectProposalsCompanion(')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('name: $name, ')
+          ..write('reason: $reason, ')
+          ..write('replacesTransectId: $replacesTransectId, ')
+          ..write('notes: $notes, ')
+          ..write('geometryGeojson: $geometryGeojson, ')
+          ..write('recordedFrom: $recordedFrom, ')
+          ..write('recordedTo: $recordedTo, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('status: $status, ')
+          ..write('reviewNote: $reviewNote, ')
+          ..write('reviewedAt: $reviewedAt, ')
+          ..write('createdTransectId: $createdTransectId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('createdById: $createdById, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransectSectionsTable extends TransectSections
     with TableInfo<$TransectSectionsTable, TransectSection> {
   @override
@@ -17129,6 +18240,878 @@ class TransectSectionsCompanion extends UpdateCompanion<TransectSection> {
   }
 }
 
+class $RouteRecordingsTable extends RouteRecordings
+    with TableInfo<$RouteRecordingsTable, RouteRecording> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RouteRecordingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _replacesTransectIdMeta =
+      const VerificationMeta('replacesTransectId');
+  @override
+  late final GeneratedColumn<String> replacesTransectId =
+      GeneratedColumn<String>(
+        'replaces_transect_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pausedAtMeta = const VerificationMeta(
+    'pausedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pausedAt = GeneratedColumn<DateTime>(
+    'paused_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pausedSecondsMeta = const VerificationMeta(
+    'pausedSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> pausedSeconds = GeneratedColumn<int>(
+    'paused_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    replacesTransectId,
+    startedAt,
+    pausedAt,
+    pausedSeconds,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'route_recording';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RouteRecording> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('replaces_transect_id')) {
+      context.handle(
+        _replacesTransectIdMeta,
+        replacesTransectId.isAcceptableOrUnknown(
+          data['replaces_transect_id']!,
+          _replacesTransectIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('paused_at')) {
+      context.handle(
+        _pausedAtMeta,
+        pausedAt.isAcceptableOrUnknown(data['paused_at']!, _pausedAtMeta),
+      );
+    }
+    if (data.containsKey('paused_seconds')) {
+      context.handle(
+        _pausedSecondsMeta,
+        pausedSeconds.isAcceptableOrUnknown(
+          data['paused_seconds']!,
+          _pausedSecondsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RouteRecording map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RouteRecording(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      replacesTransectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}replaces_transect_id'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      pausedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paused_at'],
+      ),
+      pausedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paused_seconds'],
+      )!,
+    );
+  }
+
+  @override
+  $RouteRecordingsTable createAlias(String alias) {
+    return $RouteRecordingsTable(attachedDatabase, alias);
+  }
+}
+
+class RouteRecording extends DataClass implements Insertable<RouteRecording> {
+  final String id;
+  final String projectId;
+
+  /// The transect being replaced; null for a new route. No foreign key
+  /// (reference data).
+  final String? replacesTransectId;
+  final DateTime startedAt;
+
+  /// When the current pause began; null while recording.
+  final DateTime? pausedAt;
+
+  /// Seconds of earlier pauses, so the walking time can be worked out.
+  final int pausedSeconds;
+  const RouteRecording({
+    required this.id,
+    required this.projectId,
+    this.replacesTransectId,
+    required this.startedAt,
+    this.pausedAt,
+    required this.pausedSeconds,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    if (!nullToAbsent || replacesTransectId != null) {
+      map['replaces_transect_id'] = Variable<String>(replacesTransectId);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || pausedAt != null) {
+      map['paused_at'] = Variable<DateTime>(pausedAt);
+    }
+    map['paused_seconds'] = Variable<int>(pausedSeconds);
+    return map;
+  }
+
+  RouteRecordingsCompanion toCompanion(bool nullToAbsent) {
+    return RouteRecordingsCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      replacesTransectId: replacesTransectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replacesTransectId),
+      startedAt: Value(startedAt),
+      pausedAt: pausedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pausedAt),
+      pausedSeconds: Value(pausedSeconds),
+    );
+  }
+
+  factory RouteRecording.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RouteRecording(
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      replacesTransectId: serializer.fromJson<String?>(
+        json['replacesTransectId'],
+      ),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
+      pausedSeconds: serializer.fromJson<int>(json['pausedSeconds']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'replacesTransectId': serializer.toJson<String?>(replacesTransectId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'pausedAt': serializer.toJson<DateTime?>(pausedAt),
+      'pausedSeconds': serializer.toJson<int>(pausedSeconds),
+    };
+  }
+
+  RouteRecording copyWith({
+    String? id,
+    String? projectId,
+    Value<String?> replacesTransectId = const Value.absent(),
+    DateTime? startedAt,
+    Value<DateTime?> pausedAt = const Value.absent(),
+    int? pausedSeconds,
+  }) => RouteRecording(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    replacesTransectId: replacesTransectId.present
+        ? replacesTransectId.value
+        : this.replacesTransectId,
+    startedAt: startedAt ?? this.startedAt,
+    pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
+    pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+  );
+  RouteRecording copyWithCompanion(RouteRecordingsCompanion data) {
+    return RouteRecording(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      replacesTransectId: data.replacesTransectId.present
+          ? data.replacesTransectId.value
+          : this.replacesTransectId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      pausedAt: data.pausedAt.present ? data.pausedAt.value : this.pausedAt,
+      pausedSeconds: data.pausedSeconds.present
+          ? data.pausedSeconds.value
+          : this.pausedSeconds,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRecording(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('replacesTransectId: $replacesTransectId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('pausedSeconds: $pausedSeconds')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    projectId,
+    replacesTransectId,
+    startedAt,
+    pausedAt,
+    pausedSeconds,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RouteRecording &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.replacesTransectId == this.replacesTransectId &&
+          other.startedAt == this.startedAt &&
+          other.pausedAt == this.pausedAt &&
+          other.pausedSeconds == this.pausedSeconds);
+}
+
+class RouteRecordingsCompanion extends UpdateCompanion<RouteRecording> {
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String?> replacesTransectId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> pausedAt;
+  final Value<int> pausedSeconds;
+  final Value<int> rowid;
+  const RouteRecordingsCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.replacesTransectId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.pausedAt = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RouteRecordingsCompanion.insert({
+    required String id,
+    required String projectId,
+    this.replacesTransectId = const Value.absent(),
+    required DateTime startedAt,
+    this.pausedAt = const Value.absent(),
+    this.pausedSeconds = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       startedAt = Value(startedAt);
+  static Insertable<RouteRecording> custom({
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? replacesTransectId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? pausedAt,
+    Expression<int>? pausedSeconds,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (replacesTransectId != null)
+        'replaces_transect_id': replacesTransectId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (pausedAt != null) 'paused_at': pausedAt,
+      if (pausedSeconds != null) 'paused_seconds': pausedSeconds,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RouteRecordingsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String?>? replacesTransectId,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? pausedAt,
+    Value<int>? pausedSeconds,
+    Value<int>? rowid,
+  }) {
+    return RouteRecordingsCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      replacesTransectId: replacesTransectId ?? this.replacesTransectId,
+      startedAt: startedAt ?? this.startedAt,
+      pausedAt: pausedAt ?? this.pausedAt,
+      pausedSeconds: pausedSeconds ?? this.pausedSeconds,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (replacesTransectId.present) {
+      map['replaces_transect_id'] = Variable<String>(replacesTransectId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (pausedAt.present) {
+      map['paused_at'] = Variable<DateTime>(pausedAt.value);
+    }
+    if (pausedSeconds.present) {
+      map['paused_seconds'] = Variable<int>(pausedSeconds.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRecordingsCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('replacesTransectId: $replacesTransectId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('pausedSeconds: $pausedSeconds, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RouteRecordingPointsTable extends RouteRecordingPoints
+    with TableInfo<$RouteRecordingPointsTable, RouteRecordingPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RouteRecordingPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _recordingIdMeta = const VerificationMeta(
+    'recordingId',
+  );
+  @override
+  late final GeneratedColumn<String> recordingId = GeneratedColumn<String>(
+    'recording_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES route_recording (id)',
+    ),
+  );
+  static const VerificationMeta _sequenceNumberMeta = const VerificationMeta(
+    'sequenceNumber',
+  );
+  @override
+  late final GeneratedColumn<int> sequenceNumber = GeneratedColumn<int>(
+    'sequence_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordedAtMeta = const VerificationMeta(
+    'recordedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recordedAt = GeneratedColumn<DateTime>(
+    'recorded_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accuracyMMeta = const VerificationMeta(
+    'accuracyM',
+  );
+  @override
+  late final GeneratedColumn<double> accuracyM = GeneratedColumn<double>(
+    'accuracy_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    recordingId,
+    sequenceNumber,
+    recordedAt,
+    lat,
+    lon,
+    accuracyM,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'route_recording_point';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RouteRecordingPoint> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('recording_id')) {
+      context.handle(
+        _recordingIdMeta,
+        recordingId.isAcceptableOrUnknown(
+          data['recording_id']!,
+          _recordingIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recordingIdMeta);
+    }
+    if (data.containsKey('sequence_number')) {
+      context.handle(
+        _sequenceNumberMeta,
+        sequenceNumber.isAcceptableOrUnknown(
+          data['sequence_number']!,
+          _sequenceNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sequenceNumberMeta);
+    }
+    if (data.containsKey('recorded_at')) {
+      context.handle(
+        _recordedAtMeta,
+        recordedAt.isAcceptableOrUnknown(data['recorded_at']!, _recordedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordedAtMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('accuracy_m')) {
+      context.handle(
+        _accuracyMMeta,
+        accuracyM.isAcceptableOrUnknown(data['accuracy_m']!, _accuracyMMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {recordingId, sequenceNumber};
+  @override
+  RouteRecordingPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RouteRecordingPoint(
+      recordingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recording_id'],
+      )!,
+      sequenceNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sequence_number'],
+      )!,
+      recordedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recorded_at'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      accuracyM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}accuracy_m'],
+      ),
+    );
+  }
+
+  @override
+  $RouteRecordingPointsTable createAlias(String alias) {
+    return $RouteRecordingPointsTable(attachedDatabase, alias);
+  }
+}
+
+class RouteRecordingPoint extends DataClass
+    implements Insertable<RouteRecordingPoint> {
+  final String recordingId;
+
+  /// Order of the fix within its recording, continuing across app restarts.
+  final int sequenceNumber;
+  final DateTime recordedAt;
+  final double lat;
+  final double lon;
+  final double? accuracyM;
+  const RouteRecordingPoint({
+    required this.recordingId,
+    required this.sequenceNumber,
+    required this.recordedAt,
+    required this.lat,
+    required this.lon,
+    this.accuracyM,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['recording_id'] = Variable<String>(recordingId);
+    map['sequence_number'] = Variable<int>(sequenceNumber);
+    map['recorded_at'] = Variable<DateTime>(recordedAt);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || accuracyM != null) {
+      map['accuracy_m'] = Variable<double>(accuracyM);
+    }
+    return map;
+  }
+
+  RouteRecordingPointsCompanion toCompanion(bool nullToAbsent) {
+    return RouteRecordingPointsCompanion(
+      recordingId: Value(recordingId),
+      sequenceNumber: Value(sequenceNumber),
+      recordedAt: Value(recordedAt),
+      lat: Value(lat),
+      lon: Value(lon),
+      accuracyM: accuracyM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accuracyM),
+    );
+  }
+
+  factory RouteRecordingPoint.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RouteRecordingPoint(
+      recordingId: serializer.fromJson<String>(json['recordingId']),
+      sequenceNumber: serializer.fromJson<int>(json['sequenceNumber']),
+      recordedAt: serializer.fromJson<DateTime>(json['recordedAt']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      accuracyM: serializer.fromJson<double?>(json['accuracyM']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'recordingId': serializer.toJson<String>(recordingId),
+      'sequenceNumber': serializer.toJson<int>(sequenceNumber),
+      'recordedAt': serializer.toJson<DateTime>(recordedAt),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'accuracyM': serializer.toJson<double?>(accuracyM),
+    };
+  }
+
+  RouteRecordingPoint copyWith({
+    String? recordingId,
+    int? sequenceNumber,
+    DateTime? recordedAt,
+    double? lat,
+    double? lon,
+    Value<double?> accuracyM = const Value.absent(),
+  }) => RouteRecordingPoint(
+    recordingId: recordingId ?? this.recordingId,
+    sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+    recordedAt: recordedAt ?? this.recordedAt,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    accuracyM: accuracyM.present ? accuracyM.value : this.accuracyM,
+  );
+  RouteRecordingPoint copyWithCompanion(RouteRecordingPointsCompanion data) {
+    return RouteRecordingPoint(
+      recordingId: data.recordingId.present
+          ? data.recordingId.value
+          : this.recordingId,
+      sequenceNumber: data.sequenceNumber.present
+          ? data.sequenceNumber.value
+          : this.sequenceNumber,
+      recordedAt: data.recordedAt.present
+          ? data.recordedAt.value
+          : this.recordedAt,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      accuracyM: data.accuracyM.present ? data.accuracyM.value : this.accuracyM,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRecordingPoint(')
+          ..write('recordingId: $recordingId, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('accuracyM: $accuracyM')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(recordingId, sequenceNumber, recordedAt, lat, lon, accuracyM);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RouteRecordingPoint &&
+          other.recordingId == this.recordingId &&
+          other.sequenceNumber == this.sequenceNumber &&
+          other.recordedAt == this.recordedAt &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.accuracyM == this.accuracyM);
+}
+
+class RouteRecordingPointsCompanion
+    extends UpdateCompanion<RouteRecordingPoint> {
+  final Value<String> recordingId;
+  final Value<int> sequenceNumber;
+  final Value<DateTime> recordedAt;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<double?> accuracyM;
+  final Value<int> rowid;
+  const RouteRecordingPointsCompanion({
+    this.recordingId = const Value.absent(),
+    this.sequenceNumber = const Value.absent(),
+    this.recordedAt = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.accuracyM = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RouteRecordingPointsCompanion.insert({
+    required String recordingId,
+    required int sequenceNumber,
+    required DateTime recordedAt,
+    required double lat,
+    required double lon,
+    this.accuracyM = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : recordingId = Value(recordingId),
+       sequenceNumber = Value(sequenceNumber),
+       recordedAt = Value(recordedAt),
+       lat = Value(lat),
+       lon = Value(lon);
+  static Insertable<RouteRecordingPoint> custom({
+    Expression<String>? recordingId,
+    Expression<int>? sequenceNumber,
+    Expression<DateTime>? recordedAt,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<double>? accuracyM,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (recordingId != null) 'recording_id': recordingId,
+      if (sequenceNumber != null) 'sequence_number': sequenceNumber,
+      if (recordedAt != null) 'recorded_at': recordedAt,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RouteRecordingPointsCompanion copyWith({
+    Value<String>? recordingId,
+    Value<int>? sequenceNumber,
+    Value<DateTime>? recordedAt,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<double?>? accuracyM,
+    Value<int>? rowid,
+  }) {
+    return RouteRecordingPointsCompanion(
+      recordingId: recordingId ?? this.recordingId,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      recordedAt: recordedAt ?? this.recordedAt,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      accuracyM: accuracyM ?? this.accuracyM,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (recordingId.present) {
+      map['recording_id'] = Variable<String>(recordingId.value);
+    }
+    if (sequenceNumber.present) {
+      map['sequence_number'] = Variable<int>(sequenceNumber.value);
+    }
+    if (recordedAt.present) {
+      map['recorded_at'] = Variable<DateTime>(recordedAt.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (accuracyM.present) {
+      map['accuracy_m'] = Variable<double>(accuracyM.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRecordingPointsCompanion(')
+          ..write('recordingId: $recordingId, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('accuracyM: $accuracyM, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -17162,9 +19145,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TaxonListVersionsTable taxonListVersions =
       $TaxonListVersionsTable(this);
   late final $TaxonUsagesTable taxonUsages = $TaxonUsagesTable(this);
+  late final $TransectProposalsTable transectProposals =
+      $TransectProposalsTable(this);
   late final $TransectSectionsTable transectSections = $TransectSectionsTable(
     this,
   );
+  late final $RouteRecordingsTable routeRecordings = $RouteRecordingsTable(
+    this,
+  );
+  late final $RouteRecordingPointsTable routeRecordingPoints =
+      $RouteRecordingPointsTable(this);
   late final Index syncQueueEntity = Index(
     'sync_queue_entity',
     'CREATE INDEX sync_queue_entity ON sync_queue (entity_type, entity_id, seq)',
@@ -17192,7 +19182,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     surveyTrackPoints,
     taxonListVersions,
     taxonUsages,
+    transectProposals,
     transectSections,
+    routeRecordings,
+    routeRecordingPoints,
     syncQueueEntity,
   ];
   @override
@@ -17353,6 +19346,47 @@ final class $$ProjectsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _projectProtocolsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransectProposalsTable, List<TransectProposal>>
+  _transectProposalsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transectProposals,
+        aliasName: 'project__id__transect_proposal__project_id',
+      );
+
+  $$TransectProposalsTableProcessedTableManager get transectProposalsRefs {
+    final manager = $$TransectProposalsTableTableManager(
+      $_db,
+      $_db.transectProposals,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transectProposalsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RouteRecordingsTable, List<RouteRecording>>
+  _routeRecordingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.routeRecordings,
+    aliasName: 'project__id__route_recording__project_id',
+  );
+
+  $$RouteRecordingsTableProcessedTableManager get routeRecordingsRefs {
+    final manager = $$RouteRecordingsTableTableManager(
+      $_db,
+      $_db.routeRecordings,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _routeRecordingsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -17568,6 +19602,56 @@ class $$ProjectsTableFilterComposer
           }) => $$ProjectProtocolsTableFilterComposer(
             $db: $db,
             $table: $db.projectProtocols,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transectProposalsRefs(
+    Expression<bool> Function($$TransectProposalsTableFilterComposer f) f,
+  ) {
+    final $$TransectProposalsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transectProposals,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransectProposalsTableFilterComposer(
+            $db: $db,
+            $table: $db.transectProposals,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> routeRecordingsRefs(
+    Expression<bool> Function($$RouteRecordingsTableFilterComposer f) f,
+  ) {
+    final $$RouteRecordingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.routeRecordings,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingsTableFilterComposer(
+            $db: $db,
+            $table: $db.routeRecordings,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17845,6 +19929,57 @@ class $$ProjectsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> transectProposalsRefs<T extends Object>(
+    Expression<T> Function($$TransectProposalsTableAnnotationComposer a) f,
+  ) {
+    final $$TransectProposalsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transectProposals,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransectProposalsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transectProposals,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> routeRecordingsRefs<T extends Object>(
+    Expression<T> Function($$RouteRecordingsTableAnnotationComposer a) f,
+  ) {
+    final $$RouteRecordingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.routeRecordings,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.routeRecordings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager
@@ -17867,6 +20002,8 @@ class $$ProjectsTableTableManager
             bool plantResourceObservationsRefs,
             bool habitatFeaturesRefs,
             bool projectProtocolsRefs,
+            bool transectProposalsRefs,
+            bool routeRecordingsRefs,
           })
         > {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
@@ -17952,6 +20089,8 @@ class $$ProjectsTableTableManager
                 plantResourceObservationsRefs = false,
                 habitatFeaturesRefs = false,
                 projectProtocolsRefs = false,
+                transectProposalsRefs = false,
+                routeRecordingsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -17963,6 +20102,8 @@ class $$ProjectsTableTableManager
                       db.plantResourceObservations,
                     if (habitatFeaturesRefs) db.habitatFeatures,
                     if (projectProtocolsRefs) db.projectProtocols,
+                    if (transectProposalsRefs) db.transectProposals,
+                    if (routeRecordingsRefs) db.routeRecordings,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -18093,6 +20234,48 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (transectProposalsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          TransectProposal
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._transectProposalsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transectProposalsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (routeRecordingsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          RouteRecording
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._routeRecordingsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).routeRecordingsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -18120,6 +20303,8 @@ typedef $$ProjectsTableProcessedTableManager =
         bool plantResourceObservationsRefs,
         bool habitatFeaturesRefs,
         bool projectProtocolsRefs,
+        bool transectProposalsRefs,
+        bool routeRecordingsRefs,
       })
     >;
 typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
@@ -27311,6 +29496,623 @@ typedef $$TaxonUsagesTableProcessedTableManager =
       TaxonUsage,
       PrefetchHooks Function()
     >;
+typedef $$TransectProposalsTableCreateCompanionBuilder =
+    TransectProposalsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      required String id,
+      required String projectId,
+      required String name,
+      required String reason,
+      Value<String?> replacesTransectId,
+      Value<String> notes,
+      required String geometryGeojson,
+      required DateTime recordedFrom,
+      required DateTime recordedTo,
+      Value<double?> lengthM,
+      Value<String> status,
+      Value<String> reviewNote,
+      Value<DateTime?> reviewedAt,
+      Value<String?> createdTransectId,
+      required DateTime createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+typedef $$TransectProposalsTableUpdateCompanionBuilder =
+    TransectProposalsCompanion Function({
+      Value<int?> serverVersion,
+      Value<SyncStatus> syncStatus,
+      Value<DateTime?> deletedAt,
+      Value<String> id,
+      Value<String> projectId,
+      Value<String> name,
+      Value<String> reason,
+      Value<String?> replacesTransectId,
+      Value<String> notes,
+      Value<String> geometryGeojson,
+      Value<DateTime> recordedFrom,
+      Value<DateTime> recordedTo,
+      Value<double?> lengthM,
+      Value<String> status,
+      Value<String> reviewNote,
+      Value<DateTime?> reviewedAt,
+      Value<String?> createdTransectId,
+      Value<DateTime> createdAt,
+      Value<String?> createdById,
+      Value<int> rowid,
+    });
+
+final class $$TransectProposalsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TransectProposalsTable,
+          TransectProposal
+        > {
+  $$TransectProposalsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('transect_proposal__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TransectProposalsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransectProposalsTable> {
+  $$TransectProposalsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recordedFrom => $composableBuilder(
+    column: $table.recordedFrom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recordedTo => $composableBuilder(
+    column: $table.recordedTo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reviewNote => $composableBuilder(
+    column: $table.reviewNote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdTransectId => $composableBuilder(
+    column: $table.createdTransectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransectProposalsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransectProposalsTable> {
+  $$TransectProposalsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recordedFrom => $composableBuilder(
+    column: $table.recordedFrom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recordedTo => $composableBuilder(
+    column: $table.recordedTo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reviewNote => $composableBuilder(
+    column: $table.reviewNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdTransectId => $composableBuilder(
+    column: $table.createdTransectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransectProposalsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransectProposalsTable> {
+  $$TransectProposalsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get geometryGeojson => $composableBuilder(
+    column: $table.geometryGeojson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get recordedFrom => $composableBuilder(
+    column: $table.recordedFrom,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get recordedTo => $composableBuilder(
+    column: $table.recordedTo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lengthM =>
+      $composableBuilder(column: $table.lengthM, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get reviewNote => $composableBuilder(
+    column: $table.reviewNote,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdTransectId => $composableBuilder(
+    column: $table.createdTransectId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransectProposalsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransectProposalsTable,
+          TransectProposal,
+          $$TransectProposalsTableFilterComposer,
+          $$TransectProposalsTableOrderingComposer,
+          $$TransectProposalsTableAnnotationComposer,
+          $$TransectProposalsTableCreateCompanionBuilder,
+          $$TransectProposalsTableUpdateCompanionBuilder,
+          (TransectProposal, $$TransectProposalsTableReferences),
+          TransectProposal,
+          PrefetchHooks Function({bool projectId})
+        > {
+  $$TransectProposalsTableTableManager(
+    _$AppDatabase db,
+    $TransectProposalsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransectProposalsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransectProposalsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransectProposalsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> reason = const Value.absent(),
+                Value<String?> replacesTransectId = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> geometryGeojson = const Value.absent(),
+                Value<DateTime> recordedFrom = const Value.absent(),
+                Value<DateTime> recordedTo = const Value.absent(),
+                Value<double?> lengthM = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> reviewNote = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
+                Value<String?> createdTransectId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectProposalsCompanion(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                name: name,
+                reason: reason,
+                replacesTransectId: replacesTransectId,
+                notes: notes,
+                geometryGeojson: geometryGeojson,
+                recordedFrom: recordedFrom,
+                recordedTo: recordedTo,
+                lengthM: lengthM,
+                status: status,
+                reviewNote: reviewNote,
+                reviewedAt: reviewedAt,
+                createdTransectId: createdTransectId,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int?> serverVersion = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                required String id,
+                required String projectId,
+                required String name,
+                required String reason,
+                Value<String?> replacesTransectId = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                required String geometryGeojson,
+                required DateTime recordedFrom,
+                required DateTime recordedTo,
+                Value<double?> lengthM = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> reviewNote = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
+                Value<String?> createdTransectId = const Value.absent(),
+                required DateTime createdAt,
+                Value<String?> createdById = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransectProposalsCompanion.insert(
+                serverVersion: serverVersion,
+                syncStatus: syncStatus,
+                deletedAt: deletedAt,
+                id: id,
+                projectId: projectId,
+                name: name,
+                reason: reason,
+                replacesTransectId: replacesTransectId,
+                notes: notes,
+                geometryGeojson: geometryGeojson,
+                recordedFrom: recordedFrom,
+                recordedTo: recordedTo,
+                lengthM: lengthM,
+                status: status,
+                reviewNote: reviewNote,
+                reviewedAt: reviewedAt,
+                createdTransectId: createdTransectId,
+                createdAt: createdAt,
+                createdById: createdById,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TransectProposalsTable, TransectProposal>(table),
+                  $$TransectProposalsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable: $$TransectProposalsTableReferences
+                            ._projectIdTable(db),
+                        referencedColumn: $$TransectProposalsTableReferences
+                            ._projectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TransectProposalsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransectProposalsTable,
+      TransectProposal,
+      $$TransectProposalsTableFilterComposer,
+      $$TransectProposalsTableOrderingComposer,
+      $$TransectProposalsTableAnnotationComposer,
+      $$TransectProposalsTableCreateCompanionBuilder,
+      $$TransectProposalsTableUpdateCompanionBuilder,
+      (TransectProposal, $$TransectProposalsTableReferences),
+      TransectProposal,
+      PrefetchHooks Function({bool projectId})
+    >;
 typedef $$TransectSectionsTableCreateCompanionBuilder =
     TransectSectionsCompanion Function({
       required String id,
@@ -27738,6 +30540,813 @@ typedef $$TransectSectionsTableProcessedTableManager =
       TransectSection,
       PrefetchHooks Function({bool transectId})
     >;
+typedef $$RouteRecordingsTableCreateCompanionBuilder =
+    RouteRecordingsCompanion Function({
+      required String id,
+      required String projectId,
+      Value<String?> replacesTransectId,
+      required DateTime startedAt,
+      Value<DateTime?> pausedAt,
+      Value<int> pausedSeconds,
+      Value<int> rowid,
+    });
+typedef $$RouteRecordingsTableUpdateCompanionBuilder =
+    RouteRecordingsCompanion Function({
+      Value<String> id,
+      Value<String> projectId,
+      Value<String?> replacesTransectId,
+      Value<DateTime> startedAt,
+      Value<DateTime?> pausedAt,
+      Value<int> pausedSeconds,
+      Value<int> rowid,
+    });
+
+final class $$RouteRecordingsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $RouteRecordingsTable, RouteRecording> {
+  $$RouteRecordingsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('route_recording__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RouteRecordingPointsTable,
+    List<RouteRecordingPoint>
+  >
+  _routeRecordingPointsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.routeRecordingPoints,
+        aliasName: 'route_recording__id__route_recording_point__recording_id',
+      );
+
+  $$RouteRecordingPointsTableProcessedTableManager
+  get routeRecordingPointsRefs {
+    final manager = $$RouteRecordingPointsTableTableManager(
+      $_db,
+      $_db.routeRecordingPoints,
+    ).filter((f) => f.recordingId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _routeRecordingPointsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$RouteRecordingsTableFilterComposer
+    extends Composer<_$AppDatabase, $RouteRecordingsTable> {
+  $$RouteRecordingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> routeRecordingPointsRefs(
+    Expression<bool> Function($$RouteRecordingPointsTableFilterComposer f) f,
+  ) {
+    final $$RouteRecordingPointsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.routeRecordingPoints,
+      getReferencedColumn: (t) => t.recordingId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingPointsTableFilterComposer(
+            $db: $db,
+            $table: $db.routeRecordingPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$RouteRecordingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RouteRecordingsTable> {
+  $$RouteRecordingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRecordingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RouteRecordingsTable> {
+  $$RouteRecordingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get replacesTransectId => $composableBuilder(
+    column: $table.replacesTransectId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pausedAt =>
+      $composableBuilder(column: $table.pausedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get pausedSeconds => $composableBuilder(
+    column: $table.pausedSeconds,
+    builder: (column) => column,
+  );
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> routeRecordingPointsRefs<T extends Object>(
+    Expression<T> Function($$RouteRecordingPointsTableAnnotationComposer a) f,
+  ) {
+    final $$RouteRecordingPointsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.routeRecordingPoints,
+          getReferencedColumn: (t) => t.recordingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RouteRecordingPointsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.routeRecordingPoints,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$RouteRecordingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RouteRecordingsTable,
+          RouteRecording,
+          $$RouteRecordingsTableFilterComposer,
+          $$RouteRecordingsTableOrderingComposer,
+          $$RouteRecordingsTableAnnotationComposer,
+          $$RouteRecordingsTableCreateCompanionBuilder,
+          $$RouteRecordingsTableUpdateCompanionBuilder,
+          (RouteRecording, $$RouteRecordingsTableReferences),
+          RouteRecording,
+          PrefetchHooks Function({
+            bool projectId,
+            bool routeRecordingPointsRefs,
+          })
+        > {
+  $$RouteRecordingsTableTableManager(
+    _$AppDatabase db,
+    $RouteRecordingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RouteRecordingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RouteRecordingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RouteRecordingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String?> replacesTransectId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RouteRecordingsCompanion(
+                id: id,
+                projectId: projectId,
+                replacesTransectId: replacesTransectId,
+                startedAt: startedAt,
+                pausedAt: pausedAt,
+                pausedSeconds: pausedSeconds,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String projectId,
+                Value<String?> replacesTransectId = const Value.absent(),
+                required DateTime startedAt,
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<int> pausedSeconds = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RouteRecordingsCompanion.insert(
+                id: id,
+                projectId: projectId,
+                replacesTransectId: replacesTransectId,
+                startedAt: startedAt,
+                pausedAt: pausedAt,
+                pausedSeconds: pausedSeconds,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RouteRecordingsTable, RouteRecording>(table),
+                  $$RouteRecordingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({projectId = false, routeRecordingPointsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (routeRecordingPointsRefs) db.routeRecordingPoints,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable: $$RouteRecordingsTableReferences
+                                ._projectIdTable(db),
+                            referencedColumn: $$RouteRecordingsTableReferences
+                                ._projectIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (routeRecordingPointsRefs)
+                        await $_getPrefetchedData<
+                          RouteRecording,
+                          $RouteRecordingsTable,
+                          RouteRecordingPoint
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RouteRecordingsTableReferences
+                              ._routeRecordingPointsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RouteRecordingsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).routeRecordingPointsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recordingId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$RouteRecordingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RouteRecordingsTable,
+      RouteRecording,
+      $$RouteRecordingsTableFilterComposer,
+      $$RouteRecordingsTableOrderingComposer,
+      $$RouteRecordingsTableAnnotationComposer,
+      $$RouteRecordingsTableCreateCompanionBuilder,
+      $$RouteRecordingsTableUpdateCompanionBuilder,
+      (RouteRecording, $$RouteRecordingsTableReferences),
+      RouteRecording,
+      PrefetchHooks Function({bool projectId, bool routeRecordingPointsRefs})
+    >;
+typedef $$RouteRecordingPointsTableCreateCompanionBuilder =
+    RouteRecordingPointsCompanion Function({
+      required String recordingId,
+      required int sequenceNumber,
+      required DateTime recordedAt,
+      required double lat,
+      required double lon,
+      Value<double?> accuracyM,
+      Value<int> rowid,
+    });
+typedef $$RouteRecordingPointsTableUpdateCompanionBuilder =
+    RouteRecordingPointsCompanion Function({
+      Value<String> recordingId,
+      Value<int> sequenceNumber,
+      Value<DateTime> recordedAt,
+      Value<double> lat,
+      Value<double> lon,
+      Value<double?> accuracyM,
+      Value<int> rowid,
+    });
+
+final class $$RouteRecordingPointsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $RouteRecordingPointsTable,
+          RouteRecordingPoint
+        > {
+  $$RouteRecordingPointsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $RouteRecordingsTable _recordingIdTable(_$AppDatabase db) => db
+      .routeRecordings
+      .createAlias('route_recording_point__recording_id__route_recording__id');
+
+  $$RouteRecordingsTableProcessedTableManager get recordingId {
+    final $_column = $_itemColumn<String>('recording_id')!;
+
+    final manager = $$RouteRecordingsTableTableManager(
+      $_db,
+      $_db.routeRecordings,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recordingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RouteRecordingPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $RouteRecordingPointsTable> {
+  $$RouteRecordingPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$RouteRecordingsTableFilterComposer get recordingId {
+    final $$RouteRecordingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordingId,
+      referencedTable: $db.routeRecordings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingsTableFilterComposer(
+            $db: $db,
+            $table: $db.routeRecordings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRecordingPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RouteRecordingPointsTable> {
+  $$RouteRecordingPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$RouteRecordingsTableOrderingComposer get recordingId {
+    final $$RouteRecordingsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordingId,
+      referencedTable: $db.routeRecordings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingsTableOrderingComposer(
+            $db: $db,
+            $table: $db.routeRecordings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRecordingPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RouteRecordingPointsTable> {
+  $$RouteRecordingPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get sequenceNumber => $composableBuilder(
+    column: $table.sequenceNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get recordedAt => $composableBuilder(
+    column: $table.recordedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<double> get accuracyM =>
+      $composableBuilder(column: $table.accuracyM, builder: (column) => column);
+
+  $$RouteRecordingsTableAnnotationComposer get recordingId {
+    final $$RouteRecordingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recordingId,
+      referencedTable: $db.routeRecordings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRecordingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.routeRecordings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRecordingPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RouteRecordingPointsTable,
+          RouteRecordingPoint,
+          $$RouteRecordingPointsTableFilterComposer,
+          $$RouteRecordingPointsTableOrderingComposer,
+          $$RouteRecordingPointsTableAnnotationComposer,
+          $$RouteRecordingPointsTableCreateCompanionBuilder,
+          $$RouteRecordingPointsTableUpdateCompanionBuilder,
+          (RouteRecordingPoint, $$RouteRecordingPointsTableReferences),
+          RouteRecordingPoint,
+          PrefetchHooks Function({bool recordingId})
+        > {
+  $$RouteRecordingPointsTableTableManager(
+    _$AppDatabase db,
+    $RouteRecordingPointsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RouteRecordingPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RouteRecordingPointsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RouteRecordingPointsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> recordingId = const Value.absent(),
+                Value<int> sequenceNumber = const Value.absent(),
+                Value<DateTime> recordedAt = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<double?> accuracyM = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RouteRecordingPointsCompanion(
+                recordingId: recordingId,
+                sequenceNumber: sequenceNumber,
+                recordedAt: recordedAt,
+                lat: lat,
+                lon: lon,
+                accuracyM: accuracyM,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String recordingId,
+                required int sequenceNumber,
+                required DateTime recordedAt,
+                required double lat,
+                required double lon,
+                Value<double?> accuracyM = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RouteRecordingPointsCompanion.insert(
+                recordingId: recordingId,
+                sequenceNumber: sequenceNumber,
+                recordedAt: recordedAt,
+                lat: lat,
+                lon: lon,
+                accuracyM: accuracyM,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RouteRecordingPointsTable, RouteRecordingPoint>(
+                    table,
+                  ),
+                  $$RouteRecordingPointsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({recordingId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (recordingId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.recordingId,
+                        referencedTable: $$RouteRecordingPointsTableReferences
+                            ._recordingIdTable(db),
+                        referencedColumn: $$RouteRecordingPointsTableReferences
+                            ._recordingIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RouteRecordingPointsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RouteRecordingPointsTable,
+      RouteRecordingPoint,
+      $$RouteRecordingPointsTableFilterComposer,
+      $$RouteRecordingPointsTableOrderingComposer,
+      $$RouteRecordingPointsTableAnnotationComposer,
+      $$RouteRecordingPointsTableCreateCompanionBuilder,
+      $$RouteRecordingPointsTableUpdateCompanionBuilder,
+      (RouteRecordingPoint, $$RouteRecordingPointsTableReferences),
+      RouteRecordingPoint,
+      PrefetchHooks Function({bool recordingId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -27780,6 +31389,12 @@ class $AppDatabaseManager {
       $$TaxonListVersionsTableTableManager(_db, _db.taxonListVersions);
   $$TaxonUsagesTableTableManager get taxonUsages =>
       $$TaxonUsagesTableTableManager(_db, _db.taxonUsages);
+  $$TransectProposalsTableTableManager get transectProposals =>
+      $$TransectProposalsTableTableManager(_db, _db.transectProposals);
   $$TransectSectionsTableTableManager get transectSections =>
       $$TransectSectionsTableTableManager(_db, _db.transectSections);
+  $$RouteRecordingsTableTableManager get routeRecordings =>
+      $$RouteRecordingsTableTableManager(_db, _db.routeRecordings);
+  $$RouteRecordingPointsTableTableManager get routeRecordingPoints =>
+      $$RouteRecordingPointsTableTableManager(_db, _db.routeRecordingPoints);
 }

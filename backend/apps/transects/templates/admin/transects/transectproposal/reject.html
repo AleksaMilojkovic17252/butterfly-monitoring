@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Reject these route proposals. The reason is shown to the researcher on the phone and kept in the
+  history.</p>
+<ul>
+  {% for proposal in proposals %}
+  <li>{{ proposal.name }} ({{ proposal.project }}, {{ proposal.created_by }})</li>
+  {% endfor %}
+</ul>
+{% if skipped %}
+<p><strong>{{ skipped }} selected proposal(s) are not pending and will be skipped.</strong></p>
+{% endif %}
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="reject_proposals">
+  {% for proposal in proposals %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ proposal.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Reject">
+  <a href="{% url 'admin:transects_transectproposal_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

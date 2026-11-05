@@ -2086,3 +2086,43 @@ A researcher can add a butterfly to their own finished visit (`completed`, `sync
 7. **Locked while the phone is behind (shown by hand).** If an admin locks the visit before the phone syncs, the phone still accepts the entry locally. The push is refused
    with `visit_locked` and the item shows under Errors of that project's Unsynced data screen, with Discard local change and Retry (after an unlock). Nothing reaches the server.
 8. **Not built:** an admin add (draft T113, D-065 still holds until it is filed).
+
+## D-098 · Route proposals (T108): not a visit, not a transect on the phone; the server owns the review
+2026-11-05 · accepted · T108, *builds on D-042, D-086 and D-049* (backend and app halves)
+A researcher who finds a transect unwalkable records a **proposal**; an admin turns it into an inactive transect.
+1. **A proposal is neither a visit nor a transect on the phone.** Transects are reference data that the phone only pulls (D-042), and a Pollard walk repeats a
+   fixed route with sections, so a transect made in the field would not fit the method. `TransectProposal` (`transect_proposal`, in `apps/transects/`) is user data
+   like a plant record: pushed, pulled for its own creator, soft-deleted.
+2. **The proposer is `created_by`.** `SyncableModel` has it, the server sets it from the request, and push ownership and the pull scope already use it. There is no
+   `proposer` column; the admin labels the column "Proposer".
+3. **Server-owned fields.** `status`, `review_note`, `reviewed_by`, `reviewed_at`, `created_transect` and `length_m` are in `SyncEntity.server_owned` and the
+   serializer's `read_only_fields`, so a push neither sets them nor conflicts on them. `length_m` is `ST_Length(geometry::geography)`, worked out on every save.
+4. **Only a pending proposal may change.** `guard_proposal` raises a 409 `proposal_reviewed` before the merge, so a late phone update after an admin's accept is
+   refused instead of becoming a conflict. Push `update` and `delete` exist on the server; the app only creates.
+5. **Rules.** V02, V07, V08 (`transects/rules.py`): a LineString of at least two distinct points, in range, two-dimensional, checked before PostGIS (the table also has
+   `proposal_geom_valid` and `proposal_geom_points`). A self-crossing line is valid: a walked route can cross itself.
+6. **Code uniqueness counts deleted transects.** `transect_code_unique` has no `deleted_at` condition, so `transect_code_taken` looks at `_base_manager`; the Create
+   transect form checks it and the admin never sees an `IntegrityError`.
+7. **Accept = a new inactive transect.** `accept_proposal` creates a `Transect` with the proposal's line and `active = false`, sets the proposal to `accepted`, and
+   only sets the replaced transect to `active = false` (optional, default on). Its line stays, so no visit changes. The admin then cuts sections (T022) and activates it.
+   `reject_proposal` needs a note of at least 10 characters. Both lock the row and require `pending`; every change is `save_with_reason`.
+8. **Admin.** A read-only page (the change permission exists for the list actions only) with the line on a map and the replaced transect dashed, through an optional
+   `data-reference-geojson` in `readonly_map.js` and the `location_map_reference` hook of `ReadOnlyMapMixin`.
+
+**App half (mobile session):**
+9. **A recording is local state, resumed after a kill.** `route_recording` and `route_recording_point` are local-only tables (schema 16, `from15To16` also resets the pull
+   cursors). At most one recording exists, and the row is the truth: `RouteRecorder` (kept alive from `app.dart`, modelled on `TrackingController`) follows
+   `openRecordingProvider`, subscribes when the row is not paused, and continues the sequence numbers. Buffered fixes (10, or 30 s) are lost if the app is killed.
+10. **One GPS stream (D-087).** `RouteRecordingRepository.start` refuses while a visit is in progress, `VisitRepository.start` refuses while a recording is open, and
+    the recorder does not subscribe if a visit runs. `GeometryCaptureWidget` listens to the recorder's last fix while it records, as it does for the visit tracker, so a
+    plant polygon walk does not cancel the recording's stream.
+11. **Fixes are all stored and filtered when read** (D-060, `isUsableAccuracy` in `core/location/usable_fix.dart`, also used by `isUsablePoint`): unusable fixes and fixes at
+    the same position as the one before are left out when the line is made. `recorded_from` and `recorded_to` are the times of the first and last fix in the line.
+12. **The phone only creates.** My proposals is read-only; the status, review note, `length_m` and the new transect come back by pull. An unsent create can be discarded on the
+    sync screen. A Withdraw button would need nothing new on the server (push `delete` exists).
+13. **Draw on map (added with the app half, 2026-11-05).** A route that cannot be walked can be drawn instead: `openDrawProposal` reuses `showGeometryCapture` in line mode, with
+    the project's transects as guide lines, then the same details sheet, and `ProposalRepository.createFromDrawing` (same rules, same payload; `recorded_from` and `recorded_to`
+    are both the time of saving). It needs no GPS, so it is allowed during a visit or a recording and works offline. The server and the admin cannot tell drawn from walked, by
+    decision (a proposal is only a suggestion). Drawn only: a recorded line cannot be edited afterwards.
+14. **The new transect's code is looked up locally** by `created_transect` in the transects table; until the pull brings the transect the row says "Accepted. Sync to get the new
+    transect." The notification channel of the recording is still named "Visit tracking" (`location_source.dart`).

@@ -1,13 +1,13 @@
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/location/usable_fix.dart';
 
 /// True when [point] counts for the route (D-060): its accuracy is not worse
 /// than twice [gpsAccuracyWarningM]. A point without an accuracy is kept. The
 /// server uses the same rule for `distance_walked_m`, and T100 for the
 /// coverage.
 bool isUsablePoint(SurveyTrackPoint point, double gpsAccuracyWarningM) {
-  final accuracy = point.accuracyM;
-  return accuracy == null || accuracy <= 2 * gpsAccuracyWarningM;
+  return isUsableAccuracy(point.accuracyM, gpsAccuracyWarningM);
 }
 
 /// Length in metres of the route through [points], which must be in recorded

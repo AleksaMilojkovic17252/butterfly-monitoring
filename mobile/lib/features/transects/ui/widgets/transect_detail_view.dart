@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/visit_values.dart';
+import 'package:mobile/features/proposals/ui/draw_proposal_entry.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
@@ -68,9 +69,46 @@ class TransectDetailView extends ConsumerWidget {
     final visits = ref.watch(transectVisitsProvider(transect.id)).value ?? [];
     final draft = ref.watch(transectDraftProvider(transect.id)).value;
     final scheme = Theme.of(context).colorScheme;
+    // One GPS stream (D-087, T108): no route proposal during a visit.
+    final visitRunning = ref.watch(deviceVisitInProgressProvider).value != null;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${transect.code} · ${transect.name}')),
+      appBar: AppBar(
+        title: Text('${transect.code} · ${transect.name}'),
+        actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Propose a replacement',
+            icon: const Icon(Icons.alt_route),
+            onSelected: (value) => value == 'record'
+                ? context.push(
+                    '/projects/$projectId/proposals/record'
+                    '?replaces=${transect.id}',
+                  )
+                : openDrawProposal(
+                    context,
+                    ref,
+                    projectId,
+                    replacesTransectId: transect.id,
+                  ),
+            itemBuilder: (context) => [
+              // Recording needs the one GPS stream (D-087); drawing does not.
+              PopupMenuItem(
+                value: 'record',
+                enabled: !visitRunning,
+                child: Text(
+                  visitRunning
+                      ? 'Record a replacement (finish the visit first)'
+                      : 'Record a replacement',
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'draw',
+                child: Text('Draw a replacement on map'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(8),
         children: [

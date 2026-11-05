@@ -26,6 +26,9 @@ String syncErrorMessage(String? lastError) {
       'visit_locked' =>
         'An admin has locked this visit, so this change was not accepted. '
             'Discard it, or retry after the visit is unlocked.',
+      'proposal_reviewed' =>
+        'An admin has already reviewed this proposal, so this change was not '
+            'accepted.',
       // T034: e.g. a finished visit sent back to draft. `detail` names the move.
       'invalid_transition' =>
         detail == null
@@ -87,6 +90,7 @@ String entityTypeLabel(String type) {
     'survey_visit' => 'Visits',
     'survey_track_point' => 'Track points',
     'project_protocol' => 'Protocols',
+    'transect_proposal' => 'Route proposals',
     'taxon' => 'Butterfly species',
     'transect' => 'Transects',
     'transect_section' => 'Transect sections',

@@ -144,6 +144,14 @@ real or role-played walk with a transect and the biologist.
 
 0. **Before the field (admin, office).** An admin draws the transect and its sections in Django
    admin and adds the researcher to the project. Researchers never create transects in the field.
+   When a route turns out to be unwalkable (private land, a cliff, impassable vegetation), or a
+   better one exists, the researcher records a **route proposal** on the phone instead: the
+   walked line (or, where it cannot be walked, a line drawn on the map) with a name and a reason.
+   An admin reviews it, creates a new **inactive** transect
+   from it, cuts the sections and activates it. A transect it replaces is deactivated, never
+   redrawn, so its past visits keep their line; standardised visits start on the new transect
+   afterwards. Butterflies seen while recording are free observations (`incidental`), not part of
+   a visit.
 1. **Pick the transect and start the visit.** The researcher opens the project, picks a transect
    (already on the phone from the offline package) and starts a visit. Start form: observer count,
    start temperature, wind (Beaufort), cloud cover, precipitation. GPS tracking starts.

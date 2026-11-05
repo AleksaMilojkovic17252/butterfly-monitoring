@@ -10,6 +10,8 @@ import 'package:mobile/features/observations/ui/observation_detail_screen.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 import 'package:mobile/features/projects/ui/project_home_screen.dart';
 import 'package:mobile/features/projects/ui/project_list_screen.dart';
+import 'package:mobile/features/proposals/ui/my_proposals_screen.dart';
+import 'package:mobile/features/proposals/ui/record_route_screen.dart';
 import 'package:mobile/features/resources/ui/habitat_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plant_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plants_habitat_screen.dart';
@@ -130,6 +132,22 @@ final routerProvider = Provider<GoRouter>((ref) {
                   projectId: state.pathParameters['id']!,
                   habitatId: state.pathParameters['habitatId']!,
                 ),
+              ),
+              // Route proposals (T108). Kept outside `transects/:transectId`,
+              // so `record` is not read as a transect id.
+              GoRoute(
+                path: 'proposals',
+                builder: (_, state) =>
+                    MyProposalsScreen(projectId: state.pathParameters['id']!),
+                routes: [
+                  GoRoute(
+                    path: 'record',
+                    builder: (_, state) => RecordRouteScreen(
+                      projectId: state.pathParameters['id']!,
+                      replacesTransectId: state.uri.queryParameters['replaces'],
+                    ),
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'transects',

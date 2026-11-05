@@ -209,9 +209,21 @@ class ReadOnlyMapMixin:
         collapses to 0 and the map draws nothing."""
         if record.geometry is None:
             return "-"
+        reference = self.location_map_reference(record)
+        reference_attribute = (
+            format_html(' data-reference-geojson="{}"', reference.geojson)
+            if reference is not None
+            else ""
+        )
         return format_html(
-            '<div class="readonly-geometry-map" data-geojson="{}" '
+            '<div class="readonly-geometry-map" data-geojson="{}"{} '
             'style="width: clamp(320px, calc(100vw - 640px), 720px); height: {};"></div>',
             record.geometry.geojson,
+            reference_attribute,
             self.location_map_height,
         )
+
+    def location_map_reference(self, record):
+        """A geometry drawn dashed under the record's own on the map (the transect a proposal
+        replaces, T108), or None for none."""
+        return None

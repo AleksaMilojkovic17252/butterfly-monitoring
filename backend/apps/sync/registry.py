@@ -29,7 +29,11 @@ from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisit
 from apps.sync import conflicts
 from apps.sync.handlers import PushHandlers
 from apps.transects import services as transects
-from apps.transects.serializers import TransectSectionSyncSerializer, TransectSyncSerializer
+from apps.transects.serializers import (
+    TransectProposalSyncSerializer,
+    TransectSectionSyncSerializer,
+    TransectSyncSerializer,
+)
 
 
 @dataclass(frozen=True)
@@ -162,6 +166,34 @@ ENTITIES = [
             delete=resources.push_delete_habitat,
             project_of=resources.project_of,
             guard=resources.guard_habitat_feature,
+        ),
+    ),
+    # Scoped to created_by = user (the proposer). The entity type is the table name (D-086). The
+    # status, the review fields, the new transect and the length are the server's: a push cannot
+    # set them, and `guard_proposal` refuses any change once an admin has reviewed (T108, D-098).
+    SyncEntity(
+        "transect_proposal",
+        TransectProposalSyncSerializer,
+        transects.pull_transect_proposals,
+        push=PushHandlers(
+            create=transects.push_create_proposal,
+            update=transects.push_update_proposal,
+            delete=transects.push_delete_proposal,
+            project_of=transects.project_of_proposal,
+            guard=transects.guard_proposal,
+            # A resend of the create after an admin's review changes nothing, so it is merged;
+            # push_update_proposal runs the guard itself for a real change.
+            guard_resent_create=False,
+        ),
+        server_owned=frozenset(
+            {
+                "status",
+                "review_note",
+                "reviewed_by",
+                "reviewed_at",
+                "created_transect",
+                "length_m",
+            }
         ),
     ),
 ]

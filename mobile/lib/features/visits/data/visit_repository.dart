@@ -229,6 +229,14 @@ class VisitRepository {
       if (inProgress != null) {
         throw StateError('Another visit is already in progress.');
       }
+      // One GPS stream at a time (D-087, T108): the visit tracker and a route
+      // recording must never run together.
+      final recording = await _db.select(_db.routeRecordings).get();
+      if (recording.isNotEmpty) {
+        throw StateError(
+          'A route recording is in progress. Finish or discard it first.',
+        );
+      }
       if (draft == null) {
         return _create(
           protocol: protocol,

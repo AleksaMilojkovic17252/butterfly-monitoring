@@ -90,11 +90,11 @@ def _v07_optional_choices(data, errors, allowed_by_field):
 def _v08_geometry(data, errors, allowed_types):
     # V08. A missing geometry is V02's.
     geometry = data.get("geometry")
-    if geometry is not None and not _is_valid_geometry(geometry, allowed_types):
+    if geometry is not None and not is_valid_geometry(geometry, allowed_types):
         _add(errors, "geometry", "V08")
 
 
-def _is_valid_geometry(geometry, allowed_types):
+def is_valid_geometry(geometry, allowed_types):
     """V08's test: a non-empty, valid, two-dimensional geometry of an allowed type, all of it
     inside the longitude and latitude limits."""
     if (

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.core.serializers import GeoJSONField
-from apps.transects.models import Transect, TransectSection
+from apps.core.serializers import GeoJSONField, UTCDateTimeField, WritableGeoJSONField
+from apps.transects.models import Transect, TransectProposal, TransectSection
 from apps.transects.services import geodesic_length_m
 
 
@@ -94,3 +94,38 @@ class TransectSyncSerializer(serializers.ModelSerializer):
         if length is None:
             length = geodesic_length_m(transect)
         return round(length, 1)
+
+
+class TransectProposalSyncSerializer(serializers.ModelSerializer):
+    """A route proposal as pulled to the phone and pushed from it (T108).
+
+    The status, the review fields, `created_transect` and `length_m` are the server's: they are
+    read-only here and listed in `SyncEntity.server_owned`. The messages of the hard rules are the
+    rule IDs (docs/requirements/validation-rules.md).
+    """
+
+    created_at = UTCDateTimeField(required=False)
+    recorded_from = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
+    recorded_to = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
+    geometry = WritableGeoJSONField(
+        ("LineString",),
+        error_messages={"required": "V02", "null": "V02", "wrong_type": "V08", "invalid": "V08"},
+    )
+
+    class Meta:
+        model = TransectProposal
+        exclude = ["updated_by"]
+        read_only_fields = [
+            "created_by",
+            "deleted_at",
+            "status",
+            "review_note",
+            "reviewed_by",
+            "reviewed_at",
+            "created_transect",
+            "length_m",
+        ]
+        extra_kwargs = {
+            "reason": {"error_messages": {"invalid_choice": "V07", "required": "V02"}},
+            "name": {"error_messages": {"required": "V02", "blank": "V02", "null": "V02"}},
+        }

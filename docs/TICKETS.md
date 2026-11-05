@@ -143,7 +143,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
 | T107 | [#124](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/124) | App shows photos that are not on this phone | P1 | should | T050, T106 | 0.5 d | done |
-| T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | todo |
+| T108 | [#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) | Route proposals from the field | P1 | should | T022, T026, T037 | 2 d | done |
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | done |
 | T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | done |
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | todo |
@@ -2041,7 +2041,9 @@ reinstall or on a second phone, observation detail would show empty photos. The 
 Out of scope: downloading every photo ahead of time; seeing other phones' photos offline.
 
 ### T108 · Route proposals from the field
-[#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) · E03 · added 2026-10-30 · P1 · should · labels: `backend`, `mobile`, `admin`, `sync`, `should` · est. 2 d · **todo**
+[#125](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/125) · E03 · added 2026-10-30 · P1 · should · labels: `backend`, `mobile`, `admin`, `sync`, `should` · est. 2 d · **done**
+
+Note: decided beyond the text above (2026-11-05): built in two sessions (backend and admin, then the app) with one commit at the end; the proposer is `created_by`, not a separate column; the phone only creates proposals (no edit or withdraw, push `update`/`delete` exist on the server); the proposal's length is the server's (`length_m`), the app shows its own estimate until the pull brings it; added at the developer's request: **Draw on map** (a line tapped on the map, for routes that cannot be walked; drawn only, the admin cannot tell it from a walked one). See D-098.
 
 Depends on: T022, T026, T037
 Notes: the Free observation button on the recording screen needs T047; without it the screen has no button. T047 is built: the button calls
