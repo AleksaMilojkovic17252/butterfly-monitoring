@@ -138,7 +138,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | done |
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
-| T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | todo |
+| T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | done |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | done |
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
 | T106 | [#123](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/123) | App visit detail and observation detail | P1 | must | T033, T040, T041, T045 | 1.5 d | done |
@@ -1964,20 +1964,22 @@ in KNN cannot use the GiST index on `geometry`. Nothing measures whether the spa
 Out of scope: general claims. It is one laptop and one generator run, and a Seq Scan winning at Phase 1 volumes is a valid finding.
 
 ### T103 · Linear referencing: positions along the transect
-[#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) · E06 · added 2026-10-27 · P1 · could · labels: `backend`, `database`, `could` · implements F19 (extends) · est. 1 d · **todo**
+[#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) · E06 · added 2026-10-27 · P1 · could · labels: `backend`, `database`, `could` · implements F19 (extends) · est. 1 d · **done**
 
 Depends on: T044, T048, T067
 
 Why: transect data is one-dimensional ("200 m from the start"). PostGIS linear referencing gives each transect record its distance along
 the transect and its offset from it. This gives an abundance profile along the route and numbers for T048's section-boundary limitation.
 
-- [ ] `geo.transect_sections` gains `start_m` and `end_m` (UTM, `ST_LineLocatePoint` × length; sections tile the line, D-046).
-- [ ] `geo.butterfly_observations` gains `distance_along_m` and `offset_m` for transect records (null otherwise).
-- [ ] View `report_transect_profile` (transect × year × `bin_m` bin, default 50 m): observations, individuals, species.
-- [ ] On the simulated season, count the records where nearest section (T048) and `[start_m, end_m)` disagree, and their distance to a boundary. Recorded in `evaluation/results/section-assignment.md`.
-- [ ] A DECISIONS.md entry on which method T048 keeps (keep the `offset_m ≤ max_distance_from_transect_m` check either way).
+- [x] `geo.transect_sections` gains `start_m` and `end_m` (UTM, `ST_LineLocatePoint` × length; sections tile the line, D-046).
+- [x] `geo.butterfly_observations` gains `distance_along_m` and `offset_m` for transect records (null otherwise).
+- [x] View `report_transect_profile` (transect × year × `bin_m` bin, default 50 m): observations, individuals, species.
+- [x] On the simulated season, count the records where nearest section (T048) and `[start_m, end_m)` disagree, and their distance to a boundary. Recorded in `evaluation/results/section-assignment.md`.
+- [x] A DECISIONS.md entry on which method T048 keeps (keep the `offset_m ≤ max_distance_from_transect_m` check either way).
 
 Out of scope: storing the values (views only, no sync or Drift change). On a transect that loops back on itself, `ST_LineLocatePoint` can pick the wrong pass: document it.
+
+Note (2026-11-06, agreed with the developer): the section-assignment comparison ran on the dev data (1 121 records), not the simulated season; rerun `evaluation/results/section-assignment.sql` after T071. `report_transect_profile` also got a read-only admin page like the T061 reports (not in the ticket text). T048 keeps nearest-section (D-105). None skipped (the ticket asks for no tests).
 
 ### T104 · App reads the protocol's time zone (rule W07)
 [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) · E08 · added 2026-10-28 · P1 · should · labels: `mobile`, `should` · implements F30 (extends T055) · est. 1 d · **done**

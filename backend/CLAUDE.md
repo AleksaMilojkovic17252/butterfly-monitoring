@@ -82,8 +82,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `save_visit` and `refresh_after_points` call `refresh_route_coverage`, which is server-owned (`_NOT_SYNCED`, `SERVER_OWNED_FIELDS`, the
   admin's `fixed_fields`). The view `public.survey_visit_validity` is the valid-visit rule of protocol §6 for T061 and T101; it is not in
   `geo`, and `pygeoapi_ro` must not get it. `apps/core/geo.py` holds `utm_srid`, which `transects.services` and `surveys.coverage` share.
-- `apps/reports/` (T061, D-099) has three unmanaged models over the views `public.report_transect_indicators`, `report_species_phenology` and
-  `report_behaviour_counts` (created in `0001_initial`, no `pygeoapi_ro` grant) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action.
+- `apps/reports/` (T061, D-099) has four unmanaged models over the views `public.report_transect_indicators`, `report_species_phenology`,
+  `report_behaviour_counts` (created in `0001_initial`, no `pygeoapi_ro` grant) and `report_transect_profile` (T103, D-105, `0002`; 50 m bins along the transect, built on
+  `geo.butterfly_observations`: a change to that view must drop and recreate it too) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action.
   Years and ISO weeks are in the project's time zone. A column change in a source table (`survey_visit`, `butterfly_observation`, `project_protocol`, `transect`) needs a
   hand-written migration that drops and recreates the views.
 - `apps/projects/services.py` (T099, D-104): `close_project` / `reopen_project` (the admin actions, with a reason) set `Project.closed_at`. `ensure_project_open(project, made_at)` raises `ProjectClosed`
@@ -112,7 +113,7 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
 - **`geo` views** for pygeoapi are created with `CreateView("geo.<name>", "<select>")` in a
   migration in the app that owns the view's main table. The autodetector does not see them:
   renaming or dropping a column a view uses, or changing its type, needs a hand-written migration
-  that drops and recreates the view (PostgreSQL refuses otherwise). Never set `security_invoker` and
+  that drops and recreates the view (PostgreSQL refuses otherwise). `start_m`, `end_m` (sections) and `distance_along_m`, `offset_m` (observations) are computed in the views (T103). Never set `security_invoker` and
   never grant `pygeoapi_ro` anything on `public` (D-004). pygeoapi reads a view's columns at start,
   so restart it after a migration that changes a view; it does not start if a configured view is
   missing, so migrate first.

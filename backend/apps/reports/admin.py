@@ -6,7 +6,12 @@ from django.http import StreamingHttpResponse
 from apps.exports.admin_actions import ExportActionsMixin
 from apps.exports.writers import csv_chunks, geojson_chunks
 from apps.projects.services import projects_for
-from apps.reports.models import BehaviourCounts, SpeciesPhenology, TransectIndicators
+from apps.reports.models import (
+    BehaviourCounts,
+    SpeciesPhenology,
+    TransectIndicators,
+    TransectProfile,
+)
 
 
 class ReportAdmin(ExportActionsMixin, admin.ModelAdmin):
@@ -100,3 +105,24 @@ class BehaviourCountsAdmin(ReportAdmin):
     list_filter = [("project", RelatedOnlyFieldListFilter), "year"]
     list_select_related = ["project"]
     ordering = ["-year", "project", "-records"]
+
+
+@admin.register(TransectProfile)
+class TransectProfileAdmin(ReportAdmin):
+    list_display = [
+        "project",
+        "transect_code",
+        "year",
+        "bin_start_m",
+        "bin_end_m",
+        "observations",
+        "individuals",
+        "species",
+    ]
+    list_filter = [
+        ("project", RelatedOnlyFieldListFilter),
+        ("transect", RelatedOnlyFieldListFilter),
+        "year",
+    ]
+    list_select_related = ["project"]
+    ordering = ["project", "transect_code", "-year", "bin_start_m"]

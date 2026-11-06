@@ -81,6 +81,12 @@ farther than that, the observation has no section. An observation with no visit 
 section boundary. At the shared end of two sections the lower-numbered one is chosen. Section analysis is therefore
 approximate near boundaries.
 
+**Position along the transect** (T103, D-105). The `geo` views and the transect profile report give each section a
+`start_m` / `end_m` and each transect record a `distance_along_m` (metres along the line, planar in the transect's UTM
+zone) and an `offset_m` (geodesic, the distance the `far_from_transect` flag uses). The section of a record is still
+the nearest one above, not the interval. On a transect that comes back near itself the position can be taken on the
+wrong pass, so it is approximate there.
+
 ## 6. Valid visit
 
 A visit counts as **valid** for analysis when all of these hold:

@@ -106,3 +106,34 @@ class BehaviourCounts(models.Model):
         db_table = "report_behaviour_counts"
         verbose_name = "behaviour counts"
         verbose_name_plural = "behaviour counts"
+
+
+class TransectProfile(models.Model):
+    row_id = models.CharField(
+        max_length=120,
+        primary_key=True,
+        help_text="Transect id, year and bin start, joined with colons",
+    )
+    project = _fk("projects.Project", "Project the transect belongs to")
+    transect = _fk("transects.Transect", "Transect the figures are for")
+    transect_code = models.CharField(max_length=20, help_text="Short transect code")
+    year = models.IntegerField(
+        help_text="Calendar year of the visits, in the project's time zone; a year with no "
+        "finished visit has no rows (not surveyed), unlike a surveyed bin with no records (zeros)"
+    )
+    bin_m = models.IntegerField(help_text="Bin width, metres along the transect")
+    bin_start_m = models.IntegerField(help_text="Metres along the transect where the bin starts")
+    bin_end_m = models.DecimalField(
+        max_digits=8,
+        decimal_places=1,
+        help_text="Metres along the transect where the bin ends (the last bin stops at the end)",
+    )
+    observations = models.IntegerField(help_text="Transect observation records in the bin")
+    individuals = models.IntegerField(help_text="Individuals counted in the bin")
+    species = models.IntegerField(help_text="Distinct species recorded in the bin")
+
+    class Meta:
+        managed = False
+        db_table = "report_transect_profile"
+        verbose_name = "transect profile"
+        verbose_name_plural = "transect profile"

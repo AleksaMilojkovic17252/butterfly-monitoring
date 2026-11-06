@@ -2284,3 +2284,25 @@ for new visits.)
 a longer one closes (the history shows it); the list shows Closed and the filter works; closing twice is refused. `GET /projects` and the pull show `closed_at` and `closed_by`. Reopen clears both.
 Creates (draft visit, observation on a visit, free observation, plant, habitat, proposal): applied before, `rejected project_closed` after. Updates of a visit, an observation, a plant (with or
 without a visit), a habitat, a photo: applied before, rejected after; deletes after the close are rejected; a track point batch after the close is rejected.
+
+## D-105 · Linear referencing (T103): positions along the transect in the views; T048 keeps nearest-section
+2026-11-06 · accepted · T103, *builds on D-046 (UTM for metres), D-084 (section assignment) and D-099 (reports)*
+The `geo` views and one report view give each section and each transect record a position along the transect. Views only: nothing is stored, and sync and the phone are unchanged.
+1. **Columns.** `geo.transect_sections` gains `start_m` and `end_m` (`transects/0007`). `geo.butterfly_observations` gains `distance_along_m` and `offset_m` (`observations/0006`), filled for
+   `source = 'transect'` records with a visit and null for every other record.
+2. **UTM for positions, geodesic for the offset.** Start, end and distance along are planar, in the transect's own UTM zone (D-046), using the rule of `apps.core.geo.utm_srid` (centroid of the
+   transect line) written inline in SQL, because a `geo` view must not depend on an object in `public` (D-004). `offset_m` is `::geography`, the same measure as T056's `far_from_transect`
+   (protocol.md §5), so `offset_m > max_distance_from_transect_m` exactly when the flag applies. This was checked on the dev data: no record differs.
+3. **Reversed sections.** `start_m` is `LEAST` and `end_m` `GREATEST` of the two end points' positions, so a section drawn against the line's direction still has `start_m <= end_m`.
+4. **Profile.** `public.report_transect_profile` (`reports/0002`) has one row per transect × year × 50 m bin (`BIN_M`, also the column `bin_m`), with observations, individuals and species. Bins with no
+   records are included (zeros), and a record exactly at the end of the line goes into the last bin. It reads `geo.butterfly_observations`, so there is one definition of the position: **a later change to
+   that view must drop and recreate this view too.** No grant to `pygeoapi_ro`. It has an unmanaged model and a read-only admin like the T061 reports, with the shared export actions (added at the
+   developer's request; the ticket text asked only for the view).
+5. **T048 keeps nearest-section (the developer's choice).** `transects.services.nearest_section_id` stays the rule (D-084). `distance_along_m` is a reporting and cross-check value. Reasons: nearest-section
+   does not depend on the sections tiling the line (two dev transects, `NI12` and `T21`, do not), it is already in place, and changing it would widen the ticket. The `offset_m <= max_distance_from_transect_m`
+   check is kept either way.
+6. **Loop-back limit.** On a transect that comes back near itself, `ST_LineLocatePoint` returns the closest pass, which can be the wrong one: then `distance_along_m`, the interval section and the profile
+   bin are wrong. Nearest-section has a weaker form of the same risk. On a closed loop the shared start/end point can locate at 0 instead of the full length, so the last section's `end_m` comes out small. On the dev data `NI12` (12 pairs of non-adjacent sections within 2 × the limit) and `T21` (1) loop back; neither has records.
+7. **Evidence, to redo.** On the dev data (1 121 records, 2026-11-06) the interval and nearest-section agree on all 1 110 records that have a section, and disagree on none; 11 are beyond the limit.
+   The dev data has no noise at section boundaries, so this does not separate the methods. Rerun `evaluation/results/section-assignment.sql` on the simulated season after T071.
+   Results: `evaluation/results/section-assignment.md`.
