@@ -95,7 +95,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T057 | [#74](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/74) | Admin validation queue | P1 | should | T014, T049, T058 | 2 d | done |
 | T058 | [#75](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/75) | Validation history | P1 | should | T044 | 1 d | done |
 | T059 | [#76](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/76) | App map screen with layers and filters | P1 | must | T036, T044 | 2.5 d | done |
-| T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | todo |
+| T060 | [#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) | Offline basemap from MBTiles | P1 | could | T031, T059 | 2 d | done |
 | T061 | [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) | Indicators: server SQL views and admin report | P1 | should | T041, T044, T058 | 1.5 d | done |
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | done |
 | T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
@@ -650,7 +650,7 @@ Note: the offline checklist (`docs/testing/offline-checklist.md`) is written in 
 
 Manual run (2026-10-26, phone over USB): Download with progress and the right transect count; Cancel then Download continued from the saved cursor; after a server edit the card showed `Outdated` and Update brought it back to `Ready` (the automatic pull was switched off for that check, then restored); checklist steps 1-4 passed in airplane mode; a second project the user belongs to was not pulled by Sync now and stayed `Not loaded` with 0 transects. Backend checked with curl (`tmp/t031/curl.md`). Labels on the card: `Not loaded`, `Ready`, `Outdated`.
 
-Deferred: checklist steps 5-10 run in T033, T035, T037/T039, T045, T040/T041 and T034+ (see the note above); the MBTiles criterion waits for T060; review points on the status error mapping and on projects pulled before T031 are in D-055.
+Deferred: checklist steps 5-10 run in T033, T035, T037/T039, T045, T040/T041 and T034+ (see the note above); the MBTiles criterion is delivered by T060 (D-102); review points on the status error mapping and on projects pulled before T031 are in D-055.
 
 ### T032 · App sync status screen
 [#49](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/49) · E04 · P1 · must · labels: `mobile`, `sync`, `must` · implements F28 · est. 1.5 d · **done**
@@ -1223,7 +1223,7 @@ its edit form (T052, T054); on a visit route it goes to T106's visit detail.
 - [ ] The online basemap uses OSM tiles with a correct `User-Agent` (`rs.<you>.butterfly`) and the attribution shown. Viewed tiles are cached (flutter_map tile caching). There is **no bulk prefetch** (OSM tile usage policy forbids it).
 
 ### T060 · Offline basemap from MBTiles
-[#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) · E09 · P1 · could · labels: `mobile`, `backend`, `could` · implements F29 · est. 2 d · **todo**
+[#77](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/77) · E09 · P1 · could · labels: `mobile`, `backend`, `could` · implements F29 · est. 2 d · **done**
 
 Depends on: T031, T059
 
@@ -1231,6 +1231,11 @@ Depends on: T031, T059
 - [ ] `Project.basemap` is a FileField in MinIO, uploaded in admin. The offline package (T031) downloads it when present.
 - [ ] The app renders it with an MBTiles tile provider for flutter_map (package choice: VERIFY, e.g. `flutter_map_mbtiles`) and falls back to cached online tiles.
 - [ ] The file size is shown before download. Typical: 20–80 MB for a few km².
+
+Manual run (2026-11-06, phone over USB, debug build): with a 0.5 MB test file the project map, transect detail and plant location capture drew the tiles in airplane mode; past the file's top zoom its last level is stretched. A 59 MB file: the card showed `Update (57 MB)`, then `Basemap 15.4 / 56.6 MB` with Cancel, then Ready, and the file on the phone matched the server size. A cancel (66 MB file) kept the old file and the card stayed Outdated; Update then fetched the new one. "Remove all local data" deleted `basemaps/`. Backend checked with curl: status, download (`Content-Length`, sha256), 404 for a non-member and for no basemap, no basemap fields in the pull, nginx 403 (not 413) for a 50 MB admin POST. The package behaviour is in D-102.
+
+Deferred: the active visit map, route recording and the Download label of a never-loaded project were not run on the phone (the maps share `TransectMap` and `ProposalMap` with the screens that were); no tests (D-021).
+
 
 ### T061 · Indicators: server SQL views and admin report
 [#78](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/78) · E09 · P1 · should · labels: `backend`, `admin`, `database`, `should` · implements F35 · est. 1.5 d · **done**

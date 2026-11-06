@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
+import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 
 /// Colours of the sections, by walking order. Neighbouring sections always
 /// differ; after eight the colours repeat.
@@ -22,21 +25,26 @@ Color sectionColor(int index) => _sectionColors[index % _sectionColors.length];
 /// A map of one transect: the whole line as a wide grey band, and each section
 /// on top of it in its own colour. Opens zoomed to fit the line.
 ///
-/// The basemap is OpenStreetMap tiles, which need a connection. flutter_map
-/// keeps the tiles it has shown in a cache, so an area seen online usually
-/// still shows offline; otherwise the lines are drawn on a plain background.
+/// The basemap is the project's offline MBTiles file when the phone has one
+/// (T060), over OpenStreetMap tiles, which need a connection. flutter_map keeps
+/// the tiles it has shown in a cache, so an area seen online usually still
+/// shows offline; otherwise the lines are drawn on a plain background.
 ///
 /// The active visit screen (T039) also passes [currentSection], drawn wider
 /// than the others, and [overlays] (the walked route and the position), drawn
 /// on top of the sections.
-class TransectMap extends StatelessWidget {
+class TransectMap extends ConsumerWidget {
   const TransectMap({
     super.key,
+    required this.projectId,
     required this.line,
     required this.sections,
     this.currentSection,
     this.overlays = const [],
   });
+
+  /// The project the transect belongs to; its offline basemap is drawn.
+  final String projectId;
 
   /// The transect line.
   final List<LatLng> line;
@@ -51,7 +59,7 @@ class TransectMap extends StatelessWidget {
   final List<Widget> overlays;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final points = [...line, for (final s in sections) ...s];
     if (points.isEmpty) {
       return const Center(child: Text('No route on this phone'));
@@ -69,11 +77,7 @@ class TransectMap extends StatelessWidget {
         ),
       ),
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          // OSM's tile policy asks every app to identify itself.
-          userAgentPackageName: 'rs.amilojkovic.butterfly',
-        ),
+        ...basemapLayers(ref.watch(mbtilesProvider(projectId)).value),
         PolylineLayer(
           // flutter_map cannot draw a line without points (it asserts), and
           // the transect or a section can still be loading.

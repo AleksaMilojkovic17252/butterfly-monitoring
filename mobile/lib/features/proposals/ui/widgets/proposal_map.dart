@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
+import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 
 /// A transect drawn behind the recorded line on the record screen.
 class ProposalMapTransect {
@@ -21,14 +24,18 @@ class ProposalMapTransect {
 /// The camera starts on the transects, or on the position, and fits the
 /// recorded line once the first time it has two points. After that the user
 /// moves the map.
-class ProposalMap extends StatefulWidget {
+class ProposalMap extends ConsumerStatefulWidget {
   const ProposalMap({
     super.key,
+    required this.projectId,
     required this.transects,
     required this.line,
     this.position,
     this.accuracyM,
   });
+
+  /// The project being walked; its offline basemap is drawn (T060).
+  final String projectId;
 
   final List<ProposalMapTransect> transects;
 
@@ -41,10 +48,10 @@ class ProposalMap extends StatefulWidget {
   final double? accuracyM;
 
   @override
-  State<ProposalMap> createState() => _ProposalMapState();
+  ConsumerState<ProposalMap> createState() => _ProposalMapState();
 }
 
-class _ProposalMapState extends State<ProposalMap> {
+class _ProposalMapState extends ConsumerState<ProposalMap> {
   final _controller = MapController();
 
   /// True once the camera has been fitted to the recorded line.
@@ -118,11 +125,7 @@ class _ProposalMapState extends State<ProposalMap> {
       mapController: _controller,
       options: options(),
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          // OSM's tile policy asks every app to identify itself.
-          userAgentPackageName: 'rs.amilojkovic.butterfly',
-        ),
+        ...basemapLayers(ref.watch(mbtilesProvider(widget.projectId)).value),
         PolylineLayer(
           polylines: [
             for (final t in widget.transects)

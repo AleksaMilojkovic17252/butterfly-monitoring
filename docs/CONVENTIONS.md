@@ -60,6 +60,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | drift / drift_flutter | 2.x | |
 | flutter_map + latlong2 | 8.3.2 / 0.9.1 | transect map (T033); approved for T033. latlong2 stepped down from 0.10.1 in T059 because flutter_map_marker_cluster 8.2.2 requires `^0.9.1` (D-081); go back to 0.10 when the cluster package allows it |
 | flutter_map_marker_cluster | 8.2.2 (exact) | clustered observation markers on the project map (T059); approved for T059. Brings flutter_map_marker_popup, animated_stack_widget, provider and nested as transitive packages; the app does not use `provider` |
+| flutter_map_mbtiles | 1.1.0 (exact) | offline MBTiles basemap (T060, D-102); approved for T060. Brings `mbtiles` 0.5.0 as a transitive package. `mbtiles` 0.5.1 needs latlong2 ^0.10, so 1.1.0 is the last release that works with latlong2 0.9.1 (see the row above); do not add `mbtiles` as a direct dependency |
 | geolocator | latest | Android foreground service via `foregroundNotificationConfig` (VERIFY API) |
 | flutter_riverpod, go_router, dio, uuid, flutter_secure_storage, image_picker, flutter_image_compress, crypto | latest | |
 | connectivity_plus | latest | network-change trigger of the sync runner (T030); approved for T030 |

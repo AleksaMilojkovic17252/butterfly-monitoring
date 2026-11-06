@@ -4,10 +4,12 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
 import 'package:mobile/features/map/domain/map_filter.dart';
 import 'package:mobile/features/map/domain/map_layers.dart';
 import 'package:mobile/features/map/domain/map_taxa.dart';
 import 'package:mobile/features/map/ui/map_popups.dart';
+import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/ui/free_observation_entry.dart';
@@ -461,6 +463,7 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   @override
   Widget build(BuildContext context) {
     final projectId = widget.projectId;
+    final mbtiles = ref.watch(mbtilesProvider(projectId)).value;
     final observations = ref.watch(projectObservationsProvider(projectId));
     final transects = ref.watch(projectTransectsProvider(projectId));
     final sections = ref.watch(projectSectionsProvider(projectId));
@@ -543,13 +546,10 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
         ),
       ),
       children: [
-        // OSM asks every app to identify itself with the user agent. flutter_map
-        // keeps the tiles it has shown in its cache; there is no prefetching.
-        if (layers.contains(MapLayer.basemap))
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'rs.amilojkovic.butterfly',
-          ),
+        // OSM tiles (cached by flutter_map as they are seen; there is no
+        // prefetching) with the project's offline MBTiles basemap on top, when
+        // the phone has one (T060).
+        if (layers.contains(MapLayer.basemap)) ...basemapLayers(mbtiles),
         // The plant patches and habitat areas, below the lines. A tap on one
         // finds it through the shared hit notifier; `deferToChild` lets a tap
         // that misses every area fall through to whatever is below.

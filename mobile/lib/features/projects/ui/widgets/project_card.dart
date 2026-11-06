@@ -20,7 +20,9 @@ class ProjectCard extends ConsumerWidget {
         ref.watch(downloadedTransectCountProvider(project.id)).value ?? 0;
     final pending =
         ref.watch(projectPendingChangesProvider(project.id)).value ?? 0;
-    final status = ref.watch(offlinePackageStatusProvider(project.id)).value;
+    final package = ref.watch(offlinePackageStatusProvider(project.id)).value;
+    final status = package?.status;
+    final basemapBytes = package?.basemapBytesToDownload;
     final runState = ref.watch(syncRunnerProvider);
     final downloading = runState.downloadingProjectId == project.id;
     final textTheme = Theme.of(context).textTheme;
@@ -61,11 +63,21 @@ class ProjectCard extends ConsumerWidget {
               ),
               if (downloading) ...[
                 const SizedBox(height: 6),
-                const LinearProgressIndicator(),
+                // The basemap step has a known size, so it shows a real bar.
+                LinearProgressIndicator(
+                  value: runState.basemapTotal > 0
+                      ? runState.basemapReceived / runState.basemapTotal
+                      : null,
+                ),
                 Row(
                   children: [
                     Expanded(
-                      child: Text('${runState.received} records received'),
+                      child: Text(
+                        runState.basemapTotal > 0
+                            ? 'Basemap ${_megabytes(runState.basemapReceived)}'
+                                  ' / ${_megabytes(runState.basemapTotal)} MB'
+                            : '${runState.received} records received',
+                      ),
                     ),
                     TextButton(
                       onPressed: () => ref
@@ -89,9 +101,8 @@ class ProjectCard extends ConsumerWidget {
                           : () => _download(context, ref),
                       icon: const Icon(Icons.cloud_download_outlined),
                       label: Text(
-                        status == OfflinePackageStatus.notDownloaded
-                            ? 'Download'
-                            : 'Update',
+                        '${status == OfflinePackageStatus.notDownloaded ? 'Download' : 'Update'}'
+                        '${basemapBytes == null ? '' : ' (${_buttonSize(basemapBytes)})'}',
                       ),
                     ),
                   ],
@@ -118,4 +129,15 @@ class ProjectCard extends ConsumerWidget {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+/// Megabytes with one decimal ("12.3"), for the progress text.
+String _megabytes(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
+
+/// The basemap size on the button: "6.4 MB" under 10 MB, "48 MB" above.
+String _buttonSize(int bytes) {
+  final megabytes = bytes / (1024 * 1024);
+  return megabytes < 10
+      ? '${megabytes.toStringAsFixed(1)} MB'
+      : '${megabytes.round()} MB';
 }

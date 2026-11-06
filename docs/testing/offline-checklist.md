@@ -27,3 +27,14 @@ result column. No automated test covers this (D-021).
 | 8 | Add a butterfly | The quick entry works with the taxon picker | T045 | Passed with the server unreachable (`adb reverse` removed, app force-stopped and reopened): search, save, the row and queue item stay on the phone; with the server back the next sync pushed it, 2026-10-28; not yet repeated in airplane mode |
 | 9 | Finish a visit | The summary shows; the true-zero and cancel reasons are offered | T040, T041 | built; the airplane-mode run (finish, cancel with butterflies, not conducted) is for the developer to fill in |
 | 10 | Airplane mode off | The next sync pushes everything and the unsynced count goes to 0 | T030, T034+ | not built yet |
+| 11 | Basemap (only for a project with an uploaded MBTiles file) | In airplane mode the project map, a transect detail, an active visit, the plant location capture and the route recording show the MBTiles tiles; outside the file's area the cached OSM tiles or a plain background show | T060 | Passed for the project map, transect detail and plant capture in airplane mode, 2026-11-06; the active visit and route recording maps are not yet run |
+
+### Step 11 in detail (T060)
+
+1. Upload the file in the project admin (Project → Basemap, see `docs/setup/basemap.md`).
+2. On the project list the card shows **Update (x MB)** (or **Download (x MB)** for a project not loaded yet).
+3. Tap it: the card shows "Basemap a / b MB" with a progress bar and Cancel. Cancel once; the card stays **Outdated** and
+   Update fetches the file again.
+4. Let it finish (**Ready**). Switch airplane mode on, force-stop the app and open it again.
+5. Open the five maps listed in the table. Pan outside the file's area.
+6. Settings → Remove all local data deletes `basemaps/` with the rest.

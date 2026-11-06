@@ -311,6 +311,7 @@ class _RecordRouteScreenState extends ConsumerState<RecordRouteScreen> {
             ),
           Expanded(
             child: ProposalMap(
+              projectId: widget.projectId,
               transects: [
                 for (final t in transects)
                   ProposalMapTransect(

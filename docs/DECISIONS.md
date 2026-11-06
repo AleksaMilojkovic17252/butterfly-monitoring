@@ -2191,3 +2191,33 @@ habitat features, transects and validation events; the three report admins use i
    with the API defaults (no dates, no track points). Two bundles never match byte for byte (ZIP entry times, `exported_at`); the CSVs inside and `metadata.json` apart from
    `exported_at` do.
 **Not handled.** Transect sections have no actions; no date or option form in the admin; the checked-by-hand soft-deleted case had no data in the demo project.
+
+## D-102 · Offline basemap (T060): a MBTiles file per project, downloaded on Download/Update, drawn over OSM
+2026-11-06 · accepted · T060, *builds on D-013, D-036, D-055, D-063, D-081 and D-083*
+1. **Storage.** `Project.basemap` is a `FileField` on the default (MinIO) storage with key `basemaps/<project id>/<sha256>.mbtiles` (`max_length=200`; the default 100 cut the key).
+   `basemap_size` and `basemap_sha256` are `editable=False` columns that the admin fills from the upload (`projects.services.inspect_basemap`, 1 MiB chunks). The admin refuses a file that is
+   not named `.mbtiles`, does not start with the SQLite header, or lacks a `tiles` table or a `metadata` table with `name` and `format` rows (the package needs them, see 9).
+   `services.set_basemap` does the same for a shell. Clear sets size and hash to null/empty. The old object stays in MinIO, as for photos (D-072). Saving bumps `server_version`, so phones show Outdated.
+2. **Not in the pull.** `ProjectSyncSerializer` excludes the three fields, so a pull never carries a MinIO URL. `ProjectSerializer` (REST) lists its fields and has none of them.
+3. **Status.** `offline-package/status` returns `{reference_version, basemap: null | {size, sha256}}`. The phone compares the hash with the one of its file.
+4. **Download.** `GET /api/v1/projects/{id}/basemap` (an action of `ProjectViewSet`, so a non-member gets 404, D-036; no basemap gets 404). It streams the object through Django, no presigned URL (D-013),
+   with `Content-Length` set to `basemap_size` for the progress bar.
+5. **nginx.** The global `client_max_body_size` stays 20m. Only `location /admin/projects/project/` allows 200m. `/api/v1/sync/push` still answers 413 for a big body.
+6. **On the phone.** The file is `<documents>/basemaps/<projectId>.mbtiles` (`BasemapStore`); its hash is in `sync_state` under `basemap:<projectId>`, so there is no Drift schema change. A download writes a `.part` file,
+   checks size and SHA-256, then renames it (as D-083 does for thumbnails). It is package data like the Drift database: logout keeps it, "Remove all local data" deletes the folder.
+7. **When it downloads.** Only in `SyncRunner.download` (Download / Update), after the pull and `setDownloaded`. The automatic `run()` never fetches it. If the server has no basemap the local file is deleted. A cancel keeps the project
+   data; the status is Outdated while the hashes differ, so Update fetches the file again. The status is also Outdated for a basemap upload or removal, and a not-yet-downloaded project asks the server for the size, so the button
+   reads `Download (48 MB)`. Offline the status is `ready`/`notDownloaded` as before (D-055).
+8. **Drawing.** `basemapLayers(mbtiles)` returns the OSM `TileLayer` (below) and, when the phone has a file, the MBTiles layer on top with `minZoom` and `maxNativeZoom` taken from the file's `minzoom`/`maxzoom` metadata (0 and 18 when absent): below the file's range it is not drawn, above it its top level is stretched (blurry, not blank). A tile that is not in the file is transparent, so the cached OSM tiles show through
+   outside the area or the zoom range. The five maps use it: project map, transect map (detail, active visit, visit route map), proposal map and the geometry capture. `mbtilesProvider(projectId)` opens the file read-only; the
+   runner invalidates it after a download.
+9. **Package choice.** `flutter_map_mbtiles` **1.1.0** (exact), with `mbtiles` **0.5.0**. `mbtiles` 0.5.1 needs latlong2 ^0.10, and `flutter_map_marker_cluster` 8.2.2 keeps us on latlong2 0.9.1 (D-081). `mbtiles` is not a direct dependency.
+10. **VERIFY (package source read, `flutter_map_mbtiles` 1.1.0 and `mbtiles` 0.5.0).** `MbTilesTileProvider.fromPath(path:)` opens the file read-only (`MbTiles(path:)`, `OpenMode.readOnly`) and `dispose()` closes it when the provider
+    opened it itself. The tile row is flipped from XYZ to TMS inside the package. **A tile that is not in the file:** with `silenceTileNotFound` true the image provider decodes a transparent image; with false it throws an exception
+    (a failed image load, not a crash). The default is `!kDebugMode`, so a debug build would throw for every tile outside the file. The app passes `true` explicitly. **A file without a `name` or `format` metadata row:** the
+    constructor throws (an `assert` in debug, a null-check error in release), so `mbtilesProvider` catches it and draws OSM only, and the admin refuses such a file. The query is synchronous on the UI isolate (one row per tile).
+    Run on the phone afterwards: tiles drawn offline on the project map, transect detail and plant capture; a tile outside the file is transparent; past the file's `maxzoom` the top level is stretched.
+11. **Upload limits (from the T060 review).** `inspect_basemap` also refuses a file over 200 MB (the same limit as nginx, for the dev port and the shell helper) and a `format` that is not `png`, `jpg`/`jpeg` or `webp`
+    (a vector `pbf` file would open but draw nothing). The download falls back to the storage size when `basemap_size` is null.
+**Not handled.** Vector MBTiles; several basemaps per project; deleting replaced objects from MinIO; resuming a half-downloaded file; tile attribution from the file's metadata.
+

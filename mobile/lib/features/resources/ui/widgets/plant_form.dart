@@ -90,6 +90,7 @@ class _PlantFormState extends ConsumerState<PlantForm> {
         ref.read(projectTransectsProvider(widget.projectId)).value ?? [];
     final shape = await showGeometryCapture(
       context,
+      projectId: widget.projectId,
       modes: const {GeometryMode.point, GeometryMode.polygon},
       initial: _input.geometry,
       referenceLines: [for (final t in transects) parseLineString(t.geometry)],

@@ -118,6 +118,7 @@ class TransectDetailView extends ConsumerWidget {
             child: SizedBox(
               height: 260,
               child: TransectMap(
+                projectId: projectId,
                 line: parseLineString(transect.geometry),
                 sections: [
                   for (final s in sections ?? <SectionWithHabitat>[])

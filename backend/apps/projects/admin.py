@@ -3,6 +3,7 @@ from zoneinfo import available_timezones
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.db.models.fields.files import FieldFile
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -13,7 +14,12 @@ from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
 from apps.core.widgets import EditableMapWidget, SearchableSelect
 from apps.exports import service
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
-from apps.projects.services import AreaFileError, multipolygon_from_file, projects_for
+from apps.projects.services import (
+    AreaFileError,
+    inspect_basemap,
+    multipolygon_from_file,
+    projects_for,
+)
 
 
 class HelpTextMixin:
@@ -152,6 +158,22 @@ class AreaImportForm(forms.Form):
     file = forms.FileField(label=_("GeoJSON or KML file"))
 
 
+class ProjectForm(forms.ModelForm):
+    """Checks a new basemap upload (T060). The size and hash are kept for `save_model`."""
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+    def clean_basemap(self):
+        basemap = self.cleaned_data["basemap"]
+        self.basemap_info = None
+        # An upload is a new file; False is the "Clear" box; anything else is the stored file.
+        if basemap and not isinstance(basemap, FieldFile):
+            self.basemap_info = inspect_basemap(basemap)
+        return basemap
+
+
 class ProjectMembershipInline(admin.TabularInline):
     model = ProjectMembership
     extra = 1
@@ -166,6 +188,7 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
     list_filter = ["active"]
     search_fields = ["name"]
     autocomplete_fields = ["owner"]
+    form = ProjectForm
     # Explicit order: the inherited sync fields would otherwise come first.
     fields = [
         "name",
@@ -177,12 +200,16 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "active",
         "area",
         "taxon_list_version",
+        "basemap",
+        "basemap_size",
+        "basemap_sha256",
         "server_version",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by",
     ]
+    readonly_fields = ["basemap_size", "basemap_sha256"]
     inlines = [ProjectProtocolInline, ProjectMembershipInline]
     gis_widget = EditableMapWidget
     gis_widget_kwargs = {
@@ -204,6 +231,11 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "active": "Untick to hide the project from new work without deleting it.",
         "taxon_list_version": (
             "Butterfly list release used for this project. New projects get the current one."
+        ),
+        "basemap": (
+            "Offline map for the phones: an MBTiles file, 200 MB at most (see "
+            "docs/setup/basemap.md). Phones download it with the project; its size shows on "
+            "the Download button."
         ),
         "area": (
             "Study area outline. Draw it on the map, or use the 'Import study area' action on the "
@@ -279,6 +311,12 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         if not change:
             obj.created_by = request.user
         obj.updated_by = request.user
+        # A new upload gets its size and hash (the hash is in the MinIO key); Clear empties them.
+        # The old object stays in MinIO, like replaced photos (D-072).
+        if form.basemap_info is not None:
+            obj.basemap_size, obj.basemap_sha256 = form.basemap_info
+        elif not obj.basemap:
+            obj.basemap_size, obj.basemap_sha256 = None, ""
         super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):

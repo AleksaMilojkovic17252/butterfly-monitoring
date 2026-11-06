@@ -4,6 +4,7 @@ import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/auth/data/auth_repository.dart';
 import 'package:mobile/features/auth/data/token_storage.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
+import 'package:mobile/features/map/data/basemap_store.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/projects/domain/last_project.dart';
 
@@ -66,11 +67,12 @@ class AuthController extends Notifier<AuthState> {
     state = const Unauthenticated();
   }
 
-  /// Deletes every row in the local database, the photo files and the stored
-  /// session.
+  /// Deletes every row in the local database, the photo and basemap files and
+  /// the stored session.
   Future<void> removeAllLocalData() async {
     await ref.read(localDataRepositoryProvider).clearAll();
     await ref.read(photoRepositoryProvider).deleteAllFiles();
+    await ref.read(basemapStoreProvider).deleteAll();
     await ref.read(lastSyncProvider.notifier).clear();
     await ref.read(lastProjectProvider.notifier).clear();
     await logout();

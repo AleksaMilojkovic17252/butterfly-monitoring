@@ -19,10 +19,11 @@ final projectPendingChangesProvider = StreamProvider.family<int, String>(
       .watchUnsyncedCount(projectId: projectId),
 );
 
-/// Whether the project's offline package is downloaded and current (the rule
-/// is in [ProjectRepository.offlinePackageStatus]).
+/// Whether the project's offline package is downloaded and current, and the
+/// size of the basemap a Download or Update would fetch (the rule is in
+/// [ProjectRepository.offlinePackageStatus]).
 final offlinePackageStatusProvider =
-    FutureProvider.family<OfflinePackageStatus, String>((ref, projectId) {
+    FutureProvider.family<OfflinePackage, String>((ref, projectId) {
       // Recompute after every sync run and every download.
       ref.watch(syncRunnerProvider.select((s) => s.last));
       return ref

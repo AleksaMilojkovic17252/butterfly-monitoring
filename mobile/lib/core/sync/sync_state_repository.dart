@@ -14,6 +14,7 @@ class SyncStateRepository {
 
   static String _cursorKey(String projectId) => 'cursor:$projectId';
   static String _downloadedKey(String projectId) => 'downloaded:$projectId';
+  static String _basemapKey(String projectId) => 'basemap:$projectId';
 
   /// This install's id, sent with every push. Created on first read (in
   /// practice the first launch that syncs). One transaction, so no two ids.
@@ -42,6 +43,18 @@ class SyncStateRepository {
   /// Marks the project as downloaded.
   Future<void> setDownloaded(String projectId) =>
       _set(_downloadedKey(projectId), '1');
+
+  /// SHA-256 of the basemap file on this phone (T060); null when there is none.
+  Future<String?> basemapSha256(String projectId) =>
+      _get(_basemapKey(projectId));
+
+  Future<void> setBasemapSha256(String projectId, String sha256) =>
+      _set(_basemapKey(projectId), sha256);
+
+  /// Forgets the basemap of the project (its file was deleted).
+  Future<void> clearBasemapSha256(String projectId) => (_db.delete(
+    _db.syncStateEntries,
+  )..where((t) => t.key.equals(_basemapKey(projectId)))).go();
 
   /// End of the last error-free sync run, in UTC; null if never.
   Future<DateTime?> lastSuccessfulSyncAt() async {

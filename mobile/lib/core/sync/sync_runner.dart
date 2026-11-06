@@ -11,6 +11,8 @@ import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/sync/sync_status.dart';
+import 'package:mobile/features/map/data/basemap_store.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
 
 /// Which part of a sync run is in progress.
@@ -59,6 +61,8 @@ class SyncRunState {
     this.phase,
     this.received = 0,
     this.sent = 0,
+    this.basemapReceived = 0,
+    this.basemapTotal = 0,
   });
   final bool running;
   final SyncResult? last;
@@ -74,6 +78,13 @@ class SyncRunState {
 
   /// Queue items sent so far in this run.
   final int sent;
+
+  /// Bytes of the basemap file received so far in a download (T060).
+  final int basemapReceived;
+
+  /// Size in bytes of the basemap file being downloaded; 0 while the download
+  /// is not in its basemap step.
+  final int basemapTotal;
 }
 
 /// Runs the sync: pushes the queue, uploads photo files (T050), then pulls every
@@ -390,6 +401,20 @@ class SyncRunner extends Notifier<SyncRunState> {
         },
       );
       await syncState.setDownloaded(projectId);
+      await _updateBasemap(
+        projectId,
+        cancelToken: _cancelToken,
+        onProgress: (basemapReceived, basemapTotal) {
+          state = SyncRunState(
+            running: true,
+            last: state.last,
+            downloadingProjectId: projectId,
+            received: received,
+            basemapReceived: basemapReceived,
+            basemapTotal: basemapTotal,
+          );
+        },
+      );
       result = SyncResult(
         ok: true,
         pushed: 0,
@@ -427,6 +452,41 @@ class SyncRunner extends Notifier<SyncRunState> {
       state = SyncRunState(running: false, last: result);
     }
     return result;
+  }
+
+  /// Brings the project's basemap file in line with the server (T060): downloads
+  /// it when the server's differs from ours, deletes ours when the server has
+  /// none. It runs only in [download]; the automatic [run] never fetches a
+  /// file of tens of MB. [onProgress] gets the bytes received and the total.
+  /// A cancel leaves the project downloaded but "Outdated", so Update fetches
+  /// the file again. Throws like [_pullProject].
+  Future<void> _updateBasemap(
+    String projectId, {
+    CancelToken? cancelToken,
+    required void Function(int received, int total) onProgress,
+  }) async {
+    final store = ref.read(basemapStoreProvider);
+    final info = await ref
+        .read(syncApiProvider)
+        .offlinePackageStatus(projectId);
+    final size = info.basemapSize;
+    final sha256 = info.basemapSha256;
+    if (size == null || sha256 == null) {
+      await store.remove(projectId);
+      ref.invalidate(mbtilesProvider(projectId));
+      return;
+    }
+    if (await store.localSha256(projectId) == sha256) return;
+    onProgress(0, size);
+    await store.download(
+      projectId,
+      size: size,
+      sha256: sha256,
+      cancelToken: cancelToken,
+      onProgress: (received, total) =>
+          onProgress(received, total > 0 ? total : size),
+    );
+    ref.invalidate(mbtilesProvider(projectId));
   }
 
   /// Stops the download in progress. The saved cursor stays, so the next

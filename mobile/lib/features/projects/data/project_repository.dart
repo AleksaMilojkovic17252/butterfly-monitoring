@@ -7,17 +7,25 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/http/dio_provider.dart';
 import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
+import 'package:mobile/features/map/data/basemap_store.dart';
 import 'package:mobile/features/projects/domain/offline_package_status.dart';
 
 /// Projects on this phone. Screens read the local Drift table, so the list
 /// works offline. The table is filled by [refreshFromServer] (which finds the
 /// projects) and kept up to date by the sync pull.
 class ProjectRepository {
-  ProjectRepository(this._db, this._dio, this._syncApi, this._syncState);
+  ProjectRepository(
+    this._db,
+    this._dio,
+    this._syncApi,
+    this._syncState,
+    this._basemapStore,
+  );
   final AppDatabase _db;
   final Dio _dio;
   final SyncApi _syncApi;
   final SyncStateRepository _syncState;
+  final BasemapStore _basemapStore;
 
   /// Live list of local projects, sorted by name. Emits again on every change.
   Stream<List<Project>> watchProjects() {
@@ -53,29 +61,47 @@ class ProjectRepository {
         .watchSingle();
   }
 
-  /// Whether the project's offline package is downloaded and current.
+  /// Whether the project's offline package is downloaded and current, and the
+  /// size of the basemap a Download or Update would fetch (T060).
   ///
   /// No `downloaded` flag means `notDownloaded`, even after a cancelled
   /// download (pressing Download continues from the saved cursor). With the
   /// flag, the server's `reference_version` is compared with the local pull
-  /// cursor: newer on the server means `updateAvailable`. Offline the server
-  /// cannot be asked, so the project counts as `ready`: the data on the phone
-  /// is what it works with. The automatic sync keeps downloaded projects
-  /// current, so `updateAvailable` mostly shows after a run that failed before
-  /// its pull.
-  Future<OfflinePackageStatus> offlinePackageStatus(String projectId) async {
-    if (!await _syncState.isDownloaded(projectId)) {
-      return OfflinePackageStatus.notDownloaded;
-    }
+  /// cursor: newer on the server means `updateAvailable`. So does a basemap
+  /// that differs from the file on the phone (a new upload, a removed one, or
+  /// a download that was cancelled). Offline the server cannot be asked, so
+  /// the project counts as `ready`: the data on the phone is what it works
+  /// with. The automatic sync keeps downloaded projects current, so
+  /// `updateAvailable` mostly shows after a run that failed before its pull.
+  Future<OfflinePackage> offlinePackageStatus(String projectId) async {
+    final downloaded = await _syncState.isDownloaded(projectId);
+    final OfflinePackageInfo info;
     try {
-      final serverVersion = await _syncApi.offlinePackageStatus(projectId);
-      final localVersion = await _syncState.lastPullCursor(projectId) ?? 0;
-      return serverVersion > localVersion
-          ? OfflinePackageStatus.updateAvailable
-          : OfflinePackageStatus.ready;
+      info = await _syncApi.offlinePackageStatus(projectId);
     } on DioException {
-      return OfflinePackageStatus.ready;
+      return OfflinePackage(
+        downloaded
+            ? OfflinePackageStatus.ready
+            : OfflinePackageStatus.notDownloaded,
+      );
     }
+    final localSha = await _basemapStore.localSha256(projectId);
+    final basemapChanged = info.basemapSha256 != localSha;
+    final bytes = basemapChanged ? info.basemapSize : null;
+    if (!downloaded) {
+      return OfflinePackage(
+        OfflinePackageStatus.notDownloaded,
+        basemapBytesToDownload: bytes,
+      );
+    }
+    final localVersion = await _syncState.lastPullCursor(projectId) ?? 0;
+    final outdated = info.referenceVersion > localVersion || basemapChanged;
+    return OfflinePackage(
+      outdated
+          ? OfflinePackageStatus.updateAvailable
+          : OfflinePackageStatus.ready,
+      basemapBytesToDownload: bytes,
+    );
   }
 
   /// Downloads the caller's projects and stores them locally. Throws
@@ -123,6 +149,7 @@ final projectRepositoryProvider = Provider<ProjectRepository>(
     ref.watch(dioProvider),
     ref.watch(syncApiProvider),
     ref.watch(syncStateRepositoryProvider),
+    ref.watch(basemapStoreProvider),
   ),
 );
 

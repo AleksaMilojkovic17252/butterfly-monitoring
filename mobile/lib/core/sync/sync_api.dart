@@ -129,14 +129,64 @@ class SyncApi {
     return PullPage.fromJson(response.data!);
   }
 
-  /// The highest `server_version` of the project's reference tables on the
-  /// server (`GET .../offline-package/status`). The app compares it with its
-  /// pull cursor to see if a download is out of date. Throws [DioException].
-  Future<int> offlinePackageStatus(String projectId) async {
+  /// What the server says about a project's offline package
+  /// (`GET .../offline-package/status`): the highest `server_version` of the
+  /// reference tables, which the app compares with its pull cursor to see if a
+  /// download is out of date, and the basemap file if there is one (T060).
+  /// Throws [DioException].
+  Future<OfflinePackageInfo> offlinePackageStatus(String projectId) async {
     final response = await _dio.get<Map<String, dynamic>>(
       "/api/v1/projects/$projectId/offline-package/status",
     );
-    return response.data!['reference_version'] as int;
+    return OfflinePackageInfo.fromJson(response.data!);
+  }
+
+  /// Downloads the project's MBTiles basemap to [savePath]
+  /// (`GET .../projects/{id}/basemap`, T060). [onReceiveProgress] gets the
+  /// bytes received and the total. Throws [DioException]; a cancel through
+  /// [cancelToken] is one too.
+  Future<void> downloadBasemap(
+    String projectId,
+    String savePath, {
+    CancelToken? cancelToken,
+    void Function(int received, int total)? onReceiveProgress,
+  }) async {
+    await _dio.download(
+      "/api/v1/projects/$projectId/basemap",
+      savePath,
+      cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+}
+
+/// The answer of `offline-package/status`: [referenceVersion] and, when the
+/// project has an MBTiles basemap, its size in bytes and SHA-256.
+class OfflinePackageInfo {
+  OfflinePackageInfo({
+    required this.referenceVersion,
+    this.basemapSize,
+    this.basemapSha256,
+  });
+
+  final int referenceVersion;
+
+  /// Size of the basemap file; null when the project has none.
+  final int? basemapSize;
+
+  /// SHA-256 (hex) of the basemap file; null when the project has none.
+  final String? basemapSha256;
+
+  /// Whether the project has a basemap on the server.
+  bool get hasBasemap => basemapSha256 != null;
+
+  factory OfflinePackageInfo.fromJson(Map<String, dynamic> json) {
+    final basemap = json['basemap'] as Map<String, dynamic>?;
+    return OfflinePackageInfo(
+      referenceVersion: json['reference_version'] as int,
+      basemapSize: basemap?['size'] as int?,
+      basemapSha256: basemap?['sha256'] as String?,
+    );
   }
 }
 

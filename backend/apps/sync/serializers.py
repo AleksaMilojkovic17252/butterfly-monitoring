@@ -59,8 +59,14 @@ class OfflinePackageResponseSerializer(PullResponseSerializer):
 
 
 # For OpenAPI only: the view returns the dict built by services.offline_package_status.
+class BasemapInfoSerializer(serializers.Serializer):
+    size = serializers.IntegerField()
+    sha256 = serializers.CharField()
+
+
 class OfflinePackageStatusSerializer(serializers.Serializer):
     reference_version = serializers.IntegerField()
+    basemap = BasemapInfoSerializer(allow_null=True)  # T060: null when the project has none
 
 
 class MutationSerializer(serializers.Serializer):

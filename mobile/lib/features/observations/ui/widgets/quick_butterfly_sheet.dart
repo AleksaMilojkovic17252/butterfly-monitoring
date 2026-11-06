@@ -567,6 +567,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     final placed = _placed;
     final shape = await showGeometryCapture(
       context,
+      projectId: widget.projectId,
       modes: const {GeometryMode.point},
       initial: placed == null ? null : CapturedGeometry.point(placed),
       referenceLines: lines,

@@ -151,13 +151,17 @@ def offline_package(user, project_id, limit=DEFAULT_PULL_LIMIT):
 
 
 def offline_package_status(user, project_id):
-    """`{"reference_version": n}`: the app compares n with its pull cursor (T031).
+    """`{"reference_version": n, "basemap": null | {"size", "sha256"}}` (T031, T060).
 
+    The app compares n with its pull cursor, and the basemap hash with the file it holds.
     Raises Http404 when the user cannot see the project (D-036).
     """
     with _pull_snapshot():
         project = get_object_or_404(projects_for(user), pk=project_id)
-        return {"reference_version": _reference_version(user, project)}
+        basemap = None
+        if project.basemap:
+            basemap = {"size": project.basemap_size, "sha256": project.basemap_sha256}
+        return {"reference_version": _reference_version(user, project), "basemap": basemap}
 
 
 class PushError(exceptions.APIException):

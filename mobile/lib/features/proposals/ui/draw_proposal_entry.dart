@@ -31,6 +31,7 @@ Future<void> openDrawProposal(
 
   final shape = await showGeometryCapture(
     context,
+    projectId: projectId,
     modes: {GeometryMode.line},
     referenceLines: [for (final t in transects) parseLineString(t.geometry)],
   );

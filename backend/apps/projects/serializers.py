@@ -63,4 +63,5 @@ class ProjectSyncSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        exclude = ["created_by", "updated_by", "owner"]
+        # The basemap is downloaded by its own endpoint (T060); a pull must not carry its URL.
+        exclude = ["created_by", "updated_by", "owner", "basemap", "basemap_size", "basemap_sha256"]

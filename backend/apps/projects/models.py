@@ -1,3 +1,4 @@
+import uuid
 from datetime import time
 from decimal import Decimal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -9,6 +10,14 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from apps.core.models import SyncableModel
+
+
+def basemap_key(instance, filename):
+    """MinIO key of a project's basemap: `basemaps/<project id>/<sha256>.mbtiles` (T060, D-102).
+
+    The admin sets `basemap_sha256` before the save, so the key changes with the content.
+    """
+    return f"basemaps/{instance.pk}/{instance.basemap_sha256 or uuid.uuid4().hex}.mbtiles"
 
 
 class Project(SyncableModel):
@@ -30,6 +39,11 @@ class Project(SyncableModel):
         blank=True,
         related_name="projects",
     )
+    # Offline basemap (T060, D-102): an MBTiles file in MinIO, uploaded in the admin. The size and
+    # the SHA-256 are filled in by the admin from the uploaded file; the pull never carries them.
+    basemap = models.FileField(upload_to=basemap_key, max_length=200, blank=True)
+    basemap_size = models.PositiveBigIntegerField(null=True, blank=True, editable=False)
+    basemap_sha256 = models.CharField(max_length=64, blank=True, editable=False)
     history = HistoricalRecords(table_name="historical_project")
 
     class Meta:

@@ -335,6 +335,7 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
               context: context,
               removeBottom: true,
               child: TransectMap(
+                projectId: visit.projectId,
                 line: transect == null
                     ? const []
                     : parseLineString(transect.geometry),

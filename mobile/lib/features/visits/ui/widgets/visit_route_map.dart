@@ -31,6 +31,7 @@ class VisitRouteMap extends ConsumerWidget {
           SizedBox(
             height: 260,
             child: TransectMap(
+              projectId: visit.projectId,
               line: transect == null ? [] : parseLineString(transect.geometry),
               sections: [
                 for (final s in sections) parseLineString(s.section.geometry),

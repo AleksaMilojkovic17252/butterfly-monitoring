@@ -12,6 +12,7 @@ import 'package:mobile/features/resources/ui/widgets/geometry_capture_widget.dar
 /// with a line in [modes].
 Future<CapturedGeometry?> showGeometryCapture(
   BuildContext context, {
+  required String projectId,
   required Set<GeometryMode> modes,
   CapturedGeometry? initial,
   List<List<LatLng>> referenceLines = const [],
@@ -20,6 +21,7 @@ Future<CapturedGeometry?> showGeometryCapture(
     MaterialPageRoute(
       fullscreenDialog: true,
       builder: (context) => _GeometryCaptureScreen(
+        projectId: projectId,
         modes: modes,
         initial: initial,
         referenceLines: referenceLines,
@@ -33,10 +35,12 @@ Future<CapturedGeometry?> showGeometryCapture(
 /// is finished and valid.
 class _GeometryCaptureScreen extends StatefulWidget {
   const _GeometryCaptureScreen({
+    required this.projectId,
     required this.modes,
     required this.initial,
     required this.referenceLines,
   });
+  final String projectId;
   final Set<GeometryMode> modes;
   final CapturedGeometry? initial;
   final List<List<LatLng>> referenceLines;
@@ -69,6 +73,7 @@ class _GeometryCaptureScreenState extends State<_GeometryCaptureScreen> {
       ),
       body: SafeArea(
         child: GeometryCaptureWidget(
+          projectId: widget.projectId,
           modes: widget.modes,
           initial: widget.initial,
           referenceLines: widget.referenceLines,

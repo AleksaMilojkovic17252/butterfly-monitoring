@@ -7,6 +7,8 @@ import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/location/walk_positions.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
+import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 import 'package:mobile/features/proposals/domain/route_recorder.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
@@ -49,11 +51,15 @@ const _distance = Distance(roundResult: false);
 class GeometryCaptureWidget extends ConsumerStatefulWidget {
   const GeometryCaptureWidget({
     super.key,
+    required this.projectId,
     required this.modes,
     required this.onChanged,
     this.initial,
     this.referenceLines = const [],
   });
+
+  /// The project the shape belongs to; its offline basemap is drawn (T060).
+  final String projectId;
 
   /// The shapes that may be drawn. Each of `point`, `polygon` and `line` that
   /// is in the set gets its method in the selector at the top.
@@ -665,10 +671,7 @@ class _GeometryCaptureWidgetState extends ConsumerState<GeometryCaptureWidget> {
         ),
       ),
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'rs.amilojkovic.butterfly',
-        ),
+        ...basemapLayers(ref.watch(mbtilesProvider(widget.projectId)).value),
         PolylineLayer(
           polylines: [
             for (final line in widget.referenceLines)

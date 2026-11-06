@@ -1,9 +1,13 @@
 """Who can see which project. The API and the pull's project check (T025) scope through here."""
 
+import hashlib
+import sqlite3
+import tempfile
 from datetime import date
 
 from django.contrib.gis.gdal import OGRGeometry
 from django.contrib.gis.geos import MultiPolygon
+from django.core.exceptions import ValidationError
 
 from apps.accounts.services import is_admin
 from apps.core.geo_files import open_datasource
@@ -86,3 +90,88 @@ def _polygons_of(geom: OGRGeometry):
         geos = geom.geos
         return list(geos) if geos.geom_type == "MultiPolygon" else [geos]
     return []
+
+
+SQLITE_HEADER = b"SQLite format 3\x00"
+MAX_BASEMAP_BYTES = 200 * 1024 * 1024  # the same limit as nginx's for the project admin
+RASTER_FORMATS = {"png", "jpg", "jpeg", "webp"}
+
+
+def inspect_basemap(uploaded):
+    """Check an uploaded MBTiles file and return `(size in bytes, sha256 hex)` (T060, D-102).
+
+    It must be named `*.mbtiles`, be a SQLite file of at most 200 MB, and have a `tiles` table and
+    raster metadata. The upload is read once, in 1 MiB chunks, into a temporary file so SQLite can
+    open it. Raises ValidationError.
+    """
+    if not uploaded.name.lower().endswith(".mbtiles"):
+        raise ValidationError("The basemap must be a .mbtiles file.")
+    digest = hashlib.sha256()
+    size = 0
+    with tempfile.NamedTemporaryFile(suffix=".mbtiles") as copy:
+        uploaded.seek(0)
+        for chunk in uploaded.chunks(1024 * 1024):
+            if size == 0 and not chunk.startswith(SQLITE_HEADER):
+                raise ValidationError("This is not an MBTiles (SQLite) file.")
+            digest.update(chunk)
+            copy.write(chunk)
+            size += len(chunk)
+            if size > MAX_BASEMAP_BYTES:
+                raise ValidationError("The basemap is larger than 200 MB.")
+        copy.flush()
+        if size == 0:
+            raise ValidationError("The file is empty.")
+        _check_mbtiles(copy.name)
+    uploaded.seek(0)  # the storage reads it again
+    return size, digest.hexdigest()
+
+
+def _check_mbtiles(path):
+    """Raise ValidationError unless the SQLite file at `path` has what the phone needs.
+
+    That is a `tiles` table and a `metadata` table with the rows `name` and `format` (the app's
+    MBTiles package refuses a file without them), and a raster `format`: PNG, JPG or WebP. A
+    vector file (`pbf`) would open but draw nothing.
+    """
+    try:
+        connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        try:
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type IN ('table', 'view')"
+                )
+            }
+            if "tiles" not in tables:
+                raise ValidationError(
+                    "The file has no 'tiles' table, so it is not an MBTiles file."
+                )
+            if "metadata" not in tables:
+                raise ValidationError("The file has no 'metadata' table.")
+            metadata = dict(connection.execute("SELECT name, value FROM metadata"))
+        finally:
+            connection.close()
+    except sqlite3.DatabaseError as error:
+        raise ValidationError("This is not a readable MBTiles file.") from error
+    missing = {"name", "format"} - metadata.keys()
+    if missing:
+        raise ValidationError(
+            f"The metadata table has no {' or '.join(sorted(missing))} row, which the app needs."
+        )
+    tile_format = str(metadata["format"]).lower()
+    if tile_format not in RASTER_FORMATS:
+        raise ValidationError(
+            f"The tile format is '{tile_format}'. Only raster basemaps (png, jpg, webp) work."
+        )
+
+
+def set_basemap(project, uploaded, user=None):
+    """Attach an MBTiles file to a project: the same steps as the admin form (T060).
+
+    For shell use; the admin calls `inspect_basemap` in its form and sets the fields itself.
+    """
+    project.basemap_size, project.basemap_sha256 = inspect_basemap(uploaded)
+    project.basemap = uploaded
+    if user is not None:
+        project.updated_by = user
+    project.save()

@@ -71,6 +71,7 @@ class _HabitatFormState extends ConsumerState<HabitatForm> {
         ref.read(projectTransectsProvider(widget.projectId)).value ?? [];
     final shape = await showGeometryCapture(
       context,
+      projectId: widget.projectId,
       modes: const {
         GeometryMode.point,
         GeometryMode.line,
