@@ -43,6 +43,7 @@
     <ol>
       <li><a href="#tour-projects">The project list</a></li>
       <li><a href="#tour-home">The project home screen</a></li>
+      <li><a href="#tour-closed">A closed project</a></li>
     </ol>
   </li>
   <li><a href="#protocol">The field method in short</a>
@@ -57,6 +58,14 @@
     <ol>
       <li><a href="#transect-list">The list</a></li>
       <li><a href="#transect-detail">The detail page</a></li>
+    </ol>
+  </li>
+  <li><a href="#proposals">Proposing a route</a>
+    <ol>
+      <li><a href="#proposal-record">Record a route by walking it</a></li>
+      <li><a href="#proposal-draw">Draw a route on the map</a></li>
+      <li><a href="#proposal-save">Name it and save</a></li>
+      <li><a href="#proposal-list">My proposals</a></li>
     </ol>
   </li>
   <li><a href="#visit">Walking a visit</a>
@@ -103,6 +112,12 @@
       <li><a href="#map-popups">Tap something for details</a></li>
       <li><a href="#map-layers">Layers and filters</a></li>
       <li><a href="#map-offline">Maps without a connection</a></li>
+    </ol>
+  </li>
+  <li><a href="#statistics">Statistics</a>
+    <ol>
+      <li><a href="#stats-transect">Figures per transect</a></li>
+      <li><a href="#stats-phenology">When a species flies</a></li>
     </ol>
   </li>
   <li><a href="#sync">Sync</a>
@@ -219,6 +234,7 @@
 <ol class="steps">
   <li>Find your project and tap <span class="btn">Download</span>. Do this somewhere with a good connection.</li>
   <li>Wait until the card shows <strong>Ready</strong>. The progress line counts the records received. <span class="btn">Cancel</span> pauses the download, and tapping <span class="btn">Download</span> again continues it.</li>
+  <li>If your project has an <a href="#map-offline">offline map</a>, the button shows its size, for example <em>Download (48 MB)</em>, and the progress line then says <em>Basemap 12.3 / 48.0 MB</em>. Use Wi-Fi for a large one.</li>
   <li>Tap the card to open the project.</li>
 </ol>
 <div class="shots">
@@ -230,8 +246,9 @@
 <tr><th>Status on the card</th><th>Meaning</th><th>What to do</th></tr>
 <tr><td><strong>Not loaded</strong></td><td>The project is not on this phone yet.</td><td>Tap <span class="btn">Download</span>.</td></tr>
 <tr><td><strong>Ready</strong></td><td>The project is on this phone and you can use it offline.</td><td>Nothing.</td></tr>
-<tr><td><strong>Outdated</strong></td><td>The server has newer data for this project than this phone, for example a changed transect.</td><td>Tap <span class="btn">Update</span> when you have a connection.</td></tr>
+<tr><td><strong>Outdated</strong></td><td>The server has newer data for this project than this phone, for example a changed transect or a new offline map.</td><td>Tap <span class="btn">Update</span> when you have a connection.</td></tr>
 </table></div>
+<p>A card that says <strong>Closed</strong> in red belongs to a project an admin has closed. See <a href="#tour-closed">A closed project</a>.</p>
 <p>If the list says <em>No projects on this phone yet</em>, pull the list down to refresh it. If nothing appears, ask an admin to add you to a project.</p>
 
 <h3 id="permissions">Permissions the app asks for</h3>
@@ -249,8 +266,8 @@
 <p>Do this at home while you still have a connection.</p>
 <ul>
   <li>Open the app and let it sync. <span class="btn">Unsynced data</span> should have no badge.</li>
-  <li>Check that your project card says <strong>Ready</strong>. If it says <strong>Outdated</strong>, tap <span class="btn">Update</span>.</li>
-  <li>Open the map once for your study area while online. Map backgrounds you have viewed stay on the phone for a while. See <a href="#map-offline">Maps without a connection</a>.</li>
+  <li>Check that your project card says <strong>Ready</strong>. If it says <strong>Outdated</strong>, tap <span class="btn">Update</span>. This also fetches a new offline map.</li>
+  <li>If your project has no offline map, open the map once for your study area while online. Map backgrounds you have viewed stay on the phone for a while. See <a href="#map-offline">Maps without a connection</a>.</li>
   <li>Charge the phone. GPS uses a lot of battery, so a power bank helps on long days.</li>
   <li>Check the weather limits of your project. See <a href="#protocol">The field method</a>.</li>
 </ul>
@@ -261,21 +278,28 @@
 
 <h3 id="tour-home">The project home screen</h3>
 <div class="shots">
-<figure><a href="img/researcher/home.webp"><img src="img/researcher/home.webp" alt="The project home screen with its tiles. Greyed-out tiles are not available yet." width="540" height="1040"></a><figcaption>The project home screen with its tiles. Greyed-out tiles are not available yet.</figcaption></figure>
+<figure><a href="img/researcher/home.webp"><img src="img/researcher/home.webp" alt="The project home screen with its tiles." width="540" height="1040"></a><figcaption>The project home screen with its tiles.</figcaption></figure>
 <figure><a href="img/researcher/home-visit-in-progress.webp"><img src="img/researcher/home-visit-in-progress.webp" alt="While a visit is in progress, a card at the top shows the transect, the GPS interval, how many route points are recorded and the last GPS fix. Tap it to go back to the visit." width="540" height="1040"></a><figcaption>While a visit is in progress, a card at the top shows the transect, the GPS interval, how many route points are recorded and the last GPS fix. Tap it to go back to the visit.</figcaption></figure>
 <figure><a href="img/researcher/home-badge.webp"><img src="img/researcher/home-badge.webp" alt="The number on Unsynced data shows the changes still waiting to reach the server." width="540" height="1040"></a><figcaption>The number on Unsynced data shows the changes still waiting to reach the server.</figcaption></figure>
 </div>
 <div class="tablewrap"><table>
 <tr><th>Tile</th><th>What it does</th></tr>
 <tr><td><span class="btn">Start visit</span></td><td>The quickest way into a walk. See <a href="#start-open">Open the start form</a>.</td></tr>
-<tr><td><span class="btn">Transects</span></td><td>Browse the transects: map, sections, protocol and your past visits. See <a href="#transects">Transects</a>.</td></tr>
+<tr><td><span class="btn">Transects</span></td><td>Browse the transects: map, sections, protocol and your past visits. Propose a new route. See <a href="#transects">Transects</a> and <a href="#proposals">Proposing a route</a>.</td></tr>
 <tr><td><span class="btn">Plants &amp; habitat</span></td><td>Your plant records and habitat features. See <a href="#plants">Plants and habitat</a>.</td></tr>
 <tr><td><span class="btn">Map</span></td><td>Everything on one map, with layers and filters. See <a href="#map">The map</a>.</td></tr>
 <tr><td><span class="btn">Unsynced data</span></td><td>What is waiting to sync, errors and conflicts. See <a href="#sync">Sync</a>.</td></tr>
 <tr><td><span class="btn">Free observation</span></td><td>Record a butterfly you see outside a standard walk. See <a href="#free">Butterflies outside a walk</a>.</td></tr>
-<tr><td><span class="btn">Statistics</span></td><td>Shows <em>Coming later</em>. Not available yet.</td></tr>
+<tr><td><span class="btn">Statistics</span></td><td>Your own figures per transect and year, and a weekly chart per species. See <a href="#statistics">Statistics</a>.</td></tr>
 </table></div>
-<div class="box later"><span class="tag">Coming later</span><strong>Statistics</strong> will show your own figures offline: visits, true zeros, species, individuals per km and per hour, your top species and a weekly chart.</div>
+
+<h3 id="tour-closed">A closed project</h3>
+<p>When a project is finished, an admin closes it. After the next sync its card and home screen say <strong>Closed</strong> in red. You can still look at everything, but you cannot add or change anything: <span class="btn">Start visit</span>, <span class="btn">Free observation</span>, proposing a route, and the add, edit, delete and photo buttons are greyed out or gone. If you tap one that is still there, the app says <em>This project is closed</em>.</p>
+<ul>
+  <li><strong>What you recorded before the close still syncs</strong>, even if your phone was offline at the time. Just let it sync.</li>
+  <li><strong>A visit that was in progress</strong> cannot be finished any more. Its screen says <em>This project is closed, so this visit cannot be finished</em> and offers only <span class="btn">Cancel visit</span>. Cancelling deletes from your phone what it had not sent yet. If the walk matters, ask your admin to reopen the project before you cancel.</li>
+  <li>If an admin reopens the project, everything works again after the next sync.</li>
+</ul>
 
 <h2 id="protocol">The field method in short</h2>
 <p>The app records data, but the method is what makes it useful. This is the short version. The numbers below are the standard defaults, and <strong>each project can set its own</strong>. To see your project's values, open a transect and scroll to <strong>Protocol</strong>, or look at the start form.</p>
@@ -331,6 +355,7 @@
   <li><strong>Sort by</strong> <span class="btn">Code</span> or <span class="btn">Distance</span>.</li>
   <li>The <strong>location icon</strong> at the top right takes a fresh GPS position and updates the distances. Use it if the distances look wrong. Without a position they show a dash.</li>
   <li>The <strong>cloud icon</strong> on each row shows whether the download of the project has finished.</li>
+  <li>The <strong>route icon</strong> at the top right opens the menu for <a href="#proposals">route proposals</a>.</li>
 </ul>
 
 <h3 id="transect-detail">The detail page</h3>
@@ -341,8 +366,67 @@
 <figure><a href="img/researcher/transect-detail-3.webp"><img src="img/researcher/transect-detail-3.webp" alt="The protocol of the project, and My visits. A lock icon marks a locked visit." width="540" height="1040"></a><figcaption>The protocol of the project, and My visits. A lock icon marks a locked visit.</figcaption></figure>
 </div>
 <p>Tap a row in <strong>My visits</strong> to open it. The button at the bottom says <span class="btn">Start visit</span>, or <span class="btn">Continue draft</span> if you saved a draft for this transect. If an admin has made the transect inactive, the button is greyed out and the page says <em>This transect is inactive and cannot be walked</em>.</p>
-<div class="box note"><span class="tag">Good to know</span>You cannot change a transect on the phone. If a route crosses private land or has become impassable, cancel the visit with the reason <em>Invalid (protocol not followed)</em>, explain in the note, and tell your admin.</div>
-<div class="box later"><span class="tag">Coming later</span><strong>Route proposals</strong> will let you record a better route from the field. An admin can then turn it into a transect.</div>
+<div class="box note"><span class="tag">Good to know</span>You cannot change a transect on the phone. If a route crosses private land or has become impassable, <a href="#proposals">propose a replacement</a> with the route icon at the top right of this page. If you were in the middle of a visit, cancel it with the reason <em>Invalid (protocol not followed)</em> and explain in the note.</div>
+
+<h2 id="proposals">Proposing a route</h2>
+<p>Sometimes a transect cannot be walked any more, for example because a path is overgrown, fenced off or unsafe, or you know a better route for a new one. You can then <strong>propose a route</strong>. An admin looks at it and, if it is accepted, turns it into a transect with sections. A proposal is only a suggestion: it is not a visit, nothing is counted, and it does not change any transect on its own.</p>
+<p>There are two ways to make one, and two places to start:</p>
+<div class="tablewrap"><table>
+<tr><th>From</th><th>Menu items</th><th>Use it for</th></tr>
+<tr><td><span class="btn">Transects</span> list, route icon at the top right</td><td><span class="btn">Propose a route</span>, <span class="btn">Draw a route on map</span>, <span class="btn">My proposals</span></td><td>A new route</td></tr>
+<tr><td>A transect's page, route icon at the top right</td><td><span class="btn">Record a replacement</span>, <span class="btn">Draw a replacement on map</span></td><td>A route to replace that transect. The proposal says <em>Replaces …</em></td></tr>
+</table></div>
+<div class="shots">
+<figure><a href="img/researcher/proposal-menu.webp"><img src="img/researcher/proposal-menu.webp" alt="The route proposals menu on the transect list." width="540" height="1040"></a><figcaption>The route proposals menu on the transect list.</figcaption></figure>
+<figure><a href="img/researcher/proposal-replace-menu.webp"><img src="img/researcher/proposal-replace-menu.webp" alt="On a transect's page, the menu proposes a replacement for that transect." width="540" height="1040"></a><figcaption>On a transect's page, the menu proposes a replacement for that transect.</figcaption></figure>
+</div>
+
+<h3 id="proposal-record">Record a route by walking it</h3>
+<p>Tap <span class="btn">Propose a route</span> or <span class="btn">Record a replacement</span> and walk the route. The phone records it with GPS, like a visit, so allow location when asked.</p>
+<div class="shots">
+<figure><a href="img/researcher/proposal-record.webp"><img src="img/researcher/proposal-record.webp" alt="Recording a replacement for FG1. The new route is the solid line. The transect it replaces, and the others, are dashed." width="540" height="1040"></a><figcaption>Recording a replacement for FG1. The new route is the solid line. The transect it replaces, and the others, are dashed.</figcaption></figure>
+</div>
+<ul>
+  <li>The top shows the <strong>Length</strong> so far, the <strong>Time</strong> and the <strong>GPS</strong> accuracy.</li>
+  <li><span class="btn">Pause</span> and <span class="btn">Resume</span> stop and restart the recording, for example while you look for the path.</li>
+  <li>The butterfly button in the middle (<em>Add a sighting</em>) records a butterfly you see on the way. It opens the <a href="#free">Free observation</a> screen.</li>
+  <li>You can lock the phone or leave the screen. The recording continues, and the transect list shows <em>Route recording in progress</em> with <span class="btn">Open</span> to return. It also survives the app being closed.</li>
+  <li>The bin at the top right discards the recording after asking.</li>
+  <li>At the end, tap <span class="btn">Finish</span>.</li>
+</ul>
+<div class="box note"><span class="tag">Good to know</span>The phone records one route at a time. While a visit is in progress you cannot record a route, and the menu says <em>finish the visit in progress first</em>. Drawing a route on the map works at any time.</div>
+
+<h3 id="proposal-draw">Draw a route on the map</h3>
+<p>If you cannot walk it, for example because the path is blocked, tap <span class="btn">Draw a route on map</span> or <span class="btn">Draw a replacement on map</span>. Tap points along the route in walking order. The project's transects are dashed to help you. <span class="btn">Undo</span> removes the last point and <span class="btn">Clear</span> removes all. Tap the tick at the top right when you are done. This needs no GPS and no connection.</p>
+<div class="shots">
+<figure><a href="img/researcher/proposal-draw.webp"><img src="img/researcher/proposal-draw.webp" alt="A route drawn with five points. The line under the map gives the number of points and the length." width="540" height="1040"></a><figcaption>A route drawn with five points. The line under the map gives the number of points and the length.</figcaption></figure>
+</div>
+
+<h3 id="proposal-save">Name it and save</h3>
+<p>After <span class="btn">Finish</span> or the tick, a sheet asks for the details.</p>
+<div class="shots">
+<figure><a href="img/researcher/proposal-details.webp"><img src="img/researcher/proposal-details.webp" alt="The details of a proposal. Name and Reason are required." width="540" height="1040"></a><figcaption>The details of a proposal. Name and Reason are required.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>What to enter</th><th>Needed?</th></tr>
+<tr><td><span class="btn">Name</span></td><td>A short name for the route.</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Reason</span></td><td>Private property, Unsafe, Impassable, Better route or Other.</td><td><strong>Yes</strong></td></tr>
+<tr><td><span class="btn">Notes</span></td><td>Anything that helps the admin decide: what is wrong with the old route, what the new one is like.</td><td>No</td></tr>
+</table></div>
+<p>Tap <span class="btn">Save proposal</span>. It is sent at the next sync. A walked route needs at least two good GPS points; with fewer, the sheet says <em>Too few GPS fixes to make a line. Keep walking.</em> A proposal cannot be changed after saving. If you made a mistake, tell your admin.</p>
+
+<h3 id="proposal-list">My proposals</h3>
+<p>The route icon on the transect list has <span class="btn">My proposals</span>: every route you proposed in this project, with its reason, date, length and status.</p>
+<div class="shots">
+<figure><a href="img/researcher/my-proposals.webp"><img src="img/researcher/my-proposals.webp" alt="One proposal rejected, with the admin's reason, and one still pending." width="540" height="1040"></a><figcaption>One proposal rejected, with the admin's reason, and one still pending.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Status</th><th>Meaning</th></tr>
+<tr><td><strong>Not sent yet</strong></td><td>It is still on your phone. It goes at the next sync.</td></tr>
+<tr><td><strong>Pending</strong></td><td>The admin has it but has not decided.</td></tr>
+<tr><td><strong>Accepted</strong></td><td>The admin made a transect from it. The line <em>New transect: …</em> gives its code. It can be walked once the admin has made it active.</td></tr>
+<tr><td><strong>Rejected</strong></td><td>The line <em>Admin: …</em> gives the reason.</td></tr>
+</table></div>
 <h2 id="visit">Walking a visit</h2>
 <p>This is the main job of the app. A visit has five steps:</p>
 <ol class="steps">
@@ -366,7 +450,7 @@
 <figure><a href="img/researcher/window-dialog.webp"><img src="img/researcher/window-dialog.webp" alt="Outside the season or the daily time window, the app warns you. Start anyway continues." width="540" height="1040"></a><figcaption>Outside the season or the daily time window, the app warns you. Start anyway continues.</figcaption></figure>
 <figure><a href="img/researcher/start-warning.webp"><img src="img/researcher/start-warning.webp" alt="The warning stays on the form as a reminder. You can still start." width="540" height="1040"></a><figcaption>The warning stays on the form as a reminder. You can still start.</figcaption></figure>
 </div>
-<div class="box note"><span class="tag">Good to know</span>The season and time checks use your phone's time zone, which is right as long as you are at the study site.</div>
+<div class="box note"><span class="tag">Good to know</span>The season and time checks use the study site's time zone, which the protocol summary shows as <em>Time zone: Europe/Belgrade</em>, for example. So they are right even if your phone is set to another zone. If the summary says the zone is <em>not known to this app</em>, the app uses your phone's zone instead.</div>
 
 <h3 id="start-form">Fill in the start form</h3>
 <div class="shots">
@@ -661,7 +745,7 @@
 <figure><a href="img/researcher/free-popup.webp"><img src="img/researcher/free-popup.webp" alt="On the map, the new record shows its species and time. Open shows the whole record." width="540" height="1040"></a><figcaption>On the map, the new record shows its species and time. Open shows the whole record.</figcaption></figure>
 <figure><a href="img/researcher/free-detail.webp"><img src="img/researcher/free-detail.webp" alt="The record. Source says Larval search, Section is empty and the position says accuracy unknown." width="540" height="1040"></a><figcaption>The record. Source says Larval search, Section is empty and the position says accuracy unknown.</figcaption></figure>
 </div>
-<div class="box later"><span class="tag">Coming later</span>Butterflies seen while recording a better route for a transect will use this same screen.</div>
+<div class="box tip"><span class="tag">Tip</span>While you <a href="#proposal-record">record a route proposal</a>, the butterfly button on the recording screen opens this same screen, and the recording carries on.</div>
 
 <h2 id="review">After the walk: review and correct</h2>
 <h3 id="review-visit">Look at a visit</h3>
@@ -832,8 +916,38 @@
 <figure><a href="img/researcher/map-filter-applied.webp"><img src="img/researcher/map-filter-applied.webp" alt="Filtered to one visit: 3 of 83 records match." width="540" height="1040"></a><figcaption>Filtered to one visit: 3 of 83 records match.</figcaption></figure>
 </div>
 <h3 id="map-offline">Maps without a connection</h3>
-<p>Your transects, sections and records always show. The background map comes from OpenStreetMap over the internet, but the phone keeps the parts you have already viewed for a while. So look at your study area at home before you leave. Without those stored tiles, your lines still draw on a plain background.</p>
-<div class="box later"><span class="tag">Coming later</span>An <strong>offline basemap</strong> for the study area will be downloaded with the project.</div>
+<p>Your transects, sections and records always show. The background map has two sources:</p>
+<ul>
+  <li><strong>The project's offline map</strong>, if your admin has added one. It is downloaded with <span class="btn">Download</span> or <span class="btn">Update</span> on the project card and works without any connection, on every map in the app. Zoomed in further than the file allows, it gets blurry rather than disappearing. Automatic sync never downloads it, so tap <span class="btn">Update</span> when the card says <strong>Outdated</strong>.</li>
+  <li><strong>OpenStreetMap over the internet</strong>, everywhere else. The phone keeps the parts you have already viewed for a while, so look at your study area at home before you leave.</li>
+</ul>
+<p>Without either, your lines still draw on a plain background. Logging out keeps the offline map. <span class="btn">Remove data</span> in Settings deletes it.</p>
+
+<h2 id="statistics">Statistics</h2>
+<p>The <span class="btn">Statistics</span> tile shows figures worked out from <strong>your own records</strong> on this phone. It works offline. Project-wide figures, with everyone's records, are in the admin's reports.</p>
+
+<h3 id="stats-transect">Figures per transect</h3>
+<p>Choose the <span class="btn">Year</span> and the <span class="btn">Transect</span>. Only years and transects with a finished visit of yours are listed.</p>
+<div class="shots">
+<figure><a href="img/researcher/statistics-1.webp"><img src="img/researcher/statistics-1.webp" alt="The figures for FG1 in 2026." width="540" height="1040"></a><figcaption>The figures for FG1 in 2026.</figcaption></figure>
+<figure><a href="img/researcher/statistics-2.webp"><img src="img/researcher/statistics-2.webp" alt="Top species: the ten with the most individuals." width="540" height="1040"></a><figcaption>Top species: the ten with the most individuals.</figcaption></figure>
+</div>
+<div class="tablewrap"><table>
+<tr><th>Line</th><th>Meaning</th></tr>
+<tr><td><strong>Visits</strong></td><td>Your finished visits: completed, synced, reviewed or locked. Drafts and cancelled visits are left out.</td></tr>
+<tr><td><strong>True-zero visits</strong></td><td>Those finished with no butterflies.</td></tr>
+<tr><td><strong>Species</strong>, <strong>Individuals</strong></td><td>From the butterflies recorded during those visits.</td></tr>
+<tr><td><strong>Hours walked</strong>, <strong>Km walked</strong></td><td>Walking time without pauses, and the length of the GPS routes.</td></tr>
+<tr><td><strong>Individuals per km</strong>, <strong>per hour</strong></td><td>Individuals divided by the two lines above. A dash when there is no distance or time to divide by.</td></tr>
+</table></div>
+<p><strong>Top species</strong> lists the ten species with the most individuals, with the number of records. Free observations are not part of these figures, because they have no walk behind them.</p>
+
+<h3 id="stats-phenology">When a species flies</h3>
+<p>Under <strong>Phenology</strong>, choose a <span class="btn">Species</span> and a <span class="btn">Year (ISO)</span>. The chart shows how many individuals you recorded in each week. The weeks are ISO weeks (Monday to Sunday) and the chart spans the project's season. Free observations count here.</p>
+<div class="shots">
+<figure><a href="img/researcher/statistics-3.webp"><img src="img/researcher/statistics-3.webp" alt="Meadow Browns per week in 2026." width="540" height="1040"></a><figcaption>Meadow Browns per week in 2026.</figcaption></figure>
+</div>
+<div class="box note"><span class="tag">Good to know</span>The species is the one you entered. If an admin changed it during validation, the phone does not know, so the admin's reports may differ slightly. Years and weeks follow the study site's time zone.</div>
 
 <h2 id="sync">Sync</h2>
 <p>Sync sends your changes to the server and fetches what is new. You rarely need to think about it.</p>
@@ -903,7 +1017,7 @@
 <tr><td><strong>GPS interval</strong></td><td>How often this phone records a route point. <em>Project</em> follows the project's protocol and is the right choice normally. The others are 1, 2, 5, 10, 15 or 30 seconds. It applies from the next visit or app restart.</td></tr>
 <tr><td><strong>Upload photos on Wi-Fi only</strong></td><td>Photos wait until Wi-Fi is connected.</td></tr>
 <tr><td><span class="btn">Log out</span></td><td>Ends your session. Your records stay on the phone. If changes are waiting, you can choose <span class="btn">Sync first</span>, <span class="btn">Log out anyway</span> or <span class="btn">Cancel</span>.</td></tr>
-<tr><td><span class="btn">Remove data</span></td><td>Deletes everything the app stores on this phone, including what has not synced, and logs you out. See the warning below.</td></tr>
+<tr><td><span class="btn">Remove data</span></td><td>Deletes everything the app stores on this phone, including what has not synced and the offline maps, and logs you out. See the warning below.</td></tr>
 <tr><td><strong>URL</strong></td><td>The server address, with <span class="btn">Test Connection</span> and <span class="btn">Save</span>. Change it only if your admin tells you to.</td></tr>
 </table></div>
 <div class="box warn"><span class="tag">Careful</span><strong>Remove data cannot be undone.</strong> Anything not yet synced is gone for good, including routes. Your routes are also not downloaded again afterwards, so past visits will show no route on this phone. Use it only when you hand the phone to someone else, and sync first.</div>
@@ -963,11 +1077,16 @@
 <tr><td><em>The visit is no longer in progress.</em></td><td>It was finished or cancelled, possibly by a sync. Go back and check its status.</td></tr>
 <tr><td><em>The visit is locked.</em></td><td>An admin locked it. Ask them to unlock it if something must change.</td></tr>
 <tr><td><em>The transect or the project's protocol is not on this phone. Sync first.</em></td><td>Download or update the project.</td></tr>
+<tr><td><em>This project is closed</em></td><td>An admin has closed the project, so nothing can be added or changed. See <a href="#tour-closed">A closed project</a>.</td></tr>
+<tr><td><em>Finish the visit in progress first.</em> or <em>A route recording is already in progress.</em></td><td>The phone records one GPS route at a time: a visit or a route proposal. Finish the other one first, or draw the route on the map instead.</td></tr>
+<tr><td><em>Too few GPS fixes to make a line. Keep walking.</em></td><td>A route proposal needs at least two good GPS points. Walk on, or check that location is on.</td></tr>
 </table></div>
 <h3 id="messages-sync">In the Errors section of Unsynced data</h3>
 <div class="tablewrap"><table>
 <tr><th>The app says</th><th>What it means and what to do</th></tr>
 <tr><td><em>An admin has locked this visit, so this change was not accepted.</em></td><td>Discard it, or retry after an admin unlocks the visit.</td></tr>
+<tr><td><em>An admin has closed this project, so it accepts no new or changed data.</em></td><td>You made the change after the project was closed. Discard it, or ask an admin to reopen the project and then retry.</td></tr>
+<tr><td><em>An admin has already reviewed this proposal, so this change was not accepted.</em></td><td>The route proposal was accepted or rejected before your change arrived. Discard the change.</td></tr>
 <tr><td><em>Not accepted: …</em></td><td>A value broke a rule. The message names it. Correct the record and retry, or discard the change.</td></tr>
 <tr><td><em>This record no longer exists on the server.</em> or <em>This record was deleted on the server.</em></td><td>An admin removed it. Discard your change.</td></tr>
 <tr><td><em>You are not allowed to change this record.</em></td><td>It is not yours, or you are no longer in the project. Ask an admin.</td></tr>
@@ -985,6 +1104,12 @@
 <p>An admin may have removed you from it. The records you already synced are safe on the server. Ask your admin.</p>
 <h4>I saw a butterfly but I am not on a walk.</h4>
 <p>Use <span class="btn">Free observation</span> on the project home screen, or press and hold on the map. See <a href="#free">Butterflies outside a walk</a>.</p>
+<h4>My project says "Closed" and I cannot start a visit.</h4>
+<p>An admin has closed it because the project is finished. What you recorded before still syncs. See <a href="#tour-closed">A closed project</a>.</p>
+<h4>The transect cannot be walked any more.</h4>
+<p>Propose a replacement from the transect's page. See <a href="#proposals">Proposing a route</a>.</p>
+<h4>The map is blank in the field.</h4>
+<p>Your project may have an offline map: tap <span class="btn">Update</span> on the project card at home, with Wi-Fi. Otherwise, look at the study area on the map while you are still online. See <a href="#map-offline">Maps without a connection</a>.</p>
 <h4>The distance to the transect is wrong.</h4>
 <p>Tap the location icon on the transect list to take a new position. Indoors, or just after turning on GPS, the position can be poor.</p>
 <h4>The app does not record my route when the screen is off.</h4>
@@ -1015,10 +1140,7 @@
 <div class="tablewrap"><table>
 <tr><th>Feature</th><th>What it will do</th></tr>
 <tr><td>Download page and public server</td><td>Install the app from a website and log in, with no server setup at all.</td></tr>
-<tr><td>Statistics</td><td>Your own figures offline: visits, true zeros, species, individuals per km and per hour, top 10 species and a weekly chart for a species.</td></tr>
-<tr><td>Route proposals</td><td>Record a better route in the field for an admin to accept.</td></tr>
 <tr><td>Shared plants and habitat</td><td>See what other project members recorded, read-only, and link your butterflies to it.</td></tr>
-<tr><td>Offline basemap</td><td>A background map of the study area downloaded with the project.</td></tr>
 <tr><td>Automatic weather and sensors</td><td>In the project's second phase: fill in the weather automatically, and show nearby monitoring stations on the map.</td></tr>
 <tr><td>Focal-follow sessions</td><td>In the project's second phase: follow one butterfly and record its path and behaviour.</td></tr>
 </table></div>
