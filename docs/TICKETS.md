@@ -106,7 +106,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | done |
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
-| T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | todo |
+| T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | done |
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | todo |
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | todo |
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | todo |
@@ -1465,20 +1465,22 @@ From T068: `datetime=` on `transects` and `transect-sections` answers 500 (no ti
 - [ ] Results table (client, operation, result, notes) in `evaluation/interop/results.md`.
 
 ### T071 · Simulated field-day generator
-[#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) · E11 · P1 · must · labels: `backend`, `evaluation`, `must`, `p2-compat` · implements F80 · est. 2.5 d · **todo**
+[#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) · E11 · P1 · must · labels: `backend`, `evaluation`, `must`, `p2-compat` · implements F80 · est. 2.5 d · **done**
 
 Depends on: T024, T026, T036, T044, T049
 Notes: plants/habitats generated when T051/T053 are done
 
-- [ ] `manage.py simulate_season --project <id> --start 2026-05-01 --end 2026-08-31 --visits-per-transect 8 --seed 42 [--direct]`:
+- [x] `manage.py simulate_season --project <id> --start 2026-05-01 --end 2026-08-31 --visits-per-transect 8 --seed 42 [--direct]`:
   - **Weather per day:** a shared Python module `simweather` (in `simulator/simweather/`, also used by T079 in Phase 2) produces a daily story of temperature, cloud, wind and rain. Visits fall mostly on suitable days. About 10 % are cancelled, with reasons.
   - **Tracks:** walk each transect at 0.8–1.2 m/s, one point per protocol interval, Gaussian GPS noise with σ equal to a sampled accuracy of 3–8 m, and occasional gaps of 60–120 s.
   - **Observations:** species are drawn from the seeded list with per-habitat weights and a Gaussian flight-period curve per species (parameters derived deterministically from the taxon id). Counts follow a Poisson distribution. Confidence mix: 80 % `confirmed_in_field`, 15 % `probable`, 5 % `photo_required` with a placeholder photo.
   - **Plants and habitats:** a few plant resources (points and polygons) and habitat features per transect.
   - **Injected anomalies** to test flags and dedup: high counts, records far from the transect, GPS gaps, true-zero visits, and **duplicate batch submissions**.
-- [ ] Default mode pushes through `/api/v1/sync/push` with the demo researcher's token (end-to-end). `--direct` writes via services for speed.
-- [ ] The same seed gives identical data (test compares exports).
-- [ ] Also exports `database/seeds/transects.gpx` for T072.
+- [x] Default mode pushes through `/api/v1/sync/push` with the demo researcher's token (end-to-end). `--direct` writes via services for speed.
+- [x] The same seed gives identical data (test compares exports).
+- [x] Also exports `database/seeds/transects.gpx` for T072.
+
+Note (2026-11-06): built as D-109; checked by hand with `tmp/t071/` (`clone_project.py`, `compare_exports.py`, `check_walk.py`, `count_flags.py`, `counts.py`, `dc.sh`). "Test compares exports" is skipped under D-021 and replaced by the by-hand comparison: the demo project (push mode) and a copy (`--direct`) gave identical exports for visits, observations, track points, plants and habitats. A rerun is all `duplicate`. No new dependency; one compose mount (`./simulator:/simulator:ro`). Follow-up for the developer to decide (D-105 item 7): rerun `evaluation/results/section-assignment.sql` on the simulated season.
 
 ### T072 · GPS replay in the app
 [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F80 · est. 1.5 d · **todo**

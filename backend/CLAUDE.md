@@ -29,6 +29,10 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_demo
 # Sync (T026): drop stored push mutations older than the retry window
 $DC exec django python manage.py prune_sync_mutations --older-than 180d
 
+# Simulated season (T071, D-109; docs/setup/simulation.md): dev only, pushes as the project's researcher; --direct skips HTTP.
+# Run as the developer: it writes database/seeds/transects.gpx. The same project and seed again is all `duplicate`.
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct]
+
 # Quality flags (T056, D-093) and route coverage (T100, D-095): work them out again for a project (<uuid>); after
 # changing a protocol threshold, the project area or a transect line. Locked visits are skipped.
 $DC exec django python manage.py recompute_flags --project <uuid>   # also redoes the route coverage of visits (T100)
@@ -67,6 +71,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `reject_proposal` are the only review path: the admin actions "Create transect" (an inactive transect, the replaced one only
   deactivated) and "Reject" call them. `ReadOnlyMapMixin.location_map_reference()` can draw a second, dashed geometry
   (`data-reference-geojson` in `readonly_map.js`).
+- `apps/sync/simulation/` (T071, D-109) builds the season for `simulate_season` (`plan.py` makes push-format mutations, `send.py` sends them through
+  the HTTP API or `sync.services.push`, `walk.py` walks the transects, `ecology.py`, `photo.py`, `gpx.py`); `simulator/simweather` (stdlib only, mounted at
+  `/simulator`) is the shared weather, also for T079. Ids are uuid5 of project, seed and key, so a rerun is a no-op.
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
   `save_visit` calls for a finished visit (D-076).
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the

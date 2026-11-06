@@ -2383,3 +2383,15 @@ Admin only: push, REST and the phone are unchanged; no migration. Habitat featur
 10. **Size.** nginx allows 20 MB per request and a photo may be 15 MB; the help line says to add large photos one at a time. nginx is unchanged.
 **Checked by hand** (`tmp/t113/verify.py`, Django test client against the dev database, rolled back): add on a reviewed visit, refusals (draft, cancelled, locked, other recorder, V04, V01, V08), the zero flag
 with and without the tick, the edit path, photo add / make primary / bad files / soft delete on observation and plant pages, a locked page, and a non-superuser admin.
+
+## D-109 · Simulated season generator (T071)
+2026-11-06 · accepted · T071
+1. **One generator, two senders.** `simulation/plan.py` builds push-format mutation dicts; only the transport differs. Default: an in-process DRF `APIClient` with a JWT minted per request (access tokens last 15 minutes), one request per visit, photos through the three attachment endpoints. `--direct`: `sync.services.push` with up to 1000 mutations per call and `init_upload` / `store_content` / `complete_upload`. Never inside an outer `atomic()` (push is `durable`), so the command is not atomic.
+2. **Determinism.** Every stream is `random.Random("<seed>:<transect code>:<visit>:<purpose>")`; taxon parameters come from SHA-256 of the taxon id (never `hash()`); entity and mutation ids are uuid5 of project, seed and key; every time is simulated. A rerun is all `duplicate`, and two projects with the same transects and taxa give identical exports (checked by hand, push against `--direct`).
+3. **`simweather`** is stdlib-only and pure, in `simulator/simweather/`, mounted at `/simulator` (compose change, no dependency) so T079 imports it from its own container. The command is dev only.
+4. **Visit shape.** One create per visit (completed or cancelled, the server walks the chain to `synced`), then track batches, observations, photos, plants and habitats. No `in_progress` step, so no `base_version` handling.
+5. **Placeholder photo** is one JPEG for all `photo_required` records, so every upload after the first answers `exists`.
+6. **Far records** are 40-150 m (flag `far_from_transect`); one or two at about 400 m are meant to leave the project area (hull plus 300 m), but a point inside the hull stays inside, so `outside_project_area` can be fewer than injected. Gaps remove fixes so that neighbours are 61-125 s apart (the flag needs more than 60 s).
+7. **Ids ignore the dates and visit count.** They are uuid5 of project, seed and `CODE:index`, so the command checks the stored visits (start, status, start temperature) against the plan before sending and stops with an error if they differ (same seed, other `--start`, `--end` or `--visits-per-transect`); otherwise the server would answer `duplicate` and drop the new data. A transect without live sections is an error; sections without a habitat type get no habitat features.
+**Limits:** plausible, not realistic (docs/setup/simulation.md). The "test compares exports" criterion is skipped under D-021 and done by hand.
+

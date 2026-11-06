@@ -29,7 +29,7 @@ Key directories (T002 created the layout; app code arrives with T003 and T006):
 | `pygeoapi/config/` | pygeoapi configuration |
 | `infrastructure/` | `compose.yaml`, `compose.dev.yaml`, `nginx/`, `db-init/` |
 | `scripts/` | backup/restore (T010) |
-| `simulator/` | Phase 2 sensor simulator (empty until then) |
+| `simulator/` | `simweather` (T071, shared with the T079 sensor simulator in Phase 2) |
 | `docs/` | requirements, architecture, setup, evaluation notes |
 
 **Per-folder guides:** [backend/CLAUDE.md](backend/CLAUDE.md) (Django commands, models, migrations,
@@ -60,6 +60,9 @@ scripts/restore.sh <backup-dir>
 
 # MinIO user for Django (T049; docs/setup/minio.md). Rerun after a fresh volume; restore.sh does it.
 scripts/minio-setup.sh
+
+# Simulated season (T071, D-109; docs/setup/simulation.md). Dev only; same project and seed again changes nothing.
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct]
 
 # OGC collections, filters and paging (T068). OGC_AUTH is an admin credential (T069; docs/setup/ogc-access.md)
 OGC_AUTH='Token <key>' scripts/ogc-smoke.sh [base-url]
