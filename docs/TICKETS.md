@@ -147,7 +147,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T109 | [#126](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/126) | Admin group gets a new model's permissions on the same migrate | P1 | should | T013 | 0.5 d | done |
 | T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | done |
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | done |
-| T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | todo |
+| T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | done |
 | T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | todo |
 
 ## Acceptance criteria
@@ -2186,6 +2186,7 @@ time, position or section of an existing observation (T046 left them out); Djang
 Deferred: the phone checks (a)-(f) of "Effect on phones" were not run by Claude (no phone here); the developer runs them by hand.
 
 Depends on: T051, T052
+Note (T112): hand check (e) no longer holds for other members of the project: a record added for a researcher now also reaches the phones of the project's other members.
 Notes: All decisions settled (1-5 below).
 
 Why: The plant record page in Django admin is read-only (T051, D-086; T052 added a read-only map). An admin who sees a wrong species, a wrong relation or a misplaced point cannot correct it, while a butterfly observation of an unlocked visit can be corrected (T044, T042). A patch drawn badly in the field is easier to fix on a large map at a desk, and the researcher's phone is not always at hand. An admin should also be able to record a plant without a phone (from a paper form or a photo).
@@ -2219,9 +2220,11 @@ If time is short (1 d instead): Edit only: no Add button and no GeoJSON field. S
 Out of scope: Editing photos in admin (make primary, delete); An admin page for habitat features (T053 does not list one, so that gap stays until it is asked for); Unlocking a visit (T043). Changes to the phone (a pulled change already shows, D-087); The same link checks on phone, push and REST. Tests (D-021).
 
 ### T112 · Project members see each other's plants, habitat features and observations
-[#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `mobile`, `sync`, `could` · implements F20, F21, F35 (changes the researcher role in PROJECT_OUTLINE) · est. 6 d (was 3 d; widened 2026-11-06) · **todo**
+[#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) · E07 · added 2026-11-03 as a follow-up to T051 and T052 · P1 · could · labels: `backend`, `mobile`, `sync`, `could` · implements F20, F21, F35 (changes the researcher role in PROJECT_OUTLINE) · est. 6 d (was 3 d; widened 2026-11-06) · **done**
 
+Deferred: Polygon (walk) outdoors and sensitive-species hiding are untested/unchanged as before; not tested on the phone: an admin editing another member's record, and a second phone at the same time. Track points and observation photos are still not shared (out of scope).
 Depends on: T051, T052, T053, T054, T059, T062
+Settled by the plan (2026-11-06, D-107): (1) three name columns: `created_by_name` on plant and habitat rows and `recorded_by_name` on observations (visits get none); (2) others' plant photos are pulled only once uploaded; (3) others' observations on a visit that is not on the phone are hidden on the map; (4) "Linked to N" counts only the creator's own observations; (5) "Recorded by" is "You" / the name / "Another researcher"; (6) others' observations are purple. Changed at the phone test: the note "Your records only…" (decision 8) is removed altogether, because the switch makes it redundant. Also changed at the phone test: decision 6's "finished visits only" is dropped, every visit of the project (draft, in progress, cancelled too) is pulled, because data collected on a transect belongs to the project (D-107).
 Notes: Decisions 1-5 settled 2026-11-03; 6-8 added 2026-11-06 at the developer's request (widened to observations, visits and statistics). Decision 1 now covers butterfly observations too.
 
 Why: Plants and habitat features describe a place, not one person's sighting. A researcher who walks a transect, or picks a host plant to link to a butterfly, benefits from what the project already knows, including what other members recorded. Today each researcher sees only their own: `pull_plant_resources` sends rows with `created_by = user` (D-086), `plant_resources_for` also decides what a butterfly may link to, and the phone filters by `createdById` (D-087). This ticket shares those two record types inside a project, read-only for everyone but the creator and admins. (Widened 2026-11-06: butterfly observations and finished visits are shared read-only too, so the map shows other members' sightings and the statistics screen can show whole-project figures; see decisions 6-8.)

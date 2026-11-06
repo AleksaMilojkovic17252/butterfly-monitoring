@@ -27,6 +27,11 @@ class UserProfile {
   bool get isAdmin => groups.contains('admin');
   String get displayName => name.isNotEmpty ? name : email;
 
+  /// Whether the user is a member of [projectId]. Logout keeps the local rows,
+  /// so providers of shared records (T112) show nothing for a project the
+  /// signed-in user is not in.
+  bool isMemberOf(String projectId) => projectIds.contains(projectId);
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'email': email,

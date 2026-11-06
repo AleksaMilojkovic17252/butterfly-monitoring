@@ -17,8 +17,9 @@ import 'package:mobile/core/db/sync_columns.dart';
 /// - `patchAreaM2` is the server's figure after a pull. The phone never pushes
 ///   it (D-086): when the shape changes the local value is set to null and the
 ///   next pull brings the new one;
-/// - `createdById` is local-only knowledge the pull now carries, so a second
-///   user on the same phone does not see the first user's records.
+/// - `createdById` and `createdByName` are local-only knowledge the pull
+///   carries (T112): the pull brings every member's records of the project,
+///   so they tell the user's own records from the others', which are read-only.
 @DataClassName('PlantResourceObservation')
 class PlantResourceObservations extends Table with SyncColumns {
   TextColumn get id => text()();
@@ -54,6 +55,11 @@ class PlantResourceObservations extends Table with SyncColumns {
   /// Who made the record. Null until a pull brings it back for a record made
   /// on this phone, so the repository also sets it when it writes one.
   TextColumn get createdById => text().nullable()();
+
+  /// The creator's name, for the "Recorded by" line (T112). Output-only on the
+  /// server (`created_by_name`); null for a record made on this phone until a
+  /// pull brings it back.
+  TextColumn get createdByName => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

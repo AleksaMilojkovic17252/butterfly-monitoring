@@ -542,7 +542,8 @@ class PullApplier {
     );
   }
 
-  /// An observation the caller recorded. Foreign keys arrive without `_id`, and
+  /// An observation of the project, the caller's or another member's (T112).
+  /// `recorded_by_name` is the server's output-only name. Foreign keys arrive without `_id`, and
   /// the geometry is a GeoJSON Point (`[lon, lat]`). The server's
   /// `validation_*` fields are not in the pull, and the app keeps none.
   static ButterflyObservationsCompanion _butterflyObservation(_Json json) {
@@ -560,6 +561,7 @@ class PullApplier {
       locationAccuracyM: Value(_decimalOrNull(json['location_accuracy_m'])),
       identificationConfidence: json['identification_confidence'] as String,
       recordedById: json['recorded_by'] as String,
+      recordedByName: Value(json['recorded_by_name'] as String?),
       sex: Value(json['sex'] as String),
       lifeStage: Value(json['life_stage'] as String),
       behaviour: Value(jsonEncode(json['behaviour'])),
@@ -605,11 +607,12 @@ class PullApplier {
     );
   }
 
-  /// A plant record the caller made (T052). The geometry is a GeoJSON Point or
+  /// A plant record of the project, the caller's or another member's (T052,
+  /// T112). The geometry is a GeoJSON Point or
   /// Polygon, kept as text; `lat`/`lon` are the point, or the centre of the
-  /// polygon. `patch_area_m2` is the server's figure. `created_by` is the
-  /// caller's id, which the pull carries so a second user on this phone does
-  /// not see these rows.
+  /// polygon. `patch_area_m2` is the server's figure. `created_by` and
+  /// `created_by_name` say who made it: the screens compare the id with the
+  /// signed-in user to tell own records from read-only ones.
   static PlantResourceObservationsCompanion _plantResource(_Json json) {
     final geometry = jsonEncode(json['geometry']);
     final parsed = parseGeometry(geometry);
@@ -641,13 +644,15 @@ class PullApplier {
       notes: Value(json['notes'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       createdById: Value(json['created_by'] as String?),
+      createdByName: Value(json['created_by_name'] as String?),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),
     );
   }
 
-  /// A habitat feature the caller made (T054). The geometry is a GeoJSON
+  /// A habitat feature of the project, the caller's or another member's (T054,
+  /// T112). The geometry is a GeoJSON
   /// Point, LineString or Polygon, kept as text. `lat`/`lon` are the point
   /// itself, or the centre of the line or polygon: the same rule as
   /// `CapturedGeometry.centroid` (the first point for a Point, otherwise
@@ -686,6 +691,7 @@ class PullApplier {
       notes: Value(json['notes'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       createdById: Value(json['created_by'] as String?),
+      createdByName: Value(json['created_by_name'] as String?),
       syncStatus: const Value(SyncStatus.synced),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),

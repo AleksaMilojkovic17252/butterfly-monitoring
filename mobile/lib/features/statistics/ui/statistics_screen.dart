@@ -10,7 +10,7 @@ import 'package:mobile/features/statistics/ui/widgets/phenology_chart.dart';
 import 'package:mobile/features/statistics/ui/widgets/top_species_list.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 
-/// Indicators for the researcher's own data (T062), at
+/// Indicators for the researcher's own data, or the whole project's (T112), at
 /// `/projects/:id/statistics`: per transect and year (visits, true zeros,
 /// species, individuals, per km, per hour, top 10) and a weekly phenology chart
 /// for one species. Same definitions as the server's T061 views (D-099, D-100).
@@ -30,9 +30,19 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   String? _taxonId;
   int? _isoYear;
 
+  // "My records" or "Whole project" (T112). Kept here, so it resets when the
+  // screen closes. The year, transect and species picks above stay as long as
+  // they still exist in the new data.
+  bool _wholeProject = false;
+
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(statisticsDataProvider(widget.projectId));
+    final data = ref.watch(
+      statisticsDataProvider((
+        projectId: widget.projectId,
+        wholeProject: _wholeProject,
+      )),
+    );
     return Scaffold(
       appBar: AppBar(title: const Text('Statistics')),
       body: SafeArea(
@@ -42,14 +52,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Text(
-                        'Your records only. Project-wide figures are in the '
-                        'admin reports.',
-                      ),
-                    ),
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(value: false, label: Text('My records')),
+                      ButtonSegment(value: true, label: Text('Whole project')),
+                    ],
+                    selected: {_wholeProject},
+                    onSelectionChanged: (selection) =>
+                        setState(() => _wholeProject = selection.first),
                   ),
                   const SizedBox(height: 16),
                   ..._indicatorSection(context, data),

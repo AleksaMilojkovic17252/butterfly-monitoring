@@ -59,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -215,6 +215,27 @@ class AppDatabase extends _$AppDatabase {
         // A project closed before this version has an old server_version, so
         // pull would never send closed_at. Start every pull from the beginning,
         // as from15To16 did. Rows waiting in the queue are not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from17To18: (m, schema) async {
+        await m.addColumn(
+          schema.plantResourceObservation,
+          schema.plantResourceObservation.createdByName,
+        );
+        await m.addColumn(
+          schema.habitatFeature,
+          schema.habitatFeature.createdByName,
+        );
+        await m.addColumn(
+          schema.butterflyObservation,
+          schema.butterflyObservation.recordedByName,
+        );
+        // Project members now see each other's records (T112), but a phone's
+        // cursor is already past the other members' older rows, so they would
+        // never arrive. Start every pull from the beginning, as from16To17
+        // did. Rows waiting in the queue are not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

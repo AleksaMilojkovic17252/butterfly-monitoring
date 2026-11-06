@@ -78,6 +78,11 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   List<Marker> _markers = const [];
   Map<String, ButterflyObservation> _observationsById = const {};
 
+  // Memo of the markers of other members' observations (T112), the same way.
+  List<ButterflyObservation>? _otherSource;
+  List<Marker> _otherMarkers = const [];
+  Map<String, ButterflyObservation> _otherById = const {};
+
   /// The species of the observations, by id, for the popup. Watched in
   /// `build`, which keeps the query alive while the map is open (a one-off
   /// read of an `autoDispose` provider is disposed before it has a value).
@@ -125,6 +130,32 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
       ];
     }
     return _markers;
+  }
+
+  /// The purple markers of other members' observations (T112); the same list
+  /// as last time when [observations] is the same instance.
+  List<Marker> _otherMarkersFor(List<ButterflyObservation> observations) {
+    if (!identical(observations, _otherSource)) {
+      _otherSource = observations;
+      _otherById = {for (final o in observations) o.id: o};
+      _otherMarkers = [
+        for (final o in observations)
+          Marker(
+            key: ValueKey(o.id),
+            point: LatLng(o.lat, o.lon),
+            width: 20,
+            height: 20,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.purple,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+      ];
+    }
+    return _otherMarkers;
   }
 
   /// The green markers of the point records and the patches of the polygon
@@ -424,6 +455,19 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     );
   }
 
+  /// A tap on another member's observation marker: a read-only popup.
+  void _onOtherMarkerTap(Marker marker) {
+    final key = marker.key;
+    if (key is! ValueKey<String>) return;
+    final observation = _otherById[key.value];
+    if (observation == null) return;
+    showOtherObservationPopup(
+      context,
+      observation: observation,
+      taxon: _taxaById[observation.taxonId],
+    );
+  }
+
   /// A tap on an observation marker.
   Future<void> _onMarkerTap(Marker marker) async {
     final key = marker.key;
@@ -508,6 +552,9 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
 
     final layers = ref.watch(mapLayersProvider);
     final filtered = ref.watch(filteredObservationsProvider(projectId));
+    final filteredOthers = ref.watch(
+      filteredOtherObservationsProvider(projectId),
+    );
     final visits = ref.watch(projectVisitsProvider(projectId)).value ?? [];
 
     // The route of the visit chosen under Filters.
@@ -630,6 +677,36 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
               builder: (context, markers) => DecoratedBox(
                 decoration: BoxDecoration(
                   color: Colors.green.shade800,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    '${markers.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        // Other members' observations: smaller purple circles below the user's
+        // own, read-only (T112).
+        if (layers.contains(MapLayer.otherObservations) &&
+            filteredOthers.isNotEmpty)
+          MarkerClusterLayerWidget(
+            options: MarkerClusterLayerOptions(
+              markers: _otherMarkersFor(filteredOthers),
+              size: const Size(40, 40),
+              maxClusterRadius: 60,
+              maxZoom: 18,
+              centerMarkerOnClick: false,
+              onMarkerTap: _onOtherMarkerTap,
+              builder: (context, markers) => DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade800,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                 ),

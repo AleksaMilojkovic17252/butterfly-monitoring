@@ -24,11 +24,12 @@ void _openFrom(BuildContext context, BuildContext dialogContext, String path) {
   context.push(path);
 }
 
+/// Shows the popup. A null [path] gives a popup without an Open button.
 Future<void> _showPopup(
   BuildContext context,
   String title,
   List<(String, String)> lines,
-  String path, {
+  String? path, {
   Photo? photo,
 }) {
   return showDialog<void>(
@@ -36,7 +37,9 @@ Future<void> _showPopup(
     builder: (dialogContext) => MapFeatureDialog(
       title: title,
       lines: lines,
-      onOpen: () => _openFrom(context, dialogContext, path),
+      onOpen: path == null
+          ? null
+          : () => _openFrom(context, dialogContext, path),
       photo: photo,
     ),
   );
@@ -69,6 +72,30 @@ Future<void> showObservationPopup(
     ],
     '/projects/${observation.projectId}/observations/${observation.id}',
     photo: photo,
+  );
+}
+
+/// Another member's observation (T112): species and count, when, and who
+/// recorded it. Read-only: no photo and no Open, because the phone has neither
+/// the photos nor an editable detail for it. The name is "Another researcher"
+/// when the phone does not know it.
+Future<void> showOtherObservationPopup(
+  BuildContext context, {
+  required ButterflyObservation observation,
+  required Taxon? taxon,
+}) {
+  final name = observation.recordedByName;
+  return _showPopup(
+    context,
+    '${taxon?.scientificName ?? 'Butterfly'} × ${observation.count}',
+    [
+      ('Seen', formatLocalDateTime(observation.observedAt)),
+      (
+        'Recorded by',
+        name != null && name.isNotEmpty ? name : 'Another researcher',
+      ),
+    ],
+    null,
   );
 }
 

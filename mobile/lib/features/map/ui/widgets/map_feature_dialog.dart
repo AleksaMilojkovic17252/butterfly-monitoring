@@ -4,7 +4,8 @@ import 'package:mobile/features/observations/ui/widgets/photo_preview_image.dart
 
 /// The popup of a feature tapped on the project map (T059): a dialog in the
 /// middle of the screen with a title, a few "label: value" lines, a Close
-/// button and an Open button for the feature's own screen. An observation with
+/// button and an Open button for the feature's own screen (left out when
+/// [onOpen] is null, as for another member's observation, T112). An observation with
 /// a photo shows it at the top: the file on this phone, or the thumbnail from
 /// the server (T107). The content scrolls if it does
 /// not fit, so a small screen or a large font cannot overflow it.
@@ -20,7 +21,9 @@ class MapFeatureDialog extends StatelessWidget {
 
   /// (label, value) pairs, shown in this order.
   final List<(String, String)> lines;
-  final VoidCallback onOpen;
+
+  /// What Open does, or null for a popup without an Open button.
+  final VoidCallback? onOpen;
 
   /// A photo to show above the title, or null.
   final Photo? photo;
@@ -71,8 +74,10 @@ class MapFeatureDialog extends StatelessWidget {
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Close'),
                 ),
-                const SizedBox(width: 8),
-                FilledButton(onPressed: onOpen, child: const Text('Open')),
+                if (onOpen != null) ...[
+                  const SizedBox(width: 8),
+                  FilledButton(onPressed: onOpen, child: const Text('Open')),
+                ],
               ],
             ),
           ],

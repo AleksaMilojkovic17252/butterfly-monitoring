@@ -8,8 +8,8 @@ import 'package:mobile/core/http/dio_provider.dart';
 import 'package:mobile/core/location/gps_interval_override.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
-import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 
 enum _LogoutChoice { syncFirst, anyway }
 
@@ -213,183 +213,188 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(lastSync))}';
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                if (profile != null) ...[
-                  Card(
-                    child: ListTile(
-                      leading: const CircleAvatar(child: Icon(Icons.person)),
-                      title: Text(profile.displayName),
-                      subtitle: Text(
-                        offline ? '${profile.email} · offline' : profile.email,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.sync),
-                      title: const Text('Sync'),
-                      subtitle: Text(
-                        pending > 0
-                            ? '$lastSyncText · $pending pending'
-                            : lastSyncText,
-                      ),
-                      // The button keeps its size while syncing (a spinner
-                      // replaces the label), so the tile does not jump.
-                      trailing: FilledButton.tonal(
-                        onPressed: running ? null : _syncNow,
-                        style: FilledButton.styleFrom(
-                          fixedSize: const Size(120, 40),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  if (profile != null) ...[
+                    Card(
+                      child: ListTile(
+                        leading: const CircleAvatar(child: Icon(Icons.person)),
+                        title: Text(profile.displayName),
+                        subtitle: Text(
+                          offline
+                              ? '${profile.email} · offline'
+                              : profile.email,
                         ),
-                        child: running
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Sync now'),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  // This phone's GPS interval (T037); null follows the
-                  // project protocol.
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.gps_fixed),
-                      title: const Text('GPS interval'),
-                      subtitle: const Text(
-                        'Applies when the next visit starts or the app '
-                        'restarts',
-                      ),
-                      trailing: DropdownButton<int?>(
-                        value: gpsInterval,
-                        onChanged: (seconds) => ref
-                            .read(gpsIntervalOverrideProvider.notifier)
-                            .save(seconds),
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text('Project'),
+                    const SizedBox(height: 8),
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.sync),
+                        title: const Text('Sync'),
+                        subtitle: Text(
+                          pending > 0
+                              ? '$lastSyncText · $pending pending'
+                              : lastSyncText,
+                        ),
+                        // The button keeps its size while syncing (a spinner
+                        // replaces the label), so the tile does not jump.
+                        trailing: FilledButton.tonal(
+                          onPressed: running ? null : _syncNow,
+                          style: FilledButton.styleFrom(
+                            fixedSize: const Size(120, 40),
                           ),
-                          for (final seconds
-                              in GpsIntervalOverrideNotifier.choices)
-                            DropdownMenuItem(
-                              value: seconds,
-                              child: Text('$seconds s'),
+                          child: running
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Sync now'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // This phone's GPS interval (T037); null follows the
+                    // project protocol.
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.gps_fixed),
+                        title: const Text('GPS interval'),
+                        subtitle: const Text(
+                          'Applies when the next visit starts or the app '
+                          'restarts',
+                        ),
+                        trailing: DropdownButton<int?>(
+                          value: gpsInterval,
+                          onChanged: (seconds) => ref
+                              .read(gpsIntervalOverrideProvider.notifier)
+                              .save(seconds),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('Project'),
                             ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Photos wait in the app until Wi-Fi is there (T050).
-                  Card(
-                    child: SwitchListTile(
-                      secondary: const Icon(Icons.wifi),
-                      title: const Text('Upload photos on Wi-Fi only'),
-                      subtitle: const Text(
-                        'Photos wait on the phone until Wi-Fi is connected',
-                      ),
-                      value: photoWifiOnly,
-                      onChanged: (value) =>
-                          ref.read(photoWifiOnlyProvider.notifier).save(value),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _logout,
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Log out'),
+                            for (final seconds
+                                in GpsIntervalOverrideNotifier.choices)
+                              DropdownMenuItem(
+                                value: seconds,
+                                child: Text('$seconds s'),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _removeLocalData,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Theme.of(context)
-                                .colorScheme
-                                .error,
+                    ),
+                    const SizedBox(height: 8),
+                    // Photos wait in the app until Wi-Fi is there (T050).
+                    Card(
+                      child: SwitchListTile(
+                        secondary: const Icon(Icons.wifi),
+                        title: const Text('Upload photos on Wi-Fi only'),
+                        subtitle: const Text(
+                          'Photos wait on the phone until Wi-Fi is connected',
+                        ),
+                        value: photoWifiOnly,
+                        onChanged: (value) => ref
+                            .read(photoWifiOnlyProvider.notifier)
+                            .save(value),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _logout,
+                            icon: const Icon(Icons.logout),
+                            label: const Text('Log out'),
                           ),
-                          icon: const Icon(Icons.delete_outline),
-                          label: const Text('Remove data'),
                         ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _removeLocalData,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .error,
+                            ),
+                            icon: const Icon(Icons.delete_outline),
+                            label: const Text('Remove data'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 32),
+                  ],
+                  TextFormField(
+                    decoration: const InputDecoration(label: Text('URL')),
+                    autocorrect: false,
+                    keyboardType: TextInputType.url,
+                    onChanged: (_) {
+                      setState(() {
+                        _testResult = null;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter a server URL';
+                      }
+                      return null;
+                    },
+                    controller: _controller,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final preset in ServerPreset.values)
+                        ActionChip(
+                          label: Text(preset.label),
+                          onPressed: () {
+                            setState(() {
+                              _testResult = null;
+                            });
+                            _controller.text = preset.url;
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: _testing ? null : _testConnection,
+                        child: Text(_testing ? 'Testing…' : 'Test Connection'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _saveItem,
+                        child: const Text('Save'),
                       ),
                     ],
                   ),
-                  const Divider(height: 32),
-                ],
-                TextFormField(
-                  decoration: const InputDecoration(label: Text('URL')),
-                  autocorrect: false,
-                  keyboardType: TextInputType.url,
-                  onChanged: (_) {
-                    setState(() {
-                      _testResult = null;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Enter a server URL';
-                    }
-                    return null;
-                  },
-                  controller: _controller,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final preset in ServerPreset.values)
-                      ActionChip(
-                        label: Text(preset.label),
-                        onPressed: () {
-                          setState(() {
-                            _testResult = null;
-                          });
-                          _controller.text = preset.url;
-                        },
+                  if (_testResult != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _testResult!,
+                      style: TextStyle(
+                        color: _testOk
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.error,
                       ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _testing ? null : _testConnection,
-                      child: Text(_testing ? 'Testing…' : 'Test Connection'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _saveItem,
-                      child: const Text('Save'),
                     ),
                   ],
-                ),
-                if (_testResult != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _testResult!,
-                    style: TextStyle(
-                      color: _testOk
-                          ? Colors.green
-                          : Theme.of(context).colorScheme.error,
-                    ),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
         ),

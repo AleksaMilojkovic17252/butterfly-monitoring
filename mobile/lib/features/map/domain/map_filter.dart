@@ -73,9 +73,17 @@ class MapFilter {
 
   /// Whether [o] passes every filter that is set. [sectionHabitats] maps a
   /// section id to its habitat type id; an observation without a section does
-  /// not match while the habitat filter is on.
-  bool matches(ButterflyObservation o, Map<String, String?> sectionHabitats) {
-    if (visitId != null && o.surveyVisitId != visitId) return false;
+  /// not match while the habitat filter is on. With [ignoreVisit] the visit
+  /// filter is skipped: it picks one of the user's own visits, and other
+  /// members' observations are never on those (T112).
+  bool matches(
+    ButterflyObservation o,
+    Map<String, String?> sectionHabitats, {
+    bool ignoreVisit = false,
+  }) {
+    if (!ignoreVisit && visitId != null && o.surveyVisitId != visitId) {
+      return false;
+    }
     if (taxonId != null && o.taxonId != taxonId) return false;
     if (lifeStage != null && o.lifeStage != lifeStage) return false;
 
@@ -140,13 +148,17 @@ final effectiveMapFilterProvider = Provider.autoDispose
       final observations = ref
           .watch(projectObservationsProvider(projectId))
           .value;
+      final others = ref.watch(otherObservationsProvider(projectId)).value;
       final sections = ref.watch(projectSectionsProvider(projectId)).value;
 
       final visitGone =
           visits != null && !visits.any((v) => v.id == filter.visitId);
+      // A species only another member saw can be picked too (T112).
       final taxonGone =
           observations != null &&
-          !observations.any((o) => o.taxonId == filter.taxonId);
+          others != null &&
+          !observations.any((o) => o.taxonId == filter.taxonId) &&
+          !others.any((o) => o.taxonId == filter.taxonId);
       // The Habitat type row offers only habitats that have a name.
       final habitatGone =
           sections != null &&
@@ -181,5 +193,26 @@ final filteredObservationsProvider = Provider.autoDispose
       return [
         for (final o in observations)
           if (filter.matches(o, habitats)) o,
+      ];
+    });
+
+/// Other members' observations that pass the map's filters (T112), in the same
+/// way as [filteredObservationsProvider] but without the visit filter. A new
+/// list is made only when the observations, the sections or the filters
+/// change, so the map can use `identical` to skip rebuilding its markers.
+final filteredOtherObservationsProvider = Provider.autoDispose
+    .family<List<ButterflyObservation>, String>((ref, projectId) {
+      final observations =
+          ref.watch(otherObservationsProvider(projectId)).value ?? const [];
+      final sections =
+          ref.watch(projectSectionsProvider(projectId)).value ?? const [];
+      final filter = ref.watch(effectiveMapFilterProvider(projectId));
+
+      final habitats = {
+        for (final s in sections) s.section.id: s.section.habitatTypeId,
+      };
+      return [
+        for (final o in observations)
+          if (filter.matches(o, habitats, ignoreVisit: true)) o,
       ];
     });

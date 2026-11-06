@@ -28,6 +28,8 @@ class ButterflyObservationSyncSerializer(serializers.ModelSerializer):
     so the phone can map them to its own text.
     """
 
+    # Output only: the recorder's name for the phone's "Recorded by" line (T112, D-107).
+    recorded_by_name = serializers.SerializerMethodField()
     created_at = UTCDateTimeField(required=False)
     observed_at = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
     geometry = WritableGeoJSONField(
@@ -49,6 +51,10 @@ class ButterflyObservationSyncSerializer(serializers.ModelSerializer):
             "source": {"error_messages": {"invalid_choice": "V07"}},
             "identification_confidence": {"error_messages": {"invalid_choice": "V07"}},
         }
+
+    def get_recorded_by_name(self, obj) -> str:
+        """The pull selects `recorded_by`, so this costs no query per row."""
+        return obj.recorded_by.name
 
     def validate_behaviour(self, value):
         if any(item not in Behaviour.values for item in value):

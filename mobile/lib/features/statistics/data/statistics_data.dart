@@ -7,8 +7,8 @@ import 'package:mobile/features/statistics/domain/phenology.dart' as phenology;
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 
-/// Everything the statistics screen reads (T062): the user's visits and
-/// observations of the project, the protocol's time zone and the taxa of those
+/// Everything the statistics screen reads (T062): the visits and
+/// observations of the project (the user's own, or the whole project's, T112), the protocol's time zone and the taxa of those
 /// observations. No repository of its own: the existing providers already read
 /// Drift, so the screen works offline.
 class StatisticsData {
@@ -50,12 +50,29 @@ class StatisticsData {
 }
 
 /// The statistics data of a project, or null while the first load runs.
+/// With `wholeProject` it reads every visit and observation pulled for the
+/// project, other members' included (T112, D-107); otherwise only the user's
+/// own, as in T062. The pure functions in `domain/` are the same for both.
 /// `autoDispose`: the queries stop when the screen closes.
 final statisticsDataProvider = Provider.autoDispose
-    .family<StatisticsData?, String>((ref, projectId) {
-      final visits = ref.watch(projectVisitsProvider(projectId)).value;
+    .family<StatisticsData?, ({String projectId, bool wholeProject})>((
+      ref,
+      scope,
+    ) {
+      final projectId = scope.projectId;
+      final visits = ref
+          .watch(
+            scope.wholeProject
+                ? allProjectVisitsProvider(projectId)
+                : projectVisitsProvider(projectId),
+          )
+          .value;
       final observations = ref
-          .watch(projectObservationsProvider(projectId))
+          .watch(
+            scope.wholeProject
+                ? allProjectObservationsProvider(projectId)
+                : projectObservationsProvider(projectId),
+          )
           .value;
       final protocolAsync = ref.watch(projectProtocolProvider(projectId));
       if (visits == null || observations == null) return null;

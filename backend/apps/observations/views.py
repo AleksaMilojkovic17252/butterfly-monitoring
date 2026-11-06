@@ -187,7 +187,8 @@ class PhotoUploadComplete(APIView):
 
 
 class PhotoDownload(APIView):
-    """An uploaded photo's file, for its owner or an admin. Session login is accepted next to the
+    """An uploaded photo's file, for its owner or an admin, or (a plant record's photo) for any
+    member of the project (T112). Session login is accepted next to the
     JWT, so the admin pages can show the images (GET only, so CSRF does not matter)."""
 
     authentication_classes = [JWTAuthentication, SessionAuthentication]
@@ -195,7 +196,9 @@ class PhotoDownload(APIView):
 
     def get(self, request, photo_id):
         photo = get_object_or_404(
-            services.photos_for(request.user), pk=photo_id, upload_status=UploadStatus.UPLOADED
+            services.viewable_photos_for(request.user),
+            pk=photo_id,
+            upload_status=UploadStatus.UPLOADED,
         )
         if self.thumbnail:
             return FileResponse(photo_storage.open_thumbnail(photo), content_type="image/jpeg")

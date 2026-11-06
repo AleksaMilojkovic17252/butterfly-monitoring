@@ -35,20 +35,11 @@ class HabitatRepository {
 
   // --- Reads ---------------------------------------------------------------
 
-  /// Live habitat features of a project that [createdById] made, newest first.
-  /// Filtered by user because logout keeps the local data, so another user's
-  /// rows can still be here.
-  Stream<List<HabitatFeature>> watchProjectFeatures(
-    String projectId,
-    String createdById,
-  ) {
+  /// Live habitat features of a project, newest first: the user's own and the
+  /// other members' (T112). The caller checks that the user is a member.
+  Stream<List<HabitatFeature>> watchProjectFeatures(String projectId) {
     final query = _db.select(_db.habitatFeatures)
-      ..where(
-        (h) =>
-            h.projectId.equals(projectId) &
-            h.createdById.equals(createdById) &
-            h.deletedAt.isNull(),
-      )
+      ..where((h) => h.projectId.equals(projectId) & h.deletedAt.isNull())
       ..orderBy([
         (h) => OrderingTerm.desc(h.observedAt),
         (h) => OrderingTerm.desc(h.createdAt),
@@ -346,15 +337,19 @@ final habitatRepositoryProvider = Provider<HabitatRepository>(
   ),
 );
 
-/// The logged-in user's habitat features of a project, newest first, live
-/// (T054). `autoDispose`: the query stops when the list or the map closes.
+/// The project's habitat features, newest first, live (T054): the user's own
+/// and the other members' (T112). Empty unless the signed-in user is a member
+/// of the project, because logout keeps the local rows.
+/// `autoDispose`: the query stops when the list or the map closes.
 final habitatFeaturesProvider = StreamProvider.autoDispose
     .family<List<HabitatFeature>, String>((ref, projectId) {
-      final userId = ref.watch(authControllerProvider).profile?.id;
-      if (userId == null) return Stream.value(const []);
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
       return ref
           .watch(habitatRepositoryProvider)
-          .watchProjectFeatures(projectId, userId);
+          .watchProjectFeatures(projectId);
     });
 
 /// One habitat feature, live, or null when it is not on this phone.

@@ -5,7 +5,8 @@ import 'package:mobile/core/db/transects.dart';
 
 /// Local copy of the server's `survey_visit` table (T034): one walk of a
 /// transect. The phone writes it (through `SyncRepository.write`) and pull
-/// brings back the caller's own visits.
+/// brings back the caller's own visits and, since T112, the other members'
+/// finished ones (read-only; `observerId` tells them apart).
 ///
 /// Differences from the server:
 /// - no `locked_*` columns: a lock arrives as `status = locked`;

@@ -17,6 +17,7 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
     the phone can map them to its own text.
     """
 
+    created_by_name = serializers.SerializerMethodField()
     created_at = UTCDateTimeField(required=False)
     observed_at = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
     geometry = WritableGeoJSONField(
@@ -56,6 +57,11 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
         return attrs
 
+    def get_created_by_name(self, obj) -> str | None:
+        """Who recorded it, for the phone's "Recorded by" line (T112). The pull selects
+        `created_by`, so this costs no query per row."""
+        return obj.created_by.name if obj.created_by_id else None
+
 
 class HabitatFeatureSyncSerializer(serializers.ModelSerializer):
     """A habitat feature as pulled to the phone, pushed from it and returned by REST (T053).
@@ -66,6 +72,7 @@ class HabitatFeatureSyncSerializer(serializers.ModelSerializer):
     ID, so its message is a plain sentence on the field.
     """
 
+    created_by_name = serializers.SerializerMethodField()
     created_at = UTCDateTimeField(required=False)
     observed_at = UTCDateTimeField(error_messages={"required": "V02", "null": "V02"})
     geometry = WritableGeoJSONField(
@@ -86,3 +93,7 @@ class HabitatFeatureSyncSerializer(serializers.ModelSerializer):
             "tree_cover_pct": {"min_value": 0, "max_value": 100},
             "bare_ground_pct": {"min_value": 0, "max_value": 100},
         }
+
+    def get_created_by_name(self, obj) -> str | None:
+        """Who recorded it, for the phone's "Recorded by" line (T112)."""
+        return obj.created_by.name if obj.created_by_id else None

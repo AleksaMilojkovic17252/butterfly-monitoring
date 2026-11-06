@@ -50,6 +50,9 @@ SERVER_OWNED_FIELDS = frozenset(
         "deleted_at",
         "quality_flags",
         "route_coverage_pct",
+        # Output-only names of T112 (D-107): never a merge difference.
+        "created_by_name",
+        "recorded_by_name",
     }
 )
 SERVER_OWNED_PREFIXES = ("validation_", "locked_")

@@ -7,6 +7,8 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/http/dio_provider.dart';
 import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/map/data/basemap_store.dart';
 import 'package:mobile/features/projects/domain/offline_package_status.dart';
 
@@ -163,10 +165,28 @@ final projectRepositoryProvider = Provider<ProjectRepository>(
   ),
 );
 
-final projectListProvider = StreamProvider<List<Project>>(
-  (ref) => ref.watch(projectRepositoryProvider).watchProjects(),
-);
+/// The projects the signed-in user is a member of. Logout keeps the local
+/// data, so the table can also hold projects of another user who used this
+/// phone; those are left out here (T112). Empty when nobody is signed in.
+final projectListProvider = StreamProvider<List<Project>>((ref) {
+  final profile = ref.watch(authControllerProvider).profile;
+  if (profile == null) return Stream.value(const []);
+  return ref
+      .watch(projectRepositoryProvider)
+      .watchProjects()
+      .map(
+        (projects) => [
+          for (final p in projects)
+            if (profile.isMemberOf(p.id)) p,
+        ],
+      );
+});
 
-final projectProvider = StreamProvider.family<Project?, String>(
-  (ref, id) => ref.watch(projectRepositoryProvider).watchProject(id),
-);
+/// One project, or null when it is not on this phone or the signed-in user is
+/// not a member of it (T112), so a stored project of another user does not
+/// open.
+final projectProvider = StreamProvider.family<Project?, String>((ref, id) {
+  final profile = ref.watch(authControllerProvider).profile;
+  if (profile == null || !profile.isMemberOf(id)) return Stream.value(null);
+  return ref.watch(projectRepositoryProvider).watchProject(id);
+});

@@ -37,7 +37,7 @@ can be standardised, synced and exchanged through OGC services, is the technical
 
 | Role | Does |
 |---|---|
-| `researcher` | Uses the app only: downloads projects and transects, runs visits, records data offline, syncs, sees own data. Member of specific projects. |
+| `researcher` | Uses the app only: downloads projects and transects, runs visits, records data offline, syncs, sees the project's records (plants, habitat, observations, finished visits) and edits only their own (T112, D-107). Member of specific projects. |
 | `admin` | Everything a researcher does, plus Django admin: creates projects and adds members, edits transects and catalogues, validates records, resolves sync conflicts, locks/unlocks visits, exports, uses pygeoapi. |
 
 Two roles only (the outline's coordinator and expert-validator roles are folded into `admin`).

@@ -5,8 +5,9 @@ import 'package:mobile/core/db/sync_columns.dart';
 import 'package:mobile/core/db/taxa.dart';
 
 /// Local copy of the server's `butterfly_observation` table (T044): one
-/// sighting, with what, how many, where and when. Pull brings back the
-/// caller's own observations. The entry screen (T045) writes new ones through
+/// sighting, with what, how many, where and when. Pull brings back every
+/// member's observations of the project (T112); the other members' are
+/// read-only and shown on the map only. The entry screen (T045) writes new ones through
 /// `SyncRepository.write`.
 ///
 /// Differences from the server:
@@ -35,6 +36,11 @@ class ButterflyObservations extends Table with SyncColumns {
   RealColumn get locationAccuracyM => real().nullable()();
   TextColumn get identificationConfidence => text()();
   TextColumn get recordedById => text()();
+
+  /// The recorder's name, for the map popup's "Recorded by" line (T112).
+  /// Output-only on the server (`recorded_by_name`); null for an observation
+  /// made on this phone until a pull brings it back.
+  TextColumn get recordedByName => text().nullable()();
   TextColumn get sex => text().withDefault(const Constant('unknown'))();
   TextColumn get lifeStage => text().withDefault(const Constant('adult'))();
   TextColumn get behaviour => text().withDefault(const Constant('[]'))();

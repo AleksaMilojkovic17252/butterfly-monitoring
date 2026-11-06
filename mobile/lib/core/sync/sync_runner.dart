@@ -11,6 +11,8 @@ import 'package:mobile/core/sync/sync_api.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/sync/sync_status.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/map/data/basemap_store.dart';
 import 'package:mobile/features/map/data/mbtiles_provider.dart';
 import 'package:mobile/features/projects/data/project_repository.dart';
@@ -216,7 +218,16 @@ class SyncRunner extends Notifier<SyncRunState> {
         }
       }
       if (error == null) {
-        final projects = await projectRepository.localProjects();
+        // The membership list can be out of date (a project added since login),
+        // so read it again. Then pull only the projects the signed-in user is
+        // a member of: the table also keeps those of another user of this
+        // phone, and the server answers 404 for them (T112).
+        await ref.read(authControllerProvider.notifier).checkSession();
+        final profile = ref.read(authControllerProvider).profile;
+        final projects = [
+          for (final p in await projectRepository.localProjects())
+            if (profile != null && profile.isMemberOf(p.id)) p,
+        ];
         state = SyncRunState(
           running: true,
           last: state.last,

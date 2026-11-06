@@ -39,20 +39,11 @@ class PlantRepository {
 
   // --- Reads ---------------------------------------------------------------
 
-  /// Live plant records of a project that [createdById] made, newest first.
-  /// Filtered by user because logout keeps the local data, so another user's
-  /// rows can still be here.
-  Stream<List<PlantResourceObservation>> watchProjectPlants(
-    String projectId,
-    String createdById,
-  ) {
+  /// Live plant records of a project, newest first: the user's own and the
+  /// other members' (T112). The caller checks that the user is a member.
+  Stream<List<PlantResourceObservation>> watchProjectPlants(String projectId) {
     final query = _db.select(_db.plantResourceObservations)
-      ..where(
-        (p) =>
-            p.projectId.equals(projectId) &
-            p.createdById.equals(createdById) &
-            p.deletedAt.isNull(),
-      )
+      ..where((p) => p.projectId.equals(projectId) & p.deletedAt.isNull())
       ..orderBy([
         (p) => OrderingTerm.desc(p.observedAt),
         (p) => OrderingTerm.desc(p.createdAt),
@@ -82,17 +73,13 @@ class PlantRepository {
     return query.watch();
   }
 
-  /// Records a butterfly observation may link to: the user's own, live, and
-  /// not refused by the server. Newest first.
-  Stream<List<PlantResourceObservation>> watchLinkablePlants(
-    String projectId,
-    String createdById,
-  ) {
+  /// Records a butterfly observation may link to: any member's, live, and
+  /// not refused by the server (T112). Newest first.
+  Stream<List<PlantResourceObservation>> watchLinkablePlants(String projectId) {
     final query = _db.select(_db.plantResourceObservations)
       ..where(
         (p) =>
             p.projectId.equals(projectId) &
-            p.createdById.equals(createdById) &
             p.deletedAt.isNull() &
             p.syncStatus.equalsValue(SyncStatus.rejected).not(),
       )
@@ -319,7 +306,7 @@ class PlantRepository {
       if (current == null || current.deletedAt != null) return <String>[];
       await _checkUnlockedVisit(current.surveyVisitId);
 
-      final linked = await _linkedObservationCount(current.id);
+      final linked = await _linkedObservationCount(current);
       if (linked > 0) {
         throw StateError(
           'Linked to $linked butterfly '
@@ -344,15 +331,24 @@ class PlantRepository {
   // --- Helpers -------------------------------------------------------------
 
   /// How many live observations link to the plant record as host or nectar.
-  Future<int> _linkedObservationCount(String plantId) async {
-    final count = _db.butterflyObservations.id.count();
-    final query = _db.selectOnly(_db.butterflyObservations)
+  /// Only the creator's own observations are counted (T112): another member's
+  /// link is a server-side fact this phone may not have pulled, so the check
+  /// cannot cover it, and the creator may delete the record anyway (D-086
+  /// keeps links on a soft delete). When the creator is unknown, every live
+  /// observation counts, as before.
+  Future<int> _linkedObservationCount(PlantResourceObservation plant) async {
+    final observations = _db.butterflyObservations;
+    final count = observations.id.count();
+    var linkedToPlant =
+        observations.hostPlantRecordId.equals(plant.id) |
+        observations.nectarPlantRecordId.equals(plant.id);
+    if (plant.createdById != null) {
+      linkedToPlant =
+          linkedToPlant & observations.recordedById.equals(plant.createdById!);
+    }
+    final query = _db.selectOnly(observations)
       ..addColumns([count])
-      ..where(
-        _db.butterflyObservations.deletedAt.isNull() &
-            (_db.butterflyObservations.hostPlantRecordId.equals(plantId) |
-                _db.butterflyObservations.nectarPlantRecordId.equals(plantId)),
-      );
+      ..where(observations.deletedAt.isNull() & linkedToPlant);
     final row = await query.getSingle();
     return row.read(count) ?? 0;
   }
@@ -406,15 +402,17 @@ final plantRepositoryProvider = Provider<PlantRepository>(
   ),
 );
 
-/// The logged-in user's plant records of a project, newest first, live (T052).
+/// The project's plant records, newest first, live (T052): the user's own and
+/// the other members' (T112). Empty unless the signed-in user is a member of
+/// the project, because logout keeps the local rows.
 /// `autoDispose`: the query stops when the list or the map closes.
 final plantRecordsProvider = StreamProvider.autoDispose
     .family<List<PlantResourceObservation>, String>((ref, projectId) {
-      final userId = ref.watch(authControllerProvider).profile?.id;
-      if (userId == null) return Stream.value(const []);
-      return ref
-          .watch(plantRepositoryProvider)
-          .watchProjectPlants(projectId, userId);
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
+      return ref.watch(plantRepositoryProvider).watchProjectPlants(projectId);
     });
 
 /// One plant record, live, or null when it is not on this phone.
@@ -437,12 +435,13 @@ final plantTaxaByIdsProvider = StreamProvider.autoDispose
           .watchPlantTaxaByIds(ids.isEmpty ? [] : ids.split(',')),
     );
 
-/// The records a butterfly observation of the project may link to.
+/// The records a butterfly observation of the project may link to: any
+/// member's (T112). Empty unless the signed-in user is a member.
 final linkablePlantsProvider = StreamProvider.autoDispose
     .family<List<PlantResourceObservation>, String>((ref, projectId) {
-      final userId = ref.watch(authControllerProvider).profile?.id;
-      if (userId == null) return Stream.value(const []);
-      return ref
-          .watch(plantRepositoryProvider)
-          .watchLinkablePlants(projectId, userId);
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
+      return ref.watch(plantRepositoryProvider).watchLinkablePlants(projectId);
     });

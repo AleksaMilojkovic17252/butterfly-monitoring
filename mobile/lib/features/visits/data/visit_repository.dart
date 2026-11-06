@@ -19,8 +19,9 @@ import 'package:mobile/features/visits/domain/visit_start_values.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
-/// The caller's visits on this phone (T034). Pull brings back only the
-/// caller's own visits, so every row here is "mine". Writes go through
+/// The visits on this phone (T034). Pull brings back the caller's own visits
+/// and, since T112, the other members' finished ones, so a query that means
+/// "mine" filters by `observerId`. Writes go through
 /// [SyncRepository.write], so each one is queued for push (T035).
 class VisitRepository {
   VisitRepository(this._db, this._sync, this._syncState);
@@ -42,12 +43,18 @@ class VisitRepository {
     'locked',
   ];
 
-  /// Live list of the transect's walked visits, newest first.
-  Stream<List<SurveyVisit>> watchCountedVisits(String transectId) {
+  /// Live list of the transect's walked visits that [observerId] made, newest
+  /// first. Filtered by observer because the phone also holds the other
+  /// members' finished visits (T112) and, after a logout, another user's.
+  Stream<List<SurveyVisit>> watchCountedVisits(
+    String transectId,
+    String observerId,
+  ) {
     final query = _db.select(_db.surveyVisits)
       ..where(
         (visit) =>
             visit.transectId.equals(transectId) &
+            visit.observerId.equals(observerId) &
             visit.deletedAt.isNull() &
             visit.status.isIn(countedStatuses),
       )
@@ -55,15 +62,20 @@ class VisitRepository {
     return query.watch();
   }
 
-  /// Live list of the transect's visits for the visit list, newest first, in
-  /// any status: the ones that have started, and the cancelled ones, which
-  /// include a visit recorded as not conducted (T041; it has no `started_at`,
-  /// so it is dated by `created_at`). A draft is not listed.
-  Stream<List<SurveyVisit>> watchListedVisits(String transectId) {
+  /// Live list of [observerId]'s visits of the transect for the visit list,
+  /// newest first, in any status: the ones that have started, and the cancelled
+  /// ones, which include a visit recorded as not conducted (T041; it has no
+  /// `started_at`, so it is dated by `created_at`). A draft is not listed.
+  /// Filtered by observer, as in [watchCountedVisits] (T112).
+  Stream<List<SurveyVisit>> watchListedVisits(
+    String transectId,
+    String observerId,
+  ) {
     final query = _db.select(_db.surveyVisits)
       ..where(
         (visit) =>
             visit.transectId.equals(transectId) &
+            visit.observerId.equals(observerId) &
             visit.deletedAt.isNull() &
             (visit.startedAt.isNotNull() | visit.status.equals('cancelled')),
       )
@@ -94,6 +106,15 @@ class VisitRepository {
         (visit) =>
             OrderingTerm.desc(coalesce([visit.startedAt, visit.createdAt])),
       ]);
+    return query.watch();
+  }
+
+  /// Every live visit of the project on this phone, the user's own and the
+  /// other members' finished ones (T112), for the whole-project statistics.
+  /// The caller checks that the user is a member.
+  Stream<List<SurveyVisit>> watchAllProjectVisits(String projectId) {
+    final query = _db.select(_db.surveyVisits)
+      ..where((v) => v.projectId.equals(projectId) & v.deletedAt.isNull());
     return query.watch();
   }
 
@@ -1147,6 +1168,21 @@ final projectVisitsProvider = StreamProvider.autoDispose
       return ref
           .watch(visitRepositoryProvider)
           .watchProjectVisits(projectId, userId);
+    });
+
+/// Every visit of a project on this phone, the user's own and the other
+/// members' finished ones (T112). Only the whole-project statistics read it;
+/// every other list uses [projectVisitsProvider] or the transect providers,
+/// which are the user's own. Empty unless the user is a member of the project.
+final allProjectVisitsProvider = StreamProvider.autoDispose
+    .family<List<SurveyVisit>, String>((ref, projectId) {
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
+      return ref
+          .watch(visitRepositoryProvider)
+          .watchAllProjectVisits(projectId);
     });
 
 /// The logged-in user's visit in progress on any transect, or null (T035).

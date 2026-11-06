@@ -64,8 +64,10 @@ def counted_visits(user):
 
 
 def pull_visits(user, project):
-    """The caller's own visits in the project, deleted rows included (D-049)."""
-    return SurveyVisit.objects.filter(project=project, created_by=user)
+    """Every visit of the project, whoever walked it and in any status, deleted rows included
+    (D-049). Data collected on a transect is shared inside the project (T112, D-107); other
+    members' rows are read-only on the phone. Track points and observation photos are not."""
+    return SurveyVisit.objects.filter(project=project)
 
 
 def pull_track_points(user, project):

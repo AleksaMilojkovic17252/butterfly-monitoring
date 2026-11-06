@@ -18,6 +18,7 @@ import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/resources/domain/plant_input.dart';
 import 'package:mobile/features/resources/domain/plant_links.dart';
+import 'package:mobile/features/resources/domain/recorded_by.dart';
 import 'package:mobile/features/resources/ui/widgets/plant_form.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
@@ -395,7 +396,16 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
     // read-only, with no Save or Delete.
     final closedRecord =
         opened != null && ref.watch(projectClosedProvider(widget.projectId));
-    final readOnly = locked || closedRecord;
+    // Another member's record is read-only (T112). A new record, or one made
+    // on this phone before the creator was known, is always editable.
+    final profile = ref.watch(authControllerProvider).profile;
+    final creatorId = opened?.createdById;
+    final canEdit =
+        opened == null ||
+        creatorId == null ||
+        creatorId == profile?.id ||
+        (profile?.isAdmin ?? false);
+    final readOnly = locked || closedRecord || !canEdit;
 
     final role = widget.linkRole;
     final title = opened != null
@@ -422,6 +432,17 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
         body: SafeArea(
           child: Column(
             children: [
+              if (opened != null && creatorId != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Recorded by ${recordedByText(creatorId: creatorId, creatorName: opened.createdByName, userId: profile?.id)}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ),
               if (locked)
                 const Padding(
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -442,7 +463,7 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
                   projectId: widget.projectId,
                   input: _input,
                   onChanged: (input) => setState(() => _input = input),
-                  photos: _photoSlot(readOnly: closedRecord),
+                  photos: _photoSlot(readOnly: closedRecord || !canEdit),
                   linkRole: role,
                   readOnly: readOnly,
                   editing: opened != null,

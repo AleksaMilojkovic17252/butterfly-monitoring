@@ -11,6 +11,7 @@ import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/resources/domain/habitat_input.dart';
+import 'package:mobile/features/resources/domain/recorded_by.dart';
 import 'package:mobile/features/resources/ui/widgets/habitat_form.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
@@ -23,7 +24,8 @@ import 'package:mobile/features/visits/domain/visit_status.dart';
 /// - New feature: [habitatId] is null. [visitId] is the visit it is recorded on
 ///   (null from the project's tile).
 /// - Edit: [habitatId] is the feature. A locked visit makes it read-only, and
-///   so does a closed project (T099).
+///   so does a closed project (T099). Another member's feature is read-only
+///   too, unless the user is an admin (T112).
 ///
 /// Opened by the router at `/projects/:id/habitats/new` and
 /// `.../habitats/:habitatId`.
@@ -253,7 +255,16 @@ class _HabitatEntryViewState extends ConsumerState<_HabitatEntryView> {
     // read-only, with no Save or Delete.
     final closedRecord =
         opened != null && ref.watch(projectClosedProvider(widget.projectId));
-    final readOnly = locked || closedRecord;
+    // Another member's feature is read-only (T112). A new feature, or one made
+    // on this phone before the creator was known, is always editable.
+    final profile = ref.watch(authControllerProvider).profile;
+    final creatorId = opened?.createdById;
+    final canEdit =
+        opened == null ||
+        creatorId == null ||
+        creatorId == profile?.id ||
+        (profile?.isAdmin ?? false);
+    final readOnly = locked || closedRecord || !canEdit;
 
     return PopScope(
       // Closing while Save runs would leave the user guessing.
@@ -273,6 +284,17 @@ class _HabitatEntryViewState extends ConsumerState<_HabitatEntryView> {
         body: SafeArea(
           child: Column(
             children: [
+              if (opened != null && creatorId != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Recorded by ${recordedByText(creatorId: creatorId, creatorName: opened.createdByName, userId: profile?.id)}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ),
               if (locked)
                 const Padding(
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 0),

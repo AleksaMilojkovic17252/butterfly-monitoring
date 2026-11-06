@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
 import 'package:mobile/features/resources/domain/habitat_names.dart';
+import 'package:mobile/features/resources/domain/recorded_by.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/local_time.dart';
 
 /// One habitat feature in a list (T054): the habitat type's name, "Habitat",
-/// the date, and the date of the visit it was recorded on. The icon shows the
+/// the date, the date of the visit it was recorded on, and who recorded it
+/// (T112). The icon shows the
 /// shape. Used by the Plants & habitat screen.
 class HabitatFeatureTile extends ConsumerWidget {
   const HabitatFeatureTile({
@@ -21,6 +25,7 @@ class HabitatFeatureTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(authControllerProvider).profile?.id;
     // Every type is read, so a deactivated one still shows its name.
     final types = ref.watch(habitatTypesProvider).value ?? const [];
     final type = types.where((t) => t.id == feature.habitatTypeId).firstOrNull;
@@ -42,6 +47,7 @@ class HabitatFeatureTile extends ConsumerWidget {
       'Habitat',
       formatLocalDateTime(feature.observedAt),
       if (visitDate != null) 'visit ${formatLocalDateTime(visitDate)}',
+      'Recorded by ${recordedByText(creatorId: feature.createdById, creatorName: feature.createdByName, userId: userId)}',
     ];
     return ListTile(
       leading: Icon(icon),

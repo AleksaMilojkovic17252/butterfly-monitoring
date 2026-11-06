@@ -34,7 +34,7 @@ from apps.observations.serializers import ButterflyObservationSyncSerializer, Ph
 from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.resources.models import ResourceType
 from apps.resources.rules import PLANT_LINK_ROLE_NAMES, PLANT_LINK_ROLES
-from apps.resources.services import plant_resources_for
+from apps.resources.services import own_plant_resources_for, plant_resources_for
 from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
@@ -74,8 +74,9 @@ def observations_for(user):
 
 
 def pull_observations(user, project):
-    """The caller's own observations in the project, deleted rows included (D-049)."""
-    return ButterflyObservation.objects.filter(project=project, created_by=user)
+    """Every member's observations in the project, deleted rows included (D-049). Read-only on
+    the phone for other members' rows (T112, D-107); the validation fields stay unsent."""
+    return ButterflyObservation.objects.filter(project=project).select_related("recorded_by")
 
 
 def photo_count(observation):
@@ -482,20 +483,34 @@ class PayloadTooLarge(exceptions.APIException):
 
 
 def photos_for(user):
-    """Live photos of live observations and plant records the user may see: an admin all of
-    them, a researcher the ones they created."""
+    """Live photos of live observations and plant records the user may change (and upload to):
+    an admin all of them, a researcher the ones they created."""
     photos = Photo.objects.alive().filter(
-        Q(observation__in=observations_for(user)) | Q(plant_resource__in=plant_resources_for(user))
+        Q(observation__in=observations_for(user))
+        | Q(plant_resource__in=own_plant_resources_for(user))
     )
     if is_admin(user):
         return photos
     return photos.filter(created_by=user)
 
 
+def viewable_photos_for(user):
+    """`photos_for(user)` plus the live photos of every plant record the user may see (T112,
+    D-107). Only the content and thumbnail downloads read through this."""
+    return Photo.objects.alive().filter(
+        Q(pk__in=photos_for(user).values("pk")) | Q(plant_resource__in=plant_resources_for(user))
+    )
+
+
 def pull_photos(user, project):
-    """The caller's own photos in the project, deleted rows included (D-049)."""
+    """The caller's own photos in the project, deleted rows included (D-049), plus the photos of
+    other members' plant records once uploaded (T112, D-107). A pending one stays off the phone:
+    it would show as an upload in progress. `complete_upload` saves the photo, so its version
+    moves on and it arrives then."""
+    own = Q(observation__project=project) | Q(plant_resource__project=project)
     return Photo.objects.filter(
-        Q(observation__project=project) | Q(plant_resource__project=project), created_by=user
+        Q(own, created_by=user)
+        | Q(plant_resource__project=project, upload_status=UploadStatus.UPLOADED)
     )
 
 
@@ -518,7 +533,7 @@ def build_new_photo(user, photo_id, data):
         _lock_visit(observation)
         ensure_project_open(observation.project, current_client_time())  # T099, D-104
     else:
-        if not plant_resources_for(user).filter(pk=plant.pk).exists():
+        if not own_plant_resources_for(user).filter(pk=plant.pk).exists():
             raise exceptions.ValidationError(
                 {"plant_resource": ["This plant record was not found."]}
             )

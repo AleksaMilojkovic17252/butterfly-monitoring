@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 
 /// The caller's own visits of one transect, as the transect list shows them.
@@ -36,9 +38,13 @@ class VisitSummary {
 /// `visit_count`.
 final transectVisitStatsProvider =
     StreamProvider.family<TransectVisitStats, String>((ref, transectId) {
+      final userId = ref.watch(authControllerProvider).profile?.id;
+      if (userId == null) {
+        return Stream.value(const TransectVisitStats(count: 0));
+      }
       final visits = ref
           .watch(visitRepositoryProvider)
-          .watchCountedVisits(transectId);
+          .watchCountedVisits(transectId, userId);
       return visits.map((countedVisits) {
         DateTime? lastVisitAt;
         for (final visit in countedVisits) {
@@ -59,9 +65,11 @@ final transectVisitStatsProvider =
 /// first.
 final transectVisitsProvider =
     StreamProvider.family<List<VisitSummary>, String>((ref, transectId) {
+      final userId = ref.watch(authControllerProvider).profile?.id;
+      if (userId == null) return Stream.value(const <VisitSummary>[]);
       final visits = ref
           .watch(visitRepositoryProvider)
-          .watchListedVisits(transectId);
+          .watchListedVisits(transectId, userId);
       return visits.map(
         (listedVisits) => [
           for (final visit in listedVisits)

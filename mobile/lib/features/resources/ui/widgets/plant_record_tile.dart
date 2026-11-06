@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/validation/plant_values.dart';
+import 'package:mobile/features/auth/domain/auth_controller.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/resources/domain/plant_taxon_search.dart';
+import 'package:mobile/features/resources/domain/recorded_by.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
 import 'package:mobile/features/visits/domain/local_time.dart';
 
 /// One plant record in a list (T052): the plant (or "Unidentified plant"), its
 /// relation to butterflies, the date, and the date of the visit it was
-/// recorded on. Used by the Plants & habitat screen and the link picker.
+/// recorded on, and who recorded it (T112). Used by the Plants & habitat screen and the link picker.
 class PlantRecordTile extends ConsumerWidget {
   const PlantRecordTile({
     super.key,
@@ -24,6 +27,7 @@ class PlantRecordTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(authControllerProvider).profile?.id;
     final taxonId = record.plantTaxonId;
     // By id, so a deactivated plant still shows its name.
     final plant = taxonId == null
@@ -44,6 +48,7 @@ class PlantRecordTile extends ConsumerWidget {
       formatLocalDateTime(record.observedAt),
       if (isPolygon && area != null) formatArea(area),
       if (visitDate != null) 'visit ${formatLocalDateTime(visitDate)}',
+      'Recorded by ${recordedByText(creatorId: record.createdById, creatorName: record.createdByName, userId: userId)}',
     ];
     return ListTile(
       selected: selected,

@@ -23,13 +23,17 @@ from apps.resources.serializers import (
 def _plant_or_404(user, plant_id):
     """The plant record, locked for the rest of the transaction. Outside
     `plant_resources_for(user)` it is a 404."""
-    return get_object_or_404(services.plant_resources_for(user).select_for_update(), pk=plant_id)
+    return get_object_or_404(
+        services.own_plant_resources_for(user).select_for_update(), pk=plant_id
+    )
 
 
 def _habitat_feature_or_404(user, feature_id):
     """The habitat feature, locked for the rest of the transaction. Outside
     `habitat_features_for(user)` it is a 404."""
-    return get_object_or_404(services.habitat_features_for(user).select_for_update(), pk=feature_id)
+    return get_object_or_404(
+        services.own_habitat_features_for(user).select_for_update(), pk=feature_id
+    )
 
 
 def _json_object(request):

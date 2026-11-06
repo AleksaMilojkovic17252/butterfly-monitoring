@@ -2329,3 +2329,32 @@ Admin only: push, REST and the phone are unchanged (D-086's "no re-check" of lin
 the area, polygon to point empties it; `[20.45, 44.81]` is stored at 20.45 E 44.81 N; a line and junk in the box give field errors; unidentified plant without notes; a relation change that breaks a
 nectar link is refused with the observation named; add refused for a non-member, a visit of another project and a locked visit, and a valid add saved; locked-visit and soft-deleted pages open
 read-only; soft delete refused for a linked record and allowed otherwise, Restore works, locked visit refuses both; a non-superuser admin (Admin group) sees Add and saves.
+
+## D-107 · Shared project records (T112)
+2026-11-06 · accepted · T112, *amends D-086, D-087 and D-100*
+Inside a project, members see each other's plant records (with uploaded photos), habitat features, butterfly observations and finished visits, read-only. Writes stay own-only; an admin can still edit everything.
+1. **Read scope and write scope are two functions.** `plant_resources_for` and `habitat_features_for` return every live record of the user's projects (the link check, `_check_plant_links`, and the exports dataset use them; D-086's
+   "a link stays in the observation's project" holds). `own_plant_resources_for` and `own_habitat_features_for` are the old bodies (all rows for an admin, `created_by = user` otherwise) and decide `_plant_or_404`,
+   `_habitat_feature_or_404` and `build_new_photo`. Widening alone would have let any member PATCH another's record or add a photo to it, since those only test visibility. `photos_for` stays the scope of the
+   upload steps; `viewable_photos_for` (it plus the photos of every visible plant record) is used only by the content and thumbnail downloads.
+2. **Pull rules.** Plant records, habitat features and observations: every row of the project, tombstones included (D-049), with `select_related` so no query per row. Visits: every visit of the project in any status (changed at the phone test: data collected on a transect belongs to the project, so no visit is private; this replaces T112 decision 6's "finished ones only"). Photos: the user's own, plus photos of other members' plant records
+   **only once `upload_status = uploaded`** (a pending one would show as an upload in progress in this phone's Sync status; `complete_upload` saves the photo, so its version moves on and it arrives then).
+   Observation photos and track points are not shared. `visits_for`, `counted_visits` and `observations_for` stay own-only, so REST and write checks are unchanged.
+3. **Names.** `created_by_name` (plant, habitat) and `recorded_by_name` (observation) are output-only serializer fields and join `SERVER_OWNED_FIELDS`, so they are never a merge difference. They are three Drift
+   columns (`createdByName` ×2, `recordedByName`), not one, because the map popup says "Recorded by". Visits carry no name. Text on the phone: "You" for the user's own, else the name, else "Another researcher".
+4. **Drift schema 18.** `from17To18` adds the three columns and deletes the `cursor:%` rows, as `from12To13` did: the cursor is already past other members' older rows and they would never arrive.
+5. **Membership check on the phone.** Logout keeps local rows, so every shared provider (`plantRecordsProvider`, `linkablePlantsProvider`, `habitatFeaturesProvider`, `allProjectVisitsProvider`,
+   `allProjectObservationsProvider`, `otherObservationsProvider`) returns nothing unless `UserProfile.isMemberOf(projectId)` (from `/auth/me`). Found at the phone test: the project list and `projectProvider`
+   were not filtered either, so a user who was not a member saw the stored projects of another user; both now filter by membership (the project then opens as "missing"), and the sync runner re-reads `/auth/me`
+   (`checkSession`) and pulls only member projects, since the server answers 404 for the others.
+6. **Own lists stay own.** `watchCountedVisits` and `watchListedVisits` filter by `observerId`; `watchProjectVisits` and `watchProjectObservations` already filtered by owner. Drafts, in progress, the
+   Unsynced badge, Sync status and the visit detail only ever see the user's own rows.
+7. **Map.** A layer "Other members' observations" (purple, on by default, with a legend dot per point layer in the Layers sheet). The Filters sheet applies to it except the visit filter. The popup is read-only
+   (species × count, Seen, Recorded by; no Open, no photo). **An observation on a visit that is not on the phone is hidden** (rare now that every visit is pulled: a visit soft-deleted on the server). One with no visit is always shown. The species options include species only another member saw; "x of y" and the Visit options stay own.
+8. **"Linked to N" on delete** counts only observations with `recordedById` = the plant's `createdById`. Another member's link is a server fact this phone may not have pulled, and the creator may delete
+   anyway (D-086 keeps links on a soft delete); a link to a missing record already shows "Not on this phone".
+9. **Statistics.** A "My records / Whole project" switch; `statisticsDataProvider` is a family over `({projectId, wholeProject})`. Whole project runs the same pure functions (D-100) on all pulled rows, so
+   figures follow T061's definitions with taxon as recorded (no validation data on the phone). The old note "Your records only…" is gone (decided at the phone test: with the switch on screen it is redundant and its pointer to the admin reports is stale).
+10. **Read-only for others.** `PlantEntryScreen` and `HabitatEntryScreen` are read-only (no Save, Delete, photo add, star) unless the user created the record or is an admin, with a "Recorded by" line.
+**Not handled:** a renamed user keeps the old name until the record changes; sensitive-species locations are visible to
+all members (decision 1 of T112).

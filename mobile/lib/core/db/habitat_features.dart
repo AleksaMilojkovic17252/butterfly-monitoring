@@ -15,8 +15,9 @@ import 'package:mobile/core/db/sync_columns.dart';
 ///   lists and the map;
 /// - the codelist ids have no foreign key, because habitat and management
 ///   types are reference data that pull may change;
-/// - `createdById` is local-only knowledge the pull carries, so a second user
-///   on the same phone does not see the first user's features.
+/// - `createdById` and `createdByName` are local-only knowledge the pull
+///   carries (T112): the pull brings every member's features of the project,
+///   so they tell the user's own features from the others', which are read-only.
 @DataClassName('HabitatFeature')
 class HabitatFeatures extends Table with SyncColumns {
   TextColumn get id => text()();
@@ -64,6 +65,11 @@ class HabitatFeatures extends Table with SyncColumns {
   /// Who made the feature. Null until a pull brings it back for a feature made
   /// on this phone, so the repository also sets it when it writes one.
   TextColumn get createdById => text().nullable()();
+
+  /// The creator's name, for the "Recorded by" line (T112). Output-only on the
+  /// server (`created_by_name`); null for a feature made on this phone until a
+  /// pull brings it back.
+  TextColumn get createdByName => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

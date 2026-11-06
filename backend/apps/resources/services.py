@@ -45,17 +45,25 @@ _TENTH = Decimal("0.1")
 
 
 def plant_resources_for(user):
-    """Live plant records the user may see: an admin all of them in live projects, a researcher
-    only the ones they created, in projects they are still a member of."""
-    plants = PlantResourceObservation.objects.alive().filter(project__in=projects_for(user))
+    """Live plant records the user may see (read scope, T112, D-107): every one in the projects
+    they are still a member of, whoever recorded it. A link may point at any of them. Writes use
+    `own_plant_resources_for`."""
+    return PlantResourceObservation.objects.alive().filter(project__in=projects_for(user))
+
+
+def own_plant_resources_for(user):
+    """Live plant records the user may change (write scope): an admin all of them in live
+    projects, a researcher only the ones they created, in projects they are still a member of."""
+    plants = plant_resources_for(user)
     if is_admin(user):
         return plants
     return plants.filter(created_by=user)
 
 
 def pull_plant_resources(user, project):
-    """The caller's own plant records in the project, deleted rows included (D-049)."""
-    return PlantResourceObservation.objects.filter(project=project, created_by=user)
+    """Every plant record in the project, deleted rows included (D-049). The caller is a member
+    (the sync pull checks), and others' records are read-only on the phone (T112)."""
+    return PlantResourceObservation.objects.filter(project=project).select_related("created_by")
 
 
 def build_new_plant_resource(user, plant_id, data):
@@ -160,17 +168,23 @@ def _guard_visit(record):
 
 
 def habitat_features_for(user):
-    """Live habitat features the user may see: an admin all of them in live projects, a
-    researcher only the ones they created, in projects they are still a member of."""
-    features = HabitatFeature.objects.alive().filter(project__in=projects_for(user))
+    """Live habitat features the user may see (read scope, T112, D-107): every one in the
+    projects they are still a member of. Writes use `own_habitat_features_for`."""
+    return HabitatFeature.objects.alive().filter(project__in=projects_for(user))
+
+
+def own_habitat_features_for(user):
+    """Live habitat features the user may change (write scope): an admin all of them in live
+    projects, a researcher only the ones they created."""
+    features = habitat_features_for(user)
     if is_admin(user):
         return features
     return features.filter(created_by=user)
 
 
 def pull_habitat_features(user, project):
-    """The caller's own habitat features in the project, deleted rows included (D-049)."""
-    return HabitatFeature.objects.filter(project=project, created_by=user)
+    """Every habitat feature in the project, deleted rows included (D-049)."""
+    return HabitatFeature.objects.filter(project=project).select_related("created_by")
 
 
 def build_new_habitat_feature(user, feature_id, data):

@@ -17,7 +17,9 @@ import 'package:mobile/features/observations/domain/photo_parent.dart';
 import 'package:mobile/features/visits/domain/visit_status.dart';
 import 'package:uuid/uuid.dart';
 
-/// The caller's butterfly observations on this phone (T045). Writes go through
+/// The butterfly observations on this phone (T045): the caller's own and, since
+/// T112, the other members' of the project. A query that means "mine" filters
+/// by `recordedById`. Writes go through
 /// [SyncRepository.write], so each one is queued for push.
 class ObservationRepository {
   ObservationRepository(this._db, this._sync, this._taxa, this._photos);
@@ -51,6 +53,42 @@ class ObservationRepository {
             o.projectId.equals(projectId) &
             o.recordedById.equals(recordedById) &
             o.deletedAt.isNull(),
+      )
+      ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
+    return query.watch();
+  }
+
+  /// Every live observation of a project on this phone, the user's own and the
+  /// other members' (T112), for the whole-project statistics. The caller checks
+  /// that the user is a member.
+  Stream<List<ButterflyObservation>> watchAllProjectObservations(
+    String projectId,
+  ) {
+    final query = _db.select(_db.butterflyObservations)
+      ..where((o) => o.projectId.equals(projectId) & o.deletedAt.isNull())
+      ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
+    return query.watch();
+  }
+
+  /// Live observations of a project that someone other than [userId] recorded,
+  /// for the map's "Other members' observations" layer (T112). One on a visit
+  /// that is not on this phone (for example a visit deleted on the server) is
+  /// left out. One with no visit is always listed.
+  Stream<List<ButterflyObservation>> watchOtherObservations(
+    String projectId,
+    String userId,
+  ) {
+    final liveVisitIds = _db.selectOnly(_db.surveyVisits)
+      ..addColumns([_db.surveyVisits.id])
+      ..where(_db.surveyVisits.deletedAt.isNull());
+    final query = _db.select(_db.butterflyObservations)
+      ..where(
+        (o) =>
+            o.projectId.equals(projectId) &
+            o.recordedById.equals(userId).not() &
+            o.deletedAt.isNull() &
+            (o.surveyVisitId.isNull() |
+                o.surveyVisitId.isInQuery(liveVisitIds)),
       )
       ..orderBy([(o) => OrderingTerm.asc(o.observedAt)]);
     return query.watch();
@@ -641,6 +679,34 @@ final projectObservationsProvider = StreamProvider.autoDispose
       return ref
           .watch(observationRepositoryProvider)
           .watchProjectObservations(projectId, userId);
+    });
+
+/// Every observation of a project on this phone, the user's own and the other
+/// members' (T112). Only the whole-project statistics read it. Empty unless
+/// the user is a member of the project.
+final allProjectObservationsProvider = StreamProvider.autoDispose
+    .family<List<ButterflyObservation>, String>((ref, projectId) {
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
+      return ref
+          .watch(observationRepositoryProvider)
+          .watchAllProjectObservations(projectId);
+    });
+
+/// Other members' observations of a project for the map (T112), see
+/// [ObservationRepository.watchOtherObservations]. Empty unless the user is a
+/// member of the project.
+final otherObservationsProvider = StreamProvider.autoDispose
+    .family<List<ButterflyObservation>, String>((ref, projectId) {
+      final profile = ref.watch(authControllerProvider).profile;
+      if (profile == null || !profile.isMemberOf(projectId)) {
+        return Stream.value(const []);
+      }
+      return ref
+          .watch(observationRepositoryProvider)
+          .watchOtherObservations(projectId, profile.id);
     });
 
 /// One observation, live, or null when it is not on this phone (T106).

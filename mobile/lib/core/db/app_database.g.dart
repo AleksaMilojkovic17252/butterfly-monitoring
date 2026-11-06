@@ -329,7 +329,8 @@ class Project extends DataClass implements Insertable<Project> {
   final String? area;
 
   /// When an admin closed the project (UTC), or null while it is open (T099).
-  /// A closed project takes no new visits. The server's `closed_by` is not kept.
+  /// A closed project takes no new or changed data. The server's `closed_by` is
+  /// not kept.
   final DateTime? closedAt;
   final int? serverVersion;
   final DateTime? deletedAt;
@@ -4781,6 +4782,17 @@ class $ButterflyObservationsTable extends ButterflyObservations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _recordedByNameMeta = const VerificationMeta(
+    'recordedByName',
+  );
+  @override
+  late final GeneratedColumn<String> recordedByName = GeneratedColumn<String>(
+    'recorded_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sexMeta = const VerificationMeta('sex');
   @override
   late final GeneratedColumn<String> sex = GeneratedColumn<String>(
@@ -4908,6 +4920,7 @@ class $ButterflyObservationsTable extends ButterflyObservations
     locationAccuracyM,
     identificationConfidence,
     recordedById,
+    recordedByName,
     sex,
     lifeStage,
     behaviour,
@@ -5045,6 +5058,15 @@ class $ButterflyObservationsTable extends ButterflyObservations
       );
     } else if (isInserting) {
       context.missing(_recordedByIdMeta);
+    }
+    if (data.containsKey('recorded_by_name')) {
+      context.handle(
+        _recordedByNameMeta,
+        recordedByName.isAcceptableOrUnknown(
+          data['recorded_by_name']!,
+          _recordedByNameMeta,
+        ),
+      );
     }
     if (data.containsKey('sex')) {
       context.handle(
@@ -5191,6 +5213,10 @@ class $ButterflyObservationsTable extends ButterflyObservations
         DriftSqlType.string,
         data['${effectivePrefix}recorded_by_id'],
       )!,
+      recordedByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorded_by_name'],
+      ),
       sex: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}sex'],
@@ -5267,6 +5293,11 @@ class ButterflyObservation extends DataClass
   final double? locationAccuracyM;
   final String identificationConfidence;
   final String recordedById;
+
+  /// The recorder's name, for the map popup's "Recorded by" line (T112).
+  /// Output-only on the server (`recorded_by_name`); null for an observation
+  /// made on this phone until a pull brings it back.
+  final String? recordedByName;
   final String sex;
   final String lifeStage;
   final String behaviour;
@@ -5295,6 +5326,7 @@ class ButterflyObservation extends DataClass
     this.locationAccuracyM,
     required this.identificationConfidence,
     required this.recordedById,
+    this.recordedByName,
     required this.sex,
     required this.lifeStage,
     required this.behaviour,
@@ -5340,6 +5372,9 @@ class ButterflyObservation extends DataClass
       identificationConfidence,
     );
     map['recorded_by_id'] = Variable<String>(recordedById);
+    if (!nullToAbsent || recordedByName != null) {
+      map['recorded_by_name'] = Variable<String>(recordedByName);
+    }
     map['sex'] = Variable<String>(sex);
     map['life_stage'] = Variable<String>(lifeStage);
     map['behaviour'] = Variable<String>(behaviour);
@@ -5386,6 +5421,9 @@ class ButterflyObservation extends DataClass
           : Value(locationAccuracyM),
       identificationConfidence: Value(identificationConfidence),
       recordedById: Value(recordedById),
+      recordedByName: recordedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recordedByName),
       sex: Value(sex),
       lifeStage: Value(lifeStage),
       behaviour: Value(behaviour),
@@ -5434,6 +5472,7 @@ class ButterflyObservation extends DataClass
         json['identificationConfidence'],
       ),
       recordedById: serializer.fromJson<String>(json['recordedById']),
+      recordedByName: serializer.fromJson<String?>(json['recordedByName']),
       sex: serializer.fromJson<String>(json['sex']),
       lifeStage: serializer.fromJson<String>(json['lifeStage']),
       behaviour: serializer.fromJson<String>(json['behaviour']),
@@ -5473,6 +5512,7 @@ class ButterflyObservation extends DataClass
         identificationConfidence,
       ),
       'recordedById': serializer.toJson<String>(recordedById),
+      'recordedByName': serializer.toJson<String?>(recordedByName),
       'sex': serializer.toJson<String>(sex),
       'lifeStage': serializer.toJson<String>(lifeStage),
       'behaviour': serializer.toJson<String>(behaviour),
@@ -5502,6 +5542,7 @@ class ButterflyObservation extends DataClass
     Value<double?> locationAccuracyM = const Value.absent(),
     String? identificationConfidence,
     String? recordedById,
+    Value<String?> recordedByName = const Value.absent(),
     String? sex,
     String? lifeStage,
     String? behaviour,
@@ -5537,6 +5578,9 @@ class ButterflyObservation extends DataClass
     identificationConfidence:
         identificationConfidence ?? this.identificationConfidence,
     recordedById: recordedById ?? this.recordedById,
+    recordedByName: recordedByName.present
+        ? recordedByName.value
+        : this.recordedByName,
     sex: sex ?? this.sex,
     lifeStage: lifeStage ?? this.lifeStage,
     behaviour: behaviour ?? this.behaviour,
@@ -5587,6 +5631,9 @@ class ButterflyObservation extends DataClass
       recordedById: data.recordedById.present
           ? data.recordedById.value
           : this.recordedById,
+      recordedByName: data.recordedByName.present
+          ? data.recordedByName.value
+          : this.recordedByName,
       sex: data.sex.present ? data.sex.value : this.sex,
       lifeStage: data.lifeStage.present ? data.lifeStage.value : this.lifeStage,
       behaviour: data.behaviour.present ? data.behaviour.value : this.behaviour,
@@ -5626,6 +5673,7 @@ class ButterflyObservation extends DataClass
           ..write('locationAccuracyM: $locationAccuracyM, ')
           ..write('identificationConfidence: $identificationConfidence, ')
           ..write('recordedById: $recordedById, ')
+          ..write('recordedByName: $recordedByName, ')
           ..write('sex: $sex, ')
           ..write('lifeStage: $lifeStage, ')
           ..write('behaviour: $behaviour, ')
@@ -5657,6 +5705,7 @@ class ButterflyObservation extends DataClass
     locationAccuracyM,
     identificationConfidence,
     recordedById,
+    recordedByName,
     sex,
     lifeStage,
     behaviour,
@@ -5687,6 +5736,7 @@ class ButterflyObservation extends DataClass
           other.locationAccuracyM == this.locationAccuracyM &&
           other.identificationConfidence == this.identificationConfidence &&
           other.recordedById == this.recordedById &&
+          other.recordedByName == this.recordedByName &&
           other.sex == this.sex &&
           other.lifeStage == this.lifeStage &&
           other.behaviour == this.behaviour &&
@@ -5716,6 +5766,7 @@ class ButterflyObservationsCompanion
   final Value<double?> locationAccuracyM;
   final Value<String> identificationConfidence;
   final Value<String> recordedById;
+  final Value<String?> recordedByName;
   final Value<String> sex;
   final Value<String> lifeStage;
   final Value<String> behaviour;
@@ -5743,6 +5794,7 @@ class ButterflyObservationsCompanion
     this.locationAccuracyM = const Value.absent(),
     this.identificationConfidence = const Value.absent(),
     this.recordedById = const Value.absent(),
+    this.recordedByName = const Value.absent(),
     this.sex = const Value.absent(),
     this.lifeStage = const Value.absent(),
     this.behaviour = const Value.absent(),
@@ -5771,6 +5823,7 @@ class ButterflyObservationsCompanion
     this.locationAccuracyM = const Value.absent(),
     required String identificationConfidence,
     required String recordedById,
+    this.recordedByName = const Value.absent(),
     this.sex = const Value.absent(),
     this.lifeStage = const Value.absent(),
     this.behaviour = const Value.absent(),
@@ -5807,6 +5860,7 @@ class ButterflyObservationsCompanion
     Expression<double>? locationAccuracyM,
     Expression<String>? identificationConfidence,
     Expression<String>? recordedById,
+    Expression<String>? recordedByName,
     Expression<String>? sex,
     Expression<String>? lifeStage,
     Expression<String>? behaviour,
@@ -5836,6 +5890,7 @@ class ButterflyObservationsCompanion
       if (identificationConfidence != null)
         'identification_confidence': identificationConfidence,
       if (recordedById != null) 'recorded_by_id': recordedById,
+      if (recordedByName != null) 'recorded_by_name': recordedByName,
       if (sex != null) 'sex': sex,
       if (lifeStage != null) 'life_stage': lifeStage,
       if (behaviour != null) 'behaviour': behaviour,
@@ -5868,6 +5923,7 @@ class ButterflyObservationsCompanion
     Value<double?>? locationAccuracyM,
     Value<String>? identificationConfidence,
     Value<String>? recordedById,
+    Value<String?>? recordedByName,
     Value<String>? sex,
     Value<String>? lifeStage,
     Value<String>? behaviour,
@@ -5897,6 +5953,7 @@ class ButterflyObservationsCompanion
       identificationConfidence:
           identificationConfidence ?? this.identificationConfidence,
       recordedById: recordedById ?? this.recordedById,
+      recordedByName: recordedByName ?? this.recordedByName,
       sex: sex ?? this.sex,
       lifeStage: lifeStage ?? this.lifeStage,
       behaviour: behaviour ?? this.behaviour,
@@ -5965,6 +6022,9 @@ class ButterflyObservationsCompanion
     if (recordedById.present) {
       map['recorded_by_id'] = Variable<String>(recordedById.value);
     }
+    if (recordedByName.present) {
+      map['recorded_by_name'] = Variable<String>(recordedByName.value);
+    }
     if (sex.present) {
       map['sex'] = Variable<String>(sex.value);
     }
@@ -6021,6 +6081,7 @@ class ButterflyObservationsCompanion
           ..write('locationAccuracyM: $locationAccuracyM, ')
           ..write('identificationConfidence: $identificationConfidence, ')
           ..write('recordedById: $recordedById, ')
+          ..write('recordedByName: $recordedByName, ')
           ..write('sex: $sex, ')
           ..write('lifeStage: $lifeStage, ')
           ..write('behaviour: $behaviour, ')
@@ -9110,6 +9171,17 @@ class $PlantResourceObservationsTable extends PlantResourceObservations
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     serverVersion,
@@ -9134,6 +9206,7 @@ class $PlantResourceObservationsTable extends PlantResourceObservations
     notes,
     createdAt,
     createdById,
+    createdByName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -9325,6 +9398,15 @@ class $PlantResourceObservationsTable extends PlantResourceObservations
         ),
       );
     }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -9427,6 +9509,10 @@ class $PlantResourceObservationsTable extends PlantResourceObservations
         DriftSqlType.string,
         data['${effectivePrefix}created_by_id'],
       ),
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
     );
   }
 
@@ -9479,6 +9565,11 @@ class PlantResourceObservation extends DataClass
   /// Who made the record. Null until a pull brings it back for a record made
   /// on this phone, so the repository also sets it when it writes one.
   final String? createdById;
+
+  /// The creator's name, for the "Recorded by" line (T112). Output-only on the
+  /// server (`created_by_name`); null for a record made on this phone until a
+  /// pull brings it back.
+  final String? createdByName;
   const PlantResourceObservation({
     this.serverVersion,
     required this.syncStatus,
@@ -9502,6 +9593,7 @@ class PlantResourceObservation extends DataClass
     required this.notes,
     required this.createdAt,
     this.createdById,
+    this.createdByName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9550,6 +9642,9 @@ class PlantResourceObservation extends DataClass
     if (!nullToAbsent || createdById != null) {
       map['created_by_id'] = Variable<String>(createdById);
     }
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
     return map;
   }
 
@@ -9595,6 +9690,9 @@ class PlantResourceObservation extends DataClass
       createdById: createdById == null && nullToAbsent
           ? const Value.absent()
           : Value(createdById),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
     );
   }
 
@@ -9632,6 +9730,7 @@ class PlantResourceObservation extends DataClass
       notes: serializer.fromJson<String>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       createdById: serializer.fromJson<String?>(json['createdById']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
     );
   }
   @override
@@ -9662,6 +9761,7 @@ class PlantResourceObservation extends DataClass
       'notes': serializer.toJson<String>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'createdById': serializer.toJson<String?>(createdById),
+      'createdByName': serializer.toJson<String?>(createdByName),
     };
   }
 
@@ -9688,6 +9788,7 @@ class PlantResourceObservation extends DataClass
     String? notes,
     DateTime? createdAt,
     Value<String?> createdById = const Value.absent(),
+    Value<String?> createdByName = const Value.absent(),
   }) => PlantResourceObservation(
     serverVersion: serverVersion.present
         ? serverVersion.value
@@ -9719,6 +9820,9 @@ class PlantResourceObservation extends DataClass
     notes: notes ?? this.notes,
     createdAt: createdAt ?? this.createdAt,
     createdById: createdById.present ? createdById.value : this.createdById,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
   );
   PlantResourceObservation copyWithCompanion(
     PlantResourceObservationsCompanion data,
@@ -9776,6 +9880,9 @@ class PlantResourceObservation extends DataClass
       createdById: data.createdById.present
           ? data.createdById.value
           : this.createdById,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
     );
   }
 
@@ -9803,7 +9910,8 @@ class PlantResourceObservation extends DataClass
           ..write('feedingDamagePresent: $feedingDamagePresent, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
-          ..write('createdById: $createdById')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName')
           ..write(')'))
         .toString();
   }
@@ -9832,6 +9940,7 @@ class PlantResourceObservation extends DataClass
     notes,
     createdAt,
     createdById,
+    createdByName,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -9858,7 +9967,8 @@ class PlantResourceObservation extends DataClass
           other.feedingDamagePresent == this.feedingDamagePresent &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
-          other.createdById == this.createdById);
+          other.createdById == this.createdById &&
+          other.createdByName == this.createdByName);
 }
 
 class PlantResourceObservationsCompanion
@@ -9885,6 +9995,7 @@ class PlantResourceObservationsCompanion
   final Value<String> notes;
   final Value<DateTime> createdAt;
   final Value<String?> createdById;
+  final Value<String?> createdByName;
   final Value<int> rowid;
   const PlantResourceObservationsCompanion({
     this.serverVersion = const Value.absent(),
@@ -9909,6 +10020,7 @@ class PlantResourceObservationsCompanion
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PlantResourceObservationsCompanion.insert({
@@ -9934,6 +10046,7 @@ class PlantResourceObservationsCompanion
     this.notes = const Value.absent(),
     required DateTime createdAt,
     this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        projectId = Value(projectId),
@@ -9966,6 +10079,7 @@ class PlantResourceObservationsCompanion
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<String>? createdById,
+    Expression<String>? createdByName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -9992,6 +10106,7 @@ class PlantResourceObservationsCompanion
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (createdById != null) 'created_by_id': createdById,
+      if (createdByName != null) 'created_by_name': createdByName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -10019,6 +10134,7 @@ class PlantResourceObservationsCompanion
     Value<String>? notes,
     Value<DateTime>? createdAt,
     Value<String?>? createdById,
+    Value<String?>? createdByName,
     Value<int>? rowid,
   }) {
     return PlantResourceObservationsCompanion(
@@ -10044,6 +10160,7 @@ class PlantResourceObservationsCompanion
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -10123,6 +10240,9 @@ class PlantResourceObservationsCompanion
     if (createdById.present) {
       map['created_by_id'] = Variable<String>(createdById.value);
     }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -10154,6 +10274,7 @@ class PlantResourceObservationsCompanion
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -10420,6 +10541,17 @@ class $HabitatFeaturesTable extends HabitatFeatures
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     serverVersion,
@@ -10445,6 +10577,7 @@ class $HabitatFeaturesTable extends HabitatFeatures
     notes,
     createdAt,
     createdById,
+    createdByName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -10645,6 +10778,15 @@ class $HabitatFeaturesTable extends HabitatFeatures
         ),
       );
     }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -10748,6 +10890,10 @@ class $HabitatFeaturesTable extends HabitatFeatures
         DriftSqlType.string,
         data['${effectivePrefix}created_by_id'],
       ),
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
     );
   }
 
@@ -10810,6 +10956,11 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
   /// Who made the feature. Null until a pull brings it back for a feature made
   /// on this phone, so the repository also sets it when it writes one.
   final String? createdById;
+
+  /// The creator's name, for the "Recorded by" line (T112). Output-only on the
+  /// server (`created_by_name`); null for a feature made on this phone until a
+  /// pull brings it back.
+  final String? createdByName;
   const HabitatFeature({
     this.serverVersion,
     required this.syncStatus,
@@ -10834,6 +10985,7 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
     required this.notes,
     required this.createdAt,
     this.createdById,
+    this.createdByName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -10883,6 +11035,9 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
     if (!nullToAbsent || createdById != null) {
       map['created_by_id'] = Variable<String>(createdById);
     }
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
     return map;
   }
 
@@ -10929,6 +11084,9 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
       createdById: createdById == null && nullToAbsent
           ? const Value.absent()
           : Value(createdById),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
     );
   }
 
@@ -10965,6 +11123,7 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
       notes: serializer.fromJson<String>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       createdById: serializer.fromJson<String?>(json['createdById']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
     );
   }
   @override
@@ -10996,6 +11155,7 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
       'notes': serializer.toJson<String>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'createdById': serializer.toJson<String?>(createdById),
+      'createdByName': serializer.toJson<String?>(createdByName),
     };
   }
 
@@ -11023,6 +11183,7 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
     String? notes,
     DateTime? createdAt,
     Value<String?> createdById = const Value.absent(),
+    Value<String?> createdByName = const Value.absent(),
   }) => HabitatFeature(
     serverVersion: serverVersion.present
         ? serverVersion.value
@@ -11059,6 +11220,9 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
     notes: notes ?? this.notes,
     createdAt: createdAt ?? this.createdAt,
     createdById: createdById.present ? createdById.value : this.createdById,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
   );
   HabitatFeature copyWithCompanion(HabitatFeaturesCompanion data) {
     return HabitatFeature(
@@ -11117,6 +11281,9 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
       createdById: data.createdById.present
           ? data.createdById.value
           : this.createdById,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
     );
   }
 
@@ -11145,7 +11312,8 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
           ..write('disturbanceType: $disturbanceType, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
-          ..write('createdById: $createdById')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName')
           ..write(')'))
         .toString();
   }
@@ -11175,6 +11343,7 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
     notes,
     createdAt,
     createdById,
+    createdByName,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -11202,7 +11371,8 @@ class HabitatFeature extends DataClass implements Insertable<HabitatFeature> {
           other.disturbanceType == this.disturbanceType &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
-          other.createdById == this.createdById);
+          other.createdById == this.createdById &&
+          other.createdByName == this.createdByName);
 }
 
 class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
@@ -11229,6 +11399,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
   final Value<String> notes;
   final Value<DateTime> createdAt;
   final Value<String?> createdById;
+  final Value<String?> createdByName;
   final Value<int> rowid;
   const HabitatFeaturesCompanion({
     this.serverVersion = const Value.absent(),
@@ -11254,6 +11425,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   HabitatFeaturesCompanion.insert({
@@ -11280,6 +11452,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
     this.notes = const Value.absent(),
     required DateTime createdAt,
     this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        projectId = Value(projectId),
@@ -11313,6 +11486,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<String>? createdById,
+    Expression<String>? createdByName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -11341,6 +11515,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (createdById != null) 'created_by_id': createdById,
+      if (createdByName != null) 'created_by_name': createdByName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -11369,6 +11544,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
     Value<String>? notes,
     Value<DateTime>? createdAt,
     Value<String?>? createdById,
+    Value<String?>? createdByName,
     Value<int>? rowid,
   }) {
     return HabitatFeaturesCompanion(
@@ -11395,6 +11571,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -11475,6 +11652,9 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
     if (createdById.present) {
       map['created_by_id'] = Variable<String>(createdById.value);
     }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -11507,6 +11687,7 @@ class HabitatFeaturesCompanion extends UpdateCompanion<HabitatFeature> {
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -23093,6 +23274,7 @@ typedef $$ButterflyObservationsTableCreateCompanionBuilder =
       Value<double?> locationAccuracyM,
       required String identificationConfidence,
       required String recordedById,
+      Value<String?> recordedByName,
       Value<String> sex,
       Value<String> lifeStage,
       Value<String> behaviour,
@@ -23122,6 +23304,7 @@ typedef $$ButterflyObservationsTableUpdateCompanionBuilder =
       Value<double?> locationAccuracyM,
       Value<String> identificationConfidence,
       Value<String> recordedById,
+      Value<String?> recordedByName,
       Value<String> sex,
       Value<String> lifeStage,
       Value<String> behaviour,
@@ -23268,6 +23451,11 @@ class $$ButterflyObservationsTableFilterComposer
 
   ColumnFilters<String> get recordedById => $composableBuilder(
     column: $table.recordedById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recordedByName => $composableBuilder(
+    column: $table.recordedByName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23460,6 +23648,11 @@ class $$ButterflyObservationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get recordedByName => $composableBuilder(
+    column: $table.recordedByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get sex => $composableBuilder(
     column: $table.sex,
     builder: (column) => ColumnOrderings(column),
@@ -23640,6 +23833,11 @@ class $$ButterflyObservationsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get recordedByName => $composableBuilder(
+    column: $table.recordedByName,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get sex =>
       $composableBuilder(column: $table.sex, builder: (column) => column);
 
@@ -23806,6 +24004,7 @@ class $$ButterflyObservationsTableTableManager
                 Value<double?> locationAccuracyM = const Value.absent(),
                 Value<String> identificationConfidence = const Value.absent(),
                 Value<String> recordedById = const Value.absent(),
+                Value<String?> recordedByName = const Value.absent(),
                 Value<String> sex = const Value.absent(),
                 Value<String> lifeStage = const Value.absent(),
                 Value<String> behaviour = const Value.absent(),
@@ -23833,6 +24032,7 @@ class $$ButterflyObservationsTableTableManager
                 locationAccuracyM: locationAccuracyM,
                 identificationConfidence: identificationConfidence,
                 recordedById: recordedById,
+                recordedByName: recordedByName,
                 sex: sex,
                 lifeStage: lifeStage,
                 behaviour: behaviour,
@@ -23862,6 +24062,7 @@ class $$ButterflyObservationsTableTableManager
                 Value<double?> locationAccuracyM = const Value.absent(),
                 required String identificationConfidence,
                 required String recordedById,
+                Value<String?> recordedByName = const Value.absent(),
                 Value<String> sex = const Value.absent(),
                 Value<String> lifeStage = const Value.absent(),
                 Value<String> behaviour = const Value.absent(),
@@ -23889,6 +24090,7 @@ class $$ButterflyObservationsTableTableManager
                 locationAccuracyM: locationAccuracyM,
                 identificationConfidence: identificationConfidence,
                 recordedById: recordedById,
+                recordedByName: recordedByName,
                 sex: sex,
                 lifeStage: lifeStage,
                 behaviour: behaviour,
@@ -25453,6 +25655,7 @@ typedef $$PlantResourceObservationsTableCreateCompanionBuilder =
       Value<String> notes,
       required DateTime createdAt,
       Value<String?> createdById,
+      Value<String?> createdByName,
       Value<int> rowid,
     });
 typedef $$PlantResourceObservationsTableUpdateCompanionBuilder =
@@ -25479,6 +25682,7 @@ typedef $$PlantResourceObservationsTableUpdateCompanionBuilder =
       Value<String> notes,
       Value<DateTime> createdAt,
       Value<String?> createdById,
+      Value<String?> createdByName,
       Value<int> rowid,
     });
 
@@ -25642,6 +25846,11 @@ class $$PlantResourceObservationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ProjectsTableFilterComposer get projectId {
     final $$ProjectsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -25798,6 +26007,11 @@ class $$PlantResourceObservationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ProjectsTableOrderingComposer get projectId {
     final $$ProjectsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -25943,6 +26157,11 @@ class $$PlantResourceObservationsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
   $$ProjectsTableAnnotationComposer get projectId {
     final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -26054,6 +26273,7 @@ class $$PlantResourceObservationsTableTableManager
                 Value<String> notes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlantResourceObservationsCompanion(
                 serverVersion: serverVersion,
@@ -26078,6 +26298,7 @@ class $$PlantResourceObservationsTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 createdById: createdById,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -26104,6 +26325,7 @@ class $$PlantResourceObservationsTableTableManager
                 Value<String> notes = const Value.absent(),
                 required DateTime createdAt,
                 Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlantResourceObservationsCompanion.insert(
                 serverVersion: serverVersion,
@@ -26128,6 +26350,7 @@ class $$PlantResourceObservationsTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 createdById: createdById,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -26238,6 +26461,7 @@ typedef $$HabitatFeaturesTableCreateCompanionBuilder =
       Value<String> notes,
       required DateTime createdAt,
       Value<String?> createdById,
+      Value<String?> createdByName,
       Value<int> rowid,
     });
 typedef $$HabitatFeaturesTableUpdateCompanionBuilder =
@@ -26265,6 +26489,7 @@ typedef $$HabitatFeaturesTableUpdateCompanionBuilder =
       Value<String> notes,
       Value<DateTime> createdAt,
       Value<String?> createdById,
+      Value<String?> createdByName,
       Value<int> rowid,
     });
 
@@ -26425,6 +26650,11 @@ class $$HabitatFeaturesTableFilterComposer
 
   ColumnFilters<String> get createdById => $composableBuilder(
     column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -26589,6 +26819,11 @@ class $$HabitatFeaturesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ProjectsTableOrderingComposer get projectId {
     final $$ProjectsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -26739,6 +26974,11 @@ class $$HabitatFeaturesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
   $$ProjectsTableAnnotationComposer get projectId {
     final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -26839,6 +27079,7 @@ class $$HabitatFeaturesTableTableManager
                 Value<String> notes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitatFeaturesCompanion(
                 serverVersion: serverVersion,
@@ -26864,6 +27105,7 @@ class $$HabitatFeaturesTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 createdById: createdById,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -26891,6 +27133,7 @@ class $$HabitatFeaturesTableTableManager
                 Value<String> notes = const Value.absent(),
                 required DateTime createdAt,
                 Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitatFeaturesCompanion.insert(
                 serverVersion: serverVersion,
@@ -26916,6 +27159,7 @@ class $$HabitatFeaturesTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 createdById: createdById,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
