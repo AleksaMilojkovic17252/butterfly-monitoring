@@ -2151,3 +2151,24 @@ A researcher who finds a transect unwalkable records a **proposal**; an admin tu
 **Not handled.** Unconfirmed and undeterminable records still count (a known limit; filter by `validation_status` in the admin to see them). No per-section figures,
 no statistical modelling (done in R). The views read columns of `survey_visit`, `butterfly_observation`, `project_protocol` and `transect`: changing one needs a
 hand-written drop and recreate.
+
+## D-100 · App statistics (T062): own records only, the same definitions as D-099, taxon as recorded, `fl_chart`
+2026-11-06 · accepted · T062, *builds on D-099, D-094 and D-096*
+`StatisticsScreen` at `/projects/:id/statistics` (the project home's Statistics tile). The figures are pure functions in `lib/features/statistics/domain/` over two small
+classes, `StatVisit` and `StatRecord`, built from Drift rows; the screen reads the existing visit, observation, protocol and taxon providers (`statisticsDataProvider`), so it
+works offline.
+1. **Period = calendar year in the project's time zone** (the same as T061's `year`), from `startedAt` of the visit. The year picker lists the years with a finished visit,
+   newest first, and defaults to the current site year if it has data. No custom date range. The zone code is `siteTimeIn` in `core/validation/protocol_window.dart`.
+2. **Finished visit** = `completed`, `synced`, `reviewed` or `locked`, not deleted, with a start time.
+3. **Transect figures** count live `source = transect` records of those visits. Hours and km are summed per visit (null counts as 0). Per km is null (shown "–") when km is 0,
+   per hour when hours are 0. Shown with 2 decimals.
+4. **Top 10** = most individuals; ties by more records, then scientific name.
+5. **Phenology** follows T061's `_RECORDS`: every source (free records too), not deleted; a record with a visit counts only when that visit is on the phone, not deleted and
+   not `cancelled` (draft and in-progress visits count). ISO weeks of the local date, ISO year. The species picker lists every taxon with such a record. The chart's x axis
+   runs from the ISO week of the protocol's `seasonStart` to that of `seasonEnd`, widened when there is data outside it.
+6. **The phone uses `taxonId` as recorded.** Pull never sends validation data (`_NOT_SYNCED`), so the phone has no `validated_taxon_id`. In T061's fixture, O2 "B, validated as C"
+   shows as B on the phone. Species and individual counts stay the same.
+7. **`fl_chart` ^1.3.0** is added for the bar chart (CONVENTIONS A.4). `test/statistics_test.dart` feeds T061's fixture to the functions, an agreed exception to D-021.
+8. **Year of a record differs between the two sections on purpose.** The indicators take the year from the visit's start (as the server view does); phenology takes the ISO year
+   of the record's own local time (as its view does). A visit started on 31 December with records after midnight is in one year in the indicators and in the next in phenology.
+**Not handled.** Behaviour counts, valid visits, and confirmed/to-review counts (the phone has no validation data); project-wide figures (admin reports); a custom date range.

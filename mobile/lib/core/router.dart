@@ -16,6 +16,7 @@ import 'package:mobile/features/resources/ui/habitat_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plant_entry_screen.dart';
 import 'package:mobile/features/resources/ui/plants_habitat_screen.dart';
 import 'package:mobile/features/settings/ui/settings_screen.dart';
+import 'package:mobile/features/statistics/ui/statistics_screen.dart';
 import 'package:mobile/features/sync/ui/sync_status_screen.dart';
 import 'package:mobile/features/transects/ui/transect_detail_screen.dart';
 import 'package:mobile/features/transects/ui/transect_list_screen.dart';
@@ -132,6 +133,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   projectId: state.pathParameters['id']!,
                   habitatId: state.pathParameters['habitatId']!,
                 ),
+              ),
+              GoRoute(
+                path: 'statistics',
+                builder: (_, state) =>
+                    StatisticsScreen(projectId: state.pathParameters['id']!),
               ),
               // Route proposals (T108). Kept outside `transects/:transectId`,
               // so `record` is not read as a transect id.

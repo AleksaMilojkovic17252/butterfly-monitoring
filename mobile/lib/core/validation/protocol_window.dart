@@ -65,10 +65,16 @@ bool timeZoneKnown(ProjectProtocol protocol) {
 
 /// [instant] as wall-clock time at the study site. An unknown zone name falls
 /// back to the phone's zone.
-DateTime _siteTime(ProjectProtocol protocol, DateTime instant) {
+DateTime _siteTime(ProjectProtocol protocol, DateTime instant) =>
+    siteTimeIn(protocol.timeZone, instant);
+
+/// [instant] as wall-clock time in the zone named [timeZone] (T062 uses it for
+/// the year and week of a record). An unknown zone name falls back to the
+/// phone's zone. It loads the zone data itself.
+DateTime siteTimeIn(String timeZone, DateTime instant) {
   _loadZones();
   try {
-    return tz.TZDateTime.from(instant, tz.getLocation(protocol.timeZone));
+    return tz.TZDateTime.from(instant, tz.getLocation(timeZone));
   } on tz.LocationNotFoundException {
     return instant.toLocal();
   }

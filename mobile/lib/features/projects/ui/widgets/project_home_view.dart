@@ -55,10 +55,10 @@ class ProjectHomeView extends ConsumerWidget {
         badge: pending,
         onTap: () => context.push('/projects/${project.id}/sync'),
       ),
-      // Statistics: enabled by T062.
-      const ProjectHomeTile(
+      ProjectHomeTile(
         icon: Icons.bar_chart_outlined,
         label: 'Statistics',
+        onTap: () => context.push('/projects/${project.id}/statistics'),
       ),
     ];
 
