@@ -4,15 +4,16 @@ from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 from django.db.models.fields.files import FieldFile
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import ValidationError
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
 from apps.core.widgets import EditableMapWidget, SearchableSelect
-from apps.exports import service
+from apps.exports import geopackage, service
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 from apps.projects.services import (
     AreaFileError,
@@ -256,11 +257,19 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         ]
 
     def export_bundle_view(self, request, pk):
-        """The project's ZIP bundle with the API defaults (T065, D-101)."""
+        """The project's ZIP bundle, or with ?format=gpkg its GeoPackage (T065, T066), with the
+        API defaults (D-101)."""
         project = get_object_or_404(projects_for(request.user), pk=pk)
         if not self.has_view_permission(request, project):
             raise PermissionDenied
-        file, filename = service.bundle(request.user, service.parse_filters({"project": str(pk)}))
+        try:
+            fmt = service.parse_bundle_format(request.GET)
+        except ValidationError:  # a DRF error: a plain admin view must answer it itself
+            return HttpResponseBadRequest("Use format=gpkg, or no format for the ZIP.")
+        filters = service.parse_filters({"project": str(pk)})
+        if fmt == "gpkg":
+            return geopackage.response(request.user, filters)
+        file, filename = service.bundle(request.user, filters)
         return FileResponse(file, as_attachment=True, filename=filename)
 
     def get_inline_instances(self, request, obj=None):

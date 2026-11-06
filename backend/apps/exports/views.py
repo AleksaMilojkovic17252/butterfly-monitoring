@@ -9,7 +9,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAdminGroup
-from apps.exports import service
+from apps.exports import geopackage, service
 
 
 class JSONOnlyNegotiation(BaseContentNegotiation):
@@ -52,6 +52,12 @@ FORMAT = OpenApiParameter(
     enum=["csv", "geojson", "json"],
     description="File format (default csv)",
 )
+BUNDLE_FORMAT = OpenApiParameter(
+    "format",
+    OpenApiTypes.STR,
+    enum=["csv", "gpkg"],
+    description="csv (default): a ZIP of CSV files. gpkg: one GeoPackage (T066)",
+)
 TRACK_POINTS = OpenApiParameter(
     "track_points", OpenApiTypes.BOOL, description="Add the (large) track points to the bundle"
 )
@@ -81,12 +87,23 @@ class ExportDatasetView(ExportView):
 
 class ExportBundleView(ExportView):
     @extend_schema(
-        parameters=[PROJECT, FROM, TO, NA, EXCEL, TRACK_POINTS],
-        responses={(200, "application/zip"): OpenApiTypes.BINARY},
-        description="A ZIP of one project's CSV files and metadata.json. `project` is required. "
-        "Admins only.",
+        parameters=[BUNDLE_FORMAT, PROJECT, FROM, TO, NA, EXCEL, TRACK_POINTS],
+        responses={
+            (200, "application/zip"): OpenApiTypes.BINARY,
+            (200, geopackage.CONTENT_TYPE): OpenApiTypes.BINARY,
+        },
+        description="A ZIP of one project's CSV files and metadata.json, or with format=gpkg one "
+        "GeoPackage: transects, transect_sections, butterfly_observations, plant_resources_points "
+        "and _polygons, habitat_features_points, _lines and _polygons (from the geo views), and "
+        "survey_visits, environmental_snapshots and validation_history. `project` is required. "
+        "`na`, `excel` and `track_points` do not apply to gpkg (real NULLs, no track points). "
+        "`from` and `to` filter observed_at of observations, plant records and habitat features; "
+        "transects and sections ignore them. Admins only.",
     )
     def get(self, request):
+        fmt = service.parse_bundle_format(request.query_params)
         filters = service.parse_filters(request.query_params)
+        if fmt == "gpkg":
+            return geopackage.response(request.user, filters)
         file, filename = service.bundle(request.user, filters)
         return FileResponse(file, as_attachment=True, filename=filename)

@@ -2,13 +2,14 @@
 {% load i18n %}
 
 {% comment %}
-Project change form (T065): the history change form plus an "Export project bundle (ZIP)" link
-beside History.
+Project change form (T065, T066): the history change form plus "Export project bundle (ZIP)" and
+"Export project GeoPackage" links beside History.
 {% endcomment %}
 
 {% block object-tools-items %}
 {% if change and not is_popup %}
 <li><a href="{% url 'admin:projects_project_export_bundle' original.pk %}">{% translate "Export project bundle (ZIP)" %}</a></li>
+<li><a href="{% url 'admin:projects_project_export_bundle' original.pk %}?format=gpkg">{% translate "Export project GeoPackage" %}</a></li>
 {% endif %}
 {{ block.super }}
 {% endblock %}

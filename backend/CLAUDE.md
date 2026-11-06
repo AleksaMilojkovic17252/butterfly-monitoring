@@ -67,7 +67,8 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `save_visit` calls for a finished visit (D-076).
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the
   CSV/GeoJSON/JSON streams, `service.py` is the single implementation (`export`, `bundle`) that the API views and T065's admin
-  actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields.
+  actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields. `geopackage.py` (T066, D-103) runs
+  `ogr2ogr` per layer from the `geo` views, and the non-spatial tables come from the dataset SQL.
 - `apps/validation/` (T058, D-090; T057, D-091) holds `ValidationEvent`, an append-only record of each validation decision, and the proxy
   `ValidationQueueItem` (the admin queue). Only `services.record_decision` creates events, and `services.decide` is the one way to apply a
   decision (it calls `record_decision` before changing the observation). **Never save a `ValidationQueueItem`**: a proxy save writes no history row, so

@@ -101,7 +101,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
 | T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | done |
 | T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | done |
-| T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
+| T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | done |
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | done |
@@ -1344,13 +1344,15 @@ Note (T061, 2026-11-05): the three report admins already have their own "Export 
 - [x] Output is identical to the API for the same filter (test compares bytes). Skipped as an automated test (D-021); checked by hand with `tmp/t065/compare.py`: CSV and GeoJSON of the six datasets are byte-identical to the API for the same project, and the bundle matches (CSVs byte for byte, `metadata.json` apart from `exported_at`). Output in `tmp/t065/compare-output.txt`.
 
 ### T066 · GeoPackage export
-[#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) · E09 · P1 · could · labels: `backend`, `could` · implements F37 · est. 1 d · **todo**
+[#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) · E09 · P1 · could · labels: `backend`, `could` · implements F37 · est. 1 d · **done**
+
+Deferred: the QGIS screenshot (`docs/setup/img/t066-qgis.png`); the developer checked the layers, CRS and attributes in QGIS by hand.
 
 Depends on: T064, T067
 
-- [ ] `format=gpkg` on the bundle endpoint and the admin project button produce a `.gpkg` with layers built from the `geo` views (T067): transects, sections, observations, plant resources (split into point and polygon layers), habitat features (split by type), plus non-spatial tables (visits, snapshots, validation history).
-- [ ] Created with `ogr2ogr -f GPKG out.gpkg PG:"<dsn>" -sql "<query>" -nln <layer>` per layer (GDAL is already in the image).
-- [ ] Opens in QGIS with correct CRS and attribute types (checked manually; screenshot in docs).
+- [x] `format=gpkg` on the bundle endpoint and the admin project button produce a `.gpkg` with layers built from the `geo` views (T067): transects, sections, observations, plant resources (split into point and polygon layers), habitat features (split by type), plus non-spatial tables (visits, snapshots, validation history). Checked by hand with `tmp/t066/check.py` and `check2.py` (D-103): API and admin button give a `.gpkg`; layer counts equal the bundle `metadata.json` row counts.
+- [x] Created with `ogr2ogr -f GPKG out.gpkg PG:"<dsn>" -sql "<query>" -nln <layer>` per layer (GDAL is already in the image).
+- [x] Opens in QGIS with correct CRS and attribute types (checked manually; screenshot in docs). Checked by hand in QGIS (all layers and attributes present); screenshot deferred.
 
 ### T067 · `geo` views for the five collections
 [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) · E10 · P1 · must · labels: `database`, `ogc`, `must` · implements F40, F45 · est. 2 d · **done**

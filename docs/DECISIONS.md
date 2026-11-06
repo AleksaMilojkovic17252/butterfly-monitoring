@@ -2221,3 +2221,33 @@ habitat features, transects and validation events; the three report admins use i
     (a vector `pbf` file would open but draw nothing). The download falls back to the storage size when `basemap_size` is null.
 **Not handled.** Vector MBTiles; several basemaps per project; deleting replaced objects from MinIO; resuming a half-downloaded file; tile attribution from the file's metadata.
 
+
+## D-103 · GeoPackage export (T066): `ogr2ogr` per layer, spatial layers from the `geo` views, the other tables from dataset SQL
+2026-11-06 · accepted · T066, *builds on D-077, D-069, D-101 and the `geo` views of T067*
+`format=gpkg` on `GET /api/v1/exports/bundle` and `?format=gpkg` on the admin project button (`/admin/projects/project/<uuid>/export-bundle/`, a second link next to the ZIP)
+return a bare `.gpkg` (`application/geopackage+sqlite3`, `butterfly-export-<project>-<stamp>.gpkg`, no `metadata.json`). Code: `apps/exports/geopackage.py`.
+1. **Layers.** Eight spatial layers, each `SELECT * FROM geo.<view> WHERE …` with `-nlt <type> -a_srs EPSG:4326 -lco GEOMETRY_NAME=geometry`: `transects`, `transect_sections`
+   (filtered by `transect_id IN (SELECT id FROM geo.transects WHERE project_id = …)`, the view has no `project_id`), `butterfly_observations`, `plant_resources_points` / `_polygons`,
+   `habitat_features_points` / `_lines` / `_polygons`. **"Split by type" is by geometry type** (a GeoPackage layer holds one), not by `habitat_type`. Three non-spatial tables
+   (`-nlt NONE`): `survey_visits`, `environmental_snapshots`, `validation_history`.
+2. **Non-spatial tables from dataset SQL.** There is no `geo` view for them, so the SQL is the T064 `Dataset` queryset (`service.scoped_queryset`) `.values()` over `dataset.columns`,
+   compiled with `query.sql_with_params()` and `connection.ops.compose_sql`, wrapped to give the CSV column names. Columns, user scoping, project/date filters and order are the
+   CSV bundle's; the PostgreSQL types carry over (no CSV type guessing).
+3. **`outcome`** is computed in Python in the CSV path (`_outcome_post` → `visit_outcome`, D-069). For the GPKG it is an ORM `Case` (`geopackage._OUTCOME`), the SQL twin of
+   `visit_outcome`; **both must change together**. A draft or in-progress visit gives NULL (the CSV writes `NA`).
+4. **Filters.** `project` is required (`service.require_project`, shared with the ZIP). `from`/`to` filter `observed_at` on the observation, plant and habitat layers (the
+   `service.DATE_NOTE` rule; same UTC day bounds) and the dated non-spatial tables through the dataset queryset; transects and sections ignore them. `na`, `excel` and `track_points`
+   are ignored (real NULLs; no `geo` view for track points); the Swagger text says so. The admin button uses the API defaults (D-101).
+5. **Security.** `ogr2ogr` runs through `subprocess.run` with a list (no shell); the project id and dates are written into the SQL by the driver's quoting (`compose_sql`), never by
+   f-strings. The DB password goes in `PGPASSWORD` in the child's environment, not in argv or logs. On a failure the layer name and stderr are logged and the error re-raised (a 500).
+   `bundle_format` is validated by `service.parse_bundle_format` (400 otherwise).
+6. **Built in the request** (D-014) into a temporary folder and copied to a spooled temporary file (50 MB in memory), like the ZIP.
+**VERIFY.** (1) GDAL 3.6.2 is in the image and `ogrinfo --formats` lists `GPKG -raster,vector- (rw+vs)`. (2) A layer whose query returns 0 rows **is created, with its fields**
+(`habitat_features_lines` in the Showcase project, all plant/habitat layers in an empty date range), so no workaround. (3) `compose_sql` exists on psycopg 3.3 / Django 5.2 and quotes
+a UUID (`'0000…0001'`), a timestamptz (`'2026-01-01 00:00:00+00:00'::timestamptz`) and text (`'o''x'`) correctly (`tmp/t066/check.py`).
+**Checked by hand** (`tmp/t066/check.py`, `check2.py`, outputs in `ogrinfo-summary.txt`, `check2-output.txt`). `format=gpkg` → 200, `application/geopackage+sqlite3`, `.gpkg` attachment, SQLite header;
+`format=xyz` → 400; no project → 400; researcher → 403; `csv` and no format still give the ZIP; the project page shows both links; the admin link gives a GeoPackage. Spatial layers are EPSG:4326
+with the planned geometry types; `observed_at` and other timestamps DateTime; booleans `Integer(Boolean)`; numeric Real; counts Integer. Feature counts equal `metadata.json` `row_counts`
+(Showcase: 4 / 22 / 1400 / 74 / 148 / 0; Niš: plants 11 + 3 = 14, habitat 5 + 2 + 2 = 9, visits 43, validation 7; User Manual: plants 4 + 2 = 6, habitat 4). `survey_visits.outcome`
+counts equal the CSV's, with the CSV's `NA` as NULL. `from=2100-01-01` gives empty observation and visit layers and the same transects. **QGIS:** the developer opened the file; all layers and attributes are present (screenshot not taken).
+**Not handled.** Track points; `metadata.json` in the file; `na`/`excel`; a progress indicator for big projects (built in the request). Known limits from the review: layers are separate `ogr2ogr` connections, so a sync push between two layers can make them differ slightly; the DSN is built from NAME/HOST/PORT/USER only (no `OPTIONS`/`sslmode`, an empty HOST fails); a cancelled visit with a NULL `cancel_reason` would read `cancelled:` here and `cancelled:None` in the CSV (none exist).

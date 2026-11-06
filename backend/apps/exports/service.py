@@ -29,6 +29,7 @@ FORMATS = {
     "geojson": ("application/geo+json", "geojson"),
     "json": ("application/json", "json"),
 }
+BUNDLE_FORMATS = ("csv", "gpkg")
 DATE_NOTE = (
     "from and to filter on started_at (visits), "
     "observed_at (observations, plant records and habitat features), "
@@ -79,6 +80,14 @@ def parse_format(params):
     return value
 
 
+def parse_bundle_format(params):
+    """The bundle's `format` query parameter: csv (a ZIP, default) or gpkg (a GeoPackage, T066)."""
+    value = params.get("format", "csv").lower()
+    if value not in BUNDLE_FORMATS:
+        raise ValidationError({"format": [f"Use one of: {', '.join(BUNDLE_FORMATS)}."]})
+    return value
+
+
 def parse_filters(params):
     """Read the query parameters into an `ExportFilters`; bad input is a 400 on that field."""
     project = None
@@ -109,7 +118,7 @@ def _dataset(name):
     return DATASETS[name]
 
 
-def _queryset(user, dataset, filters, selected=None):
+def scoped_queryset(user, dataset, filters, selected=None):
     """The dataset's rows for this user, narrowed by the project and the dates.
 
     `selected` (admin actions, T065) is a queryset of the model; only its rows are kept.
@@ -136,7 +145,8 @@ def _distinct(user, dataset, filters, column_name):
     column = next((c for c in dataset.columns if c.name == column_name), None)
     if column is None:
         return set()
-    values = _queryset(user, dataset, filters).order_by().values_list(column.source, flat=True)
+    queryset = scoped_queryset(user, dataset, filters)
+    values = queryset.order_by().values_list(column.source, flat=True)
     return {value for value in values.distinct() if value}
 
 
@@ -149,7 +159,7 @@ def metadata(user, names, filters, fmt="csv"):
     taxon_list_versions = set()
     for name in names:
         dataset = DATASETS[name]
-        row_counts[name] = _queryset(user, dataset, filters).count()
+        row_counts[name] = scoped_queryset(user, dataset, filters).count()
         datasets[name] = {
             "file": f"{name}.{extension}",
             "geometry": {
@@ -191,7 +201,7 @@ def metadata(user, names, filters, fmt="csv"):
 
 
 def _chunks(user, dataset, fmt, filters, selected=None):
-    queryset = _queryset(user, dataset, filters, selected)
+    queryset = scoped_queryset(user, dataset, filters, selected)
     names = [column.name for column in dataset.all_columns]
     if fmt == "csv":
         return writers.csv_chunks(names, iter_rows(dataset, queryset), filters.na, filters.excel)
@@ -212,16 +222,21 @@ def export(user, name, fmt, filters, selected=None):
     return _chunks(user, dataset, fmt, filters, selected), content_type, f"{name}.{extension}"
 
 
+def require_project(user, filters):
+    """The bundle needs a project the user may see (a 400 without, a 404 for a stranger's)."""
+    if not filters.project:
+        raise ValidationError({"project": ["The bundle needs a project."]})
+    if not projects_for(user).filter(pk=filters.project).exists():
+        raise NotFound("No such project.")
+
+
 def bundle(user, filters):
     """A ZIP of the project's CSV files and metadata.json: `(file, filename)`.
 
     Built in a temporary file, not streamed (D-014: exports run in the request). Track points
     are in it only when `filters.track_points` is set.
     """
-    if not filters.project:
-        raise ValidationError({"project": ["The bundle needs a project."]})
-    if not projects_for(user).filter(pk=filters.project).exists():
-        raise NotFound("No such project.")
+    require_project(user, filters)
     names = list(BUNDLE_DATASETS)
     if filters.track_points:
         names.append("track_points")
