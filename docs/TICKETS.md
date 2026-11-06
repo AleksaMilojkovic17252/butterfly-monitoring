@@ -148,7 +148,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T110 | [#127](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/127) | App adds an observation to a finished visit | P1 | should | T045, T046, T106 | 1.5 d | done |
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | done |
 | T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | done |
-| T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | todo |
+| T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | done |
 
 ## Acceptance criteria
 
@@ -2259,20 +2259,22 @@ If time is short: drop the observations, visits, map and statistics parts (decis
 Out of scope: Sharing visits that are not finished, track points and observation photos; editing another member's observation; validation data on the phone; Export access for members (it changes D-077; its own ticket if wanted); Hiding a sensitive record from other members. Editing another member's record; Tests (D-021).
 
 ### T113 · Admin adds a butterfly observation to a visit, with photos
-[#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) · E06 · added 2026-11-06 as a follow-up to T110 and T111 · P1 · could · labels: `backend`, `admin`, `could` · implements F20 (admin side) · est. 3 d · **todo**
+[#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) · E06 · added 2026-11-06 as a follow-up to T110 and T111 · P1 · could · labels: `backend`, `admin`, `could` · implements F20 (admin side) · est. 3 d · **done**
 
 Depends on: T043, T110, T111
 
 Why: The butterfly observation page in Django admin has no Add (D-065). T110 lets a researcher add a late observation from the phone, but an admin who works from a paper form or a photo, or for a researcher whose phone is not at hand, cannot. Admin should be able to add an observation to an unlocked visit, under the same rules as the phone and the sync push. It should also be able to attach photos to the observation it adds (and to an existing one), since a paper form or a field photo is often the evidence for the record. The same photo upload is added to plant records, whose admin page (T111) shows photos read-only; habitat features have no photos (T053), so they are not part of this.
 
-- [ ] **Add:** the observation admin has an Add button. The form asks for the visit (`raw_id_fields`), the species, count, `observed_at`, the point on a map, section (optional, filled from the point when empty) and the optional details. `recorded_by` is chosen from the members of the visit's project.
-- [ ] **Unlocked visit only:** a locked, cancelled or draft visit is refused with a form error.
-- [ ] **Same rules:** the save goes through `save_observation` (V01-V04, V06-V08, as for push), with rule messages on the fields.
-- [ ] **Zero flag (D-097):** if the visit has `zero_observation_confirmed = true`, the form says so and asks for a tick to clear it; saving clears it in the same save (V06 would refuse otherwise).
-- [ ] **History:** the change reason is "admin add".
-- [ ] **Photos (butterfly observations and plant records):** the photos inline on both pages gets an "add photo" row (file field, optional captured-at) and a "make primary" tick. The server computes the SHA-256, size and type from the uploaded bytes and calls the same `store_content` and `complete_upload` as the phone's upload (T049), so the type, magic-byte, size and pixel checks stay in one place; a bad file is a form error. The first photo of a record becomes primary. A photo can be soft-deleted from the inline, never hard-deleted. History reason "admin add photo". On the add page the photos are saved with the new observation. A locked visit refuses every photo change, and the inline is read-only on such a page. Photos for a plant record added in admin work the same way.
-- [ ] **Effect on phones, shown by hand:** the observation reaches the recording member's phone after a sync and shows in the visit detail, and a photo added in admin shows on the record after the same sync (a soft-deleted photo disappears).
-- [ ] No new dependency; no migration. A decision entry refines D-065. Docs: `backend/CLAUDE.md`.
+- [x] **Add:** the observation admin has an Add button. The form asks for the visit (`raw_id_fields`), the species, count, `observed_at`, the point on a map, section (optional, filled from the point when empty) and the optional details. `recorded_by` is chosen from the members of the visit's project.
+- [x] **Unlocked visit only:** a locked, cancelled or draft visit is refused with a form error.
+- [x] **Same rules:** the save goes through `save_observation` (V01-V04, V06-V08, as for push), with rule messages on the fields.
+- [x] **Zero flag (D-097):** if the visit has `zero_observation_confirmed = true`, the form says so and asks for a tick to clear it; saving clears it in the same save (V06 would refuse otherwise).
+- [x] **History:** the change reason is "admin add".
+- [x] **Photos (butterfly observations and plant records):** the photos inline on both pages gets an "add photo" row (file field, optional captured-at) and a "make primary" tick. The server computes the SHA-256, size and type from the uploaded bytes and calls the same `store_content` and `complete_upload` as the phone's upload (T049), so the type, magic-byte, size and pixel checks stay in one place; a bad file is a form error. The first photo of a record becomes primary. A photo can be soft-deleted from the inline, never hard-deleted. History reason "admin add photo". On the add page the photos are saved with the new observation. A locked visit refuses every photo change, and the inline is read-only on such a page. Photos for a plant record added in admin work the same way.
+- [x] **Effect on phones, shown by hand:** the observation reaches the recording member's phone after a sync and shows in the visit detail, and a photo added in admin shows on the record after the same sync (a soft-deleted photo disappears).
+- [x] No new dependency; no migration. A decision entry refines D-065. Docs: `backend/CLAUDE.md`.
+
+Note (2026-11-06): built as D-108; `tmp/t113/verify.py` passed. The recorder must be the visit's researcher (narrower than "a member"); the edit path's check moved to `_post_clean`. The phone check (Effect on phones) was done by the developer.
 
 Out of scope: Habitat feature photos and an admin page for habitat features. Editing the image (rotate, crop) and bulk upload. Unlocking a visit (T043). Tests (D-021).
 

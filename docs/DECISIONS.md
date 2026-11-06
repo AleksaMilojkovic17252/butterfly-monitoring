@@ -2358,3 +2358,28 @@ Inside a project, members see each other's plant records (with uploaded photos),
 10. **Read-only for others.** `PlantEntryScreen` and `HabitatEntryScreen` are read-only (no Save, Delete, photo add, star) unless the user created the record or is an admin, with a "Recorded by" line.
 **Not handled:** a renamed user keeps the old name until the record changes; sensitive-species locations are visible to
 all members (decision 1 of T112).
+
+## D-108 · Admin adds butterfly observations and manages photos (T113)
+2026-11-06 · accepted · T113, *refines D-065, D-072 and D-106 (supersedes its read-only photos)*
+Admin only: push, REST and the phone are unchanged; no migration. Habitat features get nothing.
+1. **The recorder is the visit's researcher.** On add, `recorded_by` must be `visit.created_by`; empty means them, anyone else is the form error "Must be the visit's researcher (…)". `created_by` is set to the
+   same person, so the record is "mine" on their phone (`recordedById`) and they can still edit it there (push ownership is `created_by`); `updated_by` is the admin. The researcher must still be a project
+   member. This narrows the ticket's "chosen from the members of the visit's project".
+2. **The edit path is fixed too.** `ButterflyObservationAdminForm` called `check_admin_edit` in `clean()`, which runs before `construct_instance`, so it checked the old values and a bad edit failed in `save_model`
+   with a 500. Both checks now run in `_post_clean` (D-106 point 7).
+3. **Photo owner = the parent's `created_by`**, never the admin: `pull_photos` sends observation photos only to their `created_by`, and `photos_for` reads the same field.
+4. **Visit statuses that accept an admin add:** `in_progress`, `completed`, `synced`, `reviewed`. `draft` and `cancelled` are a `survey_visit` form error; `locked` is refused by `ensure_unlocked` (also on
+   `survey_visit`). Stricter than V03, as the ticket asks.
+5. **`source` is not on the add form** (model default `transect`). Admin saves skip `ensure_project_open` (D-104).
+6. **Zero flag (D-097).** A visit with `zero_observation_confirmed` needs the `clear_zero_flag` tick (error on that field otherwise). The tick clears the flag in memory so V06 passes, and `admin_add_observation`
+   saves the visit with the reason "admin add" before the observation, in the one atomic admin request.
+7. **`count` below 1** is a field error (a validator on the form field), not the table constraint's message.
+8. **Photos.** `admin_store_photo_file` reads the type from the first bytes (JPEG, PNG), hashes with `chunks()` and calls `store_content`, so the size, hash, magic and pixel checks stay in one place; a refusal is a form
+   error on `upload`. Bytes stored for a form that then fails are orphans (D-072). `admin_add_photo` saves the row pending ("admin add photo"), then `complete_upload` ("photo upload"): two history rows, one transaction.
+   The first live photo, or one ticked "Make primary", is primary (the old primary is unset first: the one-primary index is checked per save). Soft delete of the primary makes the oldest remaining live photo primary,
+   as the phone does. Never a hard delete. A deleted or locked-visit parent refuses every photo change.
+9. **Two inlines**, `PhotoInline` (existing rows: ticks Make primary and Soft delete) and `PhotoAddInline` (file, captured at, Make primary), applied by `PhotoInlinesMixin.save_formset` through the photo services, not
+   `formset.save()`. `PhotoInline` is listed first so removals run before adds. Both hide on a read-only page. `PhotoAdmin` (the standalone page) stays read-only.
+10. **Size.** nginx allows 20 MB per request and a photo may be 15 MB; the help line says to add large photos one at a time. nginx is unchanged.
+**Checked by hand** (`tmp/t113/verify.py`, Django test client against the dev database, rolled back): add on a reviewed visit, refusals (draft, cancelled, locked, other recorder, V04, V01, V08), the zero flag
+with and without the tick, the edit path, photo add / make primary / bad files / soft delete on observation and plant pages, a locked page, and a non-superuser admin.

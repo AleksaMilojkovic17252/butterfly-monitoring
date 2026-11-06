@@ -11,6 +11,7 @@ shape (`build_new_photo`, `apply_photo_changes`, `save_photo`); the bytes go thr
 
 import hashlib
 import tempfile
+import uuid
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
@@ -36,7 +37,7 @@ from apps.resources.models import ResourceType
 from apps.resources.rules import PLANT_LINK_ROLE_NAMES, PLANT_LINK_ROLES
 from apps.resources.services import own_plant_resources_for, plant_resources_for
 from apps.surveys.models import SurveyVisit, VisitStatus
-from apps.surveys.services import visits_for
+from apps.surveys.services import save_visit, visits_for
 from apps.surveys.state import ensure_unlocked
 from apps.sync.handlers import current_client_time, current_push_reason, soft_delete_pushed
 from apps.transects.services import nearest_section_id
@@ -45,6 +46,9 @@ from apps.validation import flags
 REST_REASON = "REST API"  # history_change_reason of changes made through /observations
 REASSIGN_REASON = "reassign sections"  # history_change_reason of the admin action (T048)
 UPLOAD_REASON = "photo upload"  # history_change_reason of the server's own upload saves
+ADMIN_ADD_PHOTO_REASON = "admin add photo"  # T113, D-108
+ADMIN_EDIT_PHOTO_REASON = "admin edit photo"
+ADMIN_DELETE_PHOTO_REASON = "admin delete photo"
 CHUNK_BYTES = 64 * 1024
 PLANT_LINK_FIELDS = ("host_plant_record", "nectar_plant_record")  # links to plant records (T051)
 MAX_PHOTO_PIXELS = (
@@ -287,6 +291,83 @@ def admin_save_observation(observation, admin_user, reason, changed_fields):
     check_admin_edit(admin_user, observation, changed_fields)
     reevaluate_validation_status(observation, changed_fields)
     return save_observation(observation, admin_user, reason or "admin edit")
+
+
+ADMIN_ADD_REASON = "admin add"
+ADDABLE_VISIT_STATUSES = {
+    VisitStatus.IN_PROGRESS,
+    VisitStatus.COMPLETED,
+    VisitStatus.SYNCED,
+    VisitStatus.REVIEWED,
+}
+
+
+def check_admin_add(admin_user, observation, *, clear_zero_flag):
+    """The rules for an admin's new `observation` (unsaved, with the form's values and its visit
+    set; T113, D-108). Raises DRF exceptions. Returns True when the visit's zero flag must be
+    cleared (it is cleared in memory here, so rule V06 passes)."""
+    if observation.survey_visit_id is None:
+        raise exceptions.ValidationError({"survey_visit": ["A visit is required."]})
+    _lock_visit(observation)  # VisitLocked for a locked visit
+    visit = observation.survey_visit
+    if visit.deleted_at is not None:
+        raise exceptions.ValidationError({"survey_visit": ["This visit was deleted."]})
+    if visit.status not in ADDABLE_VISIT_STATUSES:
+        raise exceptions.ValidationError(
+            {
+                "survey_visit": [
+                    f"A butterfly can only be added to a visit that is in progress or finished. "
+                    f"This visit is {visit.get_status_display().lower()}."
+                ]
+            }
+        )
+    observation.project = visit.project
+    # The recorder is the visit's researcher, so the record is theirs on their phone (D-108).
+    researcher = visit.created_by
+    if observation.recorded_by_id is None:
+        observation.recorded_by = researcher
+    elif observation.recorded_by_id != researcher.pk:
+        raise exceptions.ValidationError(
+            {"recorded_by": [f"Must be the visit's researcher ({researcher})."]}
+        )
+    if not is_member(researcher, visit.project_id):
+        raise exceptions.ValidationError(
+            {"recorded_by": ["The visit's researcher is not a member of the project."]}
+        )
+    observation.created_by = researcher
+    _check_context(admin_user, observation)
+    _check_plant_links(admin_user, observation, PLANT_LINK_FIELDS)
+
+    cleared = False
+    if visit.zero_observation_confirmed:
+        if not clear_zero_flag:
+            raise exceptions.ValidationError(
+                {
+                    "clear_zero_flag": [
+                        "This visit is confirmed as having no butterflies. Tick the box to "
+                        "clear that and add this observation."
+                    ]
+                }
+            )
+        visit.zero_observation_confirmed = False  # in memory only: V06 below reads it
+        cleared = True
+    if observation.transect_section_id is None:
+        observation.transect_section_id = _nearest_section_id(observation)
+    observation.validation_status = initial_validation_status(
+        observation.identification_confidence, observation.taxon
+    )
+    errors = rules.validate_observation(_rule_data(observation), _rule_context(observation))
+    if errors:
+        raise exceptions.ValidationError(errors)
+    return cleared
+
+
+def admin_add_observation(observation, admin_user, *, clear_zero_flag):
+    """Save a new observation an admin entered. Clears the visit's zero flag first when asked."""
+    cleared = check_admin_add(admin_user, observation, clear_zero_flag=clear_zero_flag)
+    if cleared:
+        save_visit(observation.survey_visit, admin_user, ADMIN_ADD_REASON)
+    return save_observation(observation, admin_user, ADMIN_ADD_REASON)
 
 
 def reassign_section(observation, admin_user):
@@ -711,3 +792,101 @@ def _save_upload(photo, user):
     new one, so the phone's copy is current and a later delete is not a conflict (D-072)."""
     save_with_reason(photo, user, UPLOAD_REASON)
     photo.refresh_from_db(fields=["server_version"])
+
+
+# Admin photo changes (T113, D-108). The owner of a photo is its parent's `created_by`: the pull
+# sends observation photos only to their `created_by`, so an admin-owned photo would never arrive.
+
+
+def admin_store_photo_file(uploaded_file):
+    """Check and store the bytes of an uploaded file (storage only, no database), so a form can
+    call it in `clean()`. The SHA-256, size and type come from the bytes; `store_content` is the
+    single implementation of the size, hash, magic-byte and pixel checks. Returns the values the
+    photo record needs. Stored bytes of a form that then fails are orphans (D-072)."""
+    head = uploaded_file.read(8)
+    uploaded_file.seek(0)
+    mime_type = next((mime for mime, magic in MAGIC_BYTES.items() if head.startswith(magic)), None)
+    if mime_type is None:
+        raise exceptions.ValidationError({"upload": ["Only JPEG and PNG images can be added."]})
+    digest = hashlib.sha256()
+    for chunk in uploaded_file.chunks():
+        digest.update(chunk)
+    size = uploaded_file.size
+    uploaded_file.seek(0)
+    probe = Photo(sha256=digest.hexdigest(), file_size=size, mime_type=mime_type)
+    store_content(probe, uploaded_file, mime_type, str(size))
+    return {"sha256": probe.sha256, "file_size": size, "mime_type": mime_type}
+
+
+def _photo_parent_field(parent):
+    return "observation" if isinstance(parent, ButterflyObservation) else "plant_resource"
+
+
+def photo_parent_read_only(parent):
+    """True when the photos of `parent` cannot change: it is deleted or its visit is locked."""
+    if parent.deleted_at is not None:
+        return True
+    visit = parent.survey_visit if parent.survey_visit_id else None
+    return visit is not None and visit.status == VisitStatus.LOCKED
+
+
+def _live_photos(parent):
+    return Photo.objects.alive().filter(**{_photo_parent_field(parent): parent})
+
+
+def _unset_primary(parent, admin_user, *, except_photo=None):
+    for photo in (
+        _live_photos(parent).filter(is_primary=True).exclude(pk=getattr(except_photo, "pk", None))
+    ):
+        photo.is_primary = False
+        save_photo(photo, admin_user, ADMIN_EDIT_PHOTO_REASON)
+
+
+def admin_add_photo(parent, admin_user, stored, *, captured_at=None, make_primary=False):
+    """Add a photo whose bytes `admin_store_photo_file` stored. It is primary when asked or when
+    it is the parent's first live photo. Saved pending, then completed (thumbnail), in the
+    caller's transaction."""
+    _lock_visit(parent)
+    primary = make_primary or not _live_photos(parent).exists()
+    if primary:
+        _unset_primary(parent, admin_user)
+    photo = Photo(
+        id=uuid.uuid4(),
+        created_by=parent.created_by,
+        captured_at=captured_at or timezone.now(),
+        is_primary=primary,
+        **{_photo_parent_field(parent): parent},
+        **stored,
+    )
+    save_photo(photo, admin_user, ADMIN_ADD_PHOTO_REASON)
+    complete_upload(admin_user, photo)
+    return photo
+
+
+def admin_make_primary_photo(photo, admin_user):
+    parent = photo.parent
+    _lock_visit(parent)
+    # Earlier rows of the same save may have changed it: read the stored value.
+    photo.refresh_from_db()
+    if photo.is_primary:
+        return photo
+    _unset_primary(parent, admin_user)
+    photo.is_primary = True
+    return save_photo(photo, admin_user, ADMIN_EDIT_PHOTO_REASON)
+
+
+def admin_soft_delete_photo(photo, admin_user):
+    """Soft delete `photo`; when it was the primary, the oldest remaining live photo becomes
+    primary, as on the phone. Never a hard delete."""
+    parent = photo.parent
+    _lock_visit(parent)
+    photo.refresh_from_db()  # see admin_make_primary_photo
+    was_primary = photo.is_primary
+    photo._change_reason = ADMIN_DELETE_PHOTO_REASON
+    photo._history_user = admin_user
+    photo.soft_delete(admin_user)
+    if was_primary:
+        oldest = _live_photos(parent).order_by("created_at").first()
+        if oldest is not None:
+            oldest.is_primary = True
+            save_photo(oldest, admin_user, ADMIN_EDIT_PHOTO_REASON)

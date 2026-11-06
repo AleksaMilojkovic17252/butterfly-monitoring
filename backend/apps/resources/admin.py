@@ -18,7 +18,7 @@ from apps.core.admin import (
     add_validation_errors,
 )
 from apps.exports.admin_actions import ExportActionsMixin
-from apps.observations.admin import PhotoInline
+from apps.observations.admin import PhotoAddInline, PhotoInline, PhotoInlinesMixin
 from apps.resources import services
 from apps.resources.models import HabitatFeature, PlantResourceObservation
 from apps.surveys.state import VisitLocked
@@ -176,9 +176,11 @@ class PlantResourceAdminForm(forms.ModelForm):
 
 @admin.register(PlantResourceObservation)
 class PlantResourceObservationAdmin(
-    ExportActionsMixin, ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin
+    PhotoInlinesMixin, ExportActionsMixin, ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin
 ):
-    """Plant records (T051), with their photos: the thumbnail opens the original. An admin may
+    """Plant records (T051), with their photos: the thumbnail opens the original, and photos can
+    be added, made primary and soft-deleted (T113, D-108; this supersedes D-106's read-only
+    photos). An admin may
     add one and correct one of an unlocked visit (`services.admin_save_plant_resource`, T111,
     D-106). A record of a locked visit, or a soft-deleted one, opens read-only (T042)."""
 
@@ -187,7 +189,7 @@ class PlantResourceObservationAdmin(
     raw_id_fields = ["survey_visit", "plant_taxon"]
     actions = [*SyncableAdmin.actions, *ExportActionsMixin.export_actions]
 
-    inlines = [PhotoInline]
+    inlines = [PhotoInline, PhotoAddInline]
     list_display = [
         "observed_at",
         "plant",

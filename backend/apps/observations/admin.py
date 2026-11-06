@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
+from django.core.validators import MinValueValidator
 from django.db import transaction
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -83,27 +84,56 @@ class SendBackForm(forms.Form):
 
 
 class ButterflyObservationAdminForm(forms.ModelForm):
-    """Runs the service's checks for an admin edit (`services.check_admin_edit`), so a locked
-    visit, or a section, taxon or recorder that does not fit, shows as a form error."""
+    """Runs the service's checks for an admin add (`services.check_admin_add`) or edit
+    (`services.check_admin_edit`), so a locked visit, or a section, taxon or recorder that does
+    not fit, shows as a form error. They run in `_post_clean`: `clean()` comes before the form's
+    values are put on the instance, so it would check the old ones (D-106, D-108)."""
 
     behaviour = forms.TypedMultipleChoiceField(
         choices=Behaviour.choices, widget=forms.CheckboxSelectMultiple, required=False
     )
+    clear_zero_flag = forms.BooleanField(
+        label=_("Clear the visit's zero-observation flag"),
+        required=False,
+        help_text=_(
+            "Needed when the visit is confirmed as having no butterflies: ticking it clears "
+            "that confirmation."
+        ),
+    )
     admin_user = None  # set by ButterflyObservationAdmin.get_form
 
-    def clean(self):
-        cleaned_data = super().clean()
-        try:
-            services.check_admin_edit(self.admin_user, self.instance, self.changed_data)
-        except VisitLocked as error:
-            raise forms.ValidationError(str(error.detail)) from error
-        except ValidationError as error:
-            add_validation_errors(
-                self, error, lambda field, rule_id: _explain_rule(self.instance, field, rule_id)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.adding = self.instance._state.adding
+        if "count" in self.fields:  # V01 on the field, not as a table constraint message
+            self.fields["count"].validators.append(
+                MinValueValidator(1, _("The count must be at least 1."))
             )
+        if self.adding:
+            self.fields["survey_visit"].required = True
+            self.fields["recorded_by"].required = False
+            self.fields["recorded_by"].help_text = _("Leave empty: the visit's researcher.")
+
+    def _post_clean(self):
+        super()._post_clean()
+        if self.errors:
+            return  # the instance may be incomplete; the field errors are shown first
+        explain = lambda field, rule_id: _explain_rule(self.instance, field, rule_id)  # noqa: E731
+        try:
+            if self.adding:
+                services.check_admin_add(
+                    self.admin_user,
+                    self.instance,
+                    clear_zero_flag=self.cleaned_data.get("clear_zero_flag", False),
+                )
+            else:
+                services.check_admin_edit(self.admin_user, self.instance, self.changed_data)
+        except VisitLocked as error:
+            self.add_error("survey_visit" if self.adding else None, str(error.detail))
+        except ValidationError as error:
+            add_validation_errors(self, error, explain)
         except APIException as error:
             self.add_error(None, str(error.detail))
-        return cleaned_data
 
 
 def _thumbnail_link(photo, max_width=400):
@@ -119,14 +149,50 @@ def _thumbnail_link(photo, max_width=400):
     )
 
 
+class PhotoInlineForm(forms.ModelForm):
+    """A row of an existing photo: two ticks, applied by `PhotoInlinesMixin.save_formset`. The
+    row itself is never saved by the formset."""
+
+    make_primary = forms.BooleanField(label=_("Make primary"), required=False)
+    remove = forms.BooleanField(label=_("Soft delete"), required=False)
+
+    class Meta:
+        model = Photo
+        fields = []
+
+    def _post_clean(self):
+        pass
+
+
+class PhotoInlineFormSet(forms.BaseInlineFormSet):
+    photo_rows = "existing"
+
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        ticked = [f for f in self.forms if f.cleaned_data.get("make_primary")]
+        if len(ticked) > 1:
+            raise forms.ValidationError(_("Make only one photo primary."))
+        if any(f.cleaned_data.get("remove") for f in ticked):
+            raise forms.ValidationError(_("A photo cannot be made primary and deleted at once."))
+
+
 class PhotoInline(admin.TabularInline):
-    """The live photos of an observation or a plant record, as a read-only summary."""
+    """The live photos of an observation or a plant record. Editable (make primary, soft delete)
+    unless the parent is deleted or its visit locked (T113, D-108)."""
 
     model = Photo
-    fields = ["preview", "upload_status", "is_primary"]
-    readonly_fields = fields
+    form = PhotoInlineForm
+    formset = PhotoInlineFormSet
+    readonly_fields = ["preview", "upload_status", "captured_at", "is_primary"]
     extra = 0
     can_delete = False
+
+    def get_fields(self, request, obj=None):
+        if obj is None or services.photo_parent_read_only(obj):
+            return list(self.readonly_fields)
+        return [*self.readonly_fields, "make_primary", "remove"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(deleted_at__isnull=True).order_by("created_at")
@@ -139,10 +205,125 @@ class PhotoInline(admin.TabularInline):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return obj is not None and not services.photo_parent_read_only(obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class PhotoAddForm(forms.ModelForm):
+    """A row that adds a photo: the file is checked and stored in `clean()` through
+    `services.admin_store_photo_file`; the row is saved by `PhotoInlinesMixin.save_formset`."""
+
+    upload = forms.FileField(
+        label=_("File"),
+        required=False,
+        # Only filters the browser's file dialog; the bytes are checked by the service.
+        widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png"}),
+    )
+    is_primary = forms.BooleanField(label=_("Make primary"), required=False)
+
+    class Meta:
+        model = Photo
+        fields = ["captured_at"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stored = None
+        self.fields["captured_at"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        upload = cleaned_data.get("upload")
+        if upload is None:
+            if cleaned_data.get("captured_at") or cleaned_data.get("is_primary"):
+                self.add_error("upload", _("Choose a file, or clear the other fields of this row."))
+            return cleaned_data
+        try:
+            self.stored = services.admin_store_photo_file(upload)
+        except ValidationError as error:
+            detail = error.detail.get("upload") if isinstance(error.detail, dict) else error.detail
+            self.add_error("upload", " ".join(str(d) for d in detail))
+        except APIException as error:
+            self.add_error("upload", str(error.detail))
+        return cleaned_data
+
+    def _post_clean(self):
+        pass  # the model's constraints would check an instance that has no parent yet
+
+
+class PhotoAddFormSet(forms.BaseInlineFormSet):
+    photo_rows = "add"
+
+
+class PhotoAddInline(admin.TabularInline):
+    """Rows to add photos to an observation or a plant record (T113, D-108)."""
+
+    model = Photo
+    form = PhotoAddForm
+    formset = PhotoAddFormSet
+    verbose_name_plural = _("Add photos")
+    fields = ["upload", "captured_at", "is_primary"]
+    extra = 1
+    can_delete = False
+    # The proxy's limit is 20 MB per request, and a photo may be 15 MB.
+    help_text = _("At most 15 MB per photo, JPEG or PNG. Add large photos one at a time.")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).none()
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.help_text = self.help_text
+        return formset
+
+    def has_add_permission(self, request, obj=None):
+        return obj is None or not services.photo_parent_read_only(obj)
+
+    def has_view_permission(self, request, obj=None):
+        # No empty "Add photos" block on a read-only page.
+        return obj is None or not services.photo_parent_read_only(obj)
+
+    def has_change_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class PhotoInlinesMixin:
+    """Applies the photo inlines' rows through the photo services. List `PhotoInline` before
+    `PhotoAddInline`: removals then run before adds, so "first photo is primary" counts right."""
+
+    def save_formset(self, request, form, formset, change):
+        rows = getattr(formset, "photo_rows", None)
+        if rows is None:
+            return super().save_formset(request, form, formset, change)
+        # Django's change message reads these; the formset's own save() is never called.
+        formset.new_objects, formset.changed_objects, formset.deleted_objects = [], [], []
+        if rows == "existing":
+            for inline_form in formset.forms:
+                if not inline_form.has_changed() or not inline_form.instance.pk:
+                    continue
+                if inline_form.cleaned_data.get("remove"):
+                    services.admin_soft_delete_photo(inline_form.instance, request.user)
+                    formset.deleted_objects.append(inline_form.instance)
+                elif inline_form.cleaned_data.get("make_primary"):
+                    services.admin_make_primary_photo(inline_form.instance, request.user)
+                    formset.changed_objects.append((inline_form.instance, ["is_primary"]))
+            return None
+        for inline_form in formset.forms:
+            if inline_form.stored is None:
+                continue
+            photo = services.admin_add_photo(
+                formset.instance,
+                request.user,
+                inline_form.stored,
+                captured_at=inline_form.cleaned_data.get("captured_at"),
+                make_primary=inline_form.cleaned_data.get("is_primary", False),
+            )
+            formset.new_objects.append(photo)
+        return None
 
 
 @admin.register(Photo)
@@ -187,14 +368,16 @@ class PhotoAdmin(HistoryAdmin, SyncableAdmin):
 
 
 @admin.register(ButterflyObservation)
-class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
+class ButterflyObservationAdmin(
+    PhotoInlinesMixin, ExportActionsMixin, HistoryAdmin, SyncableAdmin, MapAdmin
+):
     """Observations are recorded on the phone. An admin may correct one of an unlocked visit
     (saved through `services.admin_save_observation`, T044). The validation fields are read-only
     here: decisions go through the validation queue (T057), and **Send back to queue** undoes
     one. An observation of a locked visit opens read-only (T042)."""
 
     form = ButterflyObservationAdminForm
-    inlines = [PhotoInline, ValidationEventInline]
+    inlines = [PhotoInline, PhotoAddInline, ValidationEventInline]
     # Never edited in the admin: the project and visit cannot change (T044), the validation fields
     # change only through the validation queue (T057) and the flags are the server's (T056).
     fixed_fields = [
@@ -231,7 +414,33 @@ class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin,
     search_fields = ["taxon__scientific_name", "recorded_by__email", "notes"]
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
-    raw_id_fields = ["taxon", "transect_section", "host_plant_record", "nectar_plant_record"]
+    raw_id_fields = [
+        "survey_visit",
+        "taxon",
+        "transect_section",
+        "host_plant_record",
+        "nectar_plant_record",
+    ]
+    add_fields = [
+        "survey_visit",
+        "recorded_by",
+        "taxon",
+        "count",
+        "observed_at",
+        "geometry",
+        "transect_section",
+        "clear_zero_flag",
+        "identification_confidence",
+        "sex",
+        "life_stage",
+        "behaviour",
+        "microhabitat",
+        "flight_direction_deg",
+        "location_accuracy_m",
+        "notes",
+        "host_plant_record",
+        "nectar_plant_record",
+    ]
     export_dataset = "butterfly_observations"
     actions = [
         *SyncableAdmin.actions,
@@ -242,10 +451,14 @@ class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin,
     ]
 
     def get_fields(self, request, obj=None):
+        if obj is None:
+            return list(self.add_fields)
         # Model order, editable or not; photo_count is computed, so it is added by name.
         return [field.name for field in ButterflyObservation._meta.fields] + ["photo_count"]
 
     def get_readonly_fields(self, request, obj=None):
+        if obj is None:  # the add page: only the bookkeeping fields are fixed
+            return super().get_readonly_fields(request, obj)
         return [*super().get_readonly_fields(request, obj), *self.fixed_fields]
 
     def get_form(self, request, obj=None, **kwargs):
@@ -254,9 +467,16 @@ class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin,
         return form
 
     def save_model(self, request, obj, form, change):
-        services.admin_save_observation(
-            obj, request.user, self.get_change_reason(request), form.changed_data
-        )
+        if change:
+            services.admin_save_observation(
+                obj, request.user, self.get_change_reason(request), form.changed_data
+            )
+        else:  # the reason dialog is only on the change page: an add is always "admin add"
+            services.admin_add_observation(
+                obj,
+                request.user,
+                clear_zero_flag=form.cleaned_data.get("clear_zero_flag", False),
+            )
 
     @admin.display(description=_("Photos"))
     def photo_count(self, observation):
@@ -380,9 +600,6 @@ class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin,
             "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
         }
         return TemplateResponse(request, "admin/validation/send_back.html", context)
-
-    def has_add_permission(self, request):
-        return False
 
     def has_change_permission(self, request, obj=None):
         # An observation of a locked visit opens read-only until T043's Unlock action (T042).

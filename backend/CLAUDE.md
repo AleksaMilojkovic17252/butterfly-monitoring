@@ -58,7 +58,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `admin_save_plant_resource`, `admin_soft_delete_plant_resource` and `admin_restore_plant_resource` (locked-visit and link guards); habitat
   features stay read-only (`ReadOnlyGeometryAdmin`). `PLANT_LINK_ROLES` and `plant_notes_errors` live in `resources/rules.py`. Scopes (T112, D-107): `plant_resources_for` / `habitat_features_for` are the **read** scope (every live record of the user's projects, also for links); `own_plant_resources_for` / `own_habitat_features_for` are the **write** scope (REST PATCH, `build_new_photo`); `observations.services.viewable_photos_for` is the read scope for photo downloads, `photos_for` stays the upload scope. The pulls send every member's rows (every visit of the project in any status; others' plant photos once uploaded). Observations link to a plant record
   (`host_plant_record`, `nectar_plant_record`) and a `Photo` can belong to one (a habitat feature has no photos); `observations.services` imports
-  `resources.services`, never the reverse.
+  `resources.services`, never the reverse. The observation admin has Add (`check_admin_add` / `admin_add_observation`, T113, D-108: the visit's researcher
+  is the recorder and `created_by`), and photos are editable on both pages from the `PhotoInline` / `PhotoAddInline` pair through `admin_add_photo`, `admin_make_primary_photo` and
+  `admin_soft_delete_photo`; bytes are checked by `admin_store_photo_file` → `store_content`, and a photo's owner is the parent's `created_by`.
 - `apps/transects/` also holds `TransectProposal` (T108, D-098): a route the phone recorded, pushed like a plant record (the
   proposer is `created_by`; `status`, the review fields, `created_transect` and `length_m` are server-owned; `guard_proposal` refuses
   any change after a review with `proposal_reviewed`). Its rules are `transects/rules.py`, and `services.accept_proposal` /
