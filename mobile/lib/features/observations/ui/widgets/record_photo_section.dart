@@ -23,6 +23,7 @@ class RecordPhotoSection extends ConsumerStatefulWidget {
     super.key,
     required this.parent,
     required this.photoRequired,
+    this.readOnly = false,
   });
 
   /// The observation or plant record the photos belong to.
@@ -30,6 +31,10 @@ class RecordPhotoSection extends ConsumerStatefulWidget {
 
   /// The species has `photo_required` (rule W01). Always false for a plant.
   final bool photoRequired;
+
+  /// No adding or changing photos, as on a locked visit. A plant record made
+  /// off a visit in a closed project is read-only (T099).
+  final bool readOnly;
 
   @override
   ConsumerState<RecordPhotoSection> createState() => _RecordPhotoSectionState();
@@ -121,7 +126,8 @@ class _RecordPhotoSectionState extends ConsumerState<RecordPhotoSection> {
     final visit = visitId == null
         ? null
         : ref.watch(visitProvider(visitId)).value;
-    final locked = visit != null && visitIsLocked(visit.status);
+    final locked =
+        widget.readOnly || (visit != null && visitIsLocked(visit.status));
 
     return Card(
       child: Padding(

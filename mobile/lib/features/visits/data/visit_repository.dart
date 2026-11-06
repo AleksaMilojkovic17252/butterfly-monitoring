@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/core/sync/sync_repository.dart';
 import 'package:mobile/core/sync/sync_state_repository.dart';
 import 'package:mobile/core/validation/rule_messages.dart';
@@ -496,6 +499,161 @@ class VisitRepository {
         },
       );
     });
+  }
+
+  /// Cancels a visit in progress on this phone only, because an admin closed its
+  /// project (T099, D-104). The server accepts nothing more for the visit, so
+  /// it cannot be finished or cancelled there, and a queued change would only
+  /// be refused. Nothing is queued: everything of this visit that is still
+  /// waiting to be sent is dropped.
+  ///
+  /// - The visit's queue items go, and so do its unsent records (observations,
+  ///   plant records, habitat features and their photos, and track points)
+  ///   along with the photo files.
+  /// - A visit the server never had is deleted. Otherwise it becomes
+  ///   `cancelled` here, and what the server already has stays as it is.
+  /// - A record the server has, with an edit that was never sent, keeps the
+  ///   edit on this phone but is no longer marked as waiting.
+  ///
+  /// Throws a [StateError] when the visit is not in progress or its project is
+  /// not closed. The tracker stops by itself: it only follows a visit in
+  /// progress.
+  Future<void> cancelInClosedProject(String visitId) async {
+    final photoFiles = <String>[];
+    await _db.transaction(() async {
+      final visit = await _inProgressRow(visitId);
+      final project = await (_db.select(
+        _db.projects,
+      )..where((p) => p.id.equals(visit.projectId))).getSingleOrNull();
+      if (project?.closedAt == null) {
+        throw StateError('The project is open: finish or cancel the visit.');
+      }
+
+      // What was recorded on the visit.
+      final observations = await (_db.select(
+        _db.butterflyObservations,
+      )..where((o) => o.surveyVisitId.equals(visitId))).get();
+      final plants = await (_db.select(
+        _db.plantResourceObservations,
+      )..where((p) => p.surveyVisitId.equals(visitId))).get();
+      final habitats = await (_db.select(
+        _db.habitatFeatures,
+      )..where((h) => h.surveyVisitId.equals(visitId))).get();
+      final observationIds = [for (final o in observations) o.id];
+      final plantIds = [for (final p in plants) p.id];
+      final photos =
+          await (_db.select(_db.photos)..where(
+                (p) =>
+                    p.observationId.isIn(observationIds) |
+                    p.plantResourceId.isIn(plantIds),
+              ))
+              .get();
+
+      // Nothing of the visit is sent any more.
+      Future<void> dropQueue(String type, List<String> ids) {
+        final query = _db.delete(_db.syncQueue)
+          ..where((q) => q.entityType.equals(type) & q.entityId.isIn(ids));
+        return query.go();
+      }
+
+      await dropQueue(_entityType, [visitId]);
+      await dropQueue('survey_track_point', [visitId]);
+      await dropQueue('butterfly_observation', observationIds);
+      await dropQueue('plant_resource_observation', plantIds);
+      await dropQueue('habitat_feature', [for (final h in habitats) h.id]);
+      await dropQueue('photo', [for (final p in photos) p.id]);
+
+      // Records the server never had go. With a visit the server never had,
+      // that is all of them.
+      final serverHasVisit = visit.serverVersion != null;
+      bool unsent(int? serverVersion) =>
+          !serverHasVisit || serverVersion == null;
+      final unsentObservations = [
+        for (final o in observations)
+          if (unsent(o.serverVersion)) o.id,
+      ];
+      final unsentPlants = [
+        for (final p in plants)
+          if (unsent(p.serverVersion)) p.id,
+      ];
+      final unsentHabitats = [
+        for (final h in habitats)
+          if (unsent(h.serverVersion)) h.id,
+      ];
+      final unsentPhotos = [
+        for (final p in photos)
+          if (unsent(p.serverVersion) ||
+              unsentObservations.contains(p.observationId) ||
+              unsentPlants.contains(p.plantResourceId))
+            p,
+      ];
+      photoFiles.addAll([for (final p in unsentPhotos) p.localPath]);
+      await (_db.delete(
+        _db.photos,
+      )..where((p) => p.id.isIn([for (final p in unsentPhotos) p.id]))).go();
+      await (_db.delete(
+        _db.butterflyObservations,
+      )..where((o) => o.id.isIn(unsentObservations))).go();
+      await (_db.delete(
+        _db.plantResourceObservations,
+      )..where((p) => p.id.isIn(unsentPlants))).go();
+      await (_db.delete(
+        _db.habitatFeatures,
+      )..where((h) => h.id.isIn(unsentHabitats))).go();
+
+      // Track points that were not sent. Sent ones stay: they are the route.
+      await (_db.delete(_db.surveyTrackPoints)..where(
+            (t) =>
+                t.surveyVisitId.equals(visitId) &
+                t.syncStatus.equals(SyncStatus.pending.name),
+          ))
+          .go();
+
+      // What is left of the visit is no longer waiting to be sent.
+      const synced = Value(SyncStatus.synced);
+      await (_db.update(_db.butterflyObservations)
+            ..where((o) => o.surveyVisitId.equals(visitId)))
+          .write(const ButterflyObservationsCompanion(syncStatus: synced));
+      await (_db.update(_db.plantResourceObservations)
+            ..where((p) => p.surveyVisitId.equals(visitId)))
+          .write(const PlantResourceObservationsCompanion(syncStatus: synced));
+      await (_db.update(_db.habitatFeatures)
+            ..where((h) => h.surveyVisitId.equals(visitId)))
+          .write(const HabitatFeaturesCompanion(syncStatus: synced));
+      await (_db.update(_db.photos)..where(
+            (p) =>
+                p.observationId.isIn(observationIds) |
+                p.plantResourceId.isIn(plantIds),
+          ))
+          .write(const PhotosCompanion(syncStatus: synced));
+
+      if (serverHasVisit) {
+        await (_db.update(
+          _db.surveyVisits,
+        )..where((v) => v.id.equals(visitId))).write(
+          SurveyVisitsCompanion(
+            status: const Value('cancelled'),
+            cancelReason: const Value('other'),
+            endedAt: Value(DateTime.now().toUtc()),
+            pausedAt: const Value(null),
+            syncStatus: synced,
+          ),
+        );
+      } else {
+        await (_db.delete(
+          _db.surveyVisits,
+        )..where((v) => v.id.equals(visitId))).go();
+      }
+    });
+
+    // After the commit, so a failed delete cannot undo the cancel.
+    for (final path in photoFiles) {
+      try {
+        await File(path).delete();
+      } on FileSystemException {
+        // Already gone: nothing to clean up.
+      }
+    }
   }
 
   /// Records a visit as not conducted (T041): planned but never walked, so

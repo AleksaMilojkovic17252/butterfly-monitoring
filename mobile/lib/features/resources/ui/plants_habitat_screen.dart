@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/resources/ui/widgets/habitat_feature_tile.dart';
@@ -39,6 +40,8 @@ class _PlantsHabitatScreenState extends ConsumerState<PlantsHabitatScreen> {
   Widget build(BuildContext context) {
     final plants = ref.watch(plantRecordsProvider(_projectId));
     final habitats = ref.watch(habitatFeaturesProvider(_projectId));
+    // A closed project takes no new plant or habitat records (T099).
+    final closed = ref.watch(projectClosedProvider(_projectId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Plants & habitat')),
@@ -50,8 +53,10 @@ class _PlantsHabitatScreenState extends ConsumerState<PlantsHabitatScreen> {
               children: [
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () =>
-                        context.push('/projects/$_projectId/plants/new'),
+                    onPressed: closed
+                        ? null
+                        : () =>
+                              context.push('/projects/$_projectId/plants/new'),
                     icon: const Icon(Icons.local_florist_outlined),
                     label: const Text('Add plant'),
                   ),
@@ -59,8 +64,11 @@ class _PlantsHabitatScreenState extends ConsumerState<PlantsHabitatScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton.tonalIcon(
-                    onPressed: () =>
-                        context.push('/projects/$_projectId/habitats/new'),
+                    onPressed: closed
+                        ? null
+                        : () => context.push(
+                            '/projects/$_projectId/habitats/new',
+                          ),
                     icon: const Icon(Icons.terrain_outlined),
                     label: const Text('Add habitat'),
                   ),

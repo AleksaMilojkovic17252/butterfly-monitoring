@@ -31,13 +31,13 @@ from apps.observations.models import (
     ValidationStatus,
 )
 from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
-from apps.projects.services import is_member, projects_for
+from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.resources.models import ResourceType
 from apps.resources.services import plant_resources_for
 from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
-from apps.sync.handlers import current_push_reason, soft_delete_pushed
+from apps.sync.handlers import current_client_time, current_push_reason, soft_delete_pushed
 from apps.transects.services import nearest_section_id
 from apps.validation import flags
 
@@ -138,6 +138,7 @@ def build_new_observation(user, observation_id, data):
 
     observation = ButterflyObservation(id=observation_id, created_by=user, **values)
     _check_context(user, observation)
+    ensure_project_open(observation.project, current_client_time())  # T099, D-104
     _check_recorder(user, observation)
     _check_plant_links(user, observation, PLANT_LINK_FIELDS)
     if observation.transect_section_id is None:
@@ -233,11 +234,13 @@ def create_observation(user, observation_id, data):
 
 
 def update_observation(user, observation, data):
+    ensure_project_open(observation.project, None)  # REST has no push time (T099, D-104)
     apply_observation_changes(user, observation, data)
     return save_observation(observation, user, REST_REASON)
 
 
 def remove_observation(user, observation):
+    ensure_project_open(observation.project, None)  # REST has no push time (T099, D-104)
     delete_observation(user, observation, REST_REASON)
 
 
@@ -526,12 +529,14 @@ def build_new_photo(user, photo_id, data):
         if not observations_for(user).filter(pk=observation.pk).exists():
             raise exceptions.ValidationError({"observation": ["This observation was not found."]})
         _lock_visit(observation)
+        ensure_project_open(observation.project, current_client_time())  # T099, D-104
     else:
         if not plant_resources_for(user).filter(pk=plant.pk).exists():
             raise exceptions.ValidationError(
                 {"plant_resource": ["This plant record was not found."]}
             )
         _lock_visit(plant)
+        ensure_project_open(plant.project, current_client_time())  # T099, D-104
 
     if values["mime_type"] not in PHOTO_MIME_TYPES:
         raise exceptions.ValidationError(

@@ -19,7 +19,7 @@ from rest_framework import exceptions, serializers
 
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
-from apps.projects.services import is_member, projects_for
+from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.resources import rules
 from apps.resources.models import HabitatFeature, PlantResourceObservation
 from apps.resources.serializers import (
@@ -29,7 +29,7 @@ from apps.resources.serializers import (
 from apps.surveys.models import SurveyVisit
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
-from apps.sync.handlers import current_push_reason, soft_delete_pushed
+from apps.sync.handlers import current_client_time, current_push_reason, soft_delete_pushed
 
 REST_REASON = "REST API"  # history_change_reason of changes made through the REST endpoints
 
@@ -58,6 +58,7 @@ def build_new_plant_resource(user, plant_id, data):
     serializer.is_valid(raise_exception=True)
     plant = PlantResourceObservation(id=plant_id, created_by=user, **serializer.validated_data)
     _check_context(user, plant)
+    ensure_project_open(plant.project, current_client_time())  # T099, D-104
     return plant
 
 
@@ -106,6 +107,7 @@ def create_plant_resource(user, plant_id, data):
 
 
 def update_plant_resource(user, plant, data):
+    ensure_project_open(plant.project, None)  # REST has no push time (T099, D-104)
     apply_plant_resource_changes(user, plant, data)
     return save_plant_resource(plant, user, REST_REASON)
 
@@ -169,6 +171,7 @@ def build_new_habitat_feature(user, feature_id, data):
     _check_project(user, feature)
     _check_codelists(feature)
     _check_visit(user, feature)
+    ensure_project_open(feature.project, current_client_time())  # T099, D-104
     return feature
 
 
@@ -204,6 +207,7 @@ def create_habitat_feature(user, feature_id, data):
 
 
 def update_habitat_feature(user, feature, data):
+    ensure_project_open(feature.project, None)
     apply_habitat_feature_changes(user, feature, data)
     return save_habitat_feature(feature, user, REST_REASON)
 

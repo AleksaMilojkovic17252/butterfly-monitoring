@@ -51,6 +51,15 @@ class ProjectRepository {
     return query.watchSingleOrNull();
   }
 
+  /// Whether the project is closed (T099). A one-off read for code that runs
+  /// on a tap, where a watched provider would not be listened to.
+  Future<bool> isClosed(String id) async {
+    final query = _db.select(_db.projects)
+      ..where((p) => p.id.equals(id) & p.deletedAt.isNull());
+    final project = await query.getSingleOrNull();
+    return project?.closedAt != null;
+  }
+
   /// Live number of transects of the project on this phone (soft-deleted ones
   /// left out). Emits again whenever the transect table changes.
   Stream<int> watchTransectCount(String projectId) {
@@ -134,6 +143,7 @@ class ProjectRepository {
       defaultCrs: Value(json['default_crs'] as int),
       active: Value(json['active'] as bool),
       area: Value(area == null ? null : jsonEncode(area)),
+      closedAt: Value(_parseDate(json['closed_at'])),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: Value(_parseDate(json['deleted_at'])),
     );

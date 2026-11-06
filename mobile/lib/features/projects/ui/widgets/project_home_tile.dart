@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// One tile of the project home grid: an icon (with an optional count) and a
-/// label. A tile without [onTap] is drawn disabled, with "Coming later".
+/// label. A tile without [onTap] is drawn disabled, with "Coming later" or
+/// the [disabledText] it was given (an empty one shows no line).
 class ProjectHomeTile extends StatelessWidget {
   const ProjectHomeTile({
     super.key,
@@ -9,6 +10,7 @@ class ProjectHomeTile extends StatelessWidget {
     required this.label,
     this.badge = 0,
     this.onTap,
+    this.disabledText = 'Coming later',
   });
   final IconData icon;
   final String label;
@@ -19,6 +21,10 @@ class ProjectHomeTile extends StatelessWidget {
   /// Opens the tile's screen. Null means the screen is not built yet: the
   /// tile is greyed out, has no ripple and says "Coming later" (T105).
   final VoidCallback? onTap;
+
+  /// The line shown under a disabled tile. A closed project's tiles pass ''
+  /// (greyed out, no line, T099).
+  final String disabledText;
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +51,9 @@ class ProjectHomeTile extends StatelessWidget {
           textAlign: TextAlign.center,
           style: disabled ? TextStyle(color: fadedColor) : null,
         ),
-        if (disabled)
+        if (disabled && disabledText.isNotEmpty)
           Text(
-            'Coming later',
+            disabledText,
             style: textTheme.labelSmall?.copyWith(color: fadedColor),
           ),
       ],
@@ -60,7 +66,7 @@ class ProjectHomeTile extends StatelessWidget {
           ? Semantics(
               button: true,
               enabled: false,
-              label: '$label, coming later',
+              label: disabledText.isEmpty ? label : '$label, $disabledText',
               excludeSemantics: true,
               child: content,
             )

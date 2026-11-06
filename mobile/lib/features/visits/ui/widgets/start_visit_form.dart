@@ -6,6 +6,7 @@ import 'package:mobile/core/validation/protocol_window.dart';
 import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/core/validation/weather_check.dart';
 import 'package:mobile/features/auth/domain/user_profile.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/ui/widgets/protocol_summary.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
@@ -297,13 +298,19 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     ].nonNulls.toList();
     final draft = _openedDraft;
     final scheme = Theme.of(context).colorScheme;
+    // A closed project takes no new or changed data, drafts and "Not conducted"
+    // included (T099). This also covers a deep link or an old draft.
+    final projectClosed = ref.watch(
+      projectClosedProvider(widget.transect.projectId),
+    );
+    final blocked = _saving || projectClosed;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Start visit · ${widget.transect.code}'),
         actions: [
           TextButton(
-            onPressed: _saving ? null : _recordNotConducted,
+            onPressed: blocked ? null : _recordNotConducted,
             child: const Text('Not conducted…'),
           ),
         ],
@@ -491,24 +498,29 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 52),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 52),
+                      ),
+                      onPressed: blocked ? null : _saveDraft,
+                      child: const Text('Save draft'),
+                    ),
                   ),
-                  onPressed: _saving ? null : _saveDraft,
-                  child: const Text('Save draft'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Start'),
-                  onPressed: _saving ? null : _start,
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Start'),
+                      onPressed: blocked ? null : _start,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

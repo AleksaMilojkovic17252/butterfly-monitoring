@@ -134,7 +134,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T096 | [#113](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/113) | PostGIS vs MobilityDB comparison | P2 | must | T087, T088 | 1.5 d | todo |
 | T097 | [#114](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/114) | Standards comparison write-up | P2 | must | T095 | 1 d | todo |
 | T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
-| T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | todo |
+| T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | done |
 | T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | done |
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
@@ -1873,7 +1873,7 @@ Shift + click, which Django's widget documents as vertex delete, added a vertex 
 Out of scope: merging or splitting polygons, snapping, topology checks. Complex edits stay in QGIS plus re-import.
 
 ### T099 · Close a project: no new visits after it is closed
-[#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) · E02 · added 2026-10-27 as a follow-up to T042 · P1 · should · labels: `backend`, `admin`, `mobile`, `should` · est. 1 d · **todo**
+[#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) · E02 · added 2026-10-27 as a follow-up to T042 · P1 · should · labels: `backend`, `admin`, `mobile`, `should` · est. 1 d · **done**
 
 Depends on: T015, T034, T035
 
@@ -1881,12 +1881,16 @@ Why: nothing stops a researcher from starting a visit in last year's project. Ou
 T055) and the visit lock (T042) covers single reviewed visits, not projects. An admin needs to close a finished project so it takes
 no new visits, without deleting it or removing its members.
 
-- [ ] `Project.closed_at` (nullable `timestamptz`) and `closed_by`, server-owned, audited (history reason = the admin's reason), included in the projects API and the project pull. Django migration and Drift column.
-- [ ] Django admin: **Close project** and **Reopen project** actions with an intermediate form and a required reason (at least 10 characters); the project list shows "Closed" and has a filter for it.
-- [ ] Push `create` and `POST /api/v1/survey-visits` of a new visit in a closed project are rejected with code `project_closed`. Decide in the plan, recommended yes: a visit whose `started_at` is before `closed_at` is still accepted, so a walk started offline before the close is not lost when it syncs later (this trusts the phone's clock).
-- [ ] Visits that already exist are not affected: they can still be finished, edited and synced (track points, observations), following the visit lock (T042).
-- [ ] App: the project list and project home show the project as closed; **Start visit** (tile, transect detail, start form) is disabled with "This project is closed"; a visit in progress can still be finished.
-- [ ] The sync screen names `project_closed` (`syncErrorMessage`).
+- [x] `Project.closed_at` (nullable `timestamptz`) and `closed_by`, server-owned, audited (history reason = the admin's reason), included in the projects API and the project pull. Django migration and Drift column. Checked: `0008_historicalproject_closed_at_and_more`, `GET /projects` and the pull show both fields, history keeps the reason (D-104). Drift schema 17.
+- [x] Django admin: **Close project** and **Reopen project** actions with an intermediate form and a required reason (at least 10 characters); the project list shows "Closed" and has a filter for it. Checked with a 5-character and a longer reason, the Closed column and filter.
+- [x] Push `create` and `POST /api/v1/survey-visits` of a new visit in a closed project are rejected with code `project_closed`. Decide in the plan, recommended yes: a visit whose `started_at` is before `closed_at` is still accepted, so a walk started offline before the close is not lost when it syncs later (this trusts the phone's clock). Checked by push with `client_created_at` before and after the close. The grace time is the mutation's `client_created_at`, so a draft saved before the close still syncs.
+- [x] ~~Visits that already exist are not affected~~: they can still be finished, edited and synced (track points, observations), following the visit lock (T042). **Replaced at the developer's request:** a closed project accepts no new or changed data, existing visits included; a visit in progress is cancelled on the phone (D-104 points 2, 3 and 8).
+- [x] App: the project list and project home show the project as closed; **Start visit** (tile, transect detail, start form) is disabled with "This project is closed"; a visit in progress can still be finished. **Changed at the developer's request:** the disabled controls show no text, and a visit in progress is cancelled on the phone instead of finished. **Not yet run on a phone.**
+- [x] The sync screen names `project_closed` (`syncErrorMessage`). `syncErrorMessage` has a `project_closed` case.
+
+VERIFY (phone, T099): close a project, sync, then check the greyed-out Start visit, Free observation, route and replacement items, read-only plant, habitat and observation screens, and Cancel visit on a visit that was in progress.
+
+Note (T099, 2026-11-06): widened at the developer's request. A closed project accepts no new and no changed data from the app or REST (D-104): not just new visits but also free observations, plants, habitats, proposals, photos and every edit or delete, existing visits included. Changes the phone made before the close still sync. Django admin work (validation, review, lock) is unaffected. This replaces criterion 4 ("visits that already exist are not affected").
 
 Out of scope: closing automatically at the season end (an admin closes it); exports and pygeoapi are unaffected. Reopen is the only way
 back; closing deletes nothing and keeps all members.

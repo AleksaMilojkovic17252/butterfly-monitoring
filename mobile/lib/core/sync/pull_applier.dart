@@ -321,6 +321,7 @@ class PullApplier {
       active: Value(json['active'] as bool),
       taxonListVersionId: Value(json['taxon_list_version'] as String?),
       area: Value(area == null ? null : jsonEncode(area)),
+      closedAt: Value(_dateOrNull(json['closed_at'])),
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),
     );

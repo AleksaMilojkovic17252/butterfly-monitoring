@@ -26,6 +26,9 @@ String syncErrorMessage(String? lastError) {
       'visit_locked' =>
         'An admin has locked this visit, so this change was not accepted. '
             'Discard it, or retry after the visit is unlocked.',
+      'project_closed' =>
+        'An admin has closed this project, so it accepts no new or changed '
+            'data. Discard this change, or ask an admin to reopen the project.',
       'proposal_reviewed' =>
         'An admin has already reviewed this proposal, so this change was not '
             'accepted.',

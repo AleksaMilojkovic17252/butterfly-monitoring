@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_provider.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/projects/domain/project_stats.dart';
 import 'package:mobile/features/proposals/data/route_recording_repository.dart';
 import 'package:mobile/features/proposals/ui/draw_proposal_entry.dart';
@@ -123,6 +124,8 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
   /// a visit is in progress: one GPS stream at a time (D-087).
   Widget _proposalsMenu() {
     final visitRunning = ref.watch(deviceVisitInProgressProvider).value != null;
+    // A closed project takes no new proposals; My proposals stays (T099).
+    final closed = ref.watch(projectClosedProvider(widget.projectId));
     final base = '/projects/${widget.projectId}/proposals';
     return PopupMenuButton<String>(
       tooltip: 'Route proposals',
@@ -134,15 +137,19 @@ class _TransectListScreenState extends ConsumerState<TransectListScreen> {
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'record',
-          enabled: !visitRunning,
+          enabled: !visitRunning && !closed,
           child: Text(
-            visitRunning
+            visitRunning && !closed
                 ? 'Propose a route (finish the visit in progress first)'
                 : 'Propose a route',
           ),
         ),
         // Drawing needs no GPS, so it is allowed during a visit.
-        const PopupMenuItem(value: 'draw', child: Text('Draw a route on map')),
+        PopupMenuItem(
+          value: 'draw',
+          enabled: !closed,
+          child: const Text('Draw a route on map'),
+        ),
         const PopupMenuItem(value: 'list', child: Text('My proposals')),
       ],
     );

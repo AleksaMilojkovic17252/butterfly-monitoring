@@ -3,6 +3,8 @@ from zoneinfo import available_timezones
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.db.models.fields.files import FieldFile
 from django.http import FileResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
@@ -17,9 +19,11 @@ from apps.exports import geopackage, service
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 from apps.projects.services import (
     AreaFileError,
+    close_project,
     inspect_basemap,
     multipolygon_from_file,
     projects_for,
+    reopen_project,
 )
 
 
@@ -175,6 +179,33 @@ class ProjectForm(forms.ModelForm):
         return basemap
 
 
+class ProjectReasonForm(forms.Form):
+    """The reason the Close and Reopen actions ask for. It becomes the project's history reason."""
+
+    reason = forms.CharField(
+        label=_("Reason"),
+        min_length=10,
+        strip=True,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("At least 10 characters. It is kept in the project's history."),
+    )
+
+
+class ClosedFilter(admin.SimpleListFilter):
+    title = _("closed")
+    parameter_name = "closed"
+
+    def lookups(self, request, model_admin):
+        return [("yes", _("Yes")), ("no", _("No"))]
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(closed_at__isnull=False)
+        if self.value() == "no":
+            return queryset.filter(closed_at__isnull=True)
+        return queryset
+
+
 class ProjectMembershipInline(admin.TabularInline):
     model = ProjectMembership
     extra = 1
@@ -185,8 +216,8 @@ class ProjectMembershipInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
-    list_display = ["name", "owner", "start_date", "end_date", "active"]
-    list_filter = ["active"]
+    list_display = ["name", "owner", "start_date", "end_date", "active", "closed"]
+    list_filter = ["active", ClosedFilter]
     search_fields = ["name"]
     autocomplete_fields = ["owner"]
     form = ProjectForm
@@ -199,6 +230,8 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "end_date",
         "default_crs",
         "active",
+        "closed_at",
+        "closed_by",
         "area",
         "taxon_list_version",
         "basemap",
@@ -210,7 +243,7 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         "updated_at",
         "updated_by",
     ]
-    readonly_fields = ["basemap_size", "basemap_sha256"]
+    readonly_fields = ["closed_at", "closed_by", "basemap_size", "basemap_sha256"]
     inlines = [ProjectProtocolInline, ProjectMembershipInline]
     gis_widget = EditableMapWidget
     gis_widget_kwargs = {
@@ -243,7 +276,7 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
             "project list. Optional; observations outside it are flagged."
         ),
     }
-    actions = [*SyncableAdmin.actions, "import_area"]
+    actions = [*SyncableAdmin.actions, "import_area", "close_selected", "reopen_selected"]
     change_form_template = "admin/projects/project/change_form.html"
 
     def get_urls(self):
@@ -312,6 +345,81 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
             "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
         }
         return TemplateResponse(request, "admin/projects/import_area.html", context)
+
+    @admin.display(boolean=True, description=_("Closed"), ordering="closed_at")
+    def closed(self, obj):
+        return obj.closed_at is not None
+
+    @admin.action(description=_("Close project…"), permissions=["change"])
+    def close_selected(self, request, queryset):
+        return self._ask_for_reason(
+            request,
+            queryset,
+            "close_selected",
+            _("Close project"),
+            _(
+                "Closing stops all new and changed data in the selected projects: no new visits, "
+                "observations, plants, habitats or route proposals, and no edits or deletes, "
+                "visits in progress included. What a phone recorded before the close still "
+                "syncs. Admin work here is not affected. Members and data are kept. Reopen "
+                "undoes it, and its reason is kept in the history."
+            ),
+            close_project,
+            _("Closed %(count)d project(s)."),
+        )
+
+    @admin.action(description=_("Reopen project…"), permissions=["change"])
+    def reopen_selected(self, request, queryset):
+        return self._ask_for_reason(
+            request,
+            queryset,
+            "reopen_selected",
+            _("Reopen project"),
+            _("Reopening lets the selected projects take new visits again."),
+            reopen_project,
+            _("Reopened %(count)d project(s)."),
+        )
+
+    def _ask_for_reason(self, request, queryset, action, title, intro, change, done_message):
+        """The page between the list and the change: the selected projects and a reason form.
+
+        The list posts the action; this page posts back with "apply". Each project is locked and
+        changed on its own, so one refused project does not stop the others.
+        """
+        ids = list(queryset.filter(pk__in=projects_for(request.user)).values_list("pk", flat=True))
+        projects = list(Project.objects.filter(pk__in=ids).order_by("name"))
+        if not projects:
+            self.message_user(request, _("Select at least one project."), messages.ERROR)
+            return None
+        form = ProjectReasonForm(request.POST if "apply" in request.POST else None)
+        if "apply" in request.POST and form.is_valid():
+            done, refused = 0, []
+            for pk in ids:
+                try:
+                    with transaction.atomic():
+                        project = Project.objects.select_for_update().get(pk=pk)
+                        change(project, request.user, form.cleaned_data["reason"])
+                    done += 1
+                except DjangoValidationError as error:
+                    refused.append(" ".join(error.messages))
+            if done or not refused:
+                self.message_user(request, done_message % {"count": done})
+            if refused:
+                self.message_user(
+                    request, _("Not changed: %(p)s") % {"p": "; ".join(refused)}, messages.ERROR
+                )
+            return None
+        context = {
+            **self.admin_site.each_context(request),
+            "title": title,
+            "intro": intro,
+            "opts": self.model._meta,
+            "projects": projects,
+            "form": form,
+            "action": action,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        return TemplateResponse(request, "admin/projects/project/project_reason.html", context)
 
     def get_changeform_initial_data(self, request):
         return {"owner": request.user.pk}

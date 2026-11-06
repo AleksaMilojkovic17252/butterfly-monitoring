@@ -59,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -206,6 +206,15 @@ class AppDatabase extends _$AppDatabase {
         // pull skipped them and moved its cursor past them. Start every pull
         // from the beginning, as from13To14 did. Rows waiting in the queue are
         // not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
+      },
+      from16To17: (m, schema) async {
+        await m.addColumn(schema.project, schema.project.closedAt);
+        // A project closed before this version has an old server_version, so
+        // pull would never send closed_at. Start every pull from the beginning,
+        // as from15To16 did. Rows waiting in the queue are not touched.
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );

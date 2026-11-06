@@ -22,8 +22,8 @@ from rest_framework.renderers import JSONRenderer
 from apps.accounts.services import is_admin
 from apps.core.exceptions import error_body
 from apps.core.history import save_with_reason
-from apps.projects.services import projects_for
-from apps.sync.handlers import push_reason, save_pushed
+from apps.projects.services import ensure_project_open, projects_for
+from apps.sync.handlers import push_client_time, push_reason, save_pushed
 from apps.sync.models import ConflictStatus, MutationStatus, SyncConflict, SyncMutation
 from apps.sync.registry import ENTITIES, entity_for
 from apps.sync.serializers import (
@@ -259,7 +259,8 @@ def _push_one(user, device_id, raw):
         # error is caught outside this block (the block rolls back to the savepoint on the way
         # out), so the handlers below sit outside the `with`.
         with transaction.atomic():
-            outcome = _apply(user, mutation)
+            with push_client_time(mutation["client_created_at"]):
+                outcome = _apply(user, mutation)
     except HANDLER_ERRORS as exc:
         # Anything else is a bug: it propagates, the whole batch rolls back and returns 500, and
         # the phone retries later. Storing it as a rejection would hide it.
@@ -390,6 +391,9 @@ def _apply(user, mutation):
         if operation == "delete":
             return Outcome(MutationStatus.APPLIED, instance.server_version)
         raise PushError("deleted", f"{entity.entity_type} {entity_id} was deleted.")
+    # A closed project accepts no change made after the close: no update, delete or resent create
+    # (T099, D-104). The creates and track point batches check in their own handlers.
+    ensure_project_open(entity.push.project_of(instance), mutation["client_created_at"])
     if entity.push.guard is not None and (operation != "create" or entity.push.guard_resent_create):
         # Before the merge: a locked visit is rejected, not turned into a conflict (T042).
         entity.push.guard(user, instance)

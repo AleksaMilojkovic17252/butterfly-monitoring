@@ -16,6 +16,11 @@ class Projects extends Table {
   /// Study area as a GeoJSON MultiPolygon, or null.
   TextColumn get area => text().nullable()();
 
+  /// When an admin closed the project (UTC), or null while it is open (T099).
+  /// A closed project takes no new or changed data. The server's `closed_by` is
+  /// not kept.
+  DateTimeColumn get closedAt => dateTime().nullable()();
+
   IntColumn get serverVersion => integer().nullable()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 

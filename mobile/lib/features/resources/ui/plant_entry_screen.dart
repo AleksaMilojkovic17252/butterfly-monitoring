@@ -6,6 +6,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/validation/plant_rules.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
@@ -29,7 +30,8 @@ import 'package:mobile/features/visits/domain/visit_status.dart';
 /// - New record: [plantId] is null. [visitId] is the visit it is recorded on
 ///   (null from the project's tile). With [linkRole] it is made from a butterfly
 ///   observation's link: the relation is preset and restricted.
-/// - Edit: [plantId] is the record. A locked visit makes it read-only.
+/// - Edit: [plantId] is the record. A locked visit makes it read-only, and
+///   so does a closed project (T099).
 ///
 /// Opened by the router at `/projects/:id/plants/new` and `.../plants/:plantId`,
 /// and with `Navigator.push` from the link picker, which sits in a bottom sheet
@@ -230,7 +232,7 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
 
   /// The photos part of the form. A new record holds drafts until Save; a saved
   /// one adds and removes photos right away.
-  Widget _photoSlot() {
+  Widget _photoSlot({bool readOnly = false}) {
     final opened = _opened;
     if (opened != null) {
       return RecordPhotoSection(
@@ -240,6 +242,7 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
           surveyVisitId: opened.surveyVisitId,
         ),
         photoRequired: false,
+        readOnly: readOnly,
       );
     }
     return Column(
@@ -388,6 +391,11 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
         ? null
         : ref.watch(visitProvider(visitId)).value;
     final locked = visit != null && visitIsLocked(visit.status);
+    // A closed project accepts no changed data (T099, D-104): the form is
+    // read-only, with no Save or Delete.
+    final closedRecord =
+        opened != null && ref.watch(projectClosedProvider(widget.projectId));
+    final readOnly = locked || closedRecord;
 
     final role = widget.linkRole;
     final title = opened != null
@@ -403,7 +411,7 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
         appBar: AppBar(
           title: Text(title),
           actions: [
-            if (opened != null && !locked)
+            if (opened != null && !readOnly)
               IconButton(
                 tooltip: 'Delete',
                 icon: const Icon(Icons.delete_outline),
@@ -434,15 +442,15 @@ class _PlantEntryViewState extends ConsumerState<_PlantEntryView> {
                   projectId: widget.projectId,
                   input: _input,
                   onChanged: (input) => setState(() => _input = input),
-                  photos: _photoSlot(),
+                  photos: _photoSlot(readOnly: closedRecord),
                   linkRole: role,
-                  readOnly: locked,
+                  readOnly: readOnly,
                   editing: opened != null,
                   locating: _locating,
                   locationMessage: _locationMessage,
                 ),
               ),
-              if (!locked) ...[
+              if (!readOnly) ...[
                 const Divider(height: 1),
                 Padding(
                   padding: const EdgeInsets.all(16),

@@ -19,12 +19,12 @@ from rest_framework import exceptions, serializers
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
 from apps.environment import services as environment_services
-from apps.projects.services import is_member, projects_for
+from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.surveys import coverage, rules
 from apps.surveys.models import CancelReason, SurveyTrackPoint, SurveyVisit, VisitStatus
 from apps.surveys.serializers import SurveyTrackPointSyncSerializer, SurveyVisitSyncSerializer
 from apps.surveys.state import InvalidTransition, ensure_unlocked, move_to, transition
-from apps.sync.handlers import current_push_reason, insert_batch
+from apps.sync.handlers import current_client_time, current_push_reason, insert_batch
 from apps.validation import flags
 
 REST_REASON = "REST API"  # history_change_reason of changes made through /survey-visits
@@ -86,6 +86,7 @@ def build_new_visit(user, visit_id, data):
 
     visit = SurveyVisit(id=visit_id, created_by=user, **values)
     _check_project_and_transect(user, visit)
+    ensure_project_open(visit.project, current_client_time())  # T099, D-104
     _check_observer(user, visit)
     move_to(visit, target_status, user, reason=cancel_reason)
     if target_status != VisitStatus.CANCELLED and cancel_reason:
@@ -180,6 +181,7 @@ def create_visit(user, visit_id, data):
 
 
 def update_visit(user, visit, data):
+    ensure_project_open(visit.project, None)  # REST has no push time (T099, D-104)
     apply_visit_changes(user, visit, data)
     set_distance_if_finished(visit)
     return save_visit(visit, user, REST_REASON)
@@ -188,6 +190,7 @@ def update_visit(user, visit, data):
 def complete_visit(user, visit, data):
     """Finish a visit: in_progress -> completed, with any end fields in `data` in the same save."""
     ensure_unlocked(visit)  # before the status check, so a locked visit says why
+    ensure_project_open(visit.project, None)
     if visit.status != VisitStatus.IN_PROGRESS:
         raise InvalidTransition(f"Only a visit in progress can be completed, not {visit.status}.")
     changes = {**data, "status": VisitStatus.COMPLETED}
@@ -227,6 +230,7 @@ def push_track_points(user, visit_id, rows):
         if not is_member(user, visit.project_id):
             raise exceptions.PermissionDenied("You are not a member of this visit's project.")
     ensure_unlocked(visit)
+    ensure_project_open(visit.project, current_client_time())
 
     serializer = SurveyTrackPointSyncSerializer(data=rows, many=True)
     if not serializer.is_valid():

@@ -2251,3 +2251,36 @@ with the planned geometry types; `observed_at` and other timestamps DateTime; bo
 (Showcase: 4 / 22 / 1400 / 74 / 148 / 0; Niš: plants 11 + 3 = 14, habitat 5 + 2 + 2 = 9, visits 43, validation 7; User Manual: plants 4 + 2 = 6, habitat 4). `survey_visits.outcome`
 counts equal the CSV's, with the CSV's `NA` as NULL. `from=2100-01-01` gives empty observation and visit layers and the same transects. **QGIS:** the developer opened the file; all layers and attributes are present (screenshot not taken).
 **Not handled.** Track points; `metadata.json` in the file; `na`/`excel`; a progress indicator for big projects (built in the request). Known limits from the review: layers are separate `ogr2ogr` connections, so a sync push between two layers can make them differ slightly; the DSN is built from NAME/HOST/PORT/USER only (no `OPTIONS`/`sslmode`, an empty HOST fails); a cancelled visit with a NULL `cancel_reason` would read `cancelled:` here and `cancelled:None` in the CSV (none exist).
+
+## D-104 · Close a project (T099): no new or changed data after `closed_at`
+2026-11-06 · accepted · T099, *builds on D-049 (pull scope) and the visit lock of T042*
+An admin closes a finished project in the Django admin. A closed project accepts **no new and no changed data** from the app or the REST API: no new visit, observation, plant record, habitat
+feature, route proposal or photo, and no update or delete of anything in it, existing visits and their track points included. Nothing is deleted and the members stay. To change anything, an admin
+reopens the project with a reason, which is kept in its history. Reopen is the only way back.
+1. **Fields.** `Project.closed_at` (nullable `timestamptz`) and `closed_by` (FK to the admin, `PROTECT`), both `editable=False` and audited. `active` stays a separate switch and is not merged with them.
+2. **Grace rule.** A change is refused with `project_closed` (409) when the time the phone made it is not before `closed_at`. That time is the push mutation's `client_created_at`
+   (`sync.handlers.push_client_time`, `current_client_time`), so offline work queued before the close still syncs, a draft saved before the close included. This trusts the phone's clock.
+   REST has no such time, so a REST create or update in a closed project is always refused. No time at all is refused.
+3. **Where the check runs.** One function, `projects.services.ensure_project_open(project, made_at)`. Updates, deletes and resent creates of every pushed entity: once in `sync.services._apply`,
+   before the entity's guard. Creates: in `build_new_visit`, `build_new_observation`, `build_new_plant_resource`, `build_new_habitat_feature`, `build_new_proposal` and `build_new_photo`.
+   Track point batches: in `push_track_points`. REST updates: `update_visit`, `complete_visit`, `update_observation`, `update_plant_resource`, `update_habitat_feature`.
+4. **Admin work is not affected.** The Django admin saves through its own services (`admin_save_visit`, validation `decide`, mark reviewed, lock/unlock, recompute flags), which do not call these checks.
+   Validation and review normally happen after a project is closed.
+5. **Admin.** "Close project…" and "Reopen project…" ask for a reason of at least 10 characters (`ProjectReasonForm`); `close_project` / `reopen_project` save through `save_with_reason`, so the
+   reason is the history reason. Closing a closed project or reopening an open one is refused per row. The list has a Closed column and a Closed filter.
+6. **API and pull.** `ProjectSerializer` lists `closed_at` and `closed_by`; `ProjectSyncSerializer` uses `exclude`, so the pull carries both. The phone stores only `closedAt`.
+7. **Phone.** Drift schema 17 adds `project.closed_at`; `from16To17` also resets the pull cursors (as `from13To14` / `from15To16` did), so a project closed before the update still arrives.
+   `projectClosedProvider` is the shared flag. Start visit, Free observation, Propose a route, Draw a route and Record/Draw a replacement are greyed out; the Start visit form, the Add plant / Add
+   habitat buttons and the plant and habitat screens are disabled or read-only (no Save, Delete or photo buttons, `RecordPhotoSection.readOnly`), and so is an observation's Edit and photo section.
+   My proposals and the lists stay.
+8. **A visit in progress when the project closes** cannot be finished or cancelled on the server. The Start visit tile still opens it, and its screen shows `ClosedVisitBar` ("This project is
+   closed, so this visit cannot be finished", Cancel visit) instead of the visit buttons. `VisitRepository.cancelInClosedProject` cancels it **on the phone only**, with nothing queued: it drops
+   the visit's queue items and its unsent records (observations, plants, habitats, photos with their files, pending track points); a visit the server never had is deleted, otherwise the row becomes
+   `cancelled` (`cancel_reason` `other`, never sent) and what the server already has stays. The sync screen's Discard would not do: it resets the pull cursor and the server's `in_progress` comes back.
+   The server keeps the visit as it was at the close; an admin can complete or cancel it in the Django admin (admin work is not blocked), or reopen the project.
+**Out of scope.** Closing at the season end automatically; exports and pygeoapi are unaffected. (The wider rule above was set at the developer's request on 2026-11-06; the ticket text asked only
+for new visits.)
+**Checked by hand** (curl with a JWT for the admin steps, and pushes through `/sync/push` with a `client_created_at` an hour before and an hour after `closed_at`). A 5-character reason is refused,
+a longer one closes (the history shows it); the list shows Closed and the filter works; closing twice is refused. `GET /projects` and the pull show `closed_at` and `closed_by`. Reopen clears both.
+Creates (draft visit, observation on a visit, free observation, plant, habitat, proposal): applied before, `rejected project_closed` after. Updates of a visit, an observation, a plant (with or
+without a visit), a habitat, a photo: applied before, rejected after; deletes after the close are rejected; a track point batch after the close is rejected.

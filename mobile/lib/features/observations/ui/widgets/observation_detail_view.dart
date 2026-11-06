@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/db/sync_status.dart';
 import 'package:mobile/core/validation/observation_values.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
@@ -89,8 +90,11 @@ class ObservationDetailView extends ConsumerWidget {
     // rows, and the server would refuse the edit), and only while the visit is
     // known and not locked. It stays hidden while the visit loads.
     final userId = ref.watch(authControllerProvider).profile?.id;
+    // A closed project accepts no changed data (T099, D-104): read-only.
+    final closed = ref.watch(projectClosedProvider(o.projectId));
     final canEdit =
         o.recordedById == userId &&
+        !closed &&
         (visitId == null || (visit != null && !visitIsLocked(visit.status)));
     final behaviours = [
       for (final value in behaviourValuesFromJson(o.behaviour))
@@ -228,6 +232,7 @@ class ObservationDetailView extends ConsumerWidget {
                 surveyVisitId: o.surveyVisitId,
               ),
               photoRequired: taxon?.photoRequired ?? false,
+              readOnly: closed,
             ),
           ],
         ),

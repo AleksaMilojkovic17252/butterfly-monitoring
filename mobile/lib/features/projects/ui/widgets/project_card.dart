@@ -39,6 +39,14 @@ class ProjectCard extends ConsumerWidget {
               Text(project.name, style: textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(project.periodLabel, style: textTheme.bodySmall),
+              // An admin closed the project (T099): no new or changed data.
+              if (project.closedAt != null)
+                Text(
+                  'Closed',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,

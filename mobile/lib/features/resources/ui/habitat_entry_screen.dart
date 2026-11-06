@@ -5,6 +5,7 @@ import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/validation/habitat_rules.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
@@ -21,7 +22,8 @@ import 'package:mobile/features/visits/domain/visit_status.dart';
 ///
 /// - New feature: [habitatId] is null. [visitId] is the visit it is recorded on
 ///   (null from the project's tile).
-/// - Edit: [habitatId] is the feature. A locked visit makes it read-only.
+/// - Edit: [habitatId] is the feature. A locked visit makes it read-only, and
+///   so does a closed project (T099).
 ///
 /// Opened by the router at `/projects/:id/habitats/new` and
 /// `.../habitats/:habitatId`.
@@ -247,6 +249,11 @@ class _HabitatEntryViewState extends ConsumerState<_HabitatEntryView> {
         ? null
         : ref.watch(visitProvider(visitId)).value;
     final locked = visit != null && visitIsLocked(visit.status);
+    // A closed project accepts no changed data (T099, D-104): the form is
+    // read-only, with no Save or Delete.
+    final closedRecord =
+        opened != null && ref.watch(projectClosedProvider(widget.projectId));
+    final readOnly = locked || closedRecord;
 
     return PopScope(
       // Closing while Save runs would leave the user guessing.
@@ -255,7 +262,7 @@ class _HabitatEntryViewState extends ConsumerState<_HabitatEntryView> {
         appBar: AppBar(
           title: Text(opened == null ? 'Add habitat' : 'Habitat feature'),
           actions: [
-            if (opened != null && !locked)
+            if (opened != null && !readOnly)
               IconButton(
                 tooltip: 'Delete',
                 icon: const Icon(Icons.delete_outline),
@@ -286,12 +293,12 @@ class _HabitatEntryViewState extends ConsumerState<_HabitatEntryView> {
                   projectId: widget.projectId,
                   input: _input,
                   onChanged: (input) => setState(() => _input = input),
-                  readOnly: locked,
+                  readOnly: readOnly,
                   locating: _locating,
                   locationMessage: _locationMessage,
                 ),
               ),
-              if (!locked) ...[
+              if (!readOnly) ...[
                 const Divider(height: 1),
                 Padding(
                   padding: const EdgeInsets.all(16),

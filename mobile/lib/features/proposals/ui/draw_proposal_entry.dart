@@ -5,6 +5,8 @@ import 'package:mobile/core/geo/polygon_math.dart';
 import 'package:mobile/core/validation/proposal_rules.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
+import 'package:mobile/features/projects/data/project_repository.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/proposals/data/proposal_repository.dart';
 import 'package:mobile/features/proposals/ui/widgets/proposal_details_sheet.dart';
 import 'package:mobile/features/resources/domain/captured_geometry.dart';
@@ -26,6 +28,14 @@ Future<void> openDrawProposal(
 }) async {
   final userId = ref.read(authControllerProvider).profile?.id;
   if (userId == null) return;
+  // A closed project takes no route proposals (T099).
+  if (await ref.read(projectRepositoryProvider).isClosed(projectId)) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text(projectClosedMessage)));
+    return;
+  }
+  if (!context.mounted) return;
   final transects =
       ref.read(projectTransectsProvider(projectId)).value ?? const [];
 

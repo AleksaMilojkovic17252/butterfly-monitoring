@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/ui/widgets/quick_butterfly_sheet.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
@@ -18,6 +19,7 @@ import 'package:mobile/features/visits/domain/current_section.dart';
 import 'package:mobile/features/visits/domain/keep_screen_on.dart';
 import 'package:mobile/features/visits/domain/route_length.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
+import 'package:mobile/features/visits/ui/widgets/closed_visit_bar.dart';
 import 'package:mobile/features/visits/ui/widgets/gps_gap_banner.dart';
 import 'package:mobile/features/visits/ui/widgets/paused_banner.dart';
 import 'package:mobile/features/visits/ui/widgets/tracking_messages.dart';
@@ -196,6 +198,44 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     );
   }
 
+  /// The project was closed, so the server accepts nothing more for this visit
+  /// (T099, D-104). Asks, then cancels the visit on this phone only and leaves
+  /// the screen: what was not sent yet is deleted.
+  Future<void> _cancelInClosedProject() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel this visit?'),
+        content: const Text(
+          'The project is closed, so the server accepts nothing more for this '
+          'visit. It is cancelled on this phone, and what was not sent yet is '
+          'deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+            child: const Text('Cancel visit'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final visit = widget.visit;
+    try {
+      await ref.read(visitRepositoryProvider).cancelInClosedProject(visit.id);
+    } on StateError catch (error) {
+      _showMessage(error.message);
+      return;
+    }
+    if (!mounted) return;
+    context.go('/projects/${visit.projectId}');
+  }
+
   /// Turns keep-screen-on on or off and says which, since a tooltip only
   /// shows on a long press.
   void _toggleKeepScreenOn(bool keepScreenOn) {
@@ -272,6 +312,7 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
     final observations =
         ref.watch(visitObservationCountProvider(visit.id)).value ?? 0;
     final keepScreenOn = ref.watch(keepScreenOnProvider);
+    final projectClosed = ref.watch(projectClosedProvider(visit.projectId));
 
     final tracked = tracking.visitId == visit.id;
     final position = tracked ? tracking.lastPosition : null;
@@ -347,17 +388,20 @@ class _ActiveVisitViewState extends ConsumerState<ActiveVisitView> {
               ),
             ),
           ),
-          VisitButtons(
-            paused: _paused,
-            // Only the phone that records the route pauses it: another
-            // phone's pause would send its own `paused_seconds`.
-            canPause: tracked && !_saving,
-            onAddButterfly: _addButterfly,
-            onAddPlant: _addPlant,
-            onAddHabitat: _addHabitat,
-            onPause: _togglePause,
-            onFinish: _finish,
-          ),
+          if (projectClosed)
+            ClosedVisitBar(onCancel: _cancelInClosedProject)
+          else
+            VisitButtons(
+              paused: _paused,
+              // Only the phone that records the route pauses it: another
+              // phone's pause would send its own `paused_seconds`.
+              canPause: tracked && !_saving,
+              onAddButterfly: _addButterfly,
+              onAddPlant: _addPlant,
+              onAddHabitat: _addHabitat,
+              onPause: _togglePause,
+              onFinish: _finish,
+            ),
         ],
       ),
     );

@@ -16,6 +16,7 @@ from apps.core.history import save_with_reason
 
 PUSH_REASON = "sync push"  # history_change_reason of every pushed change
 _reason = ContextVar("push_reason", default=PUSH_REASON)
+_client_time = ContextVar("push_client_time", default=None)
 
 
 @contextmanager
@@ -67,6 +68,22 @@ class PushHandlers:
             raise ImproperlyConfigured(
                 "PushHandlers with create, update or delete needs project_of (T027)."
             )
+
+
+@contextmanager
+def push_client_time(moment):
+    """Make the time the phone made the mutation (`client_created_at`) available to a push guard
+    (T099)."""
+    token = _client_time.set(moment)
+    try:
+        yield
+    finally:
+        _client_time.reset(token)
+
+
+def current_client_time():
+    """When the phone made the mutation being applied, or None (an old client, or no push)."""
+    return _client_time.get()
 
 
 def current_push_reason():

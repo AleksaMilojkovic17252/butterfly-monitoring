@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
@@ -38,10 +39,12 @@ class VisitDetailView extends ConsumerWidget {
     final storedSeconds = visit.durationSeconds;
 
     // A late butterfly (T110): only on the user's own finished visit. A locked
-    // visit has another status, so it never shows the button.
+    // visit has another status, so it never shows the button. A closed project
+    // accepts no new data (T099), so the button is gone there too.
     final canAdd =
         const {'completed', 'synced', 'reviewed'}.contains(visit.status) &&
-        visit.observerId == ref.watch(authControllerProvider).profile?.id;
+        visit.observerId == ref.watch(authControllerProvider).profile?.id &&
+        !ref.watch(projectClosedProvider(visit.projectId));
 
     return Scaffold(
       appBar: AppBar(

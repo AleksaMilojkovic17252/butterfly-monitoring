@@ -44,6 +44,23 @@ class Project(SyncableModel):
     basemap = models.FileField(upload_to=basemap_key, max_length=200, blank=True)
     basemap_size = models.PositiveBigIntegerField(null=True, blank=True, editable=False)
     basemap_sha256 = models.CharField(max_length=64, blank=True, editable=False)
+    # Closing (T099, D-104): set by the admin actions only. A closed project takes no new visits;
+    # `active` stays a separate switch.
+    closed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="When an admin closed the project. Empty while it is open.",
+    )
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        help_text="The admin who closed the project.",
+    )
     history = HistoricalRecords(table_name="historical_project")
 
     class Meta:

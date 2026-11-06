@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
 import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/features/proposals/ui/draw_proposal_entry.dart';
+import 'package:mobile/features/projects/domain/project_closed.dart';
 import 'package:mobile/features/transects/data/transect_repository.dart';
 import 'package:mobile/features/transects/domain/geo_line.dart';
 import 'package:mobile/features/transects/domain/section_with_habitat.dart';
@@ -69,6 +70,8 @@ class TransectDetailView extends ConsumerWidget {
     final visits = ref.watch(transectVisitsProvider(transect.id)).value ?? [];
     final draft = ref.watch(transectDraftProvider(transect.id)).value;
     final scheme = Theme.of(context).colorScheme;
+    // A closed project takes no new or changed data (T099).
+    final projectClosed = ref.watch(projectClosedProvider(projectId));
     // One GPS stream (D-087, T108): no route proposal during a visit.
     final visitRunning = ref.watch(deviceVisitInProgressProvider).value != null;
 
@@ -94,16 +97,17 @@ class TransectDetailView extends ConsumerWidget {
               // Recording needs the one GPS stream (D-087); drawing does not.
               PopupMenuItem(
                 value: 'record',
-                enabled: !visitRunning,
+                enabled: !visitRunning && !projectClosed,
                 child: Text(
-                  visitRunning
+                  visitRunning && !projectClosed
                       ? 'Record a replacement (finish the visit first)'
                       : 'Record a replacement',
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'draw',
-                child: Text('Draw a replacement on map'),
+                enabled: !projectClosed,
+                child: const Text('Draw a replacement on map'),
               ),
             ],
           ),
@@ -225,7 +229,7 @@ class TransectDetailView extends ConsumerWidget {
                   // A saved draft is opened again by the form (T035).
                   label: Text(draft == null ? 'Start visit' : 'Continue draft'),
                   // Null disables the button.
-                  onPressed: transect.active
+                  onPressed: transect.active && !projectClosed
                       ? () => _startVisit(context, protocol)
                       : null,
                 ),

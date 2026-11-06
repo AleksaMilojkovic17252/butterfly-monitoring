@@ -105,6 +105,17 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _closedAtMeta = const VerificationMeta(
+    'closedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> closedAt = GeneratedColumn<DateTime>(
+    'closed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _serverVersionMeta = const VerificationMeta(
     'serverVersion',
   );
@@ -138,6 +149,7 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     active,
     taxonListVersionId,
     area,
+    closedAt,
     serverVersion,
     deletedAt,
   ];
@@ -216,6 +228,12 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         area.isAcceptableOrUnknown(data['area']!, _areaMeta),
       );
     }
+    if (data.containsKey('closed_at')) {
+      context.handle(
+        _closedAtMeta,
+        closedAt.isAcceptableOrUnknown(data['closed_at']!, _closedAtMeta),
+      );
+    }
     if (data.containsKey('server_version')) {
       context.handle(
         _serverVersionMeta,
@@ -276,6 +294,10 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.string,
         data['${effectivePrefix}area'],
       ),
+      closedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}closed_at'],
+      ),
       serverVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}server_version'],
@@ -305,6 +327,10 @@ class Project extends DataClass implements Insertable<Project> {
 
   /// Study area as a GeoJSON MultiPolygon, or null.
   final String? area;
+
+  /// When an admin closed the project (UTC), or null while it is open (T099).
+  /// A closed project takes no new visits. The server's `closed_by` is not kept.
+  final DateTime? closedAt;
   final int? serverVersion;
   final DateTime? deletedAt;
   const Project({
@@ -317,6 +343,7 @@ class Project extends DataClass implements Insertable<Project> {
     required this.active,
     this.taxonListVersionId,
     this.area,
+    this.closedAt,
     this.serverVersion,
     this.deletedAt,
   });
@@ -337,6 +364,9 @@ class Project extends DataClass implements Insertable<Project> {
     }
     if (!nullToAbsent || area != null) {
       map['area'] = Variable<String>(area);
+    }
+    if (!nullToAbsent || closedAt != null) {
+      map['closed_at'] = Variable<DateTime>(closedAt);
     }
     if (!nullToAbsent || serverVersion != null) {
       map['server_version'] = Variable<int>(serverVersion);
@@ -362,6 +392,9 @@ class Project extends DataClass implements Insertable<Project> {
           ? const Value.absent()
           : Value(taxonListVersionId),
       area: area == null && nullToAbsent ? const Value.absent() : Value(area),
+      closedAt: closedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(closedAt),
       serverVersion: serverVersion == null && nullToAbsent
           ? const Value.absent()
           : Value(serverVersion),
@@ -388,6 +421,7 @@ class Project extends DataClass implements Insertable<Project> {
         json['taxonListVersionId'],
       ),
       area: serializer.fromJson<String?>(json['area']),
+      closedAt: serializer.fromJson<DateTime?>(json['closedAt']),
       serverVersion: serializer.fromJson<int?>(json['serverVersion']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -405,6 +439,7 @@ class Project extends DataClass implements Insertable<Project> {
       'active': serializer.toJson<bool>(active),
       'taxonListVersionId': serializer.toJson<String?>(taxonListVersionId),
       'area': serializer.toJson<String?>(area),
+      'closedAt': serializer.toJson<DateTime?>(closedAt),
       'serverVersion': serializer.toJson<int?>(serverVersion),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -420,6 +455,7 @@ class Project extends DataClass implements Insertable<Project> {
     bool? active,
     Value<String?> taxonListVersionId = const Value.absent(),
     Value<String?> area = const Value.absent(),
+    Value<DateTime?> closedAt = const Value.absent(),
     Value<int?> serverVersion = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Project(
@@ -434,6 +470,7 @@ class Project extends DataClass implements Insertable<Project> {
         ? taxonListVersionId.value
         : this.taxonListVersionId,
     area: area.present ? area.value : this.area,
+    closedAt: closedAt.present ? closedAt.value : this.closedAt,
     serverVersion: serverVersion.present
         ? serverVersion.value
         : this.serverVersion,
@@ -456,6 +493,7 @@ class Project extends DataClass implements Insertable<Project> {
           ? data.taxonListVersionId.value
           : this.taxonListVersionId,
       area: data.area.present ? data.area.value : this.area,
+      closedAt: data.closedAt.present ? data.closedAt.value : this.closedAt,
       serverVersion: data.serverVersion.present
           ? data.serverVersion.value
           : this.serverVersion,
@@ -475,6 +513,7 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('active: $active, ')
           ..write('taxonListVersionId: $taxonListVersionId, ')
           ..write('area: $area, ')
+          ..write('closedAt: $closedAt, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -492,6 +531,7 @@ class Project extends DataClass implements Insertable<Project> {
     active,
     taxonListVersionId,
     area,
+    closedAt,
     serverVersion,
     deletedAt,
   );
@@ -508,6 +548,7 @@ class Project extends DataClass implements Insertable<Project> {
           other.active == this.active &&
           other.taxonListVersionId == this.taxonListVersionId &&
           other.area == this.area &&
+          other.closedAt == this.closedAt &&
           other.serverVersion == this.serverVersion &&
           other.deletedAt == this.deletedAt);
 }
@@ -522,6 +563,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<bool> active;
   final Value<String?> taxonListVersionId;
   final Value<String?> area;
+  final Value<DateTime?> closedAt;
   final Value<int?> serverVersion;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -535,6 +577,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.active = const Value.absent(),
     this.taxonListVersionId = const Value.absent(),
     this.area = const Value.absent(),
+    this.closedAt = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -549,6 +592,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.active = const Value.absent(),
     this.taxonListVersionId = const Value.absent(),
     this.area = const Value.absent(),
+    this.closedAt = const Value.absent(),
     this.serverVersion = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -565,6 +609,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<bool>? active,
     Expression<String>? taxonListVersionId,
     Expression<String>? area,
+    Expression<DateTime>? closedAt,
     Expression<int>? serverVersion,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -580,6 +625,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (taxonListVersionId != null)
         'taxon_list_version_id': taxonListVersionId,
       if (area != null) 'area': area,
+      if (closedAt != null) 'closed_at': closedAt,
       if (serverVersion != null) 'server_version': serverVersion,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -596,6 +642,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<bool>? active,
     Value<String?>? taxonListVersionId,
     Value<String?>? area,
+    Value<DateTime?>? closedAt,
     Value<int?>? serverVersion,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -610,6 +657,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       active: active ?? this.active,
       taxonListVersionId: taxonListVersionId ?? this.taxonListVersionId,
       area: area ?? this.area,
+      closedAt: closedAt ?? this.closedAt,
       serverVersion: serverVersion ?? this.serverVersion,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -646,6 +694,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (area.present) {
       map['area'] = Variable<String>(area.value);
     }
+    if (closedAt.present) {
+      map['closed_at'] = Variable<DateTime>(closedAt.value);
+    }
     if (serverVersion.present) {
       map['server_version'] = Variable<int>(serverVersion.value);
     }
@@ -670,6 +721,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('active: $active, ')
           ..write('taxonListVersionId: $taxonListVersionId, ')
           ..write('area: $area, ')
+          ..write('closedAt: $closedAt, ')
           ..write('serverVersion: $serverVersion, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -19203,6 +19255,7 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<bool> active,
   Value<String?> taxonListVersionId,
   Value<String?> area,
+  Value<DateTime?> closedAt,
   Value<int?> serverVersion,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -19217,6 +19270,7 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<bool> active,
   Value<String?> taxonListVersionId,
   Value<String?> area,
+  Value<DateTime?> closedAt,
   Value<int?> serverVersion,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -19445,6 +19499,11 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<String> get area => $composableBuilder(
     column: $table.area,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get closedAt => $composableBuilder(
+    column: $table.closedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19716,6 +19775,11 @@ class $$ProjectsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get closedAt => $composableBuilder(
+    column: $table.closedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
     builder: (column) => ColumnOrderings(column),
@@ -19768,6 +19832,9 @@ class $$ProjectsTableAnnotationComposer
 
   GeneratedColumn<String> get area =>
       $composableBuilder(column: $table.area, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get closedAt =>
+      $composableBuilder(column: $table.closedAt, builder: (column) => column);
 
   GeneratedColumn<int> get serverVersion => $composableBuilder(
     column: $table.serverVersion,
@@ -20028,6 +20095,7 @@ class $$ProjectsTableTableManager
                 Value<bool> active = const Value.absent(),
                 Value<String?> taxonListVersionId = const Value.absent(),
                 Value<String?> area = const Value.absent(),
+                Value<DateTime?> closedAt = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -20041,6 +20109,7 @@ class $$ProjectsTableTableManager
                 active: active,
                 taxonListVersionId: taxonListVersionId,
                 area: area,
+                closedAt: closedAt,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -20056,6 +20125,7 @@ class $$ProjectsTableTableManager
                 Value<bool> active = const Value.absent(),
                 Value<String?> taxonListVersionId = const Value.absent(),
                 Value<String?> area = const Value.absent(),
+                Value<DateTime?> closedAt = const Value.absent(),
                 Value<int?> serverVersion = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -20069,6 +20139,7 @@ class $$ProjectsTableTableManager
                 active: active,
                 taxonListVersionId: taxonListVersionId,
                 area: area,
+                closedAt: closedAt,
                 serverVersion: serverVersion,
                 deletedAt: deletedAt,
                 rowid: rowid,

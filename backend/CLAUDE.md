@@ -86,6 +86,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `report_behaviour_counts` (created in `0001_initial`, no `pygeoapi_ro` grant) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action.
   Years and ISO weeks are in the project's time zone. A column change in a source table (`survey_visit`, `butterfly_observation`, `project_protocol`, `transect`) needs a
   hand-written migration that drops and recreates the views.
+- `apps/projects/services.py` (T099, D-104): `close_project` / `reopen_project` (the admin actions, with a reason) set `Project.closed_at`. `ensure_project_open(project, made_at)` raises `ProjectClosed`
+  (`project_closed`, 409) for a change the phone made after the close: `sync.services._apply` calls it for every update, delete and resent create, the `build_new_*` functions for creates,
+  `push_track_points` for track points, and the REST `update_*` services with `None`. `made_at` is the mutation's `client_created_at` (`sync.handlers.current_client_time`). Django admin saves do not call it.
 - `apps/accounts/` has `OgcVerifyView` (`/api/v1/auth/verify`, T069, D-080): nginx `auth_request` calls it for `/ogc`, and
   `authentication.py` adds Basic auth with its own failed-login counter. Personal tokens (`rest_framework.authtoken`) are accepted there only.
 - Business rules go in `apps/<name>/services.py`. Views, serializers, admin and sync push all

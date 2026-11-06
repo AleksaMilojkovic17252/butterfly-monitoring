@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>{{ intro }}</p>
+<ul>
+  {% for project in projects %}
+  <li>{{ project }}</li>
+  {% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="{{ action }}">
+  {% for project in projects %}
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ project.pk }}">
+  {% endfor %}
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="{{ title }}">
+  <a href="{% url 'admin:projects_project_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

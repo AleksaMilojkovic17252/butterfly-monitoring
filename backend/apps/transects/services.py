@@ -16,9 +16,9 @@ from apps.accounts.services import is_admin
 from apps.core.geo import utm_srid
 from apps.core.geo_files import open_datasource
 from apps.core.history import save_with_reason
-from apps.projects.services import is_member, projects_for
+from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.surveys.services import counted_visits
-from apps.sync.handlers import current_push_reason, soft_delete_pushed
+from apps.sync.handlers import current_client_time, current_push_reason, soft_delete_pushed
 from apps.transects import rules
 from apps.transects.models import (
     ProposalStatus,
@@ -299,6 +299,7 @@ def build_new_proposal(user, proposal_id, data):
         raise exceptions.ValidationError({"project": ["This project was deleted."]})
     if not is_admin(user) and not is_member(user, project.pk):
         raise exceptions.PermissionDenied("You are not a member of this project.")
+    ensure_project_open(project, current_client_time())  # T099, D-104
     replaced = proposal.replaces_transect
     if replaced is not None and (
         replaced.deleted_at is not None or replaced.project_id != proposal.project_id

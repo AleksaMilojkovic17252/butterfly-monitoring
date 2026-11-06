@@ -8,9 +8,12 @@ from datetime import date
 from django.contrib.gis.gdal import OGRGeometry
 from django.contrib.gis.geos import MultiPolygon
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+from rest_framework import exceptions
 
 from apps.accounts.services import is_admin
 from apps.core.geo_files import open_datasource
+from apps.core.history import save_with_reason
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
 
 
@@ -34,6 +37,51 @@ def pull_projects(_user, project):
 def pull_protocols(_user, project):
     """The project's protocol, deleted rows included, so tombstones reach the phone."""
     return ProjectProtocol.objects.filter(project=project)
+
+
+class ProjectClosed(exceptions.APIException):
+    """New work in a closed project (T099, D-104): a visit, a free observation, a plant record, a
+    habitat feature or a route proposal. An admin must reopen the project."""
+
+    status_code = 409
+    default_code = "project_closed"
+    default_detail = "This project is closed, so it accepts no new or changed records."
+
+
+def ensure_project_open(project, made_at):
+    """Raise `ProjectClosed` for a new or changed record in a closed project (T099, D-104).
+
+    `made_at` is when the phone made the change: the push mutation's `client_created_at`. A change
+    made before the project was closed is still accepted, so what was recorded offline is not lost
+    when it syncs later (this trusts the phone's clock). No time at all (REST) is refused. An
+    admin who must change a closed project's data reopens it, with a reason.
+    """
+    if project.closed_at is None:
+        return
+    if made_at is not None and made_at < project.closed_at:
+        return
+    closed_on = project.closed_at.strftime("%Y-%m-%d %H:%M UTC")
+    raise ProjectClosed(
+        f"This project was closed on {closed_on}, so it accepts no new or changed records."
+    )
+
+
+def close_project(project, admin_user, reason):
+    """Close `project`: no new visits from now on. Members and data stay (T099)."""
+    if project.closed_at is not None:
+        raise ValidationError(f"{project} is already closed.")
+    project.closed_at = timezone.now()
+    project.closed_by = admin_user
+    save_with_reason(project, admin_user, reason)
+
+
+def reopen_project(project, admin_user, reason):
+    """Reopen a closed `project`: new visits are accepted again (T099)."""
+    if project.closed_at is None:
+        raise ValidationError(f"{project} is not closed.")
+    project.closed_at = None
+    project.closed_by = None
+    save_with_reason(project, admin_user, reason)
 
 
 def is_member(user, project_id):

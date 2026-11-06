@@ -35,6 +35,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "area",
             "taxon_list_version",
             "protocol",
+            "closed_at",
+            "closed_by",
             "server_version",
             "deleted_at",
         ]
