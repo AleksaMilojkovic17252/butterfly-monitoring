@@ -33,6 +33,7 @@ from apps.observations.models import (
 from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
 from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.resources.models import ResourceType
+from apps.resources.rules import PLANT_LINK_ROLE_NAMES, PLANT_LINK_ROLES
 from apps.resources.services import plant_resources_for
 from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
@@ -46,20 +47,6 @@ REASSIGN_REASON = "reassign sections"  # history_change_reason of the admin acti
 UPLOAD_REASON = "photo upload"  # history_change_reason of the server's own upload saves
 CHUNK_BYTES = 64 * 1024
 PLANT_LINK_FIELDS = ("host_plant_record", "nectar_plant_record")  # links to plant records (T051)
-# The resource types a plant record may have to be linked in each role. A resting plant is neither;
-# an unknown association is let through, since the observer could not say more (D-086).
-PLANT_LINK_ROLES = {
-    "host_plant_record": (
-        ResourceType.LARVAL_HOST,
-        ResourceType.OVIPOSITION_PLANT,
-        ResourceType.UNKNOWN_ASSOCIATION,
-    ),
-    "nectar_plant_record": (ResourceType.NECTAR_SOURCE, ResourceType.UNKNOWN_ASSOCIATION),
-}
-PLANT_LINK_ROLE_NAMES = {
-    "host_plant_record": "a host plant",
-    "nectar_plant_record": "a nectar plant",
-}
 MAX_PHOTO_PIXELS = (
     100_000_000  # the thumbnail is made in memory; the byte limit alone does not bound it
 )

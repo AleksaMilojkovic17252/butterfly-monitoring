@@ -54,7 +54,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   calls it on create, and `SyncEntity.server_fills_null` makes a pushed null section mean "server fills it in".
 - `apps/resources/` (T051, D-086; T053, D-088) holds `PlantResourceObservation` (a point or patch polygon, with `patch_area_m2` computed by
   `save_plant_resource`) and `HabitatFeature` (a point, line or polygon, `save_habitat_feature`), their rules (V02, V07, V08), the REST
-  endpoints and the read-only admin (`ReadOnlyGeometryAdmin` is the shared base). Observations link to a plant record
+  endpoints and the admin. Plant records are editable there (T111, D-106): add, a map editor plus an exact-coordinates GeoJSON box, and
+  `admin_save_plant_resource`, `admin_soft_delete_plant_resource` and `admin_restore_plant_resource` (locked-visit and link guards); habitat
+  features stay read-only (`ReadOnlyGeometryAdmin`). `PLANT_LINK_ROLES` and `plant_notes_errors` live in `resources/rules.py`. Observations link to a plant record
   (`host_plant_record`, `nectar_plant_record`) and a `Photo` can belong to one (a habitat feature has no photos); `observations.services` imports
   `resources.services`, never the reverse.
 - `apps/transects/` also holds `TransectProposal` (T108, D-098): a route the phone recorded, pushed like a plant record (the

@@ -15,10 +15,12 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection
+from django.db.models import Q
 from rest_framework import exceptions, serializers
 
 from apps.accounts.services import is_admin
 from apps.core.history import save_with_reason
+from apps.observations.models import ButterflyObservation
 from apps.projects.services import ensure_project_open, is_member, projects_for
 from apps.resources import rules
 from apps.resources.models import HabitatFeature, PlantResourceObservation
@@ -26,12 +28,16 @@ from apps.resources.serializers import (
     HabitatFeatureSyncSerializer,
     PlantResourceSyncSerializer,
 )
-from apps.surveys.models import SurveyVisit
+from apps.surveys.models import SurveyVisit, VisitStatus
 from apps.surveys.services import visits_for
 from apps.surveys.state import ensure_unlocked
 from apps.sync.handlers import current_client_time, current_push_reason, soft_delete_pushed
 
 REST_REASON = "REST API"  # history_change_reason of changes made through the REST endpoints
+ADMIN_ADD_REASON = "admin add"  # history_change_reason of a plant record added in admin (T111)
+ADMIN_EDIT_REASON = "admin edit"
+ADMIN_RESTORE_REASON = "admin restore"
+MAX_NAMED_OBSERVATIONS = 5
 
 # What numeric(10,1) holds: 999,999,999.9 m², a square of about 32 km a side.
 MAX_PATCH_AREA_M2 = Decimal("999999999.9")
@@ -70,18 +76,22 @@ def apply_plant_resource_changes(user, plant, data):
         setattr(plant, field_name, value)
     if "plant_taxon" in changes:
         _check_plant_taxon(plant)
-    # A changed shape makes a stored area wrong, unless this payload sends a new one. A payload
-    # that echoes the stored area (a full row, as the phone pulled it) does not send a new one.
-    # The save computes it again for a polygon. A moved point keeps an area the client set.
     new_area_sent = "patch_area_m2" in changes and changes["patch_area_m2"] != old_area
+    if "geometry" in changes:
+        clear_stale_area(plant, old_geometry, new_area_sent)
+    return plant
+
+
+def clear_stale_area(plant, old_geometry, new_area_sent=False):
+    """A changed shape makes a stored area wrong, unless the change sends a new one. A payload
+    that echoes the stored area (a full row, as the phone pulled it) does not send a new one.
+    The save computes it again for a polygon. A moved point keeps an area the client set."""
     if (
-        "geometry" in changes
-        and not new_area_sent
+        not new_area_sent
         and not old_geometry.equals_exact(plant.geometry)
         and "Polygon" in (old_geometry.geom_type, plant.geometry.geom_type)
     ):
         plant.patch_area_m2 = None
-    return plant
 
 
 def save_plant_resource(plant, user, history_reason):
@@ -231,6 +241,142 @@ def guard_habitat_feature(user, feature):
     """Push guard: a change to a habitat feature of a locked visit is rejected even when its base
     version is stale (T042)."""
     _guard_visit(feature)
+
+
+# Admin (admin.py, T111, D-106). Like observations.services.admin_save_observation.
+
+
+def is_locked(plant):
+    """For admin pages: a plant record of a locked visit opens read-only (T042)."""
+    visit = plant.survey_visit
+    return visit is not None and visit.status == VisitStatus.LOCKED
+
+
+def check_admin_plant_resource(admin_user, plant, changed_fields, *, adding, old_geometry=None):
+    """The rules for an admin's add or edit of `plant` (unsaved, with the form's values). Raises
+    DRF exceptions. `admin_user` is unused for now: the admin may act for any member."""
+    _lock_visit(plant)
+    if adding:
+        _check_admin_add_context(plant)
+    if adding or "plant_taxon" in changed_fields:
+        _check_plant_taxon(plant)
+    errors = rules.plant_notes_errors(plant.plant_taxon_id, plant.notes)
+    errors.update(rules.validate_plant_resource(_rule_data(plant)))
+    if errors:
+        raise exceptions.ValidationError(errors)
+    if not adding and "geometry" in changed_fields and old_geometry is not None:
+        clear_stale_area(plant, old_geometry)
+    if not adding and "resource_type" in changed_fields:
+        _check_links_fit(plant)
+
+
+def admin_save_plant_resource(
+    plant, admin_user, reason, changed_fields, *, adding, old_geometry=None
+):
+    """Add or change a plant record for the admin. `created_by` stays the researcher, so they can
+    still edit it from the phone. No `ensure_project_open`: admin saves skip it (D-104)."""
+    check_admin_plant_resource(
+        admin_user, plant, changed_fields, adding=adding, old_geometry=old_geometry
+    )
+    default_reason = ADMIN_ADD_REASON if adding else ADMIN_EDIT_REASON
+    return save_plant_resource(plant, admin_user, reason or default_reason)
+
+
+def admin_soft_delete_plant_resource(plant, admin_user):
+    """Admin action: refused for a locked visit and while a live observation links the record
+    (the phone refuses the same, D-087)."""
+    _lock_visit(plant)
+    linking = _linking_observations(plant)
+    if linking:
+        raise exceptions.ValidationError(
+            {
+                "deleted_at": [
+                    "Observations still link to this plant record: "
+                    f"{_name_observations(linking)}. Change or remove those links first."
+                ]
+            }
+        )
+    plant.soft_delete(admin_user)
+
+
+def admin_restore_plant_resource(plant, admin_user):
+    """Admin action: undo a soft delete. Refused for a locked visit."""
+    _lock_visit(plant)
+    if plant.project.deleted_at is not None:
+        raise exceptions.ValidationError({"project": ["This project was deleted."]})
+    if plant.survey_visit is not None and plant.survey_visit.deleted_at is not None:
+        raise exceptions.ValidationError({"survey_visit": ["This visit was deleted."]})
+    _check_plant_taxon(plant)
+    plant.deleted_at = None
+    return _store(plant, admin_user, ADMIN_RESTORE_REASON)
+
+
+def _check_admin_add_context(plant):
+    if plant.project.deleted_at is not None:
+        raise exceptions.ValidationError({"project": ["This project was deleted."]})
+    if not is_member(plant.created_by, plant.project_id):
+        raise exceptions.ValidationError(
+            {"created_by": ["The researcher must be a member of the project."]}
+        )
+    visit = plant.survey_visit
+    if visit is None:
+        return
+    if visit.deleted_at is not None:
+        raise exceptions.ValidationError({"survey_visit": ["This visit was deleted."]})
+    if visit.project_id != plant.project_id:
+        raise exceptions.ValidationError({"survey_visit": ["This visit is not in the project."]})
+    if visit.created_by_id != plant.created_by_id:
+        raise exceptions.ValidationError(
+            {"survey_visit": ["This visit was made by another researcher."]}
+        )
+
+
+def _linking_observations(plant, fields=("host_plant_record", "nectar_plant_record")):
+    """Live observations that link to `plant` in one of `fields`, oldest first."""
+    query = Q()
+    for field_name in fields:
+        query |= Q(**{field_name: plant})
+    return list(
+        ButterflyObservation.objects.filter(query, deleted_at__isnull=True)
+        .select_related("taxon")
+        .order_by("observed_at")
+    )
+
+
+def _name_observations(observations):
+    """Up to five observations by date and species, then 'and N more'."""
+    names = [
+        f"{o.observed_at:%Y-%m-%d} {o.taxon.scientific_name}"
+        for o in observations[:MAX_NAMED_OBSERVATIONS]
+    ]
+    text = ", ".join(names)
+    if len(observations) > MAX_NAMED_OBSERVATIONS:
+        text += f" and {len(observations) - MAX_NAMED_OBSERVATIONS} more"
+    return text
+
+
+def _check_links_fit(plant):
+    """A new resource type must still fit each role in which a live observation links the record
+    (decision 1 of T111). Admin only: push and REST keep D-086's 'no re-check'."""
+    broken = [
+        o
+        for o in _linking_observations(plant)
+        if (o.host_plant_record_id == plant.pk and not _fits(plant, "host_plant_record"))
+        or (o.nectar_plant_record_id == plant.pk and not _fits(plant, "nectar_plant_record"))
+    ]
+    if broken:
+        raise exceptions.ValidationError(
+            {
+                "resource_type": [
+                    "Observations link to this record in a role the new type does not fit: "
+                    f"{_name_observations(broken)}. Change those observations first."
+                ]
+            }
+        )
+
+
+def _fits(plant, role):
+    return plant.resource_type in rules.PLANT_LINK_ROLES[role]
 
 
 def _polygon_area_m2(geometry):

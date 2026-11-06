@@ -18,6 +18,31 @@ from apps.resources.models import (
 )
 
 PLANT_GEOMETRY_TYPES = ("Point", "Polygon")
+
+# The resource types a plant record may have to be linked in each role. A resting plant is neither;
+# an unknown association is let through, since the observer could not say more (D-086).
+PLANT_LINK_ROLES = {
+    "host_plant_record": (
+        ResourceType.LARVAL_HOST,
+        ResourceType.OVIPOSITION_PLANT,
+        ResourceType.UNKNOWN_ASSOCIATION,
+    ),
+    "nectar_plant_record": (ResourceType.NECTAR_SOURCE, ResourceType.UNKNOWN_ASSOCIATION),
+}
+PLANT_LINK_ROLE_NAMES = {
+    "host_plant_record": "a host plant",
+    "nectar_plant_record": "a nectar plant",
+}
+
+
+def plant_notes_errors(plant_taxon_id, notes):
+    """An unidentified plant needs notes (T051). `{field: [message]}`, empty when fine. The
+    serializer (push, REST) and the admin form both call it."""
+    if plant_taxon_id is None and not notes:
+        return {"notes": ["Required when the plant is not identified."]}
+    return {}
+
+
 HABITAT_GEOMETRY_TYPES = ("Point", "LineString", "Polygon")
 
 

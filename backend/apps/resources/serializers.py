@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.core.serializers import UTCDateTimeField, WritableGeoJSONField
 from apps.resources.models import HabitatFeature, PlantResourceObservation
+from apps.resources.rules import plant_notes_errors
 
 
 class PlantResourceSyncSerializer(serializers.ModelSerializer):
@@ -50,10 +51,9 @@ class PlantResourceSyncSerializer(serializers.ModelSerializer):
             # The id of the plant, so the stored row's plant is not loaded just to test for null.
             return getattr(instance, "plant_taxon_id" if name == "plant_taxon" else name)
 
-        if final("plant_taxon") is None and not final("notes"):
-            raise serializers.ValidationError(
-                {"notes": ["Required when the plant is not identified."]}
-            )
+        errors = plant_notes_errors(final("plant_taxon"), final("notes"))
+        if errors:
+            raise serializers.ValidationError(errors)
         return attrs
 
 

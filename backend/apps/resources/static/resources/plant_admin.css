@@ -1,0 +1,4 @@
+/* A plant record is a point or a polygon; V08 refuses a line (T111). */
+.type-LineString {
+  display: none;
+}

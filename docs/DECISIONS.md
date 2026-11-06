@@ -2306,3 +2306,26 @@ The `geo` views and one report view give each section and each transect record a
 7. **Evidence, to redo.** On the dev data (1 121 records, 2026-11-06) the interval and nearest-section agree on all 1 110 records that have a section, and disagree on none; 11 are beyond the limit.
    The dev data has no noise at section boundaries, so this does not separate the methods. Rerun `evaluation/results/section-assignment.sql` on the simulated season after T071.
    Results: `evaluation/results/section-assignment.md`.
+
+## D-106 · Plant records editable in admin (T111)
+2026-11-06 · accepted · T111, *refines D-086 and D-087; follows D-003*
+Admin only: push, REST and the phone are unchanged (D-086's "no re-check" of links stays for them). HabitatFeature admin stays read-only.
+1. **A change of relation is refused when it breaks a link.** If live observations link the record as host or nectar plant and the new `resource_type` no longer fits `PLANT_LINK_ROLES`, the form
+   error names up to five (date and species), then "and N more".
+2. **Soft delete is refused while a live observation links the record** (as the phone does, D-087), and both Soft delete and Restore refuse a locked visit. This page overrides the shared
+   `SyncableAdmin` actions and handles each record on its own, naming a refused one.
+3. **Add** only for a member of the chosen project; a visit must be live, in that project and made by that researcher (the rule of the phone's pull). `created_by` stays the researcher, so the record
+   reaches their phone and they can still edit it there; `updated_by` is the admin. History reasons: "admin add", "admin edit" (or the dialog text), "admin restore".
+4. **Shared rules moved** so both paths use them: `PLANT_LINK_ROLES`/`PLANT_LINK_ROLE_NAMES` and `plant_notes_errors` to `resources/rules.py`, the "a changed shape empties the area" rule to
+   `services.clear_stale_area`. `save_plant_resource` only fills an empty polygon area.
+5. **An untouched map changes nothing.** The widget's Web Mercator round trip moves coordinates slightly and `has_changed` hides it, so when `geometry` is not in `changed_data` the stored value is put back.
+6. **Exact coordinates are a separate GeoJSON box** (`geometry_geojson`, longitude/latitude WGS 84), not Django's `display_raw`: that box holds Web Mercator metres, and typed `[20.45, 44.81]` was
+   saved near 0°, 0° with no error. A filled box replaces the map's shape. `geometry` is not required in the form for that reason; a missing shape is still V02.
+7. **Checks run in `_post_clean`**, not `clean()`: `clean()` comes before the values are put on the instance, so it would check the old ones.
+8. **Restore re-checks its parents** (project, visit and plant live; constraints validated) so a restored record never sits under a deleted visit. The GeoJSON box reads JSON first and accepts only a
+   bare geometry object (no WKT/hex, Feature or `crs`), so a declared other CRS is never taken as WGS 84.
+9. **Line button hidden** with CSS (`.type-LineString`, `resources/plant_admin.css`), since V08 refuses a line.
+**Checked by hand** (Django test client against the dev database, rolled back): untouched save keeps the geometry exactly; species change with and without a dialog reason; point to polygon fills
+the area, polygon to point empties it; `[20.45, 44.81]` is stored at 20.45 E 44.81 N; a line and junk in the box give field errors; unidentified plant without notes; a relation change that breaks a
+nectar link is refused with the observation named; add refused for a non-member, a visit of another project and a locked visit, and a valid add saved; locked-visit and soft-deleted pages open
+read-only; soft delete refused for a linked record and allowed otherwise, Restore works, locked visit refuses both; a non-superuser admin (Admin group) sees Add and saves.
