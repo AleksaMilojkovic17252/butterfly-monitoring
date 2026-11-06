@@ -14,6 +14,7 @@ from apps.core.admin import (
     SyncableAdmin,
     add_validation_errors,
 )
+from apps.exports.admin_actions import ExportActionsMixin
 from apps.observations import services
 from apps.observations.models import (
     Behaviour,
@@ -186,7 +187,7 @@ class PhotoAdmin(HistoryAdmin, SyncableAdmin):
 
 
 @admin.register(ButterflyObservation)
-class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
+class ButterflyObservationAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
     """Observations are recorded on the phone. An admin may correct one of an unlocked visit
     (saved through `services.admin_save_observation`, T044). The validation fields are read-only
     here: decisions go through the validation queue (T057), and **Send back to queue** undoes
@@ -231,8 +232,10 @@ class ButterflyObservationAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     ordering = ["-observed_at"]
     list_select_related = ["taxon", "project", "survey_visit__transect", "recorded_by"]
     raw_id_fields = ["taxon", "transect_section", "host_plant_record", "nectar_plant_record"]
+    export_dataset = "butterfly_observations"
     actions = [
         *SyncableAdmin.actions,
+        *ExportActionsMixin.export_actions,
         "reassign_sections",
         "send_back_to_queue",
         "recompute_flags",

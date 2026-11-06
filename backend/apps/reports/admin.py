@@ -1,19 +1,22 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.http import StreamingHttpResponse
-from django.utils.translation import gettext_lazy as _
 
-from apps.exports.writers import csv_chunks
+from apps.exports.admin_actions import ExportActionsMixin
+from apps.exports.writers import csv_chunks, geojson_chunks
 from apps.projects.services import projects_for
 from apps.reports.models import BehaviourCounts, SpeciesPhenology, TransectIndicators
 
 
-class ReportAdmin(admin.ModelAdmin):
+class ReportAdmin(ExportActionsMixin, admin.ModelAdmin):
     """A read-only changelist over a report view (T061, D-099). Rows are limited to the projects
-    the user may see. The CSV action is T061's own; T065 may switch it to the export service."""
+    the user may see. The export actions are the shared ones (T065, D-101), but a report view is
+    not an export dataset: the rows come straight from the selected queryset, with the missing-value
+    code in CSV and `"geometry": null` in GeoJSON."""
 
     list_display_links = None
-    actions = ["export_csv"]
+    actions = ExportActionsMixin.export_actions
 
     def has_add_permission(self, request):
         return False
@@ -27,17 +30,21 @@ class ReportAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(project__in=projects_for(request.user))
 
-    @admin.action(description=_("Export selected as CSV"), permissions=["view"])
-    def export_csv(self, request, queryset):
+    def export_response(self, request, queryset, fmt):
         # The row_id is a key for Django, not a column of the report. Relations are written as
         # their id (`project_id`).
         names = [f.attname for f in self.model._meta.fields if f.name != "row_id"]
-        rows = queryset.values(*names)
         table = self.model._meta.db_table
-        response = StreamingHttpResponse(
-            csv_chunks(names, rows, na=""), content_type="text/csv; charset=utf-8"
-        )
-        response["Content-Disposition"] = f'attachment; filename="{table}.csv"'
+        if fmt == "csv":
+            rows = queryset.values(*names)
+            chunks = csv_chunks(names, rows, na=settings.EXPORT_MISSING_VALUE)
+            content_type, extension = "text/csv; charset=utf-8", "csv"
+        else:
+            rows = ({**row, "id": row["row_id"]} for row in queryset.values("row_id", *names))
+            chunks = geojson_chunks(names, rows)
+            content_type, extension = "application/geo+json", "geojson"
+        response = StreamingHttpResponse(chunks, content_type=content_type)
+        response["Content-Disposition"] = f'attachment; filename="{table}.{extension}"'
         return response
 
 

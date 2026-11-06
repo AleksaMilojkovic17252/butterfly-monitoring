@@ -12,6 +12,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from apps.core.admin import _RULE_ID, HistoryAdmin, SyncableAdmin, add_validation_errors
 from apps.environment.models import EnvironmentalSnapshot
+from apps.exports.admin_actions import ExportActionsMixin
 from apps.observations.models import ButterflyObservation
 from apps.projects.services import projects_for
 from apps.surveys import coverage, services
@@ -232,7 +233,7 @@ class EnvironmentalSnapshotInline(admin.TabularInline):
 
 
 @admin.register(SurveyVisit)
-class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
+class SurveyVisitAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin):
     """Visits are recorded on the phone. An admin may correct an unlocked visit (saved through
     `services.admin_save_visit`, T042); its status moves only through actions: Mark as reviewed,
     and Lock and Unlock, which ask for a reason (T043). A locked visit opens read-only with a
@@ -290,7 +291,14 @@ class SurveyVisitAdmin(HistoryAdmin, SyncableAdmin):
     ordering = ["-started_at"]
     list_select_related = ["transect", "observer", "project"]
     inlines = [ObservationInline, EnvironmentalSnapshotInline]
-    actions = ["mark_reviewed_selected", "lock_selected", "unlock_selected", "recompute_flags"]
+    export_dataset = "survey_visits"
+    actions = [
+        "mark_reviewed_selected",
+        "lock_selected",
+        "unlock_selected",
+        "recompute_flags",
+        *ExportActionsMixin.export_actions,
+    ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

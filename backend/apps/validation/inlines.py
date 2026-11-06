@@ -6,8 +6,9 @@ from apps.validation.models import ValidationEvent
 class ValidationEventInline(admin.TabularInline):
     """The validation decisions on an observation, newest first, read-only (T058).
 
-    Events are written only by `validation.services.record_decision`. `ValidationEvent` has no
-    ModelAdmin: this inline is what keeps the rows read-only (D-090).
+    Events are written only by `validation.services.record_decision`. The rows stay read-only
+    because this inline and `ValidationEventAdmin` (T065, D-101) both refuse add, change and
+    delete.
     """
 
     model = ValidationEvent

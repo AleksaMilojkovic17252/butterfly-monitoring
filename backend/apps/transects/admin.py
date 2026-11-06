@@ -17,6 +17,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.admin import HistoryAdmin, MapAdmin, ReadOnlyMapMixin, SyncableAdmin
 from apps.core.history import save_with_reason
 from apps.core.widgets import LineMapWidget
+from apps.exports.admin_actions import ExportActionsMixin
 from apps.transects.forms import (
     CreateTransectFromProposalForm,
     GenerateSectionsForm,
@@ -122,7 +123,7 @@ class TransectSectionInline(admin.StackedInline):
 
 
 @admin.register(Transect)
-class TransectAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
+class TransectAdmin(ExportActionsMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
     list_display = ["code", "name", "project", "active", "length", "sections"]
     list_select_related = ["project"]
     list_filter = ["project", "active"]
@@ -131,8 +132,10 @@ class TransectAdmin(HistoryAdmin, SyncableAdmin, MapAdmin):
     # Soft delete and restore are list actions, so the field is not edited on the form.
     exclude = ["deleted_at"]
     inlines = [TransectSectionInline]
+    export_dataset = "transects"
     actions = [
         *SyncableAdmin.actions,
+        *ExportActionsMixin.export_actions,
         "generate_equal_sections",
         "activate_selected",
         "deactivate_selected",

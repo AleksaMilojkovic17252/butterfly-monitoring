@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
@@ -13,13 +14,14 @@ from rest_framework.exceptions import APIException
 
 from apps.catalogues.models import Taxon
 from apps.core.admin import ReadOnlyMapMixin
+from apps.exports.admin_actions import ExportActionsMixin
 from apps.observations import services as observation_services
 from apps.observations.admin import PhotoInline, _refusal_text, _thumbnail_link
 from apps.observations.models import ButterflyObservation, Photo, UploadStatus
 from apps.projects.services import projects_for
 from apps.validation.filters import FlagFilter
 from apps.validation.inlines import ValidationEventInline
-from apps.validation.models import Decision, ValidationQueueItem
+from apps.validation.models import Decision, ValidationEvent, ValidationQueueItem
 from apps.validation.services import decide, queue_filter
 
 # The decisions the record's page may post directly. Change taxon needs its own form, and reset
@@ -294,3 +296,55 @@ class ValidationQueueItemAdmin(ReadOnlyMapMixin, admin.ModelAdmin):
         return TemplateResponse(
             request, "admin/validation/validationqueueitem/change_taxon.html", context
         )
+
+
+@admin.register(ValidationEvent)
+class ValidationEventAdmin(ExportActionsMixin, admin.ModelAdmin):
+    """The validation decisions as a read-only list (T065, D-101), for the export actions and for
+    browsing the history across observations. No add, change or delete: events are written only by
+    `validation.services.record_decision`. Limited to the user's projects."""
+
+    export_dataset = "validation_history"
+    actions = ExportActionsMixin.export_actions
+    list_display = [
+        "decided_at",
+        "observation_link",
+        "decision",
+        "previous_status",
+        "new_status",
+        "new_taxon",
+        "decided_by",
+    ]
+    list_display_links = None
+    list_filter = [
+        "decision",
+        ("observation__project", RelatedOnlyFieldListFilter),
+        "decided_at",
+    ]
+    search_fields = ["comment", "new_taxon__scientific_name"]
+    ordering = ["-decided_at"]
+    list_select_related = ["observation__taxon", "new_taxon", "decided_by"]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .filter(observation__project__in=projects_for(request.user))
+        )
+
+    @admin.display(description=_("Observation"))
+    def observation_link(self, event):
+        return format_html(
+            '<a href="{}">{}</a>',
+            reverse("admin:observations_butterflyobservation_change", args=[event.observation_id]),
+            event.observation,
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

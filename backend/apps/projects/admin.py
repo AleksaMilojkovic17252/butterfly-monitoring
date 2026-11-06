@@ -2,13 +2,18 @@ from zoneinfo import available_timezones
 
 from django import forms
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.admin import HistoryAdmin, MapAdmin, SyncableAdmin
 from apps.core.widgets import EditableMapWidget, SearchableSelect
+from apps.exports import service
 from apps.projects.models import Project, ProjectMembership, ProjectProtocol
-from apps.projects.services import AreaFileError, multipolygon_from_file
+from apps.projects.services import AreaFileError, multipolygon_from_file, projects_for
 
 
 class HelpTextMixin:
@@ -206,6 +211,25 @@ class ProjectAdmin(HelpTextMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
         ),
     }
     actions = [*SyncableAdmin.actions, "import_area"]
+    change_form_template = "admin/projects/project/change_form.html"
+
+    def get_urls(self):
+        return [
+            path(
+                "<uuid:pk>/export-bundle/",
+                self.admin_site.admin_view(self.export_bundle_view),
+                name="projects_project_export_bundle",
+            ),
+            *super().get_urls(),
+        ]
+
+    def export_bundle_view(self, request, pk):
+        """The project's ZIP bundle with the API defaults (T065, D-101)."""
+        project = get_object_or_404(projects_for(request.user), pk=pk)
+        if not self.has_view_permission(request, project):
+            raise PermissionDenied
+        file, filename = service.bundle(request.user, service.parse_filters({"project": str(pk)}))
+        return FileResponse(file, as_attachment=True, filename=filename)
 
     def get_inline_instances(self, request, obj=None):
         # The protocol row only exists after the project is saved (signal).

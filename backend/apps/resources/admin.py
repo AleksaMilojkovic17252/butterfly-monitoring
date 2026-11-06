@@ -2,15 +2,20 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.admin import HistoryAdmin, MapAdmin, ReadOnlyMapMixin, SyncableAdmin
+from apps.exports.admin_actions import ExportActionsMixin
 from apps.observations.admin import PhotoInline
 from apps.resources.models import HabitatFeature, PlantResourceObservation
 
 
-class ReadOnlyGeometryAdmin(ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin):
+class ReadOnlyGeometryAdmin(
+    ExportActionsMixin, ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAdmin
+):
     """Base for a record that is made on the phone and pushed through the API, so the admin only
-    shows it (T051, T053): no add, no change, no actions. A read-only map shows its geometry (the
-    form's own map widget is for editing, and a page without change permission shows plain text
-    instead)."""
+    shows it (T051, T053): no add, no change, only the export actions (T065). A read-only map
+    shows its geometry (the form's own map widget is for editing, and a page without change
+    permission shows plain text instead)."""
+
+    actions = ExportActionsMixin.export_actions
 
     def get_fields(self, request, obj=None):
         fields = [field.name for field in self.model._meta.fields]
@@ -28,13 +33,16 @@ class ReadOnlyGeometryAdmin(ReadOnlyMapMixin, HistoryAdmin, SyncableAdmin, MapAd
         return False
 
     def get_actions(self, request):
-        return {}
+        actions = super().get_actions(request)
+        return {name: a for name, a in actions.items() if name in self.export_actions}
 
 
 @admin.register(PlantResourceObservation)
 class PlantResourceObservationAdmin(ReadOnlyGeometryAdmin):
     """Plant records (T051), with their photos: the thumbnail opens the original. Like
     `PhotoAdmin`."""
+
+    export_dataset = "plant_resources"
 
     inlines = [PhotoInline]
     list_display = [
@@ -59,6 +67,8 @@ class PlantResourceObservationAdmin(ReadOnlyGeometryAdmin):
 @admin.register(HabitatFeature)
 class HabitatFeatureAdmin(ReadOnlyGeometryAdmin):
     """Habitat features (T053). They have no photos."""
+
+    export_dataset = "habitat_features"
 
     list_display = [
         "observed_at",

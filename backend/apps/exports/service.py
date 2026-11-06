@@ -109,9 +109,14 @@ def _dataset(name):
     return DATASETS[name]
 
 
-def _queryset(user, dataset, filters):
-    """The dataset's rows for this user, narrowed by the project and the dates."""
+def _queryset(user, dataset, filters, selected=None):
+    """The dataset's rows for this user, narrowed by the project and the dates.
+
+    `selected` (admin actions, T065) is a queryset of the model; only its rows are kept.
+    """
     queryset = dataset.queryset(user)
+    if selected is not None:
+        queryset = queryset.filter(pk__in=selected.order_by().values("pk"))
     if filters.project:
         match = Q()
         for path in dataset.project_fields:
@@ -185,8 +190,8 @@ def metadata(user, names, filters, fmt="csv"):
     }
 
 
-def _chunks(user, dataset, fmt, filters):
-    queryset = _queryset(user, dataset, filters)
+def _chunks(user, dataset, fmt, filters, selected=None):
+    queryset = _queryset(user, dataset, filters, selected)
     names = [column.name for column in dataset.all_columns]
     if fmt == "csv":
         return writers.csv_chunks(names, iter_rows(dataset, queryset), filters.na, filters.excel)
@@ -197,11 +202,14 @@ def _chunks(user, dataset, fmt, filters):
     return writers.json_chunks(info, names, iter_rows(dataset, queryset))
 
 
-def export(user, name, fmt, filters):
-    """One dataset as a stream of text chunks: `(chunks, content_type, filename)`."""
+def export(user, name, fmt, filters, selected=None):
+    """One dataset as a stream of text chunks: `(chunks, content_type, filename)`.
+
+    `selected` limits the rows to a queryset chosen in the admin (T065).
+    """
     dataset = _dataset(name)
     content_type, extension = FORMATS[fmt]
-    return _chunks(user, dataset, fmt, filters), content_type, f"{name}.{extension}"
+    return _chunks(user, dataset, fmt, filters, selected), content_type, f"{name}.{extension}"
 
 
 def bundle(user, filters):

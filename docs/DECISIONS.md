@@ -2172,3 +2172,22 @@ works offline.
 8. **Year of a record differs between the two sections on purpose.** The indicators take the year from the visit's start (as the server view does); phenology takes the ISO year
    of the record's own local time (as its view does). A visit started on 31 December with records after midnight is in one year in the indicators and in the next in phenology.
 **Not handled.** Behaviour counts, valid visits, and confirmed/to-review counts (the phone has no validation data); project-wide figures (admin reports); a custom date range.
+
+## D-101 · Admin export actions (T065): selection = filter through the export service, a read-only validation events list
+2026-11-06 · accepted · T065, *builds on D-077, D-090, D-091 and D-099*
+`apps/exports/admin_actions.py` has `ExportActionsMixin` (Export selected as CSV / as GeoJSON, `permissions=["view"]`) on the admins of visits, observations, plant resources,
+habitat features, transects and validation events; the three report admins use it too.
+1. **Selection = filter.** The action passes the selected rows (or all rows of the filtered list with "Select all") to `service.export(..., selected=queryset)`. The service
+   narrows the dataset's own queryset with `pk__in=selected.order_by().values("pk")`, so scoping, columns and ordering stay the API's: selecting all rows of project X gives
+   the same bytes as `GET /api/v1/exports/<dataset>?project=X`.
+2. **Soft-deleted selected rows are left out** (an export has live rows only, D-077), with no message because the answer is a file.
+3. **API defaults, no options**: `parse_filters({})` (NA code, no BOM, no dates). Filenames are the API's (`survey_visits.csv`).
+4. **`ValidationEventAdmin`** is new: a read-only list under Validation (no add, change or delete), limited to the user's projects, with the export actions. This reverses
+   "no ModelAdmin is registered" in D-090/D-091. The rows stay read-only because both the admin and `ValidationEventInline` refuse writes.
+5. **Plant and habitat lists** keep no soft delete, but now show checkboxes with only the two export actions (`ReadOnlyGeometryAdmin.get_actions`).
+6. **Reports**: a report view is not an export dataset, so `ReportAdmin` overrides `export_response`. CSV now uses the missing-value code (`NA`) instead of T061's empty cells;
+   GeoJSON has `"geometry": null` and the feature id is the view's `row_id`. "Identical to the API" does not apply to them.
+7. **Project bundle**: an "Export project bundle (ZIP)" link in the project change page's object tools (`/admin/projects/project/<uuid>/export-bundle/`), for the whole project
+   with the API defaults (no dates, no track points). Two bundles never match byte for byte (ZIP entry times, `exported_at`); the CSVs inside and `metadata.json` apart from
+   `exported_at` do.
+**Not handled.** Transect sections have no actions; no date or option form in the admin; the checked-by-hand soft-deleted case had no data in the demo project.

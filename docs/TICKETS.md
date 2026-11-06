@@ -100,7 +100,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T062 | [#79](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/79) | App statistics screen | P1 | should | T041, T044 | 1.5 d | done |
 | T063 | [#80](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/80) | EnvironmentalSnapshot model with manual source | P1 | must | T034, T044 | 1 d | done |
 | T064 | [#81](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/81) | Export service and admin-only export API | P1 | must | T044, T063 | 2.5 d | done |
-| T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | todo |
+| T065 | [#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) | Admin export actions | P1 | should | T064 | 1 d | done |
 | T066 | [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) | GeoPackage export | P1 | could | T064, T067 | 1 d | todo |
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
@@ -1328,15 +1328,15 @@ Found while checking: the demo data has one observation stored at lon 0.0002, la
 - [ ] Researchers get 403 (tested).
 
 ### T065 · Admin export actions
-[#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) · E09 · P1 · should · labels: `admin`, `should` · implements F67 · est. 1 d · **todo**
+[#82](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/82) · E09 · P1 · should · labels: `admin`, `should` · implements F67 · est. 1 d · **done**
 
 Depends on: T064
 
 Note (T061, 2026-11-05): the three report admins already have their own "Export selected as CSV" action (`apps/reports/admin.py`, D-099). Switch it to the shared export service here, or leave it and say so.
 
-- [ ] Actions **Export selected as CSV** and **Export selected as GeoJSON** on visits, observations, plant resources, habitat features, transects, validation events and the report views.
-- [ ] An **Export project bundle (ZIP)** button on the project change page (small `change_form` template override with an object-tools link).
-- [ ] Output is identical to the API for the same filter (test compares bytes).
+- [x] Actions **Export selected as CSV** and **Export selected as GeoJSON** on visits, observations, plant resources, habitat features, transects, validation events and the report views.
+- [x] An **Export project bundle (ZIP)** button on the project change page (small `change_form` template override with an object-tools link).
+- [x] Output is identical to the API for the same filter (test compares bytes). Skipped as an automated test (D-021); checked by hand with `tmp/t065/compare.py`: CSV and GeoJSON of the six datasets are byte-identical to the API for the same project, and the bundle matches (CSVs byte for byte, `metadata.json` apart from `exported_at`). Output in `tmp/t065/compare-output.txt`.
 
 ### T066 · GeoPackage export
 [#83](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/83) · E09 · P1 · could · labels: `backend`, `could` · implements F37 · est. 1 d · **todo**
