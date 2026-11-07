@@ -1,9 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/evaluation/eval_logger.dart';
 import 'package:mobile/core/location/location_message.dart';
 import 'package:mobile/core/location/location_provider.dart';
 import 'package:mobile/core/validation/observation_values.dart';
@@ -29,6 +31,7 @@ import 'package:mobile/features/visits/data/track_point_repository.dart';
 import 'package:mobile/features/visits/domain/current_section.dart';
 import 'package:mobile/features/visits/domain/local_time.dart';
 import 'package:mobile/features/visits/domain/tracking_controller.dart';
+import 'package:uuid/uuid.dart';
 
 /// What the sheet hands back after a save: the new observation's id (for
 /// Undo) and the text for the "Saved" message.
@@ -175,10 +178,35 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   /// lazy `late final` would first run there when no photo was taken.
   late final PhotoRepository _photos;
 
+  /// Identifies this opening of the sheet in the evaluation events (T073).
+  final String _sheetId = const Uuid().v4();
+
+  /// Runs from the sheet opening; its time at Save is the entry time (T073).
+  final Stopwatch _openFor = Stopwatch();
+
+  /// Taps inside the sheet so far (T073).
+  int _taps = 0;
+
+  /// Where each pointer in progress went down, by pointer id, so two fingers
+  /// are told apart.
+  final Map<int, Offset> _downAt = {};
+
+  /// The last error message logged, so pressing Save again on the same
+  /// failure does not log it again (T073).
+  String? _lastLoggedError;
+
   @override
   void initState() {
     super.initState();
     _photos = ref.read(photoRepositoryProvider);
+    _openFor.start();
+    ref
+        .read(evalLoggerProvider)
+        .log(
+          evalObsOpen,
+          entityId: widget.visit?.id,
+          payload: {'sheet': _sheetId, 'mode': _mode.name},
+        );
     // A free observation asks for the GPS fix as soon as the sheet opens, so it
     // is usually there by the time the user has picked a species.
     if (_mode == _SheetMode.free && _placed == null) _startFix();
@@ -254,9 +282,9 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       }
       setState(() => _drafts = [..._drafts, draft]);
     } on StateError catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) _showError(error.message);
     } catch (error) {
-      if (mounted) setState(() => _error = 'Could not add the photo: $error');
+      if (mounted) _showError('Could not add the photo: $error');
     } finally {
       if (mounted) setState(() => _capturing = false);
     }
@@ -351,7 +379,7 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     final recordedById = ref.read(authControllerProvider).profile?.id;
     if (taxon == null) return;
     if (recordedById == null) {
-      setState(() => _error = 'You are signed out.');
+      _showError('You are signed out.');
       return;
     }
     setState(() {
@@ -439,6 +467,20 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
         );
       }
       _saved = true;
+      ref
+          .read(evalLoggerProvider)
+          .log(
+            evalObsSaved,
+            entityId: id,
+            durationMs: _openFor.elapsedMilliseconds,
+            payload: {
+              'sheet': _sheetId,
+              'mode': _mode.name,
+              'taps': _taps,
+              'taxon_id': taxon.id,
+              'count': _count,
+            },
+          );
       if (!mounted) return;
       Navigator.pop(context, (id: id, label: '${taxonTitle(taxon)} × $_count'));
     } on LocationException catch (error) {
@@ -509,10 +551,9 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
       chosen = chosen.add(const Duration(days: 1));
     }
     if (chosen.isAfter(end)) {
-      setState(
-        () => _error =
-            'Pick a time between ${formatLocalTime(start)} and '
-            '${formatLocalTime(end)}.',
+      _showError(
+        'Pick a time between ${formatLocalTime(start)} and '
+        '${formatLocalTime(end)}.',
       );
       return;
     }
@@ -529,10 +570,37 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
   /// Shows [message] in the sheet and lets the observer try again.
   void _fail(String message) {
     if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _error = message;
-    });
+    setState(() => _saving = false);
+    _showError(message);
+  }
+
+  /// Shows [message] in the sheet and logs it as an `error` event (T073).
+  /// The same message as the last logged one is shown again but not logged
+  /// twice.
+  void _showError(String message) {
+    if (!mounted) return;
+    setState(() => _error = message);
+    if (message == _lastLoggedError) return;
+    _lastLoggedError = message;
+    ref
+        .read(evalLoggerProvider)
+        .log(
+          evalError,
+          payload: {
+            'screen': 'observation_sheet',
+            'sheet': _sheetId,
+            'message': message,
+          },
+        );
+  }
+
+  /// A tap is a pointer that goes up within [kTouchSlop] of where it went
+  /// down, so a scroll does not count (T073).
+  void _onPointerUp(PointerUpEvent event) {
+    final down = _downAt.remove(event.pointer);
+    if (down == null || (event.position - down).distance >= kTouchSlop) return;
+    _taps++;
+    ref.read(evalLoggerProvider).log(evalTap, payload: {'sheet': _sheetId});
   }
 
   /// Opens the map capture to place (or move) the point of a free observation.
@@ -701,157 +769,167 @@ class _QuickButterflySheetState extends ConsumerState<QuickButterflySheet> {
     // Read here, above the Scaffold: it uses up the keyboard inset for its body.
     final keyboardOpen = keyboardHeight > 0;
     // Keeps Save clear of the system navigation bar.
-    final content = SafeArea(
-      top: false,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: switch (_mode) {
-              _SheetMode.afterVisit => _afterVisitHeader(),
-              _SheetMode.free => _freeHeader(),
-              _SheetMode.live => PositionLine(
-                fix: fix,
-                accuracyWarningM: widget.accuracyWarningM ?? 0,
-                sectionCode: fix == null ? null : section?.sectionCode,
-              ),
-            },
-          ),
-          Expanded(
-            child: _detailsOpen
-                ? Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () => setState(() => _detailsOpen = false),
-                          icon: const Icon(Icons.chevron_left),
-                          label: const Text('Back to species'),
-                        ),
-                      ),
-                      Expanded(
-                        child: ObservationDetailsForm(
-                          details: _details,
-                          onChanged: (details) =>
-                              setState(() => _details = details),
-                          photos: _photoSlot(),
-                          hasPhoto: _drafts.isNotEmpty,
-                          onPhotoNeeded: _askForPhoto,
-                          projectId: widget.projectId,
-                          visitId: visit?.id,
-                          // A placed point may not be where the user stands.
-                          showFacing:
-                              _mode != _SheetMode.afterVisit && _placed == null,
-                        ),
-                      ),
-                    ],
-                  )
-                : TaxonPicker(
-                    projectId: widget.projectId,
-                    selectedId: _selected?.id,
-                    onSelected: (taxon) {
-                      // Closes the keyboard, which brings back Save.
-                      FocusScope.of(context).unfocus();
-                      setState(() => _selected = taxon);
-                    },
-                  ),
-          ),
-          // On the free screen the species search gets the room above the
-          // keyboard: the count and Save come back when it closes.
-          if (!_fullScreen || !keyboardOpen) ...[
-            const Divider(height: 1),
+    final content = Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (event) => _downAt[event.pointer] = event.position,
+      onPointerCancel: (event) => _downAt.remove(event.pointer),
+      onPointerUp: _onPointerUp,
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ),
-                  // W01 only warns: Save works without a photo, because the
-                  // butterfly may have flown off. The photo buttons are in
-                  // the Details form, so the line offers to open it.
-                  if ((_selected?.photoRequired ?? false) && _drafts.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.photo_camera_outlined),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text('${ruleMessage('W01')}.')),
-                          if (!_detailsOpen)
-                            TextButton(
-                              onPressed: () =>
-                                  setState(() => _detailsOpen = true),
-                              child: const Text('Add photo'),
-                            ),
-                        ],
-                      ),
-                    ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _detailsOpen = !_detailsOpen),
-                      icon: Icon(
-                        _detailsOpen ? Icons.expand_more : Icons.expand_less,
-                      ),
-                      label: Text(_detailsOpen ? 'Hide details' : 'Details'),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _selected == null
-                              ? 'Pick a species'
-                              : taxonTitle(_selected!),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                      CountStepper(
-                        value: _count,
-                        onChanged: (count) => setState(() => _count = count),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed:
-                          _selected == null ||
-                              _saving ||
-                              (_mode == _SheetMode.afterVisit &&
-                                  _placed == null)
-                          ? null
-                          : _save,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 56),
-                      ),
-                      child: _saving
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 3),
-                            )
-                          : const Text('Save'),
-                    ),
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: switch (_mode) {
+                _SheetMode.afterVisit => _afterVisitHeader(),
+                _SheetMode.free => _freeHeader(),
+                _SheetMode.live => PositionLine(
+                  fix: fix,
+                  accuracyWarningM: widget.accuracyWarningM ?? 0,
+                  sectionCode: fix == null ? null : section?.sectionCode,
+                ),
+              },
             ),
+            Expanded(
+              child: _detailsOpen
+                  ? Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: () =>
+                                setState(() => _detailsOpen = false),
+                            icon: const Icon(Icons.chevron_left),
+                            label: const Text('Back to species'),
+                          ),
+                        ),
+                        Expanded(
+                          child: ObservationDetailsForm(
+                            details: _details,
+                            onChanged: (details) =>
+                                setState(() => _details = details),
+                            photos: _photoSlot(),
+                            hasPhoto: _drafts.isNotEmpty,
+                            onPhotoNeeded: _askForPhoto,
+                            projectId: widget.projectId,
+                            visitId: visit?.id,
+                            // A placed point may not be where the user stands.
+                            showFacing:
+                                _mode != _SheetMode.afterVisit &&
+                                _placed == null,
+                          ),
+                        ),
+                      ],
+                    )
+                  : TaxonPicker(
+                      projectId: widget.projectId,
+                      selectedId: _selected?.id,
+                      onSelected: (taxon) {
+                        // Closes the keyboard, which brings back Save.
+                        FocusScope.of(context).unfocus();
+                        setState(() => _selected = taxon);
+                      },
+                    ),
+            ),
+            // On the free screen the species search gets the room above the
+            // keyboard: the count and Save come back when it closes.
+            if (!_fullScreen || !keyboardOpen) ...[
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    // W01 only warns: Save works without a photo, because the
+                    // butterfly may have flown off. The photo buttons are in
+                    // the Details form, so the line offers to open it.
+                    if ((_selected?.photoRequired ?? false) && _drafts.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.photo_camera_outlined),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text('${ruleMessage('W01')}.')),
+                            if (!_detailsOpen)
+                              TextButton(
+                                onPressed: () =>
+                                    setState(() => _detailsOpen = true),
+                                child: const Text('Add photo'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            setState(() => _detailsOpen = !_detailsOpen),
+                        icon: Icon(
+                          _detailsOpen ? Icons.expand_more : Icons.expand_less,
+                        ),
+                        label: Text(_detailsOpen ? 'Hide details' : 'Details'),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selected == null
+                                ? 'Pick a species'
+                                : taxonTitle(_selected!),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        CountStepper(
+                          value: _count,
+                          onChanged: (count) => setState(() => _count = count),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed:
+                            _selected == null ||
+                                _saving ||
+                                (_mode == _SheetMode.afterVisit &&
+                                    _placed == null)
+                            ? null
+                            : _save,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 56),
+                        ),
+                        child: _saving
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Text('Save'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
     return PopScope(

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:mobile/core/config/photo_wifi_only.dart';
+import 'package:mobile/core/evaluation/eval_logger.dart';
 import 'package:mobile/core/http/transfer_counter.dart';
 import 'package:mobile/core/sync/photo_uploader.dart';
 import 'package:mobile/core/sync/pull_applier.dart';
@@ -138,6 +139,8 @@ class SyncRunner extends Notifier<SyncRunState> {
     final syncState = ref.read(syncStateRepositoryProvider);
     final projectRepository = ref.read(projectRepositoryProvider);
     final transferCounter = ref.read(transferCounterProvider);
+    final evalLogger = ref.read(evalLoggerProvider);
+    final runTime = Stopwatch();
     state = SyncRunState(
       running: true,
       last: state.last,
@@ -156,6 +159,10 @@ class SyncRunner extends Notifier<SyncRunState> {
     String? error;
     String? photoError;
 
+    // Logged right before the `try`, so every `sync_start` has a `sync_end`
+    // from the `finally`.
+    runTime.start();
+    evalLogger.log(evalSyncStart, payload: {'manual': manual});
     try {
       transferCounter.reset();
       await syncRepository.recoverInFlight();
@@ -302,6 +309,19 @@ class SyncRunner extends Notifier<SyncRunState> {
         error: e.toString(),
       );
     } finally {
+      // `bytes` is the transfer counter's, which leaves out photo file bodies.
+      evalLogger.log(
+        evalSyncEnd,
+        durationMs: runTime.elapsedMilliseconds,
+        payload: {
+          'ok': result.ok,
+          'pushed': result.pushed,
+          'pulled': result.pulled,
+          'bytes': result.bytes,
+          'error': result.error,
+          'cancelled': result.cancelled,
+        },
+      );
       state = SyncRunState(running: false, last: result);
     }
     return result;

@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/db/app_database.steps.dart';
 import 'package:mobile/core/db/butterfly_observations.dart';
+import 'package:mobile/core/db/eval_events.dart';
 import 'package:mobile/core/db/habitat_features.dart';
 import 'package:mobile/core/db/habitat_types.dart';
 import 'package:mobile/core/db/management_types.dart';
@@ -53,13 +54,14 @@ part 'app_database.g.dart';
     Transects,
     RouteRecordings,
     RouteRecordingPoints,
+    EvalEvents,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -239,6 +241,10 @@ class AppDatabase extends _$AppDatabase {
         await m.database.customStatement(
           "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
         );
+      },
+      from18To19: (m, schema) async {
+        // Local only (T073): no pull cursors are reset.
+        await m.createTable(schema.evalEvent);
       },
     ),
   );

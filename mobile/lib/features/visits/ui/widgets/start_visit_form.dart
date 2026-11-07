@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/evaluation/eval_logger.dart';
 import 'package:mobile/core/validation/protocol_window.dart';
 import 'package:mobile/core/validation/visit_values.dart';
 import 'package:mobile/core/validation/weather_check.dart';
@@ -65,11 +66,25 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
   /// True while a save runs, so the buttons cannot be pressed twice.
   bool _saving = false;
 
+  /// Runs from the form opening; its time at Start is the "time to start a
+  /// visit" metric (T073).
+  final Stopwatch _openedFor = Stopwatch();
+
   @override
   void initState() {
     super.initState();
-    // TODO(T073): log the `visit_form_open` event (time from the tap to here).
     final draft = widget.draft;
+    _openedFor.start();
+    ref
+        .read(evalLoggerProvider)
+        .log(
+          evalVisitFormOpen,
+          entityId: draft?.id,
+          payload: {
+            'transect_id': widget.transect.id,
+            'from_draft': draft != null,
+          },
+        );
     _openedDraft = draft;
     if (draft != null) {
       final values = VisitStartValues.fromVisit(draft);
@@ -164,7 +179,9 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
       if (!_protocolConfirmed) 'protocol confirmation',
     ];
     if (missing.isNotEmpty) {
-      _showMessage('To start, fill in: ${missing.join(', ')}.');
+      final message = 'To start, fill in: ${missing.join(', ')}.';
+      _logError(message);
+      _showMessage(message);
       return;
     }
 
@@ -228,11 +245,20 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      _showMessage('Could not save the visit: $error');
+      final message = 'Could not save the visit: $error';
+      _logError(message);
+      _showMessage(message);
       return;
     }
     if (!mounted) return;
     if (visitId != null) {
+      ref
+          .read(evalLoggerProvider)
+          .log(
+            evalVisitStarted,
+            entityId: visitId,
+            durationMs: _openedFor.elapsedMilliseconds,
+          );
       context.pushReplacement(
         '/projects/${widget.protocol.projectId}/visits/$visitId',
       );
@@ -272,6 +298,13 @@ class _StartVisitFormState extends ConsumerState<StartVisitForm> {
     if (!mounted) return;
     _showMessage('Recorded as not conducted');
     context.pop();
+  }
+
+  /// Logs a validation or save error shown by this form (T073).
+  void _logError(String message) {
+    ref
+        .read(evalLoggerProvider)
+        .log(evalError, payload: {'screen': 'start_visit', 'message': message});
   }
 
   void _showMessage(String text) {

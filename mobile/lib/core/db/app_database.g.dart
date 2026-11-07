@@ -19345,6 +19345,458 @@ class RouteRecordingPointsCompanion
   }
 }
 
+class $EvalEventsTable extends EvalEvents
+    with TableInfo<$EvalEventsTable, EvalEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EvalEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _eventTypeMeta = const VerificationMeta(
+    'eventType',
+  );
+  @override
+  late final GeneratedColumn<String> eventType = GeneratedColumn<String>(
+    'event_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _atMeta = const VerificationMeta('at');
+  @override
+  late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
+    'at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationMsMeta = const VerificationMeta(
+    'durationMs',
+  );
+  @override
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _payloadMeta = const VerificationMeta(
+    'payload',
+  );
+  @override
+  late final GeneratedColumn<String> payload = GeneratedColumn<String>(
+    'payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    seq,
+    sessionId,
+    eventType,
+    entityId,
+    at,
+    durationMs,
+    payload,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'eval_event';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EvalEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('event_type')) {
+      context.handle(
+        _eventTypeMeta,
+        eventType.isAcceptableOrUnknown(data['event_type']!, _eventTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    }
+    if (data.containsKey('at')) {
+      context.handle(_atMeta, at.isAcceptableOrUnknown(data['at']!, _atMeta));
+    } else if (isInserting) {
+      context.missing(_atMeta);
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
+      );
+    }
+    if (data.containsKey('payload')) {
+      context.handle(
+        _payloadMeta,
+        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {seq};
+  @override
+  EvalEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EvalEvent(
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      eventType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_type'],
+      )!,
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      ),
+      at: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}at'],
+      )!,
+      durationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_ms'],
+      ),
+      payload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload'],
+      )!,
+    );
+  }
+
+  @override
+  $EvalEventsTable createAlias(String alias) {
+    return $EvalEventsTable(attachedDatabase, alias);
+  }
+}
+
+class EvalEvent extends DataClass implements Insertable<EvalEvent> {
+  final int seq;
+  final String sessionId;
+
+  /// visit_form_open, visit_started, obs_open, obs_saved, tap, error,
+  /// sync_start, sync_end.
+  final String eventType;
+  final String? entityId;
+  final DateTime at;
+  final int? durationMs;
+
+  /// JSON object with the event's details.
+  final String payload;
+  const EvalEvent({
+    required this.seq,
+    required this.sessionId,
+    required this.eventType,
+    this.entityId,
+    required this.at,
+    this.durationMs,
+    required this.payload,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['seq'] = Variable<int>(seq);
+    map['session_id'] = Variable<String>(sessionId);
+    map['event_type'] = Variable<String>(eventType);
+    if (!nullToAbsent || entityId != null) {
+      map['entity_id'] = Variable<String>(entityId);
+    }
+    map['at'] = Variable<DateTime>(at);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = Variable<int>(durationMs);
+    }
+    map['payload'] = Variable<String>(payload);
+    return map;
+  }
+
+  EvalEventsCompanion toCompanion(bool nullToAbsent) {
+    return EvalEventsCompanion(
+      seq: Value(seq),
+      sessionId: Value(sessionId),
+      eventType: Value(eventType),
+      entityId: entityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityId),
+      at: Value(at),
+      durationMs: durationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMs),
+      payload: Value(payload),
+    );
+  }
+
+  factory EvalEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EvalEvent(
+      seq: serializer.fromJson<int>(json['seq']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      eventType: serializer.fromJson<String>(json['eventType']),
+      entityId: serializer.fromJson<String?>(json['entityId']),
+      at: serializer.fromJson<DateTime>(json['at']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+      payload: serializer.fromJson<String>(json['payload']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'seq': serializer.toJson<int>(seq),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'eventType': serializer.toJson<String>(eventType),
+      'entityId': serializer.toJson<String?>(entityId),
+      'at': serializer.toJson<DateTime>(at),
+      'durationMs': serializer.toJson<int?>(durationMs),
+      'payload': serializer.toJson<String>(payload),
+    };
+  }
+
+  EvalEvent copyWith({
+    int? seq,
+    String? sessionId,
+    String? eventType,
+    Value<String?> entityId = const Value.absent(),
+    DateTime? at,
+    Value<int?> durationMs = const Value.absent(),
+    String? payload,
+  }) => EvalEvent(
+    seq: seq ?? this.seq,
+    sessionId: sessionId ?? this.sessionId,
+    eventType: eventType ?? this.eventType,
+    entityId: entityId.present ? entityId.value : this.entityId,
+    at: at ?? this.at,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    payload: payload ?? this.payload,
+  );
+  EvalEvent copyWithCompanion(EvalEventsCompanion data) {
+    return EvalEvent(
+      seq: data.seq.present ? data.seq.value : this.seq,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      eventType: data.eventType.present ? data.eventType.value : this.eventType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      at: data.at.present ? data.at.value : this.at,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
+      payload: data.payload.present ? data.payload.value : this.payload,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EvalEvent(')
+          ..write('seq: $seq, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('eventType: $eventType, ')
+          ..write('entityId: $entityId, ')
+          ..write('at: $at, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('payload: $payload')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(seq, sessionId, eventType, entityId, at, durationMs, payload);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EvalEvent &&
+          other.seq == this.seq &&
+          other.sessionId == this.sessionId &&
+          other.eventType == this.eventType &&
+          other.entityId == this.entityId &&
+          other.at == this.at &&
+          other.durationMs == this.durationMs &&
+          other.payload == this.payload);
+}
+
+class EvalEventsCompanion extends UpdateCompanion<EvalEvent> {
+  final Value<int> seq;
+  final Value<String> sessionId;
+  final Value<String> eventType;
+  final Value<String?> entityId;
+  final Value<DateTime> at;
+  final Value<int?> durationMs;
+  final Value<String> payload;
+  const EvalEventsCompanion({
+    this.seq = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.eventType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.at = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.payload = const Value.absent(),
+  });
+  EvalEventsCompanion.insert({
+    this.seq = const Value.absent(),
+    required String sessionId,
+    required String eventType,
+    this.entityId = const Value.absent(),
+    required DateTime at,
+    this.durationMs = const Value.absent(),
+    this.payload = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       eventType = Value(eventType),
+       at = Value(at);
+  static Insertable<EvalEvent> custom({
+    Expression<int>? seq,
+    Expression<String>? sessionId,
+    Expression<String>? eventType,
+    Expression<String>? entityId,
+    Expression<DateTime>? at,
+    Expression<int>? durationMs,
+    Expression<String>? payload,
+  }) {
+    return RawValuesInsertable({
+      if (seq != null) 'seq': seq,
+      if (sessionId != null) 'session_id': sessionId,
+      if (eventType != null) 'event_type': eventType,
+      if (entityId != null) 'entity_id': entityId,
+      if (at != null) 'at': at,
+      if (durationMs != null) 'duration_ms': durationMs,
+      if (payload != null) 'payload': payload,
+    });
+  }
+
+  EvalEventsCompanion copyWith({
+    Value<int>? seq,
+    Value<String>? sessionId,
+    Value<String>? eventType,
+    Value<String?>? entityId,
+    Value<DateTime>? at,
+    Value<int?>? durationMs,
+    Value<String>? payload,
+  }) {
+    return EvalEventsCompanion(
+      seq: seq ?? this.seq,
+      sessionId: sessionId ?? this.sessionId,
+      eventType: eventType ?? this.eventType,
+      entityId: entityId ?? this.entityId,
+      at: at ?? this.at,
+      durationMs: durationMs ?? this.durationMs,
+      payload: payload ?? this.payload,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (eventType.present) {
+      map['event_type'] = Variable<String>(eventType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (at.present) {
+      map['at'] = Variable<DateTime>(at.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    if (payload.present) {
+      map['payload'] = Variable<String>(payload.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EvalEventsCompanion(')
+          ..write('seq: $seq, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('eventType: $eventType, ')
+          ..write('entityId: $entityId, ')
+          ..write('at: $at, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('payload: $payload')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -19388,6 +19840,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $RouteRecordingPointsTable routeRecordingPoints =
       $RouteRecordingPointsTable(this);
+  late final $EvalEventsTable evalEvents = $EvalEventsTable(this);
   late final Index syncQueueEntity = Index(
     'sync_queue_entity',
     'CREATE INDEX sync_queue_entity ON sync_queue (entity_type, entity_id, seq)',
@@ -19419,6 +19872,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transectSections,
     routeRecordings,
     routeRecordingPoints,
+    evalEvents,
     syncQueueEntity,
   ];
   @override
@@ -31662,6 +32116,244 @@ typedef $$RouteRecordingPointsTableProcessedTableManager =
       RouteRecordingPoint,
       PrefetchHooks Function({bool recordingId})
     >;
+typedef $$EvalEventsTableCreateCompanionBuilder = EvalEventsCompanion Function({
+  Value<int> seq,
+  required String sessionId,
+  required String eventType,
+  Value<String?> entityId,
+  required DateTime at,
+  Value<int?> durationMs,
+  Value<String> payload,
+});
+typedef $$EvalEventsTableUpdateCompanionBuilder = EvalEventsCompanion Function({
+  Value<int> seq,
+  Value<String> sessionId,
+  Value<String> eventType,
+  Value<String?> entityId,
+  Value<DateTime> at,
+  Value<int?> durationMs,
+  Value<String> payload,
+});
+
+class $$EvalEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $EvalEventsTable> {
+  $$EvalEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventType => $composableBuilder(
+    column: $table.eventType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EvalEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EvalEventsTable> {
+  $$EvalEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eventType => $composableBuilder(
+    column: $table.eventType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EvalEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EvalEventsTable> {
+  $$EvalEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<String> get eventType =>
+      $composableBuilder(column: $table.eventType, builder: (column) => column);
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get at =>
+      $composableBuilder(column: $table.at, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => column);
+}
+
+class $$EvalEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EvalEventsTable,
+          EvalEvent,
+          $$EvalEventsTableFilterComposer,
+          $$EvalEventsTableOrderingComposer,
+          $$EvalEventsTableAnnotationComposer,
+          $$EvalEventsTableCreateCompanionBuilder,
+          $$EvalEventsTableUpdateCompanionBuilder,
+          (
+            EvalEvent,
+            BaseReferences<_$AppDatabase, $EvalEventsTable, EvalEvent>,
+          ),
+          EvalEvent,
+          PrefetchHooks Function()
+        > {
+  $$EvalEventsTableTableManager(_$AppDatabase db, $EvalEventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EvalEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EvalEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EvalEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> seq = const Value.absent(),
+                Value<String> sessionId = const Value.absent(),
+                Value<String> eventType = const Value.absent(),
+                Value<String?> entityId = const Value.absent(),
+                Value<DateTime> at = const Value.absent(),
+                Value<int?> durationMs = const Value.absent(),
+                Value<String> payload = const Value.absent(),
+              }) => EvalEventsCompanion(
+                seq: seq,
+                sessionId: sessionId,
+                eventType: eventType,
+                entityId: entityId,
+                at: at,
+                durationMs: durationMs,
+                payload: payload,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> seq = const Value.absent(),
+                required String sessionId,
+                required String eventType,
+                Value<String?> entityId = const Value.absent(),
+                required DateTime at,
+                Value<int?> durationMs = const Value.absent(),
+                Value<String> payload = const Value.absent(),
+              }) => EvalEventsCompanion.insert(
+                seq: seq,
+                sessionId: sessionId,
+                eventType: eventType,
+                entityId: entityId,
+                at: at,
+                durationMs: durationMs,
+                payload: payload,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EvalEventsTable, EvalEvent>(table),
+                  BaseReferences<_$AppDatabase, $EvalEventsTable, EvalEvent>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EvalEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EvalEventsTable,
+      EvalEvent,
+      $$EvalEventsTableFilterComposer,
+      $$EvalEventsTableOrderingComposer,
+      $$EvalEventsTableAnnotationComposer,
+      $$EvalEventsTableCreateCompanionBuilder,
+      $$EvalEventsTableUpdateCompanionBuilder,
+      (EvalEvent, BaseReferences<_$AppDatabase, $EvalEventsTable, EvalEvent>),
+      EvalEvent,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -31712,4 +32404,6 @@ class $AppDatabaseManager {
       $$RouteRecordingsTableTableManager(_db, _db.routeRecordings);
   $$RouteRecordingPointsTableTableManager get routeRecordingPoints =>
       $$RouteRecordingPointsTableTableManager(_db, _db.routeRecordingPoints);
+  $$EvalEventsTableTableManager get evalEvents =>
+      $$EvalEventsTableTableManager(_db, _db.evalEvents);
 }

@@ -9643,6 +9643,712 @@ class Shape32 extends i0.VersionedTable {
       columnsByName['created_by_name']! as i1.GeneratedColumn<String>;
 }
 
+final class Schema19 extends i0.VersionedSchema {
+  Schema19({required super.database}) : super(version: 19);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    project,
+    transect,
+    surveyVisit,
+    taxon,
+    butterflyObservation,
+    syncQueue,
+    syncState,
+    habitatType,
+    managementType,
+    plantTaxon,
+    plantResourceObservation,
+    habitatFeature,
+    photo,
+    projectProtocol,
+    syncConflict,
+    surveyTrackPoint,
+    taxonListVersion,
+    taxonUsage,
+    transectProposal,
+    transectSection,
+    routeRecording,
+    routeRecordingPoint,
+    evalEvent,
+    syncQueueEntity,
+  ];
+  late final Shape29 project = Shape29(
+    source: i0.VersionedTable(
+      entityName: 'project',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_6,
+        _column_7,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_30,
+        _column_12,
+        _column_193,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape12 transect = Shape12(
+    source: i0.VersionedTable(
+      entityName: 'transect',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_44,
+        _column_31,
+        _column_6,
+        _column_34,
+        _column_83,
+        _column_84,
+        _column_36,
+        _column_85,
+        _column_86,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape20 surveyVisit = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'survey_visit',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(status IN (\'draft\', \'in_progress\', \'completed\', \'synced\', \'reviewed\', \'locked\', \'cancelled\'))',
+      ],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_44,
+        _column_87,
+        _column_93,
+        _column_45,
+        _column_94,
+        _column_95,
+        _column_96,
+        _column_97,
+        _column_98,
+        _column_146,
+        _column_147,
+        _column_99,
+        _column_100,
+        _column_101,
+        _column_102,
+        _column_103,
+        _column_104,
+        _column_105,
+        _column_106,
+        _column_107,
+        _column_108,
+        _column_109,
+        _column_110,
+        _column_111,
+        _column_112,
+        _column_113,
+        _column_114,
+        _column_115,
+        _column_116,
+        _column_117,
+        _column_23,
+        _column_118,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 taxon = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'taxon',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_69,
+        _column_70,
+        _column_71,
+        _column_39,
+        _column_72,
+        _column_41,
+        _column_42,
+        _column_43,
+        _column_36,
+        _column_73,
+        _column_74,
+        _column_75,
+        _column_76,
+        _column_77,
+        _column_38,
+        _column_141,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape30 butterflyObservation = Shape30(
+    source: i0.VersionedTable(
+      entityName: 'butterfly_observation',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(count >= 1)',
+        'CHECK(source <> \'transect\' OR survey_visit_id IS NOT NULL)',
+      ],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_44,
+        _column_126,
+        _column_127,
+        _column_1,
+        _column_128,
+        _column_129,
+        _column_2,
+        _column_3,
+        _column_130,
+        _column_131,
+        _column_132,
+        _column_194,
+        _column_133,
+        _column_134,
+        _column_135,
+        _column_136,
+        _column_137,
+        _column_112,
+        _column_138,
+        _column_139,
+        _column_140,
+        _column_23,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape2 syncQueue = Shape2(
+    source: i0.VersionedTable(
+      entityName: 'sync_queue',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_25,
+        _column_26,
+        _column_27,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 syncState = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'sync_state',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_28, _column_29],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 habitatType = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'habitat_type',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_31,
+        _column_32,
+        _column_33,
+        _column_34,
+        _column_35,
+        _column_36,
+        _column_37,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 managementType = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'management_type',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_31,
+        _column_32,
+        _column_33,
+        _column_34,
+        _column_35,
+        _column_36,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 plantTaxon = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'plant_taxon',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_41,
+        _column_42,
+        _column_43,
+        _column_36,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape31 plantResourceObservation = Shape31(
+    source: i0.VersionedTable(
+      entityName: 'plant_resource_observation',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_44,
+        _column_126,
+        _column_160,
+        _column_161,
+        _column_1,
+        _column_162,
+        _column_2,
+        _column_3,
+        _column_163,
+        _column_164,
+        _column_165,
+        _column_166,
+        _column_167,
+        _column_168,
+        _column_169,
+        _column_112,
+        _column_23,
+        _column_170,
+        _column_195,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape32 habitatFeature = Shape32(
+    source: i0.VersionedTable(
+      entityName: 'habitat_feature',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_44,
+        _column_126,
+        _column_172,
+        _column_91,
+        _column_1,
+        _column_162,
+        _column_2,
+        _column_3,
+        _column_173,
+        _column_174,
+        _column_175,
+        _column_176,
+        _column_177,
+        _column_178,
+        _column_179,
+        _column_180,
+        _column_112,
+        _column_23,
+        _column_170,
+        _column_195,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape23 photo = Shape23(
+    source: i0.VersionedTable(
+      entityName: 'photo',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_148,
+        _column_171,
+        _column_149,
+        _column_150,
+        _column_151,
+        _column_152,
+        _column_153,
+        _column_154,
+        _column_155,
+        _column_156,
+        _column_157,
+        _column_158,
+        _column_159,
+        _column_23,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape25 projectProtocol = Shape25(
+    source: i0.VersionedTable(
+      entityName: 'project_protocol',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_44,
+        _column_0,
+        _column_45,
+        _column_46,
+        _column_47,
+        _column_48,
+        _column_49,
+        _column_50,
+        _column_51,
+        _column_52,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_56,
+        _column_57,
+        _column_58,
+        _column_59,
+        _column_60,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_181,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape14 syncConflict = Shape14(
+    source: i0.VersionedTable(
+      entityName: 'sync_conflict',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_65,
+        _column_23,
+        _column_66,
+        _column_67,
+        _column_27,
+        _column_92,
+        _column_68,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape16 surveyTrackPoint = Shape16(
+    source: i0.VersionedTable(
+      entityName: 'survey_track_point',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'UNIQUE(survey_visit_id, sequence_number)',
+        'CHECK(provider IN (\'gps\', \'fused\', \'network\', \'simulated\'))',
+      ],
+      columns: [
+        _column_0,
+        _column_119,
+        _column_120,
+        _column_2,
+        _column_3,
+        _column_121,
+        _column_122,
+        _column_123,
+        _column_124,
+        _column_125,
+        _column_89,
+        _column_13,
+        _column_68,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 taxonListVersion = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'taxon_list_version',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_78,
+        _column_79,
+        _column_80,
+        _column_81,
+        _column_82,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 taxonUsage = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'taxon_usage',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(project_id, taxon_id)'],
+      columns: [_column_17, _column_142, _column_143, _column_144, _column_145],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape26 transectProposal = Shape26(
+    source: i0.VersionedTable(
+      entityName: 'transect_proposal',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_13,
+        _column_68,
+        _column_14,
+        _column_0,
+        _column_44,
+        _column_6,
+        _column_182,
+        _column_183,
+        _column_112,
+        _column_162,
+        _column_184,
+        _column_185,
+        _column_186,
+        _column_187,
+        _column_188,
+        _column_189,
+        _column_190,
+        _column_23,
+        _column_170,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape13 transectSection = Shape13(
+    source: i0.VersionedTable(
+      entityName: 'transect_section',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_87,
+        _column_88,
+        _column_89,
+        _column_82,
+        _column_90,
+        _column_91,
+        _column_85,
+        _column_13,
+        _column_14,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape27 routeRecording = Shape27(
+    source: i0.VersionedTable(
+      entityName: 'route_recording',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_44,
+        _column_183,
+        _column_191,
+        _column_118,
+        _column_98,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape28 routeRecordingPoint = Shape28(
+    source: i0.VersionedTable(
+      entityName: 'route_recording_point',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(recording_id, sequence_number)'],
+      columns: [
+        _column_192,
+        _column_89,
+        _column_120,
+        _column_2,
+        _column_3,
+        _column_121,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape33 evalEvent = Shape33(
+    source: i0.VersionedTable(
+      entityName: 'eval_event',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_15,
+        _column_196,
+        _column_197,
+        _column_198,
+        _column_199,
+        _column_200,
+        _column_201,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index syncQueueEntity = i1.Index(
+    'sync_queue_entity',
+    'CREATE INDEX sync_queue_entity ON sync_queue (entity_type, entity_id, seq)',
+  );
+}
+
+class Shape33 extends i0.VersionedTable {
+  Shape33({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get seq =>
+      columnsByName['seq']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get sessionId =>
+      columnsByName['session_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get eventType =>
+      columnsByName['event_type']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get entityId =>
+      columnsByName['entity_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get at =>
+      columnsByName['at']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get durationMs =>
+      columnsByName['duration_ms']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get payload =>
+      columnsByName['payload']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_196(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'session_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_197(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'event_type',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_198(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'entity_id',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_199(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_200(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'duration_ms',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_201(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'payload',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL DEFAULT \'{}\'',
+      defaultValue: const i1.CustomExpression('\'{}\''),
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -9661,6 +10367,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema16 schema) from15To16,
   required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
   required Future<void> Function(i1.Migrator m, Schema18 schema) from17To18,
+  required Future<void> Function(i1.Migrator m, Schema19 schema) from18To19,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -9749,6 +10456,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from17To18(migrator, schema);
         return 18;
+      case 18:
+        final schema = Schema19(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from18To19(migrator, schema);
+        return 19;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -9773,6 +10485,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema16 schema) from15To16,
   required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
   required Future<void> Function(i1.Migrator m, Schema18 schema) from17To18,
+  required Future<void> Function(i1.Migrator m, Schema19 schema) from18To19,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -9792,5 +10505,6 @@ i1.OnUpgrade stepByStep({
     from15To16: from15To16,
     from16To17: from16To17,
     from17To18: from17To18,
+    from18To19: from18To19,
   ),
 );

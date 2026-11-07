@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/config/photo_wifi_only.dart';
 import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
+import 'package:mobile/core/evaluation/eval_export.dart';
+import 'package:mobile/core/evaluation/eval_logger.dart';
+import 'package:mobile/core/evaluation/evaluation_mode.dart';
 import 'package:mobile/core/http/dio_provider.dart';
 import 'package:mobile/core/location/gps_interval_override.dart';
 import 'package:mobile/core/location/location_source_setting.dart';
@@ -116,6 +119,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  /// The first 8 characters of a session id, for display.
+  String _shortId(String? id) {
+    if (id == null) return '-';
+    return id.length > 8 ? id.substring(0, 8) : id;
+  }
+
+  /// Exports the logged events as CSV through the share sheet (T073).
+  Future<void> _exportEvalEvents() async {
+    try {
+      await exportEvalEvents(ref);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text('Could not export: $error')));
+    }
+  }
+
+  /// Deletes every logged event after the user confirms (T073).
+  Future<void> _clearEvalEvents() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear events?'),
+        content: const Text('Every logged event is deleted from this phone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(evalLoggerProvider).clear();
+  }
+
   Future<void> _logout() async {
     // `.future` waits for the first count, so a count still loading is not
     // mistaken for "nothing to sync".
@@ -209,6 +253,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final gpsInterval = ref.watch(gpsIntervalOverrideProvider);
     final locationSource = ref.watch(locationSourceSettingProvider);
     final photoWifiOnly = ref.watch(photoWifiOnlyProvider);
+    final evaluation = ref.watch(evaluationModeProvider);
+    final evalCount = ref.watch(evalEventCountProvider).value ?? 0;
     final localizations = MaterialLocalizations.of(context);
     final lastSyncText = lastSync == null
         ? 'Never synced'
@@ -369,6 +415,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // Debug builds only (T073, D-114): logs timings and taps for the
+                    // usability study.
+                    if (kDebugMode) ...[
+                      Card(
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              secondary: const Icon(Icons.speed),
+                              title: const Text('Evaluation mode'),
+                              subtitle: const Text(
+                                'Logs timings and taps for the usability study',
+                              ),
+                              value: evaluation.enabled,
+                              onChanged: (value) => ref
+                                  .read(evaluationModeProvider.notifier)
+                                  .setEnabled(value),
+                            ),
+                            if (evaluation.enabled) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Session ${_shortId(evaluation.sessionId)} · '
+                                    '$evalCount events',
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    FilledButton(
+                                      onPressed: evalCount == 0
+                                          ? null
+                                          : _exportEvalEvents,
+                                      child: const Text('Export CSV'),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () => ref
+                                          .read(evaluationModeProvider.notifier)
+                                          .newSession(),
+                                      child: const Text('New session'),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: _clearEvalEvents,
+                                      child: const Text('Clear events'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     Row(
                       children: [
                         Expanded(

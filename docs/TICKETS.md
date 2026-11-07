@@ -108,7 +108,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | done |
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | done |
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | done |
-| T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | todo |
+| T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | done |
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | todo |
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | must | T070, T073, T074 | 2 d | todo |
 | T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | todo |
@@ -1501,18 +1501,20 @@ Note (T072, 2026-11-07): built as D-112 (debug build only, bundled GPX, mocked p
 Deferred: the T100 coverage comparison (the app's coverage against the server's `route_coverage_pct`, within 1 percentage point) and its paragraph in `evaluation/results/coverage-check.md`. Run one replayed visit and compare the two numbers.
 
 ### T073 · Evaluation instrumentation in the app
-[#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F61 · est. 1.5 d · **todo**
+[#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F61 · est. 1.5 d · **done**
 
 Depends on: T035, T045
 
-- [ ] An **Evaluation mode** toggle in settings (off by default). When on, events are logged to a local table:
+- [x] An **Evaluation mode** toggle in settings (off by default). When on, events are logged to a local table:
   - opening the visit form and starting a visit (time to start)
   - opening the observation sheet and saving (entry time)
   - taps inside the observation sheet (via a `Listener` wrapper)
   - validation errors shown
   - sync start and end, with bytes and outcome
-- [ ] **Export events as CSV** via the share sheet (`share_plus`), with a session id and device info header.
-- [ ] Logging adds less than 5 ms per event (no UI jank).
+- [x] **Export events as CSV** via the share sheet (`share_plus`), with a session id and device info header.
+- [x] Logging adds less than 5 ms per event (no UI jank).
+
+Note (T073, 2026-11-07): checked on the phone (debug build, 2026-11-07): `log()` took 0.26 ms min, 0.30 ms median, 0.77 ms max over 30 taps. The export, the off switch, Clear events and the v18 to v19 upgrade (data kept) also worked. Reviewed by the developer. Debug builds only (D-114). See D-114.
 
 ### T074 · Performance, sync robustness and battery tests
 [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) · E11 · P1 · must · labels: `evaluation`, `backend`, `mobile`, `must` · implements F61 · est. 2 d · **todo**
