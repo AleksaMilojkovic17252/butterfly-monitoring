@@ -26,7 +26,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
 - **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T110, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103, T111, T112, T113
-- **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075
+- **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075, T114
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -149,6 +149,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | done |
 | T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | done |
 | T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | done |
+| T114 | [#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) | Spatial index benchmark with a larger plant and habitat table | P1 | could | T071, T075, T102 | 1 d | todo |
 
 ## Acceptance criteria
 
@@ -2285,3 +2286,18 @@ Note (2026-11-06): built as D-108; `tmp/t113/verify.py` passed. The recorder mus
 
 Out of scope: Habitat feature photos and an admin page for habitat features. Editing the image (rotate, crop) and bulk upload. Unlocking a visit (T043). Tests (D-021).
 
+### T114 · Spatial index benchmark with a larger plant and habitat table
+[#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) · E11 · added 2026-11-07 as a follow-up to T102 · P1 · could · labels: `evaluation`, `database`, `could` · implements F61 (P1 part) · est. 1 d · **todo**
+
+Depends on: T071, T075, T102
+Notes: scheduled after the simulation and the Part 1 evaluation run (T075) are finished, so it does not change the data they use. The issue (#131) is created on GitHub by the developer.
+
+Why: T102 (D-111) found no benefit from a `geography` expression index or a `&&` prefilter, but the generator makes the same 14 plant records, 11 habitat features and 26 sections at every scale, so the nearest-host-plant KNN (query 08), Q3 (06) and the habitat side of Q4 (07) were barely stressed. D-111 rule 2 also says that a geography filter as the **first** filter on a large table was never measured. This ticket measures both with the T102 runner.
+
+- [ ] A larger plant and habitat table in a scratch database restored from a backup (T010), never the dev data: for example 100 and 1 000 times the plant records and habitat polygons, by a generator option or a SQL load kept with the benchmark. State which, and that the data is synthetic.
+- [ ] The T102 queries 06, 07 and 08 rerun on it with `evaluation/benchmarks/spatial/run.sh`, configs A, B and C (the `gist ((geometry::geography))` index, a `&&` prefilter), median of 10 warm runs and the plan node from `EXPLAIN (ANALYZE, BUFFERS)`.
+- [ ] One new query file with a `geography` filter as the first filter on a large table (for example plant records within a radius of a point, no project id first), with its C variants.
+- [ ] Results and discussion in `evaluation/results/spatial-indexes-large.md`, compared with `spatial-indexes.md`.
+- [ ] Where C clearly wins (at least 2× at the larger size and not slower at the smaller), fix the real code (new migration or service change) and update D-111 (rule 2 especially); otherwise state the size below which no change is needed.
+
+Out of scope: more transects or visits (T102 covered those); general claims (one laptop, synthetic data); tests (D-021).
