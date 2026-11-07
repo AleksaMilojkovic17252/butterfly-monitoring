@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/config/photo_wifi_only.dart';
@@ -6,6 +7,7 @@ import 'package:mobile/core/config/server_preset.dart';
 import 'package:mobile/core/config/server_url_notifier.dart';
 import 'package:mobile/core/http/dio_provider.dart';
 import 'package:mobile/core/location/gps_interval_override.dart';
+import 'package:mobile/core/location/location_source_setting.dart';
 import 'package:mobile/core/sync/sync_runner.dart';
 import 'package:mobile/core/sync/sync_status.dart';
 import 'package:mobile/features/auth/domain/auth_controller.dart';
@@ -205,6 +207,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final lastSync = ref.watch(lastSyncProvider);
     final pending = ref.watch(pendingChangesProvider).value ?? 0;
     final gpsInterval = ref.watch(gpsIntervalOverrideProvider);
+    final locationSource = ref.watch(locationSourceSettingProvider);
     final photoWifiOnly = ref.watch(photoWifiOnlyProvider);
     final localizations = MaterialLocalizations.of(context);
     final lastSyncText = lastSync == null
@@ -293,6 +296,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    // Debug builds only (T072): replay a GPX track as the GPS.
+                    if (kDebugMode) ...[
+                      Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.route),
+                              title: const Text('Location source'),
+                              subtitle: const Text(
+                                'Debug builds only. Bundled transect GPX; '
+                                'applies when the next visit starts',
+                              ),
+                              trailing: DropdownButton<LocationSourceKind>(
+                                value: locationSource.kind,
+                                onChanged: (kind) => ref
+                                    .read(
+                                      locationSourceSettingProvider.notifier,
+                                    )
+                                    .save(kind!, locationSource.speed),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: LocationSourceKind.device,
+                                    child: Text('Device GPS'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: LocationSourceKind.replay,
+                                    child: Text('Replay GPX'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (locationSource.kind ==
+                                LocationSourceKind.replay)
+                              ListTile(
+                                title: const Text('Replay speed'),
+                                trailing: DropdownButton<int>(
+                                  value: locationSource.speed,
+                                  onChanged: (speed) => ref
+                                      .read(
+                                        locationSourceSettingProvider.notifier,
+                                      )
+                                      .save(locationSource.kind, speed!),
+                                  items: [
+                                    for (final speed
+                                        in LocationSourceNotifier.speeds)
+                                      DropdownMenuItem(
+                                        value: speed,
+                                        child: Text('$speed×'),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     // Photos wait in the app until Wi-Fi is there (T050).
                     Card(

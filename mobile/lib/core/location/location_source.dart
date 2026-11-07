@@ -1,18 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile/core/location/location_provider.dart';
+import 'package:mobile/core/location/location_source_setting.dart';
+import 'package:mobile/core/location/replay_source.dart';
 
 /// Where the GPS tracker (T037) gets its fixes. [GeolocatorSource] is the
-/// phone's GPS; T072 adds a replay of a GPX file for demos and tests.
+/// phone's GPS; [ReplaySource] (T072) plays a GPX track for demos and tests.
 abstract class LocationSource {
   /// Fixes every [intervalS] seconds until the subscription is cancelled,
   /// with the given [accuracy] (battery saver, T038, asks for less).
   /// While it runs, Android shows a notification with [title] and [text].
+  /// [trackName] is the GPX track a replay plays (a transect code); the
+  /// device GPS ignores it.
   Stream<Position> positions({
     required int intervalS,
     required LocationAccuracy accuracy,
     required String title,
     required String text,
+    String? trackName,
   });
 }
 
@@ -30,6 +36,7 @@ class GeolocatorSource implements LocationSource {
     required LocationAccuracy accuracy,
     required String title,
     required String text,
+    String? trackName,
   }) {
     return _geo.getPositionStream(
       locationSettings: AndroidSettings(
@@ -51,6 +58,13 @@ class GeolocatorSource implements LocationSource {
   }
 }
 
-final locationSourceProvider = Provider<LocationSource>(
-  (ref) => GeolocatorSource(ref.watch(locationProvider)),
-);
+/// The source the tracker uses. The replay setting counts in debug builds
+/// only (D-030: there are no product flavours); a release build always uses
+/// the phone's GPS.
+final locationSourceProvider = Provider<LocationSource>((ref) {
+  final choice = ref.watch(locationSourceSettingProvider);
+  if (kDebugMode && choice.kind == LocationSourceKind.replay) {
+    return ReplaySource(speed: choice.speed);
+  }
+  return GeolocatorSource(ref.watch(locationProvider));
+});

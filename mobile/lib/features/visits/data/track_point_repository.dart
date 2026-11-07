@@ -26,8 +26,10 @@ class TrackPointRepository {
   static const _entityType = 'survey_track_point';
 
   /// geolocator's Android client is Google's fused provider when Play
-  /// services are on the phone (D-061).
-  static const _provider = 'fused';
+  /// services are on the phone (D-061). A mocked position (the GPX replay,
+  /// T072, or a mock-location app) is stored as `simulated`.
+  static String _provider(Position position) =>
+      position.isMocked ? 'simulated' : 'fused';
 
   /// The number the visit's next point gets: one more than the highest stored,
   /// or 1 for the first. Read again whenever tracking starts, so numbers
@@ -121,6 +123,7 @@ class TrackPointRepository {
       headingDeg: heading != null && heading >= 0 && heading < 360
           ? heading
           : null,
+      provider: _provider(p),
       sequenceNumber: point.sequenceNumber,
     );
   }
@@ -144,6 +147,7 @@ class _Row {
     required this.altitudeM,
     required this.speedMS,
     required this.headingDeg,
+    required this.provider,
     required this.sequenceNumber,
   });
   final String id;
@@ -154,6 +158,7 @@ class _Row {
   final double? altitudeM;
   final double? speedMS;
   final double? headingDeg;
+  final String provider;
   final int sequenceNumber;
 
   /// The `create_batch` row, with server field names. The visit is the queue
@@ -169,7 +174,7 @@ class _Row {
     'altitude_m': altitudeM,
     'speed_m_s': speedMS,
     'heading_deg': headingDeg,
-    'provider': TrackPointRepository._provider,
+    'provider': provider,
     'sequence_number': sequenceNumber,
   };
 
@@ -185,7 +190,7 @@ class _Row {
       altitudeM: Value(altitudeM),
       speedMS: Value(speedMS),
       headingDeg: Value(headingDeg),
-      provider: const Value(TrackPointRepository._provider),
+      provider: Value(provider),
       sequenceNumber: sequenceNumber,
     );
   }

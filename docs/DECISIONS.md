@@ -2444,3 +2444,16 @@ C2 (rewritten query); median of 10 warm runs. Method, files and numbers: `evalua
    change to how the history models index the geometry field, plus a `DROP INDEX` migration). Not done here; keeping them is harmless.
 **Limits.** One laptop, one generator run, same four transects at both scales; plants, habitat and sections do not scale, so the KNN and habitat joins are barely stressed.
 **Skipped:** the ticket's automated-test items (D-021); none were asked for.
+
+## D-112 · GPS replay (T072): debug build only, bundled GPX, mocked positions stored as `simulated`
+2026-11 · accepted · T072, *builds on D-061*
+1. **"Dev flavour" is the debug build.** There are no product flavours (D-030), so the Settings card is shown only when `kDebugMode`, and `locationSourceProvider` ignores the stored setting in release builds.
+2. **Bundled GPX, no file picker.** The criterion allows either; a picker needs a new dependency. `database/seeds/transects.gpx` is copied to `mobile/assets/replay/transects.gpx` and listed under `flutter: assets:`. If T071's generator is rerun the copy is refreshed by hand.
+3. **Track:** the one whose `<name>` equals the visit's transect code (`LocationSource.positions(trackName:)`), else the first. Route proposals pass none.
+4. **Time:** each position is stamped with the phone's clock when it is emitted. The GPX times set only the pace (gap ÷ speed: 1× = 5 s, 5× = 1 s, 20× = 0.25 s); the tracker's `intervalS` is ignored. The GPX dates would fall outside the visit's window.
+5. **Provider:** replayed positions have `isMocked: true`; `TrackPointRepository` stores `provider = isMocked ? 'simulated' : 'fused'`. A mock-location app on a real phone is also stored as `simulated`, which is correct.
+6. **Values:** accuracy 5 m (usable, D-060); speed (m per GPX second) and heading (0–360) from consecutive points; altitude 0.
+7. **End of track:** the last point is repeated at the same pace with fresh times, so the GPS gap banner (T038) stays quiet.
+8. **Each stream restarts at the first point** (pause/resume, battery saver, app restart). Accepted for a dev tool.
+9. **No foreground service** (Dart timers can stall with the screen off): keep the app open.
+**Skipped:** the `integration_test` criterion (D-021; it would also need the `integration_test` dev dependency). Replaced by a replayed visit by hand and `tmp/t072/check_visit.py`.

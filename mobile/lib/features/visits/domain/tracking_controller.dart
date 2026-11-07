@@ -438,6 +438,7 @@ class TrackingController extends Notifier<TrackingState> {
         .positions(
           intervalS: intervalS,
           accuracy: saver ? LocationAccuracy.medium : LocationAccuracy.high,
+          trackName: code,
           title: 'Visit in progress: $code',
           text: saver
               ? 'Battery saver: recording the route every $intervalS s'

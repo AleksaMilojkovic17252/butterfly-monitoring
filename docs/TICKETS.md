@@ -107,7 +107,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | done |
 | T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | done |
-| T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | todo |
+| T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | done |
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | todo |
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | todo |
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | must | T070, T073, T074 | 2 d | todo |
@@ -1484,16 +1484,20 @@ Notes: plants/habitats generated when T051/T053 are done
 Note (2026-11-06): built as D-109; checked by hand with `tmp/t071/` (`clone_project.py`, `compare_exports.py`, `check_walk.py`, `count_flags.py`, `counts.py`, `dc.sh`). "Test compares exports" is skipped under D-021 and replaced by the by-hand comparison: the demo project (push mode) and a copy (`--direct`) gave identical exports for visits, observations, track points, plants and habitats. A rerun is all `duplicate`. No new dependency; one compose mount (`./simulator:/simulator:ro`). Follow-up for the developer to decide (D-105 item 7): rerun `evaluation/results/section-assignment.sql` on the simulated season.
 
 ### T072 · GPS replay in the app
-[#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F80 · est. 1.5 d · **todo**
+[#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F80 · est. 1.5 d · **done**
 
 Depends on: T037
 Notes: from T100 (2026-11-05): once replay works, run a replayed visit and compare the app's coverage with the server's `route_coverage_pct` (within 1 percentage
 point), and add the result to `evaluation/results/coverage-check.md`. T100 compared stored dev tracks only.
 
-- [ ] In the dev flavour only, Settings → "Location source: Device GPS | Replay GPX" with a file picker or bundled transect GPX, and speed 1×, 5× or 20×.
-- [ ] `ReplaySource` implements `LocationSource` (T037), emitting positions with timestamps, accuracy and `provider = simulated`.
-- [ ] An `integration_test` drives a full visit on the emulator with replay: start, 10 observations, a plant polygon, finish, sync. It asserts the server state through the API.
-- [ ] Documents Android emulator GPX playback (Extended controls → Location) as an alternative.
+- [x] In the dev flavour only, Settings → "Location source: Device GPS | Replay GPX" with a file picker or bundled transect GPX, and speed 1×, 5× or 20×.
+- [x] `ReplaySource` implements `LocationSource` (T037), emitting positions with timestamps, accuracy and `provider = simulated`.
+- [ ] An `integration_test` drives a full visit on the emulator with replay: start, 10 observations, a plant polygon, finish, sync. It asserts the server state through the API. *(skipped, D-021)*
+- [x] Documents Android emulator GPX playback (Extended controls → Location) as an alternative.
+
+Note (T072, 2026-11-07): built as D-112 (debug build only, bundled GPX, mocked positions stored as `simulated`); docs in `docs/setup/gps-replay.md`. The `integration_test` criterion is skipped (D-021); `tmp/t072/check_visit.py` checks a replayed visit on the server. Replayed visit checked on the server with `check_visit.py` (2026-11-07).
+
+Deferred: the T100 coverage comparison (the app's coverage against the server's `route_coverage_pct`, within 1 percentage point) and its paragraph in `evaluation/results/coverage-check.md`. Run one replayed visit and compare the two numbers.
 
 ### T073 · Evaluation instrumentation in the app
 [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) · E11 · P1 · must · labels: `mobile`, `evaluation`, `must` · implements F61 · est. 1.5 d · **todo**
