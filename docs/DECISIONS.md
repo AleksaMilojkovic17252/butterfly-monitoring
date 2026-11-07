@@ -2425,3 +2425,22 @@ and is a pygeoapi collection (`observation-hexgrid`, no temporal extent).
    the encoded habitat ranking clearly**: the encoded differences are about 20 % and one season is noisier than that. A stronger planted effect would be a generator change; none was made. The plans of the spatial joins are in `research-questions-plans.md` for T102.
 10. **Skipped:** the ticket's automated-test criterion (D-021); the views are checked by hand in `tmp/t101/smoke.py` (49 checks, one rolled-back transaction, not committed).
 **Not handled.** No statistics (R through the export); no buffer variant of Q4; Q6 has no map in the admin (QGIS reads it from pygeoapi); the dev data has no incidental records in the simulated season, so Q1's incidental half is checked on the paper case only.
+
+## D-111 · Spatial indexes (T102): keep GeoDjango's GiST, no new index or query rewrite
+2026-11-07 · accepted · T102, *builds on D-084, D-093, D-095, D-105 and D-110*
+Benchmarked on scratch databases restored from a T010 backup, simulated season at scale 1 (8 visits per transect) and scale 10 (80), configs A (GiST dropped), B (as is), C1 (extra index) and
+C2 (rewritten query); median of 10 warm runs. Method, files and numbers: `evaluation/benchmarks/spatial/`, `evaluation/results/spatial-indexes.md`. T096 reuses the runner.
+1. **No index change; one view change, applied.** Only one C variant was 2× faster at scale 10 and not slower at scale 1: Q3 without its `&&` prefilter (3.9× at scale 10, 4.6× at scale 1, identical rows; point 4). The `::geography` casts in `nearest_section_id`, `_is_far_from_transect` and the Q3 view do not block
+   a useful index: the `transect_id` or project id btree picks a few rows first (section assignment: about 24 µs per observation at scale 10). A `gist ((geometry::geography))` expression index was
+   no faster on section assignment and 2.5× slower on the nearest-host-plant KNN; a `&&` prefilter on section assignment was 44 % slower.
+2. **Rule (what was measured).** Every geography filter measured (section assignment, KNN, `far_from_transect`, Q3) comes after a btree lookup of a few rows or on a tiny table, and there
+   neither an expression index on `geography` nor a prefilter helped (section assignment, KNN) or the prefilter hurt (Q3). A geography filter that is the **first** filter on a large table was not
+   measured: no query here has that shape, and the largest table has about 110 k rows. Do not read this as "geography filters are fine at any size"; run `run.sh` on a new query before adding an index.
+3. **GiST pays off** for `ST_Intersects` on `butterfly_observation` (Q4 14×, OGC bbox on `geo.butterfly_observations` 1.4–2.9×, `geo.observation_hexgrid` wide bbox 5×). Those use the existing index.
+4. **Q3's view is 7–12× slower with GiST than without (55 against 7.3 ms at scale 10).** The planner puts the index scan of the 246-row plant table under a nested loop. Dropping the view's `&&` prefilter
+   (C2, same rows) takes it to 14 ms. **Applied: `reports/0004_q3_drop_bbox_prefilter`** recreates the view without the `&&` term (the exact geography `ST_DWithin` stays). Checked on the scale-10 scratch database: the view's output is identical before and after (md5 of the ordered rows), the migration reverses, and the view now takes 13.6 ms. Q3's definition in `0003` is unchanged (applied migrations are not edited); `0004` imports its SQL and removes the prefilter, so a later change to the view starts from `0004`.
+   `geo.observation_hexgrid` takes 0.6 s whatever the bbox (D-110.7).
+5. **Historical GiST indexes:** 7 on `historical_*` tables, 680 kB in total (12 % of all GiST indexes); nothing queries history spatially. Recommendation: drop them, as a separate follow-up ticket (needs a
+   change to how the history models index the geometry field, plus a `DROP INDEX` migration). Not done here; keeping them is harmless.
+**Limits.** One laptop, one generator run, same four transects at both scales; plants, habitat and sections do not scale, so the KNN and habitat joins are barely stressed.
+**Skipped:** the ticket's automated-test items (D-021); none were asked for.

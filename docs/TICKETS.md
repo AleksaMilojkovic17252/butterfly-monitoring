@@ -137,7 +137,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | done |
 | T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | done |
 | T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | done |
-| T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
+| T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | done |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | done |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | done |
 | T105 | [#122](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/122) | Project home: the Start visit tile, and tiles not built yet | P1 | must | T017, T033, T035, T039 | 0.5 d | done |
@@ -1949,7 +1949,7 @@ Notes (T101, D-110): all four questions built; the automated-test part of "check
 The supervisor has not yet picked which questions go in the thesis. Q1's encoded habitat ranking is not clearly recovered on one season (`evaluation/results/research-questions.md`).
 
 ### T102 · Spatial index benchmark on the simulated season
-[#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) · E11 · added 2026-10-27 · P1 · should · labels: `evaluation`, `database`, `should` · implements F61 (P1 part) · est. 1 d · **todo**
+[#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) · E11 · added 2026-10-27 · P1 · should · labels: `evaluation`, `database`, `should` · implements F61 (P1 part) · est. 1 d · **done**
 
 Depends on: T048, T056, T071
 Notes: + T100 and T101 queries if done
@@ -1958,16 +1958,18 @@ From T067: add the OGC bbox queries to the fixed SQL files: `SELECT * FROM geo.<
 Why: the code already casts geometry to `geography` (`surveys/services.py`, `transects/services.py`), and a geography cast in a filter or
 in KNN cannot use the GiST index on `geometry`. Nothing measures whether the spatial queries use their indexes. T096 reuses this method in Phase 2.
 
-- [ ] Runs on a scratch database restored from a backup (T010), never on the dev data.
-- [ ] Simulated season at scale 1 and scale 10, using the generator's existing flags if they can do it.
-- [ ] Fixed SQL files in `evaluation/benchmarks/spatial/`: section assignment (T048), `far_from_transect` and `outside_project_area` (T056), walked distance and coverage (T036, T100), T101 Q3/Q4 if done, and KNN nearest host plant.
-- [ ] Configurations: **A** no index (`SET LOCAL enable_indexscan/enable_bitmapscan = off`, or `DROP INDEX` inside `BEGIN … ROLLBACK`), **B** GeoDjango's GiST, **C** B plus a fix (`gist ((geometry::geography))` expression index, `&&` prefilter, or UTM).
-- [ ] Metrics: median of 10 warm runs, plan node from `EXPLAIN (ANALYZE, BUFFERS)`, index size.
-- [ ] Results and discussion in `evaluation/results/spatial-indexes.md`.
-- [ ] Where C clearly wins, fix the real code (new migration) and add a DECISIONS.md rule.
-- [ ] Note the size of the GiST indexes on `historical_*` tables and decide whether to keep them.
+- [x] Runs on a scratch database restored from a backup (T010), never on the dev data.
+- [x] Simulated season at scale 1 and scale 10, using the generator's existing flags if they can do it.
+- [x] Fixed SQL files in `evaluation/benchmarks/spatial/`: section assignment (T048), `far_from_transect` and `outside_project_area` (T056), walked distance and coverage (T036, T100), T101 Q3/Q4 if done, and KNN nearest host plant.
+- [x] Configurations: **A** no index (`SET LOCAL enable_indexscan/enable_bitmapscan = off`, or `DROP INDEX` inside `BEGIN … ROLLBACK`), **B** GeoDjango's GiST, **C** B plus a fix (`gist ((geometry::geography))` expression index, `&&` prefilter, or UTM).
+- [x] Metrics: median of 10 warm runs, plan node from `EXPLAIN (ANALYZE, BUFFERS)`, index size.
+- [x] Results and discussion in `evaluation/results/spatial-indexes.md`.
+- [x] Where C clearly wins, fix the real code (new migration) and add a DECISIONS.md rule.
+- [x] Note the size of the GiST indexes on `historical_*` tables and decide whether to keep them.
 
 Out of scope: general claims. It is one laptop and one generator run, and a Seq Scan winning at Phase 1 volumes is a valid finding.
+
+Note (T102, D-111): scale 10 = `--visits-per-transect 80` (agreed 2026-11-07); scratch databases `butterfly_bench_s1` and `butterfly_bench_s10` restored from a T010 backup; no criteria skipped (the ticket asks for no tests). One variant won and is applied: the Q3 view without its `&&` prefilter (about 4×, same rows) as `reports/0004_q3_drop_bbox_prefilter` (D-111); every other variant lost or tied. The migration is applied on the scratch database only, not on the dev database. The historical-index drop is a recommended follow-up (a new ticket for the developer).
 
 ### T103 · Linear referencing: positions along the transect
 [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) · E06 · added 2026-10-27 · P1 · could · labels: `backend`, `database`, `could` · implements F19 (extends) · est. 1 d · **done**
