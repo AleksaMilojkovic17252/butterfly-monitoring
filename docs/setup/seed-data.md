@@ -10,6 +10,7 @@ $DC exec -u (id -u) -e HOME=/tmp django python manage.py import_gbif_butterflies
 $DC exec -u (id -u) -e HOME=/tmp django python manage.py seed_plants
 $DC exec -u (id -u) -e HOME=/tmp django python manage.py seed_codelists
 $DC exec -u (id -u) -e HOME=/tmp django python manage.py seed_demo
+$DC exec -u (id -u) -e HOME=/tmp django python manage.py seed_host_plants
 ```
 
 Run them as yourself (`-u`), because they write the GBIF cache into your working tree.
@@ -20,6 +21,7 @@ the one that gives the demo project a real species list.
 |---|---|
 | `import_gbif_butterflies --country RS` | `TaxonListVersion "2026.1 (GBIF RS)"` and one `Taxon` per species with at least 3 records in the country (`--min-records`). Species with fewer records are printed for manual review. The release becomes current only when there is no current one. |
 | `seed_plants` | `PlantTaxon` rows from `database/seeds/plants.csv` with their GBIF key and family. Names GBIF does not find are saved as `manual` and listed. |
+| `seed_host_plants` | `TaxonHostPlant` rows (T101) from `database/seeds/host_plants.csv`: 47 butterfly-species × larval-host-plant pairs for 29 species, with the literature source per row. Needs `import_gbif_butterflies` and `seed_plants` first (a missing plant stops it; a species that is not in the catalogue is a warning). A species is saved once for every live taxon list version that holds it. The rows come from the author's knowledge of Tolman & Lewington (2008) and **must be checked against the book** before the thesis cites them. |
 | `seed_codelists` | 6 habitat types (with EUNIS codes) and 5 management types. Values that exist are not touched. |
 | `seed_demo` | Users `admin@demo` and `researcher@demo`, project "Demo – Fruška Gora 2026" (protocol, study area, researcher as member) and transects FG1–FG4 of about 1 km with 5–8 sections each, from `database/seeds/transects.geojson`. |
 

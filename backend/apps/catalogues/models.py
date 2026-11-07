@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -132,6 +134,42 @@ class PlantTaxon(SyncableModel):
 
     def __str__(self):
         return self.scientific_name
+
+
+class TaxonHostPlant(models.Model):
+    """A larval host plant of a butterfly species, with its literature source (T101, D-110).
+
+    Server-only: not synced, no trigger, no history (like `EnvironmentalSnapshot`). A species is a
+    specialist when all its host plants are in one plant genus; `report_specialist_host_plants`
+    derives that. The report view reads this table, so a column change needs a drop and recreate
+    of the view.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    taxon = models.ForeignKey(
+        Taxon,
+        on_delete=models.PROTECT,
+        related_name="host_plants",
+        help_text="Butterfly species",
+    )
+    plant_taxon = models.ForeignKey(
+        PlantTaxon,
+        on_delete=models.PROTECT,
+        related_name="+",
+        help_text="Larval host plant of the species",
+    )
+    source = models.CharField(max_length=300, help_text="Literature reference for this host plant")
+
+    class Meta:
+        db_table = "taxon_host_plant"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["taxon", "plant_taxon"], name="taxon_host_plant_unique"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.taxon} on {self.plant_taxon}"
 
 
 class Codelist(SyncableModel):

@@ -8,6 +8,10 @@ from apps.exports.writers import csv_chunks, geojson_chunks
 from apps.projects.services import projects_for
 from apps.reports.models import (
     BehaviourCounts,
+    HabitatRichness,
+    ObservationHexgrid,
+    ReproductiveMicrohabitat,
+    SpecialistHostPlants,
     SpeciesPhenology,
     TransectIndicators,
     TransectProfile,
@@ -126,3 +130,88 @@ class TransectProfileAdmin(ReportAdmin):
     ]
     list_select_related = ["project"]
     ordering = ["project", "transect_code", "-year", "bin_start_m"]
+
+
+@admin.register(HabitatRichness)
+class HabitatRichnessAdmin(ReportAdmin):
+    list_display = [
+        "project",
+        "habitat_code",
+        "year",
+        "sections",
+        "section_km",
+        "valid_visits",
+        "effort_km",
+        "species",
+        "transect_species",
+        "transect_individuals",
+        "individuals_per_km",
+        "incidental_records",
+        "incidental_individuals",
+        "individuals",
+    ]
+    list_filter = [("project", RelatedOnlyFieldListFilter), "year", "habitat_code"]
+    list_select_related = ["project"]
+    ordering = ["project", "-year", "habitat_code"]
+
+
+@admin.register(SpecialistHostPlants)
+class SpecialistHostPlantsAdmin(ReportAdmin):
+    list_display = [
+        "project",
+        "transect_code",
+        "section_code",
+        "year",
+        "valid_visits",
+        "specialist_species_individuals",
+        "specialist_species",
+        "specialist_species_per_visit",
+        "host_patches",
+        "host_abundance_mid",
+        "radius_m",
+    ]
+    list_filter = [
+        ("project", RelatedOnlyFieldListFilter),
+        "year",
+        ("transect", RelatedOnlyFieldListFilter),
+    ]
+    list_select_related = ["project"]
+    ordering = ["project", "transect_code", "section_code", "-year"]
+
+
+@admin.register(ReproductiveMicrohabitat)
+class ReproductiveMicrohabitatAdmin(ReportAdmin):
+    list_display = [
+        "project",
+        "habitat_code",
+        "polygons",
+        "area_m2",
+        "repro_records",
+        "project_repro_records",
+        "record_share",
+        "area_share",
+        "jacobs_d",
+    ]
+    list_filter = [("project", RelatedOnlyFieldListFilter)]
+    list_select_related = ["project"]
+    ordering = ["project", "-jacobs_d"]
+
+
+@admin.register(ObservationHexgrid)
+class ObservationHexgridAdmin(ReportAdmin):
+    """Q6 has no map here: QGIS reads the same hexagons from pygeoapi (the export writes
+    `"geometry": null`, like the other reports)."""
+
+    list_display = [
+        "project",
+        "id",
+        "hex_size_m",
+        "observations",
+        "individuals",
+        "species",
+        "nectaring_records",
+        "reproductive_records",
+    ]
+    list_filter = [("project", RelatedOnlyFieldListFilter)]
+    list_select_related = ["project"]
+    ordering = ["project", "-observations"]

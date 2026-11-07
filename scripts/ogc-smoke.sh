@@ -22,6 +22,7 @@ sections=$base/collections/transect-sections/items
 obs=$base/collections/butterfly-observations/items
 plants=$base/collections/plant-resources/items
 habitats=$base/collections/habitat-features/items
+hexgrid=$base/collections/observation-hexgrid/items
 failed=0
 
 pass() { echo "PASS  $1"; }
@@ -66,8 +67,8 @@ first_id=$(jq -r .id <<<"$first")
 day=$(jq -r '.properties.observed_at[:10]' <<<"$first")
 
 echo "== Collections"
-expect "the five collections, no skeleton" \
-  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations", "plant-resources", "habitat-features"]) and index("skeleton-pings") == null)' \
+expect "the six collections, no skeleton" \
+  '[.collections[].id] | (contains(["transects", "transect-sections", "butterfly-observations", "plant-resources", "habitat-features", "observation-hexgrid"]) and index("skeleton-pings") == null)' \
   "$base/collections"
 expect "observations have spatial and temporal extents" \
   '.extent.spatial.bbox[0] != null and .extent.temporal.interval[0][0] != null' \
@@ -129,6 +130,17 @@ fi
 expect "a habitat_type_code nobody has matches nothing" \
   '.numberMatched == 0' \
   "$habitats" --data-urlencode 'habitat_type_code=NoSuchType'
+
+echo "== Observation hexagons (T101 Q6; these pass with no rows too)"
+expect "the hexagon collection has a spatial extent" \
+  '.extent.spatial.bbox[0] != null' \
+  "$base/collections/observation-hexgrid"
+expect "every hexagon is a polygon of 100 m with at least one observation" \
+  '.features | all(.geometry.type == "Polygon" and .properties.hex_size_m == 100 and .properties.observations >= 1 and .properties.individuals >= .properties.observations)' \
+  "$hexgrid" --data-urlencode limit=50
+expect "a bbox around Fruška Gora returns hexagons" \
+  '.numberMatched > 0' \
+  "$hexgrid" --data-urlencode 'bbox=19.8,45.1,19.9,45.2'
 
 echo "== Property filter"
 expect "effective_family=Lycaenidae returns only that family" \

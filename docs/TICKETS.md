@@ -136,7 +136,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T098 | [#115](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/115) | Study area editor: edit and remove single polygons, with in-map help | P1 | must | T016 | 0.5 d | done |
 | T099 | [#116](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/116) | Close a project: no new visits after it is closed | P1 | should | T015, T034, T035 | 1 d | done |
 | T100 | [#117](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/117) | Server-side route coverage and the valid-visit rule | P1 | should | T036, T040, T056 | 1 d | done |
-| T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | todo |
+| T101 | [#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) | Research-question analysis views (Q1, Q3, Q4, Q6) | P1 | should | T044, T048, T051, T053, T061, T071 | 2.5 d | done |
 | T102 | [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) | Spatial index benchmark on the simulated season | P1 | should | T048, T056, T071 | 1 d | todo |
 | T103 | [#120](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/120) | Linear referencing: positions along the transect | P1 | could | T044, T048, T067 | 1 d | done |
 | T104 | [#121](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/121) | App reads the protocol's time zone (rule W07) | P1 | should | T055, T035 | 1 d | done |
@@ -1922,7 +1922,7 @@ there); T100 provides the view `public.survey_visit_validity`. The weather justi
 Out of scope: effort (a route that doubles back counts once) and time (pauses don't matter).
 
 ### T101 · Research-question analysis views (Q1, Q3, Q4, Q6)
-[#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) · E09 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements outline §4 · est. 2.5 d · **todo**
+[#118](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/118) · E09 · added 2026-10-27 · P1 · should · labels: `backend`, `database`, `should` · implements outline §4 · est. 2.5 d · **done**
 
 Depends on: T044, T048, T051, T053, T061, T071
 Notes: valid-visit filter from T100 if done: join the view `public.survey_visit_validity` (T100) on `survey_visit_id` and keep `is_valid`
@@ -1931,19 +1931,22 @@ Why: the outline's goal is that two or three research questions (§4) can be dem
 per question, built like the T061 views, answers it with a PostGIS join. On simulated data the generator plants known effects, and the
 results chapter shows the views recover them; it says nothing about real butterflies. The issue has the SQL sketches.
 
-- [ ] **Q1 `report_habitat_richness`** (project × habitat type × year): sections, section km, valid visits, species, individuals, individuals per km. Incidental records take their habitat from the `habitat_feature` polygon they fall in, else `unknown`.
-- [ ] **Q3 `report_specialist_host_plants`** (section × year): specialist individuals, host-plant patches within `host_plant_radius_m` and their summed abundance midpoints. Index-friendly `ST_DWithin` (`&&` prefilter).
-- [ ] **Q4 `report_reproductive_microhabitat`** (project × habitat type): reproductive records in polygons of that type, polygon area, the share of records against the share of area, and Jacobs' index `D = (r − p) / (r + p − 2rp)`. Reproductive uses the T061 definition.
-- [ ] **Q6 `geo.observation_hexgrid`** (project × hexagon, `ST_HexagonGrid`, default 100 m, in UTM): observations, individuals, species, nectaring and reproductive records. Empty hexagons are left out. Published in pygeoapi (T068).
-- [ ] Q1 and Q3 are the core. Q4 and Q6 are dropped if the supervisor picks only two questions.
-- [ ] Server-only `taxon_host_plant (taxon, plant_taxon, source)` from a curated CSV in `database/seeds` (the species the demo project and the generator use, with a source per row). Not synced. Specialist = all host plants in one genus, derived from this table (`Taxon` unchanged) unless the supervisor prefers a literature flag.
-- [ ] `simulate_season` option (e.g. `--planted-effects`): host-plant patches near some sections, specialists biased towards them, reproductive records biased towards one habitat type, and the effect sizes written to the output.
-- [ ] Q1 and Q3 count valid visits only (T100, else completed non-cancelled visits, noted). Effective taxon = `COALESCE(validated_taxon_id, taxon_id)`.
-- [ ] Unmanaged models, read-only admin changelists with project/year filters, and CSV export (T065 if done).
-- [ ] Each view is checked by hand on a tiny seeded case worked out on paper. Results on the simulated season, next to the planted effects, go in `evaluation/results/research-questions.md`.
-- [ ] `EXPLAIN` of each spatial join shows a GiST index scan. Plans are recorded for T102.
+- [x] **Q1 `report_habitat_richness`** (project × habitat type × year): sections, section km, valid visits, species, individuals, individuals per km. Incidental records take their habitat from the `habitat_feature` polygon they fall in, else `unknown`.
+- [x] **Q3 `report_specialist_host_plants`** (section × year): specialist individuals, host-plant patches within `host_plant_radius_m` and their summed abundance midpoints. Index-friendly `ST_DWithin` (`&&` prefilter).
+- [x] **Q4 `report_reproductive_microhabitat`** (project × habitat type): reproductive records in polygons of that type, polygon area, the share of records against the share of area, and Jacobs' index `D = (r − p) / (r + p − 2rp)`. Reproductive uses the T061 definition.
+- [x] **Q6 `geo.observation_hexgrid`** (project × hexagon, `ST_HexagonGrid`, default 100 m, in UTM): observations, individuals, species, nectaring and reproductive records. Empty hexagons are left out. Published in pygeoapi (T068).
+- [x] Q1 and Q3 are the core. Q4 and Q6 are dropped if the supervisor picks only two questions.
+- [x] Server-only `taxon_host_plant (taxon, plant_taxon, source)` from a curated CSV in `database/seeds` (the species the demo project and the generator use, with a source per row). Not synced. Specialist = all host plants in one genus, derived from this table (`Taxon` unchanged) unless the supervisor prefers a literature flag.
+- [x] `simulate_season` option (e.g. `--planted-effects`): host-plant patches near some sections, specialists biased towards them, reproductive records biased towards one habitat type, and the effect sizes written to the output.
+- [x] Q1 and Q3 count valid visits only (T100, else completed non-cancelled visits, noted). Effective taxon = `COALESCE(validated_taxon_id, taxon_id)`.
+- [x] Unmanaged models, read-only admin changelists with project/year filters, and CSV export (T065 if done).
+- [x] Each view is checked by hand on a tiny seeded case worked out on paper. Results on the simulated season, next to the planted effects, go in `evaluation/results/research-questions.md`.
+- [x] `EXPLAIN` of each spatial join shows a GiST index scan. Plans are recorded for T102.
 
 Out of scope: statistics (GLMs) in the system; analysis in R uses the export. GPS error (5–15 m) blurs point in polygon for small polygons: document it.
+
+Notes (T101, D-110): all four questions built; the automated-test part of "checked by hand on a tiny seeded case" was skipped (D-021) and done by hand in `tmp/t101/smoke.py` (49 checks, not committed).
+The supervisor has not yet picked which questions go in the thesis. Q1's encoded habitat ranking is not clearly recovered on one season (`evaluation/results/research-questions.md`).
 
 ### T102 · Spatial index benchmark on the simulated season
 [#119](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/119) · E11 · added 2026-10-27 · P1 · should · labels: `evaluation`, `database`, `should` · implements F61 (P1 part) · est. 1 d · **todo**

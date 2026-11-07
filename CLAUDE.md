@@ -62,7 +62,7 @@ scripts/restore.sh <backup-dir>
 scripts/minio-setup.sh
 
 # Simulated season (T071, D-109; docs/setup/simulation.md). Dev only; same project and seed again changes nothing.
-$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct]
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct] [--planted-effects]
 
 # OGC collections, filters and paging (T068). OGC_AUTH is an admin credential (T069; docs/setup/ogc-access.md)
 OGC_AUTH='Token <key>' scripts/ogc-smoke.sh [base-url]

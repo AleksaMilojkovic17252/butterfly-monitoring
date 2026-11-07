@@ -146,3 +146,19 @@ resources:
         geom_field: geometry
         time_field: observed_at
         title_field: habitat_type_name_en
+
+  observation-hexgrid:
+    type: collection
+    title: Observation hexagons
+    description: Observations, individuals, species, nectaring and reproductive records per 100 m hexagon
+    keywords: [butterflies, observations, hexagon grid, density]
+    extents:
+      spatial: *spatial_extent
+    providers:
+      - type: feature
+        name: PostgreSQL
+        data: *database
+        id_field: id
+        table: observation_hexgrid
+        geom_field: geometry
+        title_field: id

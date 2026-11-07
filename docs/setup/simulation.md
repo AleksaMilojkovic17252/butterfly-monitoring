@@ -20,6 +20,8 @@ Options: `--start` / `--end` (default 2026-05-01 / 2026-08-31), `--visits-per-tr
 `--seed` (42), `--user <email>` (default: the project's only researcher member), `--direct`.
 Run it as the developer (`-u (id -u)`): it also writes `database/seeds/transects.gpx`.
 
+`--planted-effects` (T101) plants known effects for the research-question views; see below. Use a fresh project.
+
 ## What is generated
 
 - **Visits:** every transect gets N visits, one per equal window of the period, on mostly suitable
@@ -38,6 +40,28 @@ Run it as the developer (`-u (id -u)`): it also writes `database/seeds/transects
   (about 2 %), one or two about 400 m away (also outside the project area), GPS gaps of 61-120 s
   (about 10 % of walked visits), true-zero visits (about 5 %), and duplicate batches (the same
   request sent twice, about 5 % of visits).
+
+## Planted effects (`--planted-effects`, T101)
+
+Without the flag nothing below happens and the season is the same as before (checked against an exported
+season). With it, run `seed_host_plants` first; the command stops if no species of the project's list is a
+specialist (all host plants in one plant genus, as in the Q3 view). Visits get the device id
+`simulator-t071-planted`, so a planted run and a plain run of the same seed on one project stop with the
+usual error instead of being dropped as duplicates.
+
+- **Host sections (Q3):** each section is a host section with probability 0.33 (at least one per transect).
+  The first completed visit of the transect adds 2 larval-host patches (10-20 m squares, 5-20 m off the line,
+  class 11-100 or 101-1000, host plants of the specialists in a fixed order) per host section, and
+  specialists are 4 times as common there (their base abundance is raised to at least 0.3).
+- **Reproductive habitat (Q4):** one habitat type is picked; a record in one of its sections is reproductive
+  (courtship, mating or oviposition) with probability 0.35, elsewhere 0.03. The first completed visit draws
+  one habitat polygon per typed section instead of random shapes (the middle 80 % of the section, 15 m to
+  each side), so records fall in their section's polygon.
+- **Output:** a "Planted effects" block lists the specialists and their host plants, the host sections, the
+  chosen habitat with the expected record share and Jacobs' D (it assumes equal record density per metre), and
+  the habitat ranking the generator encodes (Q1: the sum over species of base abundance × habitat weight).
+  The encoded Q1 differences are small (about 20 %) and are not recovered clearly in one season
+  (`evaluation/results/research-questions.md`).
 
 ## Rerun
 

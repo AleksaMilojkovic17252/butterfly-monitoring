@@ -7,11 +7,11 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.accounts.models import User
-from apps.catalogues.models import PlantTaxon, Taxon
+from apps.catalogues.models import PlantTaxon, Taxon, TaxonHostPlant
 from apps.observations.models import ButterflyObservation
 from apps.projects.models import Project
 from apps.surveys.models import SurveyVisit
-from apps.sync.simulation import gpx, plan, send
+from apps.sync.simulation import gpx, plan, planted, send
 from apps.sync.simulation.photo import make_placeholder
 from apps.sync.simulation.walk import LineWalker
 from apps.transects.models import Transect
@@ -37,6 +37,11 @@ class Command(BaseCommand):
             "--direct",
             action="store_true",
             help="write through the sync service instead of the HTTP API",
+        )
+        parser.add_argument(
+            "--planted-effects",
+            action="store_true",
+            help="plant known effects for the research-question views (T101): use a fresh project",
         )
         parser.add_argument(
             "--user",
@@ -114,6 +119,8 @@ class Command(BaseCommand):
             if not infos:
                 raise CommandError(f"Transect {transect.code} has no live sections.")
             transect_data[transect.id] = (walker, infos)
+        if options["planted_effects"]:
+            ctx.planted = self.plant_effects(ctx, transects, transect_data)
         slots = plan.schedule(ctx, transects, options["visits_per_transect"], start, end)
         bundles = plan.build_season(ctx, slots, transect_data, plan.outside_keys(ctx, slots))
         self.check_same_arguments(bundles, options)
@@ -136,6 +143,32 @@ class Command(BaseCommand):
         gpx_path = settings.SEEDS_DIR / "transects.gpx"
         gpx.write_gpx(gpx_path, transects, protocol.gps_interval_s)
         self.summarise(project, start, end, bundles, report, gpx_path)
+        if ctx.planted:
+            infos_by_code = {t.code: transect_data[t.id][1] for t in transects}
+            for line in planted.describe(ctx.planted, ctx.taxa, infos_by_code):
+                self.stdout.write(line)
+
+    def plant_effects(self, ctx, transects, transect_data):
+        """Specialists come from `taxon_host_plant` (a genus rule, as in the Q3 view)."""
+        rows = TaxonHostPlant.objects.filter(
+            taxon_id__in=[taxon_id for taxon_id, _ in ctx.taxa]
+        ).values_list(
+            "taxon_id", "taxon__scientific_name", "plant_taxon_id", "plant_taxon__scientific_name"
+        )
+        specialists, host_plants = planted.specialists_from_rows(list(rows))
+        if not specialists:
+            raise CommandError(
+                "No specialist species among the project's taxa: run seed_host_plants."
+            )
+        effects = planted.build(
+            lambda *parts: plan.stream(ctx, *parts),
+            specialists,
+            host_plants,
+            {t.code: transect_data[t.id][1] for t in transects},
+        )
+        if effects is None:
+            raise CommandError("No transect section has a habitat type.")
+        return effects
 
     def check_same_arguments(self, bundles, options):
         """The ids come from project, seed and a visit key, not from the dates or the visit
@@ -158,14 +191,20 @@ class Command(BaseCommand):
                 and planned_temp is not None
                 and visit.temperature_start_c == Decimal(planned_temp)
             )
-            if not (same_start and same_temp and visit.status in ("synced", payload["status"])):
+            same_device = visit.device_id == payload["device_id"]  # plain and planted differ
+            if not (
+                same_start
+                and same_temp
+                and same_device
+                and visit.status in ("synced", payload["status"])
+            ):
                 mismatched.append(str(visit.pk))
         if mismatched:
             raise CommandError(
                 f"{len(mismatched)} visits of this project and seed {options['seed']} already "
                 "exist with other data. The same seed with different --start, --end or "
-                "--visits-per-transect would be dropped as duplicates: use another --seed or "
-                "another project."
+                "--visits-per-transect, or a plain run on a planted one (--planted-effects) and "
+                "the reverse, would be dropped as duplicates: use another --seed or project."
             )
 
     def get_project(self, raw):

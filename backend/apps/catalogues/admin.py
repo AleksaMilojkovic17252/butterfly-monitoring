@@ -15,6 +15,7 @@ from apps.catalogues.models import (
     ManagementType,
     PlantTaxon,
     Taxon,
+    TaxonHostPlant,
     TaxonListVersion,
 )
 from apps.catalogues.resources import (
@@ -374,3 +375,27 @@ class HabitatTypeAdmin(CodelistAdmin):
 @admin.register(ManagementType)
 class ManagementTypeAdmin(CodelistAdmin):
     resource_classes = [ManagementTypeResource]
+
+
+@admin.register(TaxonHostPlant)
+class TaxonHostPlantAdmin(admin.ModelAdmin):
+    """Read-only list of the larval host plants (T101): the rows come from `seed_host_plants`."""
+
+    list_display = ["taxon", "taxon_list_version", "plant_taxon", "source"]
+    list_filter = [("plant_taxon", admin.RelatedOnlyFieldListFilter)]
+    list_select_related = ["taxon", "plant_taxon", "taxon__introduced_in"]
+    search_fields = ["taxon__scientific_name", "plant_taxon__scientific_name"]
+    ordering = ["taxon__scientific_name", "plant_taxon__scientific_name"]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="List version")
+    def taxon_list_version(self, obj):
+        return obj.taxon.introduced_in

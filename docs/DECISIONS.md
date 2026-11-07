@@ -2395,3 +2395,33 @@ with and without the tick, the edit path, photo add / make primary / bad files /
 7. **Ids ignore the dates and visit count.** They are uuid5 of project, seed and `CODE:index`, so the command checks the stored visits (start, status, start temperature) against the plan before sending and stops with an error if they differ (same seed, other `--start`, `--end` or `--visits-per-transect`); otherwise the server would answer `duplicate` and drop the new data. A transect without live sections is an error; sections without a habitat type get no habitat features.
 **Limits:** plausible, not realistic (docs/setup/simulation.md). The "test compares exports" criterion is skipped under D-021 and done by hand.
 
+
+## D-110 · Research-question views (T101): Q1, Q3, Q4 in `public`, Q6 in `geo`, host plants from a table, constants in the migrations
+2026-11-07 · accepted · T101, *builds on D-095, D-099, D-101, D-105 and D-109*
+All four questions were built (the supervisor has not yet picked which go in the thesis). `report_habitat_richness`, `report_specialist_host_plants` and `report_reproductive_microhabitat`
+are in `reports/0003` (`public`, no grant, never `security_invoker`, unmanaged models and read-only admins with the shared export actions); `geo.observation_hexgrid` is in `observations/0007`
+and is a pygeoapi collection (`observation-hexgrid`, no temporal extent).
+1. **Host plants.** `taxon_host_plant (taxon, plant_taxon, source)` is a server-only table (`catalogues/0004`, no sync, no history), seeded by `seed_host_plants` from `database/seeds/host_plants.csv`
+   (47 pairs, 29 species whose plants are in `plants.csv`). Taxa are versioned, so a row is saved for every live species of that name. **The pairs come from the model's knowledge of Tolman & Lewington (2008)
+   and must be checked against the book before the thesis cites them.**
+2. **Specialist = all host plants of the taxon in one plant genus** (`split_part(name, ' ', 1)`), derived in the view; `Taxon` is unchanged. Limit: Gonepteryx rhamni (Rhamnus and Frangula, both Rhamnaceae) counts as a
+   generalist, because the rule is on genus, not family.
+3. **Constants in the migrations, also columns:** the Q3 radius (`RADIUS_M = 50`, column `radius_m`) and the Q6 hexagon edge (`HEX_SIZE_M = 100`, column `hex_size_m`), like `BIN_M` (D-105). No protocol field. `ST_HexagonGrid`'s size is the **edge length**.
+4. **Q1 (project × habitat × year).** Transect records of valid visits take their section's habitat (no section or no habitat: `unknown`); records of any other source take the live polygon `habitat_feature` of the same project that
+   contains them (the latest `observed_at`, then the smallest id), else `unknown`. `individuals_per_km` uses transect records only, because incidental records have no effort. `effort_km` is the section lengths summed over the valid visits
+   (UTM, the transect's zone). `sections` and `section_km` count the sections of transects that have a valid visit that year. A record whose section was soft-deleted keeps that section's habitat. Rows exist for any key with effort or records.
+5. **Q3 (section × year).** One row per live section and local year with at least one valid visit, zeros kept. A patch is a live `larval_host` plant record of the same project, **of any specialist's host plant** (not only of the species seen
+   in that section), in the section's local year, within 50 m (`&&` with `ST_Expand` first, then `ST_DWithin` on geography), and not on a cancelled or deleted visit. Abundance midpoints: 1, 6, 55.5, 550.5, 1000 (`>1000` is a floor); no class counts 0.
+   A section next to a host section also sees its patches (distance-based, as it should; see the results). A patch is a record: the same patch recorded again on every visit counts again (the phone has no patch identity), so `host_patches` follows recording habits as well as host-plant availability.
+6. **Q4 (project × habitat type), no year, no buffer.** Area is the union per type in the UTM zone of the project's polygons (overlap in one type counts once; overlap between types counts in both). A record in two types' polygons counts for both;
+   `record_share` r is against the distinct reproductive records in any polygon of the project. `jacobs_d` is null without such records. Records follow D-099.4 (live, any source, no visit or a visit neither deleted nor cancelled). GPS error blurs small polygons (documented limit).
+7. **Q6 (project × hexagon).** The lattice is built over the extent of a project's live records in the UTM zone of its study area (else of its records); cells are the same whatever the extent is. A point on a shared edge counts in both cells (rare).
+   Records outside the study area still count; projects without records have no rows. **Speed:** the lattice covers the extent, so a project with a stray record far away (one demo project had five, 200 km off) has about 220 000 cells and the view took 3.2 s;
+   it is 11 ms for a normal project and 77 ms for the whole dev database once those five records were soft-deleted. It stays a plain view (the developer's choice over a `MATERIALIZED VIEW`); revisit it if real data has such outliers.
+   pygeoapi's bbox filter is applied on top of the whole view, so it does not reduce the work.
+8. **Simulator `--planted-effects`** (`simulation/planted.py`): host sections, patches, specialist ×4 boost, reproductive bias towards one habitat, and one polygon per typed section; separate `stream(..., "planted", ...)` streams, so the plain
+   season is unchanged (checked: the exports of a plain run equal those of the earlier season). Visits get the device id `simulator-t071-planted`, and `check_same_arguments` compares it, so mixing plain and planted on one project stops with the usual error.
+9. **Results** (`evaluation/results/research-questions.md`): Q3 and Q4 recover the planted effects (specialists 6.4× per visit in host sections; wet-meadow is the only habitat with positive Jacobs' D, 0.654 against an expected 0.842). **Q1 does not recover
+   the encoded habitat ranking clearly**: the encoded differences are about 20 % and one season is noisier than that. A stronger planted effect would be a generator change; none was made. The plans of the spatial joins are in `research-questions-plans.md` for T102.
+10. **Skipped:** the ticket's automated-test criterion (D-021); the views are checked by hand in `tmp/t101/smoke.py` (49 checks, one rolled-back transaction, not committed).
+**Not handled.** No statistics (R through the export); no buffer variant of Q4; Q6 has no map in the admin (QGIS reads it from pygeoapi); the dev data has no incidental records in the simulated season, so Q1's incidental half is checked on the paper case only.

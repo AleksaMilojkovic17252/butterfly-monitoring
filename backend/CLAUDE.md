@@ -25,13 +25,14 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py import_gbif_butterflie
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_plants
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_codelists
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_demo
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py seed_host_plants   # T101: larval host plants per species (database/seeds/host_plants.csv), for Q3 and --planted-effects
 
 # Sync (T026): drop stored push mutations older than the retry window
 $DC exec django python manage.py prune_sync_mutations --older-than 180d
 
 # Simulated season (T071, D-109; docs/setup/simulation.md): dev only, pushes as the project's researcher; --direct skips HTTP.
 # Run as the developer: it writes database/seeds/transects.gpx. The same project and seed again is all `duplicate`.
-$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct]
+$DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct] [--planted-effects]   # T101: plants known effects for Q1/Q3/Q4, on a fresh project
 
 # Quality flags (T056, D-093) and route coverage (T100, D-095): work them out again for a project (<uuid>); after
 # changing a protocol threshold, the project area or a transect line. Locked visits are skipped.
@@ -93,9 +94,9 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   `save_visit` and `refresh_after_points` call `refresh_route_coverage`, which is server-owned (`_NOT_SYNCED`, `SERVER_OWNED_FIELDS`, the
   admin's `fixed_fields`). The view `public.survey_visit_validity` is the valid-visit rule of protocol §6 for T061 and T101; it is not in
   `geo`, and `pygeoapi_ro` must not get it. `apps/core/geo.py` holds `utm_srid`, which `transects.services` and `surveys.coverage` share.
-- `apps/reports/` (T061, D-099) has four unmanaged models over the views `public.report_transect_indicators`, `report_species_phenology`,
+- `apps/reports/` (T061, D-099; T101, D-110) has eight unmanaged models over the views `public.report_transect_indicators`, `report_species_phenology`,
   `report_behaviour_counts` (created in `0001_initial`, no `pygeoapi_ro` grant) and `report_transect_profile` (T103, D-105, `0002`; 50 m bins along the transect, built on
-  `geo.butterfly_observations`: a change to that view must drop and recreate it too) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action.
+  `geo.butterfly_observations`: a change to that view must drop and recreate it too) and read-only admins limited to `projects_for(user)`, with an "Export selected as CSV" action. T101 (`0003_research_questions`) adds `report_habitat_richness` (Q1), `report_specialist_host_plants` (Q3, reads the server-only `catalogues.TaxonHostPlant` = `taxon_host_plant`, seeded by `seed_host_plants`) and `report_reproductive_microhabitat` (Q4), and the model over `geo.observation_hexgrid` (Q6; the view itself is in `observations/0007`).
   Years and ISO weeks are in the project's time zone. A column change in a source table (`survey_visit`, `butterfly_observation`, `project_protocol`, `transect`) needs a
   hand-written migration that drops and recreates the views.
 - `apps/projects/services.py` (T099, D-104): `close_project` / `reopen_project` (the admin actions, with a reason) set `Project.closed_at`. `ensure_project_open(project, made_at)` raises `ProjectClosed`

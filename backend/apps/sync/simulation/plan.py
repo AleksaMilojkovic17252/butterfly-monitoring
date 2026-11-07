@@ -19,6 +19,7 @@ import simweather
 from apps.surveys.rules import weather_suitable
 
 from . import ecology
+from . import planted as planted_effects
 from .walk import walk_visit
 
 NAMESPACE = uuid.UUID("8a1f6d3e-71c4-4d57-9d1e-0b71f1c0a071")
@@ -55,6 +56,11 @@ class Context:
     placeholder: object
     researcher_id: str
     suitable_days: set = field(default_factory=set)
+    planted: object | None = None  # PlantedEffects with --planted-effects (T101)
+
+    @property
+    def device_id(self):
+        return DEVICE_ID + (planted_effects.DEVICE_ID_SUFFIX if self.planted else "")
 
     @property
     def tz(self):
@@ -224,7 +230,7 @@ def build_visit(ctx, slot, walker, infos, with_extras, outside_far):
         "observer_count": 1,
         "paused_seconds": 0,
         "pauses": [],
-        "device_id": DEVICE_ID,
+        "device_id": ctx.device_id,
         "created_offline": True,
         "battery_saver_used": False,
     }
@@ -379,11 +385,14 @@ def _observations(
     rng = stream(ctx, slot.transect.code, slot.index, "obs")
     day_of_year = slot.day.timetuple().tm_yday
     records = []
-    for info in infos:
+    planted = ctx.planted
+    for section_index, info in enumerate(infos):
         hi = min(info.hi, walk.walked_m)
         if info.lo >= walk.walked_m:
             continue
         for taxon_id, params in ctx.taxa:
+            if planted:
+                params = planted.params(taxon_id, params)
             lam = ecology.expected_count(
                 params,
                 day_of_year,
@@ -391,6 +400,8 @@ def _observations(
                 temp,
                 cloud,
             )
+            if planted:
+                lam *= planted.boost(taxon_id, slot.transect.code, section_index)
             if lam < 1e-4:
                 continue
             count = ecology.poisson(rng, lam)
@@ -435,7 +446,19 @@ def _observations(
         lon, lat = walker.offset_lonlat(record["distance"], record["offset"])
         record["lon"], record["lat"] = round(lon, 7), round(lat, 7)
         record["accuracy"] = walk.accuracy_m
+    if planted:
+        _plant_reproductive(ctx, slot, infos, records)
     return records
+
+
+def _plant_reproductive(ctx, slot, infos, records):
+    """Reproductive behaviour is likelier in the sections of the chosen habitat type (Q4)."""
+    rng = stream(ctx, slot.transect.code, slot.index, "planted", "repro")
+    for record in records:
+        info = next((i for i in infos if i.lo <= record["distance"] <= i.hi), None)
+        code = info.habitat_code if info else "unknown"
+        if rng.random() < ctx.planted.reproductive_probability(code):
+            record["behaviour"] = [rng.choice(planted_effects.REPRODUCTIVE_BEHAVIOURS)]
 
 
 def _observation_mutation(ctx, key, number, observation_id, visit_id, record):
@@ -553,7 +576,38 @@ def _plants_and_habitats(ctx, slot, walker, infos, walk, started, visit_id):
         plants += 1
     # A habitat feature needs a habitat type: only sections that have one can host it.
     typed = [i for i in infos if i.habitat_type_id]
-    for number in range(rng.randint(2, 3) if typed else 0):
+    habitat_count = 0 if ctx.planted else (rng.randint(2, 3) if typed else 0)
+    if ctx.planted:
+        # One polygon per typed section (Q4): records near the line fall in their section's polygon.
+        margin = (1 - planted_effects.POLYGON_SHARE) / 2
+        half = planted_effects.POLYGON_HALF_WIDTH_M
+        for number, info in enumerate(typed):
+            lo = info.lo + (info.hi - info.lo) * margin
+            hi = min(info.hi - (info.hi - info.lo) * margin, walker.length)
+            ring = [
+                walker.offset_lonlat(lo, half),
+                walker.offset_lonlat(hi, half),
+                walker.offset_lonlat(hi, -half),
+                walker.offset_lonlat(lo, -half),
+            ]
+            ring = [[round(lon, 7), round(lat, 7)] for lon, lat in ring]
+            geometry = {"type": "Polygon", "coordinates": [[*ring, ring[0]]]}
+            out.append(
+                _habitat_mutation(
+                    ctx,
+                    key,
+                    number,
+                    info,
+                    geometry,
+                    rng,
+                    min((lo + hi) / 2, walk.walked_m),
+                    walk,
+                    started,
+                    visit_id,
+                )
+            )
+            habitats += 1
+    for number in range(habitat_count):
         distance = rng.uniform(0, walk.walked_m)
         info = next((i for i in typed if i.lo <= distance <= i.hi), typed[0])
         shape = rng.choice(["point", "line", "polygon"])
@@ -584,36 +638,84 @@ def _plants_and_habitats(ctx, slot, walker, infos, walk, started, visit_id):
             ]
             ring = [[round(lon, 7), round(lat, 7)] for lon, lat in ring]
             geometry = {"type": "Polygon", "coordinates": [[*ring, ring[0]]]}
-        when = started + timedelta(seconds=int(distance / walk.speed_m_s))
-        feature_id = uid(ctx, "habitat", f"{key}:{number}")
-        payload = {
-            "id": str(feature_id),
-            "project": str(ctx.project.id),
-            "survey_visit": str(visit_id),
-            "habitat_type": info.habitat_type_id,
-            "management_type": info.management_type_id,
-            "observed_at": iso(when),
-            "geometry": geometry,
-            "vegetation_height_cm": rng.randint(10, 80),
-            "shrub_cover_pct": rng.randint(0, 40),
-            "tree_cover_pct": rng.randint(0, 30),
-            "bare_ground_pct": rng.randint(0, 20),
-            "flower_abundance_class": rng.choice(["low", "medium", "high"]),
-            "grazing_intensity": rng.choice(["none", "low", "medium"]),
-            "mowing_status": rng.choice(["unmown", "recently_mown", "mown_this_season"]),
-            "disturbance_type": "none",
-            "created_at": iso(when),
-        }
         out.append(
-            mutation(
-                ctx,
-                "habitat_feature",
-                "create",
-                feature_id,
-                payload,
-                when,
-                f"{key}:habitat:{number}",
+            _habitat_mutation(
+                ctx, key, number, info, geometry, rng, distance, walk, started, visit_id
             )
         )
         habitats += 1
+    if ctx.planted:
+        extra = _planted_patches(ctx, slot, walker, infos, walk, started, visit_id)
+        out.extend(extra)
+        plants += len(extra)
     return {"mutations": out, "plants": plants, "habitats": habitats}
+
+
+def _habitat_mutation(ctx, key, number, info, geometry, rng, distance, walk, started, visit_id):
+    when = started + timedelta(seconds=int(distance / walk.speed_m_s))
+    feature_id = uid(ctx, "habitat", f"{key}:{number}")
+    payload = {
+        "id": str(feature_id),
+        "project": str(ctx.project.id),
+        "survey_visit": str(visit_id),
+        "habitat_type": info.habitat_type_id,
+        "management_type": info.management_type_id,
+        "observed_at": iso(when),
+        "geometry": geometry,
+        "vegetation_height_cm": rng.randint(10, 80),
+        "shrub_cover_pct": rng.randint(0, 40),
+        "tree_cover_pct": rng.randint(0, 30),
+        "bare_ground_pct": rng.randint(0, 20),
+        "flower_abundance_class": rng.choice(["low", "medium", "high"]),
+        "grazing_intensity": rng.choice(["none", "low", "medium"]),
+        "mowing_status": rng.choice(["unmown", "recently_mown", "mown_this_season"]),
+        "disturbance_type": "none",
+        "created_at": iso(when),
+    }
+    return mutation(
+        ctx, "habitat_feature", "create", feature_id, payload, when, f"{key}:habitat:{number}"
+    )
+
+
+def _planted_patches(ctx, slot, walker, infos, walk, started, visit_id):
+    """Larval host-plant patches next to the host sections (Q3), all well inside 50 m."""
+    key = slot.key
+    rng = stream(ctx, slot.transect.code, slot.index, "planted", "patches")
+    planted = ctx.planted
+    out, counter = [], 0
+    for section_index in sorted(planted.host_sections[slot.transect.code]):
+        info = infos[section_index]
+        for number in range(planted_effects.PATCHES_PER_HOST_SECTION):
+            distance = rng.uniform(info.lo, max(info.lo, min(info.hi, walk.walked_m)))
+            offset = rng.uniform(5, 20) * rng.choice([-1, 1])
+            x, y, ux, uy = walker.position(distance)
+            geometry = _square(walker, x - uy * offset, y + ux * offset, rng.uniform(10, 20))
+            plant_id, _ = planted.host_plants[counter % len(planted.host_plants)]
+            counter += 1
+            when = started + timedelta(seconds=int(distance / walk.speed_m_s))
+            record_id = uid(ctx, "plant", f"{key}:host:{section_index}:{number}")
+            payload = {
+                "id": str(record_id),
+                "project": str(ctx.project.id),
+                "survey_visit": str(visit_id),
+                "plant_taxon": str(plant_id),
+                "resource_type": "larval_host",
+                "observed_at": iso(when),
+                "geometry": geometry,
+                "abundance_class": rng.choice(planted_effects.PATCH_ABUNDANCE_CLASSES),
+                "phenology_stage": rng.choice(["budding", "flowering", "flowering", "fruiting"]),
+                "flowering_intensity": rng.choice(["low", "medium", "high"]),
+                "created_at": iso(when),
+            }
+            out.append(
+                mutation(
+                    ctx,
+                    "plant_resource_observation",
+                    "create",
+                    record_id,
+                    payload,
+                    when,
+                    f"{key}:plant:host:{section_index}:{number}",
+                )
+            )
+    return out
