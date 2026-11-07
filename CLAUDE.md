@@ -66,6 +66,9 @@ $DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --proj
 
 # OGC collections, filters and paging (T068). OGC_AUTH is an admin credential (T069; docs/setup/ogc-access.md)
 OGC_AUTH='Token <key>' scripts/ogc-smoke.sh [base-url]
+
+# OGC CITE conformance run (T070, D-113; evaluation/interop/README.md). Profile `test`: second pygeoapi + TEAM Engine, not started by a plain `up`.
+$DC --profile test up -d pygeoapi-cite ets-features   # then the REST call in evaluation/interop/README.md; stop both afterwards
 ```
 
 ## Code style and conventions

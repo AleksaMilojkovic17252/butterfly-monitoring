@@ -53,3 +53,5 @@ database/seeds/cache/
 .vscode/
 *.swp
 .DS_Store
+
+.ipynb_checkpoints/

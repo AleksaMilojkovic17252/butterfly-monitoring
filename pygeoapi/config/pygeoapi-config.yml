@@ -3,7 +3,7 @@ server:
   bind:
     host: 0.0.0.0
     port: 5000
-  url: http://localhost:8080/ogc
+  url: ${PYGEOAPI_SERVER_URL:-http://localhost:8080/ogc}
   mimetype: application/json; charset=UTF-8
   encoding: utf-8
   language: en-US
@@ -66,6 +66,8 @@ resources:
         id_field: id
         table: transects
         geom_field: geometry
+        # Not a feature time: the row's creation time, so `datetime` is advertised as OGC API - Features requires (T070, D-113).
+        time_field: created_at
         title_field: name
 
   transect-sections:
@@ -82,6 +84,8 @@ resources:
         id_field: id
         table: transect_sections
         geom_field: geometry
+        # As for transects: the row's creation time (T070, D-113).
+        time_field: created_at
         title_field: section_code
 
   butterfly-observations:
@@ -161,4 +165,6 @@ resources:
         id_field: id
         table: observation_hexgrid
         geom_field: geometry
+        # The newest observation counted in the cell, so `datetime` means "newest record in the window" (T070, D-113).
+        time_field: last_observed_at
         title_field: id

@@ -1,0 +1,7 @@
+# Evaluation tools (T070; reused by T074/T075). Install in evaluation/.venv: see evaluation/interop/README.md.
+# Top-level packages pinned from the developer's `pip freeze` (2026-11-07).
+geopandas==1.2.0
+pyogrio==0.13.0
+requests==2.34.2
+matplotlib==3.11.2
+jupyterlab==4.6.6

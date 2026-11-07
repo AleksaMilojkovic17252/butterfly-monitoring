@@ -2457,3 +2457,29 @@ C2 (rewritten query); median of 10 warm runs. Method, files and numbers: `evalua
 8. **Each stream restarts at the first point** (pause/resume, battery saver, app restart). Accepted for a dev tool.
 9. **No foreground service** (Dart timers can stall with the screen off): keep the app open.
 **Skipped:** the `integration_test` criterion (D-021; it would also need the `integration_test` dev dependency). Replaced by a replayed visit by hand and `tmp/t072/check_visit.py`.
+
+## D-113 · OGC interop and CITE (T070): second pygeoapi for the suite, six collections, evaluation venv
+2026-11-07 · accepted · T070, *builds on D-079 and D-080*
+**`server.url` from the environment.** `pygeoapi-config.yml` has `url: ${PYGEOAPI_SERVER_URL:-http://localhost:8080/ogc}` (pygeoapi 0.24's `yaml_load` expands `${VAR:-default}`).
+The main service sets nothing, so its links are unchanged (checked: `next` still starts with `http://localhost:8080/ogc`).
+**Second instance for CITE.** Compose profile `test` has `pygeoapi-cite` (same image, config and role, `PYGEOAPI_SERVER_URL=http://pygeoapi-cite:5000/ogc`, no port, no nginx, no auth)
+and `ets-features`. The suite follows `self` and `next` links, and against the main instance those say `localhost:8080`, which inside the suite's container is the suite itself.
+A plain `up` starts neither (checked with `ps`).
+**VERIFY results.** Image `ogccite/ets-ogcapi-features10` exists on Docker Hub. Tags: `1.9-teamengine-6.0.0-RC2` (2025-01-03, a release candidate), `1.8-teamengine-5.7` (2024-11-29, newest stable), `latest` (= the RC).
+Pinned **`1.8-teamengine-5.7`**: stable, and never `latest`. REST: `GET http://localhost:8081/teamengine/rest/suites` lists `ogcapi-features-1.0`; the run is
+`GET /teamengine/rest/suites/ogcapi-features-1.0/run?iut=<landing page, percent-encoded>&noofcollections=-1` with basic auth `ogctest:ogctest`. `noofcollections` defaults to 3, so `-1` is needed for all six.
+`Accept: application/xml` gives TestNG XML, `application/rdf+xml` (also `*/*`) gives EARL, and `text/html` gives **406**: the suite's own HTML report is only in the web UI. `report.html`
+is therefore a summary generated from the XML by `evaluation/interop/cite/make_report.py`. The suite takes about 30 s.
+**Result.** First run: 887 passed, 9 failed, 36 skipped. The 9 failures were one cause: `datetime` not advertised in OpenAPI for `transects`, `transect-sections` and `observation-hexgrid`
+(no `time_field`, D-079 limit 1). **Fixed at the user's request**: `transects/0008` adds `created_at` to `geo.transects` and `geo.transect_sections`, `observations/0008` adds `last_observed_at`
+(`max(observed_at)` of the records in the cell) to `geo.observation_hexgrid`, and the config sets `time_field` on all three. Views are dropped and recreated from the earlier migrations' SQL plus the column (reverse restores them).
+Second run: **896 passed, 0 failed, 36 skipped** (the 36 skips are the suite's own: 6 "free-form parameters supported", 30 bbox cases whose derived box returns no features). `datetime=` now returns 200 on all six.
+These three collections get **no static temporal extent**, so D-079 limit 6 (400 for a window outside the extent) does not apply to them. `last_observed_at` makes a `datetime` filter on hexagons mean "newest record in the window", not "any record in the window".
+`migrate` also applied the pending `reports/0004` (T102). The suite reports no `ORDER BY`, extent or limit-6 problems. `report.html` is a summary from the XML.
+**Six collections, not five.** The ticket says 5; `observation-hexgrid` (T101) is the sixth, and all six are covered by the notebook, QGIS and CITE.
+**Evaluation venv** at `evaluation/.venv` (gitignored), `evaluation/requirements.txt`: geopandas, pyogrio, requests, matplotlib, jupyterlab; T074 and T075 reuse it. Versions get pinned from the user's `pip freeze`.
+Scripts read the token from `OGC_KEY` (GDAL from the file named in `OGC_HEADER_FILE`), never from the repository.
+**After the review (T070).** The two `0008` migrations hold the new view SQL in full (checked byte-identical to the `.replace()` version by hash); 0005/0007 are imported only for the reverse. `pygeoapi-cite` shares the `pygeoapi`
+service through the `x-pygeoapi` anchor in `compose.yaml` (rendered services unchanged), so the CITE run cannot drift from the deployed config. The ETS tag is in `CONVENTIONS.md` A.4. `datetime=` per collection is in `docs/setup/ogc-access.md` § Known limits.
+`testng-results.xml` (3.4 MB) is gitignored; `earl.rdf` and `report.html` are committed.
+

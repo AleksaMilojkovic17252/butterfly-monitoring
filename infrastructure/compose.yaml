@@ -3,6 +3,30 @@
 # Relative paths below are relative to the repository root (--project-directory .).
 name: butterfly
 
+# Shared by pygeoapi and pygeoapi-cite (T070).
+x-pygeoapi: &pygeoapi
+  image: geopython/pygeoapi:0.24.0
+  environment: &pygeoapi-env
+    # Entry point of the official image: listen on 5000 under /ogc (nginx forwards /ogc/ unchanged).
+    CONTAINER_HOST: 0.0.0.0
+    CONTAINER_PORT: "5000"
+    SCRIPT_NAME: /ogc
+    # Read by the config file (${VAR} substitution): the read-only role, never django_app.
+    POSTGRES_DB: ${POSTGRES_DB:?set in .env}
+    PYGEOAPI_DB_USER: ${PYGEOAPI_DB_USER:-pygeoapi_ro}
+    PYGEOAPI_DB_PASSWORD: ${PYGEOAPI_DB_PASSWORD:?set in .env}
+  volumes:
+    - ./pygeoapi/config/pygeoapi-config.yml:/pygeoapi/local.config.yml:ro
+  depends_on:
+    db:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/ogc/', timeout=3)"]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 15s
+
 services:
   db:
     image: mobilitydb/mobilitydb:17-3.5-1.3
@@ -86,28 +110,27 @@ services:
     restart: unless-stopped
 
   pygeoapi:
-    image: geopython/pygeoapi:0.24.0
-    environment:
-      # Entry point of the official image: listen on 5000 under /ogc (nginx forwards /ogc/ unchanged).
-      CONTAINER_HOST: 0.0.0.0
-      CONTAINER_PORT: "5000"
-      SCRIPT_NAME: /ogc
-      # Read by the config file (${VAR} substitution): the read-only role, never django_app.
-      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
-      PYGEOAPI_DB_USER: ${PYGEOAPI_DB_USER:-pygeoapi_ro}
-      PYGEOAPI_DB_PASSWORD: ${PYGEOAPI_DB_PASSWORD:?set in .env}
-    volumes:
-      - ./pygeoapi/config/pygeoapi-config.yml:/pygeoapi/local.config.yml:ro
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/ogc/', timeout=3)"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
+    <<: *pygeoapi
     restart: unless-stopped
+
+  # OGC CITE (T070, D-113): profile `test`, never started by a plain `up`. A second pygeoapi (same image, config and
+  # role) whose links point at itself, because the suite follows self/next links and inside its container
+  # `localhost:8080` is the suite. No port, no nginx, no auth.
+  pygeoapi-cite:
+    <<: *pygeoapi
+    profiles: [test]
+    environment:
+      <<: *pygeoapi-env
+      PYGEOAPI_SERVER_URL: http://pygeoapi-cite:5000/ogc
+
+  ets-features:
+    image: ogccite/ets-ogcapi-features10:1.8-teamengine-5.7
+    profiles: [test]
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      pygeoapi-cite:
+        condition: service_healthy
 
   nginx:
     image: nginx:1.28-alpine

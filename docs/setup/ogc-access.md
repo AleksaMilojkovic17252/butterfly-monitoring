@@ -105,6 +105,7 @@ features <- resp_body_json(resp)$features
 
 ## Known limits
 
+- `datetime=` means something different per collection. On `butterfly-observations`, `plant-resources` and `habitat-features` it filters on `observed_at`. On `transects` and `transect-sections` it filters on the row's creation time (`created_at`), and on `observation-hexgrid` on the newest observation in the cell (`last_observed_at`). Those three have no static temporal extent (D-113).
 - Up to 60 s of delay after a revocation, a deactivation, a group change or a password change (above).
 - Basic auth sends the password with every request. Failed Basic logins are limited to 5 in 15 minutes per
   email, with a counter separate from the app login (the answer is 401 while locked; a token or JWT still works). The counter is per

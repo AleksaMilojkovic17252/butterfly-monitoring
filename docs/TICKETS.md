@@ -105,7 +105,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T067 | [#84](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/84) | `geo` views for the five collections | P1 | must | T004, T021, T044 | 2 d | done |
 | T068 | [#85](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/85) | pygeoapi collections, filtering and paging | P1 | must | T007, T067 | 1.5 d | done |
 | T069 | [#86](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/86) | Token-protected pygeoapi access for admins | P1 | must | T011, T013, T068 | 1.5 d | done |
-| T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | todo |
+| T070 | [#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) | QGIS interoperability and OGC conformance test | P1 | must | T069, T071 | 1.5 d | done |
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | done |
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | done |
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | todo |
@@ -1454,16 +1454,17 @@ location = /_auth {
 Note (2026-11-02): built and run by hand; see D-080 and `docs/setup/ogc-access.md`. Nothing skipped but automated tests (D-021), shown by hand instead. nginx `auth_request` on `/ogc`, `OgcVerifyView`, personal tokens in Django admin, Basic with the login throttle, smoke script with `OGC_AUTH`. The nginx block differs from the ticket's (D-080). The demo users' passwords are not `demo-password` here, so the matrix ran with throwaway users `t069-*@test.x` (admin and researcher groups, non-superuser admin created the tokens in Django admin). Results: no credentials 401 with one `WWW-Authenticate: Basic realm="ogc"`; researcher JWT and Basic 403; admin JWT, token, Basic 200; garbage token, wrong password, `Foo bar` 401; deactivated user and deleted token 401 within 61 s and 26 s; `Accept: application/geo+json` 200; POST and DELETE 400 from pygeoapi; HEAD 200; `/api/v1/auth/verify/` 404 from outside; cache: 3 requests, 1 Django call; Basic lockout after 6 wrong passwords answers 401, with its own counter (the app login stays open); `scripts/ogc-smoke.sh` passes. `ogrinfo` works with `GDAL_HTTP_HEADER_FILE`, not `GDAL_HTTP_HEADERS`. QGIS 4.2.3 API Header checked by the developer: connects, and a wrong token falls back to a Basic login prompt. Not checked: a real browser prompt (developer), R (not installed).
 
 ### T070 · QGIS interoperability and OGC conformance test
-[#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) · E10 · P1 · must · labels: `ogc`, `evaluation`, `must` · implements F43 · est. 1.5 d · **todo**
+[#87](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/87) · E10 · P1 · must · labels: `ogc`, `evaluation`, `must` · implements F43 · est. 1.5 d · **done**
 
 Depends on: T069, T071
+Done 2026-11-07: six collections (not five), screenshots in `evaluation/interop/qgis/`; CITE 896/0/36 after adding `created_at` / `last_observed_at` to the three views without a time column (D-113). Results: `evaluation/interop/results.md`.
 From T068: `datetime=` on `transects` and `transect-sections` answers 500 (no time_field; provider behaviour), and unknown query parameters are ignored rather than rejected: expect CITE to comment on both, and explain them in the results. A `datetime` window outside a collection's temporal extent answers 400, not an empty result (D-079). Page with `sortby=id`: without it there is no ORDER BY, so OFFSET paging is not guaranteed stable.
 
-- [ ] **QGIS** (version recorded): add an OGC API – Features connection with the token, load all 5 collections, check attribute types and geometry, and use the Temporal Controller on observations. Screenshots go in `evaluation/interop/`.
-- [ ] **Python notebook:** reads each collection with `geopandas.read_file(url)` (or requests plus `GeoDataFrame.from_features`) with the token, and pages through more than 1000 features of simulated data.
-- [ ] **R script:** reads observations with `sf` or `httr2` and plots a phenology chart.
-- [ ] **OGC CITE:** run the executable test suite for OGC API – Features Part 1 (`ets-ogcapi-features10`, Docker image from OGC, VERIFY name and tag) against pygeoapi. Run it directly on the internal port in a `test` compose profile, because the test harness may not send auth headers. Save the HTML report, and explain any failures.
-- [ ] Results table (client, operation, result, notes) in `evaluation/interop/results.md`.
+- [x] **QGIS** (version recorded): add an OGC API – Features connection with the token, load all 5 collections, check attribute types and geometry, and use the Temporal Controller on observations. Screenshots go in `evaluation/interop/`.
+- [x] **Python notebook:** reads each collection with `geopandas.read_file(url)` (or requests plus `GeoDataFrame.from_features`) with the token, and pages through more than 1000 features of simulated data.
+- [x] **R script:** reads observations with `sf` or `httr2` and plots a phenology chart.
+- [x] **OGC CITE:** run the executable test suite for OGC API – Features Part 1 (`ets-ogcapi-features10`, Docker image from OGC, VERIFY name and tag) against pygeoapi. Run it directly on the internal port in a `test` compose profile, because the test harness may not send auth headers. Save the HTML report, and explain any failures.
+- [x] Results table (client, operation, result, notes) in `evaluation/interop/results.md`.
 
 ### T071 · Simulated field-day generator
 [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) · E11 · P1 · must · labels: `backend`, `evaluation`, `must`, `p2-compat` · implements F80 · est. 2.5 d · **done**

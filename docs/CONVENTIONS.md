@@ -54,6 +54,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | requests | 2.34.x | GBIF calls of the seed commands (T024); approved for T024 |
 | Pillow | 12.3.0 | thumbnails of uploaded photos (T049); approved for T049 |
 | pygeoapi | 0.24.x | 0.24.0 released mid-2026 |
+| OGC CITE suite (test profile only) | `ogccite/ets-ogcapi-features10:1.8-teamengine-5.7` | OGC API – Features 1.0 conformance run (T070, D-113); newest stable tag, 1.9 is a release candidate |
 | PostgreSQL / PostGIS / MobilityDB | 17 / 3.5 / 1.3 | image `mobilitydb/mobilitydb:17-3.5-1.3` (built on `postgis/postgis`) |
 | FROST-Server (P2) | 2.x latest | VERIFY current tag (2.7.x/2.8.x seen) |
 | Flutter | current stable | VERIFY |
