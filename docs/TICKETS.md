@@ -109,7 +109,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T071 | [#88](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/88) | Simulated field-day generator | P1 | must | T024, T026, T036, T044, T049 | 2.5 d | done |
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | done |
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | done |
-| T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | todo |
+| T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | done |
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | must | T070, T073, T074 | 2 d | todo |
 | T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | todo |
 | T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | todo |
@@ -544,7 +544,7 @@ Note: reject datetimes without a UTC offset in push input (DRF would read them i
 
 Note: shown by hand with tmp/t026/smoke.py and temporary handlers, since no type the phone writes exists yet (D-050). The 5 s / 500-mutation target is measured in T074.
 
-Deferred: the 500-mutation < 5 s measurement to T074 (about 3 s in the smoke run). Conflict merge replaces the `stale_version` rejection in T027 (D-050).
+Deferred: the 500-mutation < 5 s measurement to T074 (about 3 s in the smoke run). Measured in T074 (2026-11-09, gunicorn): 500 observation creates take 14.4 s p50, **not under 5 s**. Conflict merge replaces the `stale_version` rejection in T027 (D-050).
 
 Depends on: T025
 
@@ -767,7 +767,7 @@ three bugs, all fixed: the missing `WAKE_LOCK`, a provider `ref` used after an `
 track points queued during the run. The `/code-review` findings were fixed except two (see D-061).
 permission_handler 13.0.2 needs compileSdk 37, so the Android build moved to AGP 9.2.1 and Gradle 9.4.1 (CONVENTIONS A.4).
 
-Deferred: the 60-minute run (about 720 points) is measured in T074, as the criterion says. Pause handling (`pausedAt`) is T039, and the
+Deferred: the 60-minute run (about 720 points) is measured in T074, as the criterion says (T074 moved it to a follow-up battery ticket, 2026-11-09). Pause handling (`pausedAt`) is T039, and the
 "No GPS fix" banner for a gap within one app run is T038.
 
 Depends on: T035, T036
@@ -1213,7 +1213,7 @@ Note: `record_decision` has no caller until T057 builds the actions, so the chec
 
 Depends on: T036, T044
 Notes: plant/habitat layers added when T051/T053 are done
-Deferred: the plants and habitats layers (T052 and T054 add them, see their `From T059` notes); the 5,000-marker timing is a rough check here (markers rebuilt in about 92 ms in a profile build) and is formally timed in T074. Decisions: D-081.
+Deferred: the plants and habitats layers (T052 and T054 add them, see their `From T059` notes); the 5,000-marker timing is a rough check here (markers rebuilt in about 92 ms in a profile build) and is formally timed in T074. Decisions: D-081. Measured in T074 (2026-11-09, debug build): 5,389 markers, first frame with markers 250–460 ms, p95 frame time 11–14 ms.
 
 - [ ] **Layers** (toggle sheet): transects, sections, own observations (clustered with `flutter_map_marker_cluster`), plants, habitats, a selected visit's route, and the basemap.
 - [ ] **Filters:** visit, species, date range, life stage, behaviour, habitat type. The validation-status filter is dropped because the app doesn't store it.
@@ -1517,11 +1517,11 @@ Depends on: T035, T045
 Note (T073, 2026-11-07): checked on the phone (debug build, 2026-11-07): `log()` took 0.26 ms min, 0.30 ms median, 0.77 ms max over 30 taps. The export, the off switch, Clear events and the v18 to v19 upgrade (data kept) also worked. Reviewed by the developer. Debug builds only (D-114). See D-114.
 
 ### T074 · Performance, sync robustness and battery tests
-[#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) · E11 · P1 · must · labels: `evaluation`, `backend`, `mobile`, `must` · implements F61 · est. 2 d · **todo**
+[#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) · E11 · P1 · must · labels: `evaluation`, `backend`, `mobile`, `must` · implements F61 · est. 2 d · **done**
 
 Depends on: T030, T059, T071, T072
 
-- [ ] **Server:** push and pull throughput for 100, 500 and 1000 mutations, plus p50 and p95 response times for the main endpoints and OGC items, using `pytest-benchmark` or a small `httpx` script. Results go to `evaluation/results/server_perf.csv`.
+- [x] **Server:** push and pull throughput for 100, 500 and 1000 mutations, plus p50 and p95 response times for the main endpoints and OGC items, using `pytest-benchmark` or a small `httpx` script. Results go to `evaluation/results/server_perf.csv`.
 - [ ] **App:**
   - Drift insert of 1000 observations
   - map load with 5k markers
@@ -1536,7 +1536,16 @@ Depends on: T030, T059, T071, T072
 
   A pass/fail table is produced.
 - [ ] **Battery:** two 60-minute real-GPS walks (or bench runs with the screen off) at 5 s and 15 s intervals, measured with `adb shell dumpsys batterystats`, giving % drain per hour.
-- [ ] **MVP criterion 4:** a visit with 50+ observations, then a restart, shows no loss.
+- [x] **MVP criterion 4:** a visit with 50+ observations, then a restart, shows no loss.
+
+Note (T074, 2026-11-09): measured once and written up in `evaluation/results/performance.md` (D-115). Device: Samsung SM-S921B, Android 17, debug build over USB. The scripts and the debug-only app tooling used for the run were **removed afterwards at the developer's request** (T075 does not use them), so nothing is re-runnable; `server_perf.csv` and `app_perf.csv` were removed too, the tables are in `performance.md`. Server run on gunicorn: **T026's 500-mutation push is 14.4 s, over the 5 s target** (open, see `performance.md`). Done on the phone: 1000 inserts on a DB copy, map with 5,389 markers, DB size after the pulled season and the map project, kill test (10 observations), dropped and failed push (fault adapter), 55 observations after a restart; the resend check also passes. Open items are under Deferred. Skipped under D-021: `pytest-benchmark`, integration-test timings, the automated "scripted" fault test.
+
+Deferred (with the developer's agreement, 2026-11-09):
+- **Photo upload throughput over Tailscale** (App criterion): skipped on request; the phone's Tailscale was offline. Not measured.
+- **The manual airplane-mode run** (Sync robustness 2): not run; it needs the phone on Wi-Fi or Tailscale, and over USB airplane mode cuts nothing. The fault adapter part passed.
+- **Battery** (two 60-minute screen-off runs at 5 s and 15 s) to a follow-up ticket, not needed for the Part 1 report; the per-device GPS interval override already exists. T037's 60-minute 720-point check moves with it.
+- **`server_perf.csv` and `app_perf.csv`**: replaced by the tables in `performance.md` (the scripts and CSVs were deleted, D-115).
+- Also found: T026's 500-mutation push takes 14.4 s, over its 5 s target (recorded under T026; a follow-up is the developer's call).
 
 ### T075 · Usability kit and Part 1 evaluation run
 [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) · E11 · P1 · must · labels: `evaluation`, `docs`, `must` · implements F61 · est. 2 d · **todo**
