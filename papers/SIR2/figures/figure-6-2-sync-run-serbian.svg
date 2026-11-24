@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 6.2. What starts a synchronisation run and the steps of one run (section 6.3).
+  Sources: mobile/lib/core/sync/sync_triggers.dart (login or app start, resume, 15-minute timer in the
+  foreground, connection back), mobile/lib/features/visits/ui/widgets/finish_visit_form.dart:217 (after a
+  finished visit), mobile/lib/core/sync/sync_status.dart:41-45 (manual run), mobile/lib/core/sync/sync_runner.dart
+  (run: join a running run; _run: recoverInFlight, push loop with nextBatch / markSending / push /
+  applyPushResults, photo upload unless Wi-Fi only, refreshFromServer, checkSession, pull of each downloaded
+  project, bookkeeping); D-054.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="530" viewBox="0 0 840 530"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="arrow-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#888"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="840" height="530" fill="#ffffff"/>
+
+  <!-- ===== triggers ===== -->
+  <text x="110" y="34" text-anchor="middle" font-size="15" font-weight="bold">Okidači</text>
+
+  <rect x="20" y="52" width="180" height="34" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="74" text-anchor="middle">Prijava ili pokretanje</text>
+  <rect x="20" y="96" width="180" height="34" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="118" text-anchor="middle">Povratak aplikacije</text>
+  <rect x="20" y="140" width="180" height="34" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="162" text-anchor="middle">Na 15 min u prvom planu</text>
+  <rect x="20" y="184" width="180" height="34" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="206" text-anchor="middle">Veza se vratila</text>
+  <rect x="20" y="228" width="180" height="34" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="250" text-anchor="middle">Poseta završena</text>
+  <rect x="20" y="272" width="180" height="34" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="110" y="294" text-anchor="middle">Sinhronizuj (ručno)</text>
+
+  <text x="20" y="334" font-size="12" fill="#555">Samo dok je korisnik prijavljen;</text>
+  <text x="20" y="350" font-size="12" fill="#555">nikad dok je aplikacija zatvorena.</text>
+  <text x="20" y="372" font-size="12" fill="#555">Plavi okidač zanemaruje</text>
+  <text x="20" y="388" font-size="12" fill="#555">čekanje posle greške.</text>
+
+  <!-- collector -->
+  <line x1="200" y1="69" x2="222" y2="69" stroke="#333" stroke-width="1.2"/>
+  <line x1="200" y1="113" x2="222" y2="113" stroke="#333" stroke-width="1.2"/>
+  <line x1="200" y1="157" x2="222" y2="157" stroke="#333" stroke-width="1.2"/>
+  <line x1="200" y1="201" x2="222" y2="201" stroke="#333" stroke-width="1.2"/>
+  <line x1="200" y1="245" x2="222" y2="245" stroke="#333" stroke-width="1.2"/>
+  <line x1="200" y1="289" x2="222" y2="289" stroke="#333" stroke-width="1.2"/>
+  <line x1="222" y1="69" x2="222" y2="289" stroke="#333" stroke-width="1.2"/>
+  <line x1="222" y1="179" x2="252" y2="179" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="254" y="150" width="118" height="58" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="313" y="172" text-anchor="middle" font-size="12">Ciklus u toku?</text>
+  <text x="313" y="188" text-anchor="middle" font-size="12">Pridruži se. Inače</text>
+  <text x="313" y="202" text-anchor="middle" font-size="12">pokreni novi.</text>
+  <line x1="372" y1="179" x2="402" y2="179" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- ===== the run ===== -->
+  <text x="610" y="34" text-anchor="middle" font-size="15" font-weight="bold">Jedan ciklus</text>
+  <rect x="404" y="44" width="416" height="472" rx="8" fill="none" stroke="#888" stroke-width="1"/>
+
+  <!-- 1 -->
+  <rect x="424" y="56" width="376" height="40" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="81"><tspan font-weight="bold">1</tspan>  Vrati stavke zaostale „u slanju” u red</text>
+  <line x1="612" y1="96" x2="612" y2="112" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 2 push loop -->
+  <rect x="424" y="114" width="376" height="96" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="136"><tspan font-weight="bold">2</tspan>  Slanje, paket po paket:</text>
+  <text x="452" y="156" font-size="12">izaberi do 100 stavki po redosledu</text>
+  <text x="452" y="173" font-size="12">označi ih „u slanju” i pošalji</text>
+  <text x="452" y="190" font-size="12">primeni odgovore, pa sledeći paket</text>
+  <text x="452" y="204" font-size="12" fill="#555">dok ništa ne ostane za slanje</text>
+  <path d="M 770 196 C 800 196, 800 146, 770 146" fill="none" stroke="#333" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="612" y1="210" x2="612" y2="226" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 3 -->
+  <rect x="424" y="228" width="376" height="40" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="253"><tspan font-weight="bold">3</tspan>  Otpremi fotografije (čeka ako je izabran samo Wi-Fi)</text>
+  <line x1="612" y1="268" x2="612" y2="284" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 4 -->
+  <rect x="424" y="286" width="376" height="40" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="311"><tspan font-weight="bold">4</tspan>  Osveži listu projekata i članstva</text>
+  <line x1="612" y1="326" x2="612" y2="342" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 5 -->
+  <rect x="424" y="344" width="376" height="40" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="369"><tspan font-weight="bold">5</tspan>  Povuci svaki preuzeti projekat, stranu po stranu</text>
+  <line x1="612" y1="384" x2="612" y2="400" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 6 -->
+  <rect x="424" y="402" width="376" height="56" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="436" y="424"><tspan font-weight="bold">6</tspan>  Zabeleži ishod: uspešno samo ako nije</text>
+  <text x="452" y="442">bilo greške i ništa nije ostalo za slanje</text>
+
+  <text x="424" y="482" font-size="12" fill="#555">Neuspešno slanje ili povlačenje odmah prekida ciklus;</text>
+  <text x="424" y="497" font-size="12" fill="#555">svaki sledeći čeka duže (2, 4, 8 s ... do 15 min).</text>
+</svg>

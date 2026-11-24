@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 4.2. The path of a GPS fix during a visit (section 4.4).
+  Sources: core/location/location_source.dart (foreground service, interval, no distance filter,
+  notification, wake lock); features/visits/domain/tracking_controller.dart (older fix dropped,
+  sequence number, buffer of 10 points or 30 s); core/sync/sync_repository.dart (writeBatch, one
+  transaction, batches of up to 500 rows); core/location/usable_fix.dart and route_length.dart,
+  gps_gaps.dart, walking_time.dart (calculations); current_section.dart (the section uses the
+  tracker's newest fix, not the stored points); D-060, D-061, D-063, D-068.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="490" viewBox="0 0 840 490"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="840" height="490" fill="#ffffff"/>
+
+  <!-- phone frame -->
+  <rect x="10" y="10" width="640" height="470" rx="8" fill="#ffffff" stroke="#555" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="24" y="32" font-size="15" font-weight="bold">Telefon</text>
+
+  <!-- 1 GPS -->
+  <rect x="24" y="52" width="110" height="128" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="79" y="76" text-anchor="middle" font-weight="bold">GPS</text>
+  <text x="79" y="98" text-anchor="middle" font-size="12" fill="#444">Android</text>
+  <text x="79" y="113" text-anchor="middle" font-size="12" fill="#444">servis za</text>
+  <text x="79" y="128" text-anchor="middle" font-size="12" fill="#444">lokaciju</text>
+
+  <!-- 2 foreground service -->
+  <rect x="156" y="52" width="150" height="128" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="231" y="76" text-anchor="middle" font-weight="bold">Foreground servis</text>
+  <text x="231" y="92" text-anchor="middle" font-size="12" fill="#444">(geolocator)</text>
+  <text x="166" y="114" font-size="12">• očitavanje na 5 s,</text>
+  <text x="176" y="128" font-size="12">visoka preciznost</text>
+  <text x="166" y="144" font-size="12">• obaveštenje na ekranu</text>
+  <text x="166" y="160" font-size="12">• wake lock: radi i sa</text>
+  <text x="176" y="174" font-size="12">ugašenim ekranom</text>
+
+  <!-- 3 buffer -->
+  <rect x="328" y="52" width="150" height="128" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="403" y="76" text-anchor="middle" font-weight="bold">Kontroler praćenja</text>
+  <text x="338" y="100" font-size="12">• starije se odbacuje</text>
+  <text x="338" y="116" font-size="12">• redni broj</text>
+  <text x="338" y="132" font-size="12">• bafer u memoriji</text>
+  <g>
+    <rect x="352" y="144" width="12" height="22" fill="#ffffff" stroke="#888"/>
+    <rect x="366" y="144" width="12" height="22" fill="#ffffff" stroke="#888"/>
+    <rect x="380" y="144" width="12" height="22" fill="#ffffff" stroke="#888"/>
+    <rect x="394" y="144" width="12" height="22" fill="#ececec" stroke="#888"/>
+    <rect x="408" y="144" width="12" height="22" fill="#ececec" stroke="#888"/>
+    <rect x="422" y="144" width="12" height="22" fill="#ececec" stroke="#888"/>
+    <text x="440" y="160" font-size="11" fill="#555">…</text>
+  </g>
+
+  <!-- 4 database -->
+  <rect x="500" y="52" width="136" height="128" rx="6" fill="#edf5e9" stroke="#555" stroke-width="1.2"/>
+  <text x="568" y="76" text-anchor="middle" font-weight="bold">Lokalna baza</text>
+  <text x="568" y="94" text-anchor="middle" font-size="12" fill="#444">jedna transakcija:</text>
+  <rect x="512" y="104" width="112" height="28" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="568" y="123" text-anchor="middle" font-size="12">tačke rute</text>
+  <rect x="512" y="140" width="112" height="28" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="568" y="159" text-anchor="middle" font-size="12">stavka u redu</text>
+
+  <!-- arrows row 1 -->
+  <line x1="134" y1="116" x2="154" y2="116" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <line x1="306" y1="116" x2="326" y2="116" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <line x1="478" y1="116" x2="498" y2="116" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="489" y="206" text-anchor="middle" font-size="12" font-style="italic" fill="#333">na svakih 10 tačaka</text>
+  <text x="489" y="221" text-anchor="middle" font-size="12" font-style="italic" fill="#333">ili 30 s</text>
+  <line x1="489" y1="194" x2="489" y2="124" stroke="#888" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- server -->
+  <rect x="680" y="52" width="148" height="128" rx="6" fill="#f8f1e6" stroke="#555" stroke-width="1.2"/>
+  <text x="754" y="76" text-anchor="middle" font-size="15" font-weight="bold">Server</text>
+  <text x="690" y="100" font-size="12">• čuva sve tačke</text>
+  <text x="690" y="118" font-size="12">• dužina iz</text>
+  <text x="700" y="132" font-size="12">upotrebljivih tačaka</text>
+  <text x="690" y="150" font-size="12">• oznaka prekida iz</text>
+  <text x="700" y="164" font-size="12">istih pauza</text>
+  <line x1="636" y1="154" x2="678" y2="154" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="754" y="204" text-anchor="middle" font-size="12" font-style="italic" fill="#333">šalje se u paketima</text>
+  <text x="754" y="219" text-anchor="middle" font-size="12" font-style="italic" fill="#333">do 500 tačaka;</text>
+  <text x="754" y="234" text-anchor="middle" font-size="12" font-style="italic" fill="#333">nikad se ne vraća nazad</text>
+
+  <!-- calculations -->
+  <rect x="328" y="262" width="308" height="200" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <text x="482" y="286" text-anchor="middle" font-weight="bold">Proračuni na telefonu</text>
+  <text x="342" y="310" font-size="12">Samo upotrebljiva očitavanja: preciznost</text>
+  <text x="342" y="325" font-size="12">do 2 × praga upozorenja (podrazumevano 50 m)</text>
+  <line x1="342" y1="336" x2="622" y2="336" stroke="#ccc"/>
+  <text x="342" y="356" font-size="12">• pređena udaljenost</text>
+  <text x="342" y="374" font-size="12">• pokriveni deo transekta</text>
+  <text x="342" y="396" font-size="12">Sve tačke i pauze: GPS prekidi</text>
+  <text x="342" y="414" font-size="12">Vreme početka i pauze: vreme hoda</text>
+  <line x1="342" y1="426" x2="622" y2="426" stroke="#ccc"/>
+  <text x="342" y="446" font-size="12">Najnovije očitavanje: trenutna sekcija</text>
+  <line x1="568" y1="180" x2="568" y2="260" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="576" y="224" font-size="12" font-style="italic" fill="#333">čitanje</text>
+
+  <!-- interruptions -->
+  <rect x="24" y="262" width="282" height="200" rx="6" fill="#ffffff" stroke="#888" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="38" y="286" font-weight="bold">Kada snimanje stane</text>
+  <text x="38" y="310" font-size="12"><tspan font-weight="bold">Pauza:</tspan> GPS i servis se zaustavljaju;</text>
+  <text x="38" y="325" font-size="12">početak i kraj se čuvaju uz posetu.</text>
+  <text x="38" y="352" font-size="12"><tspan font-weight="bold">Aplikacija ugašena:</tspan> servis staje;</text>
+  <text x="38" y="367" font-size="12">bafer se gubi (najviše 10 tačaka</text>
+  <text x="38" y="382" font-size="12">ili 30 s). Snimanje se pri sledećem</text>
+  <text x="38" y="397" font-size="12">pokretanju nastavlja: „Praćenje prekinuto”.</text>
+  <text x="38" y="424" font-size="12"><tspan font-weight="bold">Lokacija isključena:</tspan> snimanje čeka i</text>
+  <text x="38" y="439" font-size="12">nastavlja kad se očitavanja vrate.</text>
+  <line x1="231" y1="180" x2="231" y2="260" stroke="#888" stroke-width="1.2" stroke-dasharray="4 3"/>
+</svg>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 4.3. A GPS gap is the time between two consecutive track points minus the time inside
+  pauses, compared with the protocol's limit (60 s by default) (section 4.4).
+  Rule: features/visits/domain/gps_gaps.dart (_gapBetween, _overlap); server
+  backend/apps/validation/flags.py (has_gps_gap); default gps_gap_s = 60 (projects/models.py:157).
+  Scale: x = 80 + 3.2 px per second from 09:59:40. Points every 5 s (the default interval).
+  (a) points at 10:00:00 and 10:03:00, pause 10:00:30 to 10:02:00: 180 - 90 = 90 s > 60 s, a gap.
+  (b) same points, pause 10:00:10 to 10:02:50: 180 - 160 = 20 s, not a gap.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="430" viewBox="0 0 840 430"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <rect x="0" y="0" width="840" height="430" fill="#ffffff"/>
+
+  <!-- ================= (a) ================= -->
+  <text x="20" y="30" font-size="15" font-weight="bold">(a) Prekid</text>
+  <!-- pause band -->
+  <rect x="240" y="48" width="288" height="56" fill="#ececec" stroke="#888"/>
+  <text x="384" y="70" text-anchor="middle" font-weight="bold">Pauza</text>
+  <text x="384" y="88" text-anchor="middle" font-size="12" fill="#444">10:00:30 do 10:02:00, 90 s</text>
+  <!-- track line -->
+  <line x1="70" y1="120" x2="800" y2="120" stroke="#888" stroke-width="1"/>
+  <g fill="#1a1a1a">
+    <circle cx="80" cy="120" r="4.5"/><circle cx="96" cy="120" r="4.5"/><circle cx="112" cy="120" r="4.5"/><circle cx="128" cy="120" r="4.5"/><circle cx="144" cy="120" r="4.5"/>
+    <circle cx="720" cy="120" r="4.5"/><circle cx="736" cy="120" r="4.5"/><circle cx="752" cy="120" r="4.5"/><circle cx="768" cy="120" r="4.5"/><circle cx="784" cy="120" r="4.5"/>
+  </g>
+  <!-- outside-pause segments -->
+  <line x1="144" y1="138" x2="240" y2="138" stroke="#1a1a1a" stroke-width="3"/>
+  <line x1="528" y1="138" x2="720" y2="138" stroke="#1a1a1a" stroke-width="3"/>
+  <line x1="240" y1="138" x2="528" y2="138" stroke="#888" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="192" y="156" text-anchor="middle" font-size="12">30 s</text>
+  <text x="624" y="156" text-anchor="middle" font-size="12">60 s</text>
+  <!-- ticks -->
+  <g font-size="11" fill="#555" text-anchor="middle">
+    <line x1="144" y1="164" x2="144" y2="170" stroke="#555"/><text x="144" y="182">10:00:00</text>
+    <line x1="240" y1="164" x2="240" y2="170" stroke="#555"/><text x="240" y="182">10:00:30</text>
+    <line x1="336" y1="164" x2="336" y2="170" stroke="#555"/><text x="336" y="182">10:01:00</text>
+    <line x1="432" y1="164" x2="432" y2="170" stroke="#555"/><text x="432" y="182">10:01:30</text>
+    <line x1="528" y1="164" x2="528" y2="170" stroke="#555"/><text x="528" y="182">10:02:00</text>
+    <line x1="624" y1="164" x2="624" y2="170" stroke="#555"/><text x="624" y="182">10:02:30</text>
+    <line x1="720" y1="164" x2="720" y2="170" stroke="#555"/><text x="720" y="182">10:03:00</text>
+  </g>
+  <text x="20" y="208">Između dve tačke: 180 s. U pauzi: 90 s. Van pauze: 30 s + 60 s = <tspan font-weight="bold">90 s, više od 60 s: GPS prekid.</tspan></text>
+
+  <!-- ================= (b) ================= -->
+  <text x="20" y="248" font-size="15" font-weight="bold">(b) Nije prekid</text>
+  <rect x="176" y="266" width="512" height="56" fill="#ececec" stroke="#888"/>
+  <text x="432" y="288" text-anchor="middle" font-weight="bold">Pauza</text>
+  <text x="432" y="306" text-anchor="middle" font-size="12" fill="#444">10:00:10 do 10:02:50, 160 s</text>
+  <line x1="70" y1="338" x2="800" y2="338" stroke="#888" stroke-width="1"/>
+  <g fill="#1a1a1a">
+    <circle cx="80" cy="338" r="4.5"/><circle cx="96" cy="338" r="4.5"/><circle cx="112" cy="338" r="4.5"/><circle cx="128" cy="338" r="4.5"/><circle cx="144" cy="338" r="4.5"/>
+    <circle cx="720" cy="338" r="4.5"/><circle cx="736" cy="338" r="4.5"/><circle cx="752" cy="338" r="4.5"/><circle cx="768" cy="338" r="4.5"/><circle cx="784" cy="338" r="4.5"/>
+  </g>
+  <line x1="144" y1="356" x2="176" y2="356" stroke="#1a1a1a" stroke-width="3"/>
+  <line x1="688" y1="356" x2="720" y2="356" stroke="#1a1a1a" stroke-width="3"/>
+  <line x1="176" y1="356" x2="688" y2="356" stroke="#888" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="160" y="374" text-anchor="middle" font-size="12">10 s</text>
+  <text x="704" y="374" text-anchor="middle" font-size="12">10 s</text>
+  <g font-size="11" fill="#555" text-anchor="middle">
+    <line x1="144" y1="382" x2="144" y2="388" stroke="#555"/><text x="144" y="400">10:00:00</text>
+    <line x1="336" y1="382" x2="336" y2="388" stroke="#555"/><text x="336" y="400">10:01:00</text>
+    <line x1="528" y1="382" x2="528" y2="388" stroke="#555"/><text x="528" y="400">10:02:00</text>
+    <line x1="720" y1="382" x2="720" y2="388" stroke="#555"/><text x="720" y="400">10:03:00</text>
+  </g>
+  <text x="20" y="424">Između dve tačke: 180 s. U pauzi: 160 s. Van pauze: 10 s + 10 s = <tspan font-weight="bold">20 s, ne više od 60 s: nema prekida.</tspan></text>
+</svg>

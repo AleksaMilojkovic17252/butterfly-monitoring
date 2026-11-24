@@ -12,8 +12,13 @@ import 'package:flutter_map_mbtiles/flutter_map_mbtiles.dart';
 /// otherwise a plain background.
 ///
 /// [mbtiles] comes from `mbtilesProvider(projectId)`; null (no file, or still
-/// opening) draws OSM only.
-List<Widget> basemapLayers(MbTilesTileProvider? mbtiles) {
+/// opening) draws OSM only. [osm] and [offline] switch each layer off (the
+/// project map's Layers sheet); the other maps keep both on.
+List<Widget> basemapLayers(
+  MbTilesTileProvider? mbtiles, {
+  bool osm = true,
+  bool offline = true,
+}) {
   // The zoom range the file says it has (metadata `minzoom` / `maxzoom`). The
   // package parsed it when it opened the file; a file without the rows gets
   // the widest range.
@@ -21,14 +26,22 @@ List<Widget> basemapLayers(MbTilesTileProvider? mbtiles) {
   final minZoom = metadata?.minZoom ?? 0;
   final maxZoom = metadata?.maxZoom ?? 18;
   return [
-    TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      // OSM's tile policy asks every app to identify itself.
-      userAgentPackageName: 'rs.amilojkovic.butterfly',
-    ),
-    if (mbtiles != null)
+    if (osm)
       TileLayer(
-        tileProvider: mbtiles,
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        // OSM's tile policy asks every app to identify itself.
+        userAgentPackageName: 'rs.amilojkovic.butterfly',
+      ),
+    if (offline && mbtiles != null)
+      TileLayer(
+        // A new provider over the same open file. Built with `mbtiles:` (not
+        // `fromPath`) it does not own the file, so when the TileLayer disposes
+        // it (the layer switched off, the map closed) the file stays open for
+        // the next time and for other maps; `mbtilesProvider` closes it.
+        tileProvider: MbTilesTileProvider(
+          mbtiles: mbtiles.mbtiles,
+          silenceTileNotFound: true,
+        ),
         // Not drawn (and not read) below the file's lowest zoom: OSM shows.
         minZoom: minZoom,
         // Zoomed in past the file's highest level its tiles are stretched

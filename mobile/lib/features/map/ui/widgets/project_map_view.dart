@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/core/db/app_database.dart';
+import 'package:mobile/core/location/location_message.dart';
+import 'package:mobile/core/location/location_provider.dart';
+import 'package:mobile/core/location/map_positions.dart';
 import 'package:mobile/features/map/data/mbtiles_provider.dart';
 import 'package:mobile/features/map/domain/map_filter.dart';
 import 'package:mobile/features/map/domain/map_layers.dart';
@@ -13,6 +17,7 @@ import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 import 'package:mobile/features/observations/data/observation_repository.dart';
 import 'package:mobile/features/observations/data/photo_repository.dart';
 import 'package:mobile/features/observations/ui/free_observation_entry.dart';
+import 'package:mobile/features/proposals/domain/route_recorder.dart';
 import 'package:mobile/features/resources/data/habitat_repository.dart';
 import 'package:mobile/features/resources/data/plant_repository.dart';
 import 'package:mobile/features/resources/domain/habitat_names.dart';
@@ -24,12 +29,15 @@ import 'package:mobile/features/transects/domain/section_with_habitat.dart';
 import 'package:mobile/features/transects/ui/widgets/transect_map.dart';
 import 'package:mobile/features/visits/data/track_point_repository.dart';
 import 'package:mobile/features/visits/data/visit_repository.dart';
+import 'package:mobile/features/visits/domain/tracking_controller.dart';
 
 /// The map of the project map screen (T059): transects, sections, the
 /// observations as clusters, the user's plant records (T052: green markers for
 /// points, filled areas for patches), the user's habitat features (T054: brown
 /// markers, lines and areas), the route of the visit chosen in the filters and
-/// the OpenStreetMap basemap, each as a layer that can be switched off.
+/// the basemap (OpenStreetMap and the offline MBTiles file), each as a layer that can be switched off.
+/// On top: the user's own position as a blue dot, and a button that moves the
+/// map there.
 ///
 /// It is a stateful widget for three things that must survive a rebuild: the
 /// camera fit (computed once, so a filter never moves the map), the hit
@@ -46,6 +54,9 @@ class ProjectMapView extends ConsumerStatefulWidget {
 class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   /// Where the camera starts. Set once, when the first data is there.
   CameraFit? _fit;
+
+  /// Moves the camera to the user's position (the my-location button).
+  final MapController _mapController = MapController();
 
   /// Filled by the polyline layer with the lines under the last pointer-down.
   final LayerHitNotifier<Object> _hits = ValueNotifier(null);
@@ -102,6 +113,7 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   void dispose() {
     _hits.dispose();
     _polygonHits.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -354,6 +366,49 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
     return _routePoints;
   }
 
+  /// The user's newest position, or null when there is none yet. During a
+  /// visit the tracker's fix, during a route recording the recorder's, else
+  /// the map's own stream: geolocator keeps one stream for the app, so a
+  /// second one is not started while another feature owns it (D-087).
+  Position? _watchMyPosition() {
+    final trackerRunning = ref.watch(
+      trackingControllerProvider.select((t) => t.recording && !t.paused),
+    );
+    if (trackerRunning) {
+      return ref.watch(
+        trackingControllerProvider.select((t) => t.lastPosition),
+      );
+    }
+    final recorderRunning = ref.watch(
+      routeRecorderProvider.select((r) => r.recording && !r.paused),
+    );
+    if (recorderRunning) {
+      return ref.watch(routeRecorderProvider.select((r) => r.lastPosition));
+    }
+    return ref.watch(mapPositionsProvider).value;
+  }
+
+  /// The my-location button: moves the map to [position], zoomed in to at
+  /// least 17. With no position it says why in a snackbar and, after an
+  /// error (say the permission was refused), asks for the position again.
+  void _goToMyPosition(Position? position) {
+    if (position != null) {
+      final zoom = _mapController.camera.zoom;
+      _mapController.move(
+        LatLng(position.latitude, position.longitude),
+        zoom < 17 ? 17 : zoom,
+      );
+      return;
+    }
+    final error = ref.read(mapPositionsProvider).error;
+    final message = error is LocationException
+        ? locationMessage(error.failure)
+        : locationMessage(LocationFailure.unavailable);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+    if (error != null) ref.invalidate(mapPositionsProvider);
+  }
+
   /// A tap on a line: the topmost line under the finger gets its popup.
   void _onLineTap(List<Transect> transects) {
     // `hitValues` is ordered top to bottom, so the first is the top line.
@@ -507,7 +562,6 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
   @override
   Widget build(BuildContext context) {
     final projectId = widget.projectId;
-    final mbtiles = ref.watch(mbtilesProvider(projectId)).value;
     final observations = ref.watch(projectObservationsProvider(projectId));
     final transects = ref.watch(projectTransectsProvider(projectId));
     final sections = ref.watch(projectSectionsProvider(projectId));
@@ -578,7 +632,59 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
       if (layers.contains(MapLayer.plants)) ..._plantPolygons,
     ];
 
+    final myPosition = _watchMyPosition();
+    final myPoint = myPosition == null
+        ? null
+        : LatLng(myPosition.latitude, myPosition.longitude);
+
+    // The map, with the my-location button over its bottom right corner.
+    return Stack(
+      children: [
+        _map(
+          fit: fit,
+          layers: layers,
+          polygons: polygons,
+          allTransects: allTransects,
+          filtered: filtered,
+          filteredOthers: filteredOthers,
+          visit: visit,
+          routePoints: routePoints,
+          myPosition: myPosition,
+          myPoint: myPoint,
+        ),
+        Positioned(
+          right: 12,
+          // Above the OpenStreetMap attribution.
+          bottom: 40,
+          child: FloatingActionButton.small(
+            heroTag: null,
+            tooltip: 'My location',
+            onPressed: () => _goToMyPosition(myPosition),
+            child: const Icon(Icons.my_location),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The map itself with all its layers. Split out of [build] only so the
+  /// my-location button can sit on top of it.
+  Widget _map({
+    required CameraFit fit,
+    required Set<MapLayer> layers,
+    required List<Polygon<Object>> polygons,
+    required List<Transect> allTransects,
+    required List<ButterflyObservation> filtered,
+    required List<ButterflyObservation> filteredOthers,
+    required SurveyVisit? visit,
+    required List<LatLng> routePoints,
+    required Position? myPosition,
+    required LatLng? myPoint,
+  }) {
+    final projectId = widget.projectId;
+    final mbtiles = ref.watch(mbtilesProvider(projectId)).value;
     return FlutterMap(
+      mapController: _mapController,
       options: MapOptions(
         initialCameraFit: fit,
         // A long press on the ground starts a free observation there (T047).
@@ -595,8 +701,12 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
       children: [
         // OSM tiles (cached by flutter_map as they are seen; there is no
         // prefetching) with the project's offline MBTiles basemap on top, when
-        // the phone has one (T060).
-        if (layers.contains(MapLayer.basemap)) ...basemapLayers(mbtiles),
+        // the phone has one (T060). Each has its own switch.
+        ...basemapLayers(
+          mbtiles,
+          osm: layers.contains(MapLayer.osm),
+          offline: layers.contains(MapLayer.offlineBasemap),
+        ),
         // The plant patches and habitat areas, below the lines. A tap on one
         // finds it through the shared hit notifier; `deferToChild` lets a tap
         // that misses every area fall through to whatever is below.
@@ -751,7 +861,48 @@ class _ProjectMapViewState extends ConsumerState<ProjectMapView> {
               ),
             ),
           ),
-        if (layers.contains(MapLayer.basemap))
+        // The user's position on top of everything: a pale circle as wide as
+        // the GPS accuracy and a blue dot in its middle. `IgnorePointer`: the
+        // map's layers sit in a Stack, and a layer that is hit keeps the tap
+        // from the layers below. Ignoring taps here lets a tap on a marker,
+        // line or area under the dot or the circle reach it.
+        if (myPoint != null && myPosition != null) ...[
+          IgnorePointer(
+            child: CircleLayer(
+              circles: [
+                CircleMarker(
+                  point: myPoint,
+                  radius: myPosition.accuracy,
+                  useRadiusInMeter: true,
+                  color: Colors.blue.withValues(alpha: 0.15),
+                  borderColor: Colors.blue.withValues(alpha: 0.4),
+                  borderStrokeWidth: 1,
+                ),
+              ],
+            ),
+          ),
+          IgnorePointer(
+            child: MarkerLayer(
+              markers: [
+                Marker(
+                  point: myPoint,
+                  width: 18,
+                  height: 18,
+                  child: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                      border: Border.fromBorderSide(
+                        BorderSide(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (layers.contains(MapLayer.osm))
           const SimpleAttributionWidget(
             source: Text('OpenStreetMap contributors'),
           ),

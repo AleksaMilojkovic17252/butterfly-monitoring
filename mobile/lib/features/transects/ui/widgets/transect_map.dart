@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile/features/map/data/mbtiles_provider.dart';
+import 'package:mobile/features/map/domain/offline_tiles.dart';
 import 'package:mobile/features/map/ui/widgets/basemap_layers.dart';
 
 /// Colours of the sections, by walking order. Neighbouring sections always
@@ -28,7 +29,10 @@ Color sectionColor(int index) => _sectionColors[index % _sectionColors.length];
 /// The basemap is the project's offline MBTiles file when the phone has one
 /// (T060), over OpenStreetMap tiles, which need a connection. flutter_map keeps
 /// the tiles it has shown in a cache, so an area seen online usually still
-/// shows offline; otherwise the lines are drawn on a plain background.
+/// shows offline; otherwise the lines are drawn on a plain background. When
+/// the phone has the file, a button in the top right corner switches it off
+/// and on (`offlineTilesProvider`, shared by every transect map), so the user
+/// can look at OpenStreetMap instead.
 ///
 /// The active visit screen (T039) also passes [currentSection], drawn wider
 /// than the others, and [overlays] (the walked route and the position), drawn
@@ -64,6 +68,10 @@ class TransectMap extends ConsumerWidget {
     if (points.isEmpty) {
       return const Center(child: Text('No route on this phone'));
     }
+    // The project's offline basemap, null when this phone has none (or it is
+    // still opening), and whether the user wants it drawn.
+    final mbtiles = ref.watch(mbtilesProvider(projectId)).value;
+    final showOffline = ref.watch(offlineTilesProvider);
     return FlutterMap(
       options: MapOptions(
         initialCameraFit: CameraFit.bounds(
@@ -77,7 +85,7 @@ class TransectMap extends ConsumerWidget {
         ),
       ),
       children: [
-        ...basemapLayers(ref.watch(mbtilesProvider(projectId)).value),
+        ...basemapLayers(mbtiles, offline: showOffline),
         PolylineLayer(
           // flutter_map cannot draw a line without points (it asserts), and
           // the transect or a section can still be loading.
@@ -100,6 +108,24 @@ class TransectMap extends ConsumerWidget {
           ],
         ),
         ...overlays,
+        // Only when this phone has the project's MBTiles file: without it
+        // there is nothing to switch.
+        if (mbtiles != null)
+          Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: IconButton.filledTonal(
+                // Kept for TalkBack, which reads the tooltip as the label.
+                tooltip: 'Offline tiles',
+                isSelected: showOffline,
+                icon: const Icon(Icons.layers_outlined),
+                selectedIcon: const Icon(Icons.layers),
+                onPressed: () =>
+                    ref.read(offlineTilesProvider.notifier).toggle(),
+              ),
+            ),
+          ),
         const SimpleAttributionWidget(
           source: Text('OpenStreetMap contributors'),
         ),

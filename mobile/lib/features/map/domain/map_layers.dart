@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The layers of the project map (T059) that the Layers sheet switches.
 /// Plants came with T052, habitats with T054 and other members' observations
-/// with T112.
+/// with T112. The basemap is two layers, so the offline MBTiles file can be
+/// shown without OpenStreetMap and the other way round.
 enum MapLayer {
   transects('Transects'),
   sections('Sections'),
@@ -11,7 +12,8 @@ enum MapLayer {
   plants('Plants'),
   habitats('Habitats'),
   visitRoute('Visit route'),
-  basemap('Basemap (OpenStreetMap)');
+  offlineBasemap('Offline basemap'),
+  osm('OpenStreetMap');
 
   const MapLayer(this.label);
 

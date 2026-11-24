@@ -10,6 +10,7 @@ and the status in each ticket's heading line. Statuses:
 - `todo`: not started
 - `in progress`: being worked on
 - `done`: finished and merged into `main`
+- `deferred`: parked on purpose, not in the build order; it blocks nothing by itself but its dependants stay blocked (T075 and T114, D-116)
 - `dropped`: not doing it (T008 CI is dropped: no tests or CI for now, see DECISIONS.md D-021)
 
 A ticket is **ready** when it is `todo` and every ticket in its "Depends on" column is `done` or
@@ -26,7 +27,8 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **4 · Field visit and observations:** T033, T034, T035, T036, T037, T042, T039, T044, T045, T055, T040, T041, T043, T038
 - **5 · Photos, environment, export, OGC:** T049, T105, T106, T050, T063, T064, T067, T068, T069, T059
 - **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T110, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103, T111, T112, T113
-- **6 · Simulation and evaluation:** T071, T072, T070, T073, T074, T075, T114
+- **6 · Simulation and evaluation:** T071, T072, T070, T073, T074
+- **Deferred (not in the build order until the developer picks them up):** T075 (needs a biologist and an outdoor walk) and T114 (can wait; Phase 1 is treated as finished); D-116
 - **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
@@ -110,7 +112,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T072 | [#89](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/89) | GPS replay in the app | P1 | must | T037 | 1.5 d | done |
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | done |
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | done |
-| T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | must | T070, T073, T074 | 2 d | todo |
+| T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | could | T070, T073, T074 | 2 d | deferred |
 | T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | todo |
 | T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | todo |
 | T078 | [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) | Sensor station links and registration in FROST from Django admin | P2 | must | T021, T077 | 2 d | todo |
@@ -149,7 +151,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T111 | [#128](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/128) | Admin adds and edits plant records on a map | P1 | could | T051, T052 | 2 d | done |
 | T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | done |
 | T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | done |
-| T114 | [#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) | Spatial index benchmark with a larger plant and habitat table | P1 | could | T071, T075, T102 | 1 d | todo |
+| T114 | [#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) | Spatial index benchmark with a larger plant and habitat table | P1 | could | T071, T102 | 1 d | deferred |
 
 ## Acceptance criteria
 
@@ -1548,9 +1550,10 @@ Deferred (with the developer's agreement, 2026-11-09):
 - Also found: T026's 500-mutation push takes 14.4 s, over its 5 s target (recorded under T026; a follow-up is the developer's call).
 
 ### T075 · Usability kit and Part 1 evaluation run
-[#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) · E11 · P1 · must · labels: `evaluation`, `docs`, `must` · implements F61 · est. 2 d · **todo**
+[#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) · E11 · P1 · could · labels: `evaluation`, `docs`, `could` · implements F61 · est. 2 d · **deferred**
 
 Depends on: T070, T073, T074
+Notes (2026-11-09): moved from `must` to `could` and deferred at the developer's request (D-116): the session needs a biologist and an outdoor walk, neither is available. The ticket text below is unchanged. Take it up later if the chance comes; until then the Part 1 evaluation rests on T070 and T074.
 
 - [ ] `evaluation/usability/`:
   - task script: start a visit, record 10 observations (2 with extended fields), add a plant polygon, finish, sync
@@ -2303,10 +2306,10 @@ Note (2026-11-06): built as D-108; `tmp/t113/verify.py` passed. The recorder mus
 Out of scope: Habitat feature photos and an admin page for habitat features. Editing the image (rotate, crop) and bulk upload. Unlocking a visit (T043). Tests (D-021).
 
 ### T114 · Spatial index benchmark with a larger plant and habitat table
-[#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) · E11 · added 2026-11-07 as a follow-up to T102 · P1 · could · labels: `evaluation`, `database`, `could` · implements F61 (P1 part) · est. 1 d · **todo**
+[#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) · E11 · added 2026-11-07 as a follow-up to T102 · P1 · could · labels: `evaluation`, `database`, `could` · implements F61 (P1 part) · est. 1 d · **deferred**
 
-Depends on: T071, T075, T102
-Notes: scheduled after the simulation and the Part 1 evaluation run (T075) are finished, so it does not change the data they use. The issue (#131) is created on GitHub by the developer.
+Depends on: T071, T102
+Notes: deferred on 2026-11-09 at the developer's request (D-116); Phase 1 is treated as finished and work moves to Phase 2. T075 was removed from "Depends on" on 2026-11-09 when T075 was deferred (D-116). It was only a scheduling dependency, so the benchmark would not change the data the Part 1 evaluation run uses. If T075 is done later, run it on its own data and keep T114's larger tables out of that database. The issue (#131) is created on GitHub by the developer.
 
 Why: T102 (D-111) found no benefit from a `geography` expression index or a `&&` prefilter, but the generator makes the same 14 plant records, 11 habitat features and 26 sections at every scale, so the nearest-host-plant KNN (query 08), Q3 (06) and the habitat side of Q4 (07) were barely stressed. D-111 rule 2 also says that a geography filter as the **first** filter on a large table was never measured. This ticket measures both with the T102 runner.
 

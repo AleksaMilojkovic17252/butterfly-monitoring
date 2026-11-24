@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 3.1. The layers of a Flutter application on Android, after the Flutter
+  architectural overview [21], with the parts used by this application.
+  Layers and their contents: docs.flutter.dev/resources/architectural-overview (read 2026-11-10).
+  App parts: mobile/pubspec.yaml, mobile/.flutter-plugins-dependencies, AndroidManifest.xml.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="675" viewBox="0 0 840 675"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8"
+            orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="840" height="700" fill="#ffffff"/>
+
+  <!-- Application row (full width) -->
+  <rect x="20" y="20" width="800" height="118" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="44" font-size="15" font-weight="bold">Aplikacija (Dart)</text>
+
+  <rect x="34" y="56" width="232" height="66" rx="4" fill="#ffffff" stroke="#888"/>
+  <text x="150" y="84" text-anchor="middle">Aplikacioni kod</text>
+  <text x="150" y="102" text-anchor="middle">(ekrani, logika)</text>
+
+  <rect x="276" y="56" width="246" height="66" rx="4" fill="#ffffff" stroke="#888"/>
+  <text x="399" y="84" text-anchor="middle">Dart paketi:</text>
+  <text x="399" y="102" text-anchor="middle">(pisani u Dart-u)</text>
+
+  <rect x="552" y="56" width="128" height="66" rx="4" fill="#ffffff" stroke="#888"/>
+  <text x="616" y="84" text-anchor="middle">Dodaci</text>
+  <text x="616" y="102" text-anchor="middle">(Dart)</text>
+
+  <rect x="690" y="56" width="116" height="66" rx="4" fill="#ffffff" stroke="#888"/>
+  <text x="748" y="84" text-anchor="middle">FFI paketi</text>
+  <text x="748" y="102" text-anchor="middle">(Dart)</text>
+
+  <!-- Framework -->
+  <rect x="20" y="152" width="516" height="250" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="176" font-size="15" font-weight="bold">Framework (Dart)</text>
+
+  <rect x="34" y="188" width="240" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="154" y="210" text-anchor="middle">Material</text>
+  <rect x="282" y="188" width="240" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="402" y="210" text-anchor="middle">Cupertino</text>
+
+  <rect x="34" y="230" width="488" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="278" y="252" text-anchor="middle">Vidžeti</text>
+
+  <rect x="34" y="272" width="488" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="278" y="294" text-anchor="middle">Renderovanje</text>
+
+  <rect x="34" y="314" width="157" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="112.5" y="336" text-anchor="middle">Animacije</text>
+  <rect x="199.5" y="314" width="157" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="278" y="336" text-anchor="middle">Slikanje</text>
+  <rect x="365" y="314" width="157" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="443.5" y="336" text-anchor="middle">Gestovi</text>
+
+  <rect x="34" y="356" width="488" height="34" rx="3" fill="#ffffff" stroke="#888"/>
+  <text x="278" y="378" text-anchor="middle">Temelj</text>
+
+  <!-- Engine -->
+  <rect x="20" y="416" width="516" height="72" rx="6" fill="#edf5e9" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="440" font-size="15" font-weight="bold">Engine (C++)</text>
+  <text x="522" y="440" text-anchor="end" font-size="12" font-style="italic" fill="#444">izložen Dartu kao dart:ui</text>
+  <text x="34" y="468">Impeller - raspored teksta - datoteke i mrežni I/O · Dart radno okruženje</text>
+
+  <!-- Embedder -->
+  <rect x="20" y="502" width="516" height="72" rx="6" fill="#f8f1e6" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="526" font-size="15" font-weight="bold">Embedder (Java i C++ na Androidu)</text>
+  <text x="34" y="554">Activity i Flutter view - surface - input - accessibility</text>
+
+  <!-- Lane A: plugins over platform channels -->
+  <line x1="616" y1="124" x2="616" y2="500" stroke="#333" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect x="568" y="268" width="96" height="42" fill="#ffffff"/>
+  <text x="616" y="285" text-anchor="middle" font-style="italic">platforma</text>
+  <text x="616" y="302" text-anchor="middle" font-style="italic">kanala</text>
+
+  <rect x="552" y="502" width="128" height="72" rx="4" fill="#f8f1e6" stroke="#555"/>
+  <text x="616" y="532" text-anchor="middle">Plugin kod</text>
+  <text x="616" y="550" text-anchor="middle">(Kotlin, Java)</text>
+  <line x1="616" y1="574" x2="616" y2="587" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Lane B: SQLite over dart:ffi -->
+  <line x1="748" y1="122" x2="748" y2="414" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="712" y="250" width="72" height="26" fill="#ffffff"/>
+  <text x="748" y="268" text-anchor="middle" font-style="italic">dart:ffi</text>
+
+  <rect x="690" y="416" width="116" height="72" rx="4" fill="#edf5e9" stroke="#555"/>
+  <text x="748" y="450" text-anchor="middle">Nativna biblioteka</text>
+  <text x="748" y="466" text-anchor="middle">(C, Rust, …)</text>
+  <line x1="748" y1="488" x2="748" y2="587" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Android row (full width) -->
+  <rect x="20" y="588" width="800" height="62" rx="6" fill="#ececec" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="612" font-size="15" font-weight="bold">Android</text>
+  <text x="34" y="636">Usluge lokacije - kamera i galerija - datoteke - GPU (Vulkan ili OpenGL)</text>
+</svg>

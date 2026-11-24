@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 4.1. Shapes the phone's validity test accepts and refuses (section 4.3).
+  (a) and (b): the same four corners, in metres around their mean, from the worked example
+  (44.000000 20.500000, 44.000000 20.500300, 44.000150 20.500320, 44.000180 20.500040),
+  tapped in two orders. The crossing in (b) is at about x = 1.11 m, y = 0.15 m.
+  (c) to (f) are schematic. Rules: core/geo/polygon_math.dart (polygonSelfIntersects),
+  core/validation/habitat_rules.dart and proposal_rules.dart (lines), PostGIS 3.5 manual 4.4.2.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="590" viewBox="0 0 840 590"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <rect x="0" y="0" width="840" height="590" fill="#ffffff"/>
+
+  <!-- ===== (a) valid order ===== -->
+  <rect x="20" y="20" width="390" height="290" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <text x="34" y="44" font-size="15" font-weight="bold">(a) Kliknuti uglovi A, B, C, D</text>
+  <g transform="translate(65,40)">
+    <polygon points="57.4,194.2 225.8,194.2 237.0,77.5 79.8,54.2" fill="#edf5e9" stroke="#333" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="57.4" cy="194.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="225.8" cy="194.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="237.0" cy="77.5" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="79.8" cy="54.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <text x="40" y="216" font-weight="bold">A</text><text x="52" y="216" font-size="12" fill="#555">klik 1</text>
+    <text x="214" y="216" font-weight="bold">B</text><text x="226" y="216" font-size="12" fill="#555">klik 2</text>
+    <text x="246" y="74" font-weight="bold">C</text><text x="258" y="74" font-size="12" fill="#555">klik 3</text>
+    <text x="54" y="44" font-weight="bold">D</text><text x="66" y="44" font-size="12" fill="#555">klik 4</text>
+    <text x="150" y="134" text-anchor="middle" font-size="12" fill="#444">430.4 m²</text>
+  </g>
+  <text x="215" y="296" text-anchor="middle" font-style="italic" fill="#333">Validno, linije se ne seku</text>
+
+  <!-- ===== (b) bow-tie ===== -->
+  <rect x="430" y="20" width="390" height="290" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <text x="444" y="44" font-size="15" font-weight="bold">(b) Isto kliknuti uglovi A, B, D, C</text>
+  <g transform="translate(475,40)">
+    <polygon points="57.4,194.2 225.8,194.2 79.8,54.2 237.0,77.5" fill="#f8f1e6" stroke="#555" stroke-width="1.4" stroke-linejoin="round"/>
+    <line x1="225.8" y1="194.2" x2="79.8" y2="54.2" stroke="#1a1a1a" stroke-width="3"/>
+    <line x1="237.0" y1="77.5" x2="57.4" y2="194.2" stroke="#1a1a1a" stroke-width="3"/>
+    <circle cx="57.4" cy="194.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="225.8" cy="194.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="237.0" cy="77.5" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="79.8" cy="54.2" r="4.5" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="157.8" cy="128.9" r="9" fill="none" stroke="#1a1a1a" stroke-width="1.6"/>
+    <text x="40" y="216" font-weight="bold">A</text><text x="52" y="216" font-size="12" fill="#555">klik 1</text>
+    <text x="214" y="216" font-weight="bold">B</text><text x="226" y="216" font-size="12" fill="#555">klik 2</text>
+    <text x="246" y="74" font-weight="bold">C</text><text x="258" y="74" font-size="12" fill="#555">klik 4</text>
+    <text x="54" y="44" font-weight="bold">D</text><text x="66" y="44" font-size="12" fill="#555">klik 3</text>
+    <text x="172" y="134" font-size="12" fill="#333">strane B–D i C–A se seku</text>
+  </g>
+  <text x="625" y="296" text-anchor="middle" font-style="italic" fill="#333">Odbijeno</text>
+
+  <!-- ===== bottom row heading ===== -->
+  <text x="20" y="346" font-size="15" font-weight="bold">Drugi slučajevi</text>
+
+  <!-- ===== (c) corner touches an edge ===== -->
+  <rect x="20" y="358" width="190" height="212" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <g transform="translate(20,358)">
+    <polygon points="25,140 165,140 165,40 95,140 25,40" fill="#f8f1e6" stroke="#555" stroke-width="1.4" stroke-linejoin="round"/>
+    <line x1="165" y1="40" x2="95" y2="140" stroke="#1a1a1a" stroke-width="3"/>
+    <circle cx="95" cy="140" r="9" fill="none" stroke="#1a1a1a" stroke-width="1.6"/>
+    <text x="95" y="170" text-anchor="middle" font-weight="bold">(c) Odbijeno</text>
+    <text x="95" y="188" text-anchor="middle" font-size="12" fill="#444">Ugoa dodiruje</text>
+    <text x="95" y="203" text-anchor="middle" font-size="12" fill="#444">stranu</text>
+  </g>
+
+  <!-- ===== (d) spike ===== -->
+  <rect x="230" y="358" width="190" height="212" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <g transform="translate(230,358)">
+    <polygon points="25,140 120,140 120,55 25,55" fill="#f8f1e6" stroke="#555" stroke-width="1.4" stroke-linejoin="round"/>
+    <line x1="120" y1="55" x2="170" y2="55" stroke="#1a1a1a" stroke-width="3"/>
+    <line x1="120" y1="61" x2="164" y2="61" stroke="#1a1a1a" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <polygon points="122,61 130,57 130,65" fill="#1a1a1a"/>
+    <circle cx="170" cy="55" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <text x="140" y="44" text-anchor="middle" font-size="12" fill="#444">napred pa nazad</text>
+    <text x="95" y="170" text-anchor="middle" font-weight="bold">(d) Odbijeno</text>
+    <text x="95" y="188" text-anchor="middle" font-size="12" fill="#444">šiljak: ivica se</text>
+    <text x="95" y="203" text-anchor="middle" font-size="12" fill="#444">proteže duž prethodne</text>
+  </g>
+
+  <!-- ===== (e) corners on one line ===== -->
+  <rect x="440" y="358" width="190" height="212" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <g transform="translate(440,358)">
+    <polygon points="25,96 165,92 95,95" fill="#f8f1e6" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round"/>
+    <circle cx="25" cy="96" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="165" cy="92" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="95" cy="95" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <text x="95" y="170" text-anchor="middle" font-weight="bold">(e) Odbijeno</text>
+    <text x="95" y="188" text-anchor="middle" font-size="12" fill="#444">Uglovi su jedna linija:</text>
+  </g>
+
+  <!-- ===== (f) a line that crosses itself ===== -->
+  <rect x="650" y="358" width="170" height="212" rx="6" fill="#ffffff" stroke="#555" stroke-width="1.2"/>
+  <g transform="translate(650,358)">
+    <polyline points="25,140 145,50 145,140 25,60" fill="none" stroke="#333" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="25" cy="140" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="145" cy="50" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="145" cy="140" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <circle cx="25" cy="60" r="4" fill="#ffffff" stroke="#333" stroke-width="1.6"/>
+    <text x="85" y="170" text-anchor="middle" font-weight="bold">(f) Prihvaljivo</text>
+    <text x="85" y="188" text-anchor="middle" font-size="12" fill="#444">Linija može da seče</text>
+    <text x="85" y="203" text-anchor="middle" font-size="12" fill="#444">samu sebe</text>
+  </g>
+</svg>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Figure 6.1. How a new change of one observation enters the queue (section 6.2).
+  Sources: mobile/lib/core/sync/sync_repository.dart (_enqueue: merge only into an unsent item, create + update
+  gives one create, a delete cancels an unsent create and removes the row; _isUnsent: queued and retryCount 0;
+  _insertItem: a new item gets a new mutationId and the next seq); D-051.
+  The seq numbers, the count and the mutation ids A and B are examples.
+  All text is plain <text>, so it can be translated in Inkscape or any text editor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="400" viewBox="0 0 840 400"
+     font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#1a1a1a">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="840" height="400" fill="#ffffff"/>
+
+  <!-- separators -->
+  <line x1="286" y1="20" x2="286" y2="380" stroke="#888" stroke-width="1" stroke-dasharray="6 4"/>
+  <line x1="566" y1="20" x2="566" y2="380" stroke="#888" stroke-width="1" stroke-dasharray="6 4"/>
+
+  <!-- ===== (a) not sent yet: merged ===== -->
+  <text x="146" y="34" text-anchor="middle" font-size="15" font-weight="bold">(a) Još nije poslato</text>
+  <text x="26" y="66" font-size="12" fill="#555">Red pre</text>
+  <rect x="26" y="74" width="240" height="58" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="38" y="94" font-weight="bold">seq 7 · create</text>
+  <text x="38" y="111">broj: 1</text>
+  <text x="38" y="126" font-size="12" fill="#555">mutation_id A · nije poslato</text>
+
+  <line x1="146" y1="140" x2="146" y2="196" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="156" y="166" font-size="12">Izmena: broj 1 → 3</text>
+
+  <text x="26" y="214" font-size="12" fill="#555">Red posle</text>
+  <rect x="26" y="222" width="240" height="58" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="38" y="242" font-weight="bold">seq 7 · create</text>
+  <text x="38" y="259">broj: 3</text>
+  <text x="38" y="274" font-size="12" fill="#555">mutation_id A · nije poslato</text>
+
+  <text x="26" y="318" font-size="12">Izmena se spaja sa stavkom.</text>
+  <text x="26" y="334" font-size="12">Šalje se jedna izmena, koja zadržava</text>
+  <text x="26" y="350" font-size="12">svoje mesto i svoj mutation_id.</text>
+
+  <!-- ===== (b) already sent: new item ===== -->
+  <text x="426" y="34" text-anchor="middle" font-size="15" font-weight="bold">(b) Već poslato</text>
+  <text x="306" y="66" font-size="12" fill="#555">Red pre</text>
+  <rect x="306" y="74" width="240" height="58" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="318" y="94" font-weight="bold">seq 7 · create</text>
+  <text x="318" y="111">broj: 1</text>
+  <text x="318" y="126" font-size="12" fill="#555">mutation_id A · poslato, bez odgovora</text>
+
+  <line x1="426" y1="140" x2="426" y2="196" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="436" y="166" font-size="12">Izmena: broj 1 → 3</text>
+
+  <text x="306" y="214" font-size="12" fill="#555">Red posle</text>
+  <rect x="306" y="222" width="240" height="58" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="318" y="242" font-weight="bold">seq 7 · create</text>
+  <text x="318" y="259">broj: 1</text>
+  <text x="318" y="274" font-size="12" fill="#555">mutation_id A · poslato, bez odgovora</text>
+  <rect x="306" y="288" width="240" height="58" rx="6" fill="#e9eff8" stroke="#555" stroke-width="1.2"/>
+  <text x="318" y="308" font-weight="bold">seq 8 · update</text>
+  <text x="318" y="325">broj: 3</text>
+  <text x="318" y="340" font-size="12" fill="#555">mutation_id B · nije poslato</text>
+
+  <text x="306" y="370" font-size="12">Poslata stavka ostaje kakva jeste; izmena</text>
+  <text x="306" y="386" font-size="12">postaje nova stavka iza nje.</text>
+
+  <!-- ===== (c) never sent, then deleted ===== -->
+  <text x="704" y="34" text-anchor="middle" font-size="15" font-weight="bold">(c) Obrisano pre slanja</text>
+  <text x="586" y="66" font-size="12" fill="#555">Red pre</text>
+  <rect x="586" y="74" width="236" height="58" rx="6" fill="#f3f3f3" stroke="#555" stroke-width="1.2"/>
+  <text x="598" y="94" font-weight="bold">seq 7 · create</text>
+  <text x="598" y="111">broj: 1</text>
+  <text x="598" y="126" font-size="12" fill="#555">mutation_id A · nije poslato</text>
+
+  <line x1="704" y1="140" x2="704" y2="196" stroke="#333" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="714" y="166" font-size="12">Brisanje (npr. Poništi)</text>
+
+  <text x="586" y="214" font-size="12" fill="#555">Red posle</text>
+  <rect x="586" y="222" width="236" height="58" rx="6" fill="#ffffff" stroke="#888" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="704" y="256" text-anchor="middle" fill="#555">nema stavke</text>
+
+  <text x="586" y="318" font-size="12">Stavka i zapis se brišu.</text>
+  <text x="586" y="334" font-size="12">Server nikada ne sazna da je</text>
+  <text x="586" y="350" font-size="12">opažanje postojalo.</text>
+</svg>

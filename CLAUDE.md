@@ -117,7 +117,7 @@ the code and the handoff: [mobile/CLAUDE.md](mobile/CLAUDE.md).
 
 - Do not add tests, test frameworks or CI unless the user asks (D-021).
 - Do not add, upgrade or remove a dependency (pip, pub, Docker image tag) without asking. Pins come from CONVENTIONS.md A.4.
-- Do not work on a ticket whose dependencies are not `done`/`dropped`, or on Phase 2 before Phase 1 is done (study tickets T076/T082/T086 excepted).
+- Do not work on a ticket whose dependencies are not `done`/`dropped`, or on Phase 2 before Phase 1 is done (`deferred` tickets do not count; study tickets T076/T082/T086 excepted).
 - Do not widen a ticket: anything outside its acceptance criteria is a question to the user.
 - Do not use removed features (CONVENTIONS.md A.1), OGC write/transactions, presigned MinIO URLs, Celery/workers, iOS code, or a custom permission framework.
 - Do not set `security_invoker` on `geo` views or grant `pygeoapi_ro` anything on `public`.

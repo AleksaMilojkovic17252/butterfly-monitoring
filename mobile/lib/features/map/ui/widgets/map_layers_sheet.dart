@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/features/map/data/mbtiles_provider.dart';
 import 'package:mobile/features/map/domain/map_filter.dart';
 import 'package:mobile/features/map/domain/map_layers.dart';
 import 'package:mobile/features/visits/data/track_point_repository.dart';
@@ -7,7 +8,8 @@ import 'package:mobile/features/visits/data/track_point_repository.dart';
 /// The Layers sheet of the project map (T059): a switch per layer. The visit
 /// route needs a visit chosen under Filters, and the route itself on this
 /// phone (track points are not pulled, D-060). A point layer has a small
-/// circle in its map colour, as the legend (T112).
+/// circle in its map colour, as the legend (T112). The offline basemap switch
+/// is disabled when this phone has no MBTiles file for the project.
 class MapLayersSheet extends ConsumerWidget {
   const MapLayersSheet({super.key, required this.projectId});
   final String projectId;
@@ -21,6 +23,7 @@ class MapLayersSheet extends ConsumerWidget {
     final routePoints = visitId == null
         ? null
         : ref.watch(visitRouteProvider(visitId)).value;
+    final hasOffline = ref.watch(mbtilesProvider(projectId)).value != null;
 
     String? routeNote;
     if (visitId == null) {
@@ -39,26 +42,43 @@ class MapLayersSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final layer in MapLayer.values)
-              SwitchListTile(
-                secondary: _legendDot(layer),
-                title: Text(layer.label),
-                subtitle: layer == MapLayer.visitRoute && routeNote != null
-                    ? Text(routeNote)
-                    : null,
-                // Without a visit the route switch is disabled and shows off, so
-                // it does not look on when nothing can be drawn.
-                value:
-                    on.contains(layer) &&
-                    (layer != MapLayer.visitRoute || visitId != null),
-                onChanged: layer == MapLayer.visitRoute && visitId == null
-                    ? null
-                    : (value) => ref
-                          .read(mapLayersProvider.notifier)
-                          .toggle(layer, value),
-              ),
+              _layerSwitch(ref, layer, on, visitId, routeNote, hasOffline),
           ],
         ),
       ),
+    );
+  }
+
+  /// The switch of one [layer]. The visit route without a visit and the
+  /// offline basemap without a file are disabled and show off, so they do not
+  /// look on when nothing can be drawn.
+  Widget _layerSwitch(
+    WidgetRef ref,
+    MapLayer layer,
+    Set<MapLayer> on,
+    String? visitId,
+    String? routeNote,
+    bool hasOffline,
+  ) {
+    final available = switch (layer) {
+      MapLayer.visitRoute => visitId != null,
+      MapLayer.offlineBasemap => hasOffline,
+      _ => true,
+    };
+    final subtitle = switch (layer) {
+      MapLayer.visitRoute => routeNote,
+      MapLayer.offlineBasemap when !hasOffline =>
+        'No offline basemap on this phone',
+      _ => null,
+    };
+    return SwitchListTile(
+      secondary: _legendDot(layer),
+      title: Text(layer.label),
+      subtitle: subtitle != null ? Text(subtitle) : null,
+      value: on.contains(layer) && available,
+      onChanged: available
+          ? (value) => ref.read(mapLayersProvider.notifier).toggle(layer, value)
+          : null,
     );
   }
 

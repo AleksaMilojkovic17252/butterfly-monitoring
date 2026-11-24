@@ -7,8 +7,12 @@ import 'package:mobile/features/map/data/basemap_store.dart';
 /// when this phone has no file for it (or the file cannot be opened). Maps
 /// watch it by project id and draw it with `basemapLayers`.
 ///
-/// It opens the file read-only and closes it when the last map using it is
-/// gone. The sync runner invalidates it after a new basemap is downloaded, so
+/// This provider owns the open file: it opens it read-only and closes it when
+/// the last map using it is gone. Maps must not hand this object to a
+/// `TileLayer` directly, because a `TileLayer` disposes its tile provider when
+/// it leaves the screen (switching the layer off does that), which would close
+/// the file for every map. `basemapLayers` wraps it in a provider that does
+/// not own the file instead. The sync runner invalidates it after a new basemap is downloaded, so
 /// open maps pick up the new file.
 final mbtilesProvider = FutureProvider.autoDispose
     .family<MbTilesTileProvider?, String>((ref, projectId) async {
