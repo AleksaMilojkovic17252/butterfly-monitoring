@@ -13,7 +13,8 @@ Creates `butterfly-<UTC time>/` in the target folder:
 
 | File | What |
 |---|---|
-| `butterfly.dump` | `pg_dump -Fc` of the `butterfly` database (`frost.dump` too once FROST exists) |
+| `butterfly.dump` | `pg_dump -Fc` of the `butterfly` database |
+| `frost.dump` | the same for FROST-Server's database `frost` (T077) |
 | `photos/` | mirror of the MinIO `photos` bucket (originals under `photos/`, thumbnails under `thumbs/`) |
 | `manifest.json` | time, git commit (`-dirty` if uncommitted changes), newest applied migration per app, encrypted yes/no |
 

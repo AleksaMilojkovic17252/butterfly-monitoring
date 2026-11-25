@@ -202,14 +202,14 @@ with PostgreSQL/PostGIS.
 
 | Item | Decision for T077 | Why |
 |---|---|---|
-| Image | `fraunhoferiosb/frost-server:2.8.2` (all-in-one: HTTP + MQTT) | Newest GitHub release (2026-10-25). `2.8.3` is on Docker Hub without notes; `latest` is a 2.9.0 snapshot. The pin needs the developer's OK (CLAUDE.md) |
+| Image | `fraunhoferiosb/frost-server:2.8.2` (all-in-one: HTTP + MQTT) | Newest GitHub release (2026-10-25). `2.8.3` is on Docker Hub without notes; `latest` is a 2.9.0 snapshot. The developer approved the pin |
 | Database | Own database `frost`, role `frost`, `CREATE EXTENSION postgis` | [D-004](../DECISIONS.md): FROST's Liquibase migrations stay away from Django's |
 | Schema updates | `persistence_autoUpdateDatabase=true` | Otherwise someone has to click "upgrade" on `/DatabaseStatus` |
 | Ids | Defaults: `plugins_coreModel_idType=LONG`, `persistence_idGenerationMode=ServerGeneratedOnly` | No extra extension; Django already stores ids as strings (`varchar(64)`) |
 | Plugins | DataArray and BatchProcessing on (defaults); MultiDatastream, Actuation, OData and V2 off; OpenAPI optional | DataArray is needed by T079 |
 | MQTT | **On** (`mqtt_Enabled=true`), ports 1883 and 9876 not published (see §7) | Changed from T077's "MQTT disabled" |
 | Paging | `defaultTop` 100, `maxTop` 10000 (defaults); raise `defaultTop` if EDR needs longer ranges (§6) | T081's `$top=1000` is below `maxTop` |
-| Memory | About 768 MB heap via Tomcat's `JAVA_OPTS` (verify in T077) | E12 risk note: 0.5–1 GB |
+| Memory | 768 MB maximum heap via Tomcat's `JAVA_OPTS=-Xmx768m` (checked in T077) | E12 risk note: 0.5–1 GB |
 
 Settings are environment variables with dots replaced by underscores (`persistence.db.url` →
 `persistence_db_url`). T077 can check what the server supports in the `serverSettings.conformance`
@@ -219,9 +219,14 @@ list on the service root.
 (Tomcat's context path). From outside, nginx serves it at `/sta/`, with the same admin-only
 `auth_request` as `/ogc/`. FROST writes absolute `selfLink`s and `nextLink`s from `serviceRootUrl`.
 A fixed external root would send internal clients (T081, the simulator) to `localhost`, which is
-their own container. The recommended setup leaves `serviceRootUrl` empty, enables
-`http_requestDecoder_autodetectRootUrl` and `…useXForwardedHeaders`, and has nginx send
-`X-Forwarded-*` headers. Internal services reach FROST directly without auth.
+their own container. So `serviceRootUrl` stays empty and FROST builds the links from each request
+(`http_requestDecoder_autodetectRootUrl`). Its `X-Forwarded-*` support stays off: when on, it
+builds the links from those headers alone, and a request without them, such as any internal one,
+gets `null://` links. Instead, nginx rewrites the links in `/sta/` answers to the address the
+client used ([D-118](../DECISIONS.md), checked in T077). With an empty root URL,
+`mqtt_exposedEndpoints` must be set, or the service root answers 500. Inside Compose, the service
+root lists its entity sets as paths without a host (`/v1.1/Things`). Internal services reach FROST
+directly without auth.
 
 ## 6. pygeoapi as a bridge
 

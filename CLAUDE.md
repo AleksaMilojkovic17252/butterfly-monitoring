@@ -61,6 +61,10 @@ scripts/restore.sh <backup-dir>
 # MinIO user for Django (T049; docs/setup/minio.md). Rerun after a fresh volume; restore.sh does it.
 scripts/minio-setup.sh
 
+# FROST's database and role on a volume older than T077 (fresh volumes get them from db-init). Rerun after
+# changing FROST_DB_PASSWORD, then `$DC up -d frost`.
+scripts/create-frost-db.fish
+
 # Simulated season (T071, D-109; docs/setup/simulation.md). Dev only; same project and seed again changes nothing.
 $DC exec -u $(id -u) -e HOME=/tmp django python manage.py simulate_season --project <uuid> --seed 42 [--direct] [--planted-effects]
 

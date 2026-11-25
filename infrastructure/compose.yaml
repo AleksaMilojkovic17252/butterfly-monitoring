@@ -38,6 +38,8 @@ services:
       DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:?set in .env}
       PYGEOAPI_DB_USER: ${PYGEOAPI_DB_USER:-pygeoapi_ro}
       PYGEOAPI_DB_PASSWORD: ${PYGEOAPI_DB_PASSWORD:?set in .env}
+      FROST_DB_USER: ${FROST_DB_USER:-frost}
+      FROST_DB_PASSWORD: ${FROST_DB_PASSWORD:?set in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infrastructure/db-init:/docker-entrypoint-initdb.d:ro
@@ -113,6 +115,37 @@ services:
     <<: *pygeoapi
     restart: unless-stopped
 
+  # SensorThings API 1.1 (T077, D-118) on its own database `frost`. No ports: nginx serves it at /sta/
+  # to admins, containers use http://frost:8080/FROST-Server/v1.1. MQTT (1883, 9876) stays inside the
+  # Compose network until T115. Variable names are FROST's setting names with dots as underscores.
+  frost:
+    image: fraunhoferiosb/frost-server:2.8.2
+    environment:
+      persistence_db_driver: org.postgresql.Driver
+      persistence_db_url: jdbc:postgresql://db:5432/frost
+      persistence_db_username: ${FROST_DB_USER:-frost}
+      persistence_db_password: ${FROST_DB_PASSWORD:?set in .env}
+      persistence_autoUpdateDatabase: "true"
+      # FROST builds links from each request it gets, so internal clients get internal links and nginx
+      # rewrites them for /sta/. This relies on two defaults: serviceRootUrl empty, and X-Forwarded
+      # headers off (turned on, internal links come out as null://).
+      # FROST would switch this on by itself, with a warning.
+      http_requestDecoder_autodetectRootUrl: "true"
+      # MQTT is on by default. With serviceRootUrl empty, the service root answers 500 without this.
+      mqtt_exposedEndpoints: mqtt://frost:1883
+      JAVA_OPTS: -Xmx768m
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Reads a table: the service root answers 200 even without a usable database.
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:8080/FROST-Server/v1.1/Things?$$top=1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+
   # OGC CITE (T070, D-113): profile `test`, never started by a plain `up`. A second pygeoapi (same image, config and
   # role) whose links point at itself, because the suite follows self/next links and inside its container
   # `localhost:8080` is the suite. No port, no nginx, no auth.
@@ -148,6 +181,9 @@ services:
         condition: service_healthy
       pygeoapi:
         condition: service_healthy
+      # Only the hostname must resolve at nginx start; Java is slow, so don't wait for its health.
+      frost:
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-health"]
       interval: 10s

@@ -114,7 +114,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | done |
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | could | T070, T073, T074 | 2 d | deferred |
 | T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | done |
-| T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | todo |
+| T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | done |
 | T078 | [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) | Sensor station links and registration in FROST from Django admin | P2 | must | T021, T077 | 2 d | todo |
 | T079 | [#96](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/96) | Sensor data simulator | P2 | must | T071, T078 | 2.5 d | todo |
 | T080 | [#97](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/97) | Station map layer and OGC collections | P2 | should | T068, T078, T079 | 1.5 d | todo |
@@ -1585,7 +1585,7 @@ Depends on: —
 - [ ] References the OGC standard document and FROST docs with versions.
 
 ### T077 · FROST-Server deployment
-[#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) · E12 · P2 · must · labels: `infra`, `ogc`, `must` · implements F47 · est. 1.5 d · **todo**
+[#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) · E12 · P2 · must · labels: `infra`, `ogc`, `must` · implements F47 · est. 1.5 d · **done**
 
 Depends on: T002, T069, T076
 
@@ -1600,6 +1600,15 @@ Depends on: T002, T069, T076
 - [ ] nginx `/sta/` uses the same `auth_request` as `/ogc/` (admins only). Internal services (Django, pygeoapi, simulator) reach FROST directly on the Compose network without auth.
 - [ ] `GET /sta/v1.1/` lists the entity sets. Health check configured.
 - [ ] Backups (T010) include the `frost` database.
+
+Note (T077, 2026-11-25): built as D-118; where it differs from the text above, D-117 and D-118 win. The init script is `db-init/02-frost.sh` (a `.sql` file cannot read the password from the environment), the script for existing volumes is `scripts/create-frost-db.fish` (the developer's choice), the image is `2.8.2`, MQTT stays **on** (D-117 point 8), and `serviceRootUrl` is empty. VERIFY results:
+- **Setting names:** accepted as written in D-118 point 5.
+- **Root URL:** D-117 point 7 did not work (internal links came out as `null://null:null/...`). With the developer's agreement the X-Forwarded headers are off and nginx rewrites the `/sta/` links. `mqtt_exposedEndpoints` had to be set, or the service root answered 500.
+- **Health check:** `curl` is in the image; the check reads `/v1.1/Things`, because the service root answers 200 without a usable database.
+- **Heap:** `-Xmx768m` is on the Java command line.
+- **MQTT:** 1883 and 9876 listen in the container and are not published.
+
+Checked by hand on the developer's existing volume: the create script twice; `/sta/v1.1/` 401 without credentials, 403 for a researcher, 200 for an admin; links from outside and from `django`; a backup with `frost.dump`, restored into a throwaway database (`restore.sh` not run). The fresh-volume path was run only in a throwaway container.
 
 ### T078 · Sensor station links and registration in FROST from Django admin
 [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) · E12 · P2 · must · labels: `backend`, `admin`, `database`, `ogc`, `must` · implements F48, F49 · est. 2 d · **todo**

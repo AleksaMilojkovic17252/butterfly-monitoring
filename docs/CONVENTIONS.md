@@ -56,7 +56,7 @@ QGIS / R / Python on the laptop ──► http://localhost:8080/ogc/  (admin tok
 | pygeoapi | 0.24.x | 0.24.0 released mid-2026 |
 | OGC CITE suite (test profile only) | `ogccite/ets-ogcapi-features10:1.8-teamengine-5.7` | OGC API – Features 1.0 conformance run (T070, D-113); newest stable tag, 1.9 is a release candidate |
 | PostgreSQL / PostGIS / MobilityDB | 17 / 3.5 / 1.3 | image `mobilitydb/mobilitydb:17-3.5-1.3` (built on `postgis/postgis`) |
-| FROST-Server (P2) | 2.x latest | VERIFY current tag (2.7.x/2.8.x seen) |
+| FROST-Server (P2) | 2.8.2 | image `fraunhoferiosb/frost-server:2.8.2` (HTTP and MQTT in one); approved for T077 (D-117, D-118) |
 | Flutter | current stable | VERIFY |
 | drift / drift_flutter | 2.x | |
 | flutter_map + latlong2 | 8.3.2 / 0.9.1 | transect map (T033); approved for T033. latlong2 stepped down from 0.10.1 in T059 because flutter_map_marker_cluster 8.2.2 requires `^0.9.1` (D-081); go back to 0.10 when the cluster package allows it |

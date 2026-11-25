@@ -5,6 +5,11 @@
 and nginx lets the request through. Researchers get 403, missing or bad credentials get 401 with
 `WWW-Authenticate: Basic realm="ogc"`.
 
+`/sta`, the SensorThings API (FROST-Server, T077, D-118), is closed the same way and takes the same
+credentials. Unlike `/ogc` it is **not read-only**: an admin can create, change and delete SensorThings
+entities through it. Containers on the Compose network reach FROST without credentials at
+`http://frost:8080/FROST-Server/v1.1`.
+
 Three ways to send credentials, all in the `Authorization` header:
 
 | Header | Use it for |
@@ -13,7 +18,7 @@ Three ways to send credentials, all in the `Authorization` header:
 | `Bearer <jwt>` | The 15-minute access token from `POST /api/v1/auth/login`. Fine for a quick `curl`, useless in QGIS. |
 | `Basic <base64 of email:password>` | Fallback for tools without a custom header. The password travels with every request. |
 
-A personal token opens **only** `/ogc`. It is not accepted by the sync or REST API.
+A personal token opens **only** `/ogc` and `/sta`. It is not accepted by the sync or REST API.
 
 ## Create and revoke a token
 
@@ -39,6 +44,7 @@ same goes for a JWT that has just expired.
 ```fish
 curl -H "Authorization: Token $KEY" "http://localhost:8080/ogc/collections?f=json"
 curl -u admin@example.org "http://localhost:8080/ogc?f=json"        # Basic, asks for the password
+curl -H "Authorization: Token $KEY" "http://localhost:8080/sta/v1.1/"   # SensorThings: the entity sets
 ```
 
 A browser asks for a login (Basic) when you open `http://localhost:8080/ogc/` and remembers it until you
