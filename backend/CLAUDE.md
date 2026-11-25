@@ -76,7 +76,11 @@ Dependencies are pip + `requirements.txt`, installed in the image: after a chang
   the HTTP API or `sync.services.push`, `walk.py` walks the transects, `ecology.py`, `photo.py`, `gpx.py`); `simulator/simweather` (stdlib only, mounted at
   `/simulator`) is the shared weather, also for T079. Ids are uuid5 of project, seed and key, so a rerun is a no-op.
 - `apps/environment/` holds `EnvironmentalSnapshot` (server-only, T063) and `refresh_manual_snapshots`, which
-  `save_visit` calls for a finished visit (D-076).
+  `save_visit` calls for a finished visit (D-076). It also holds `SensorStationLink` (T078, D-119): a simulated station,
+  pulled by the phone read-only (`signals.py` re-saves it when its transect links change). `frost.py` is the FROST client
+  (it sets ids on the instance and never saves). The admin actions "Register in FROST" (`services.register_station`, the
+  only writer of the FROST ids), "Check FROST status" and "Copy to another project" (`services.copy_station`; a saved
+  station's project is read-only). `static/environment/station_project.js` fills the add page's habitat and transect lists.
 - `apps/exports/` (T064, D-077) builds the admin-only exports: `datasets.py` defines the datasets and columns, `writers.py` the
   CSV/GeoJSON/JSON streams, `service.py` is the single implementation (`export`, `bundle`) that the API views and T065's admin
   actions call. A new exportable table is a `Dataset` there, with `help_text` on its model fields. `geopackage.py` (T066, D-103) runs

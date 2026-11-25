@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Make a new station like <strong>{{ station }}</strong> of <strong>{{ station.project }}</strong>,
+  at the same point. The original stays as it is.</p>
+<p>The copy has no habitat polygon and no transects, because those belong to a project. Choose them
+  on the next page, then register the copy in FROST.</p>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="copy_to_project">
+  <input type="hidden" name="{{ action_checkbox_name }}" value="{{ station.pk }}">
+  <input type="hidden" name="apply" value="1">
+  {{ form.as_p }}
+  <input type="submit" class="default" value="Copy">
+  <a href="{% url 'admin:environment_sensorstationlink_changelist' %}"
+     class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}

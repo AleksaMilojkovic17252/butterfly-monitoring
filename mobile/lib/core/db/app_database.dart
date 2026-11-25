@@ -14,6 +14,7 @@ import 'package:mobile/core/db/project_protocols.dart';
 import 'package:mobile/core/db/projects.dart';
 import 'package:mobile/core/db/route_recording_points.dart';
 import 'package:mobile/core/db/route_recordings.dart';
+import 'package:mobile/core/db/sensor_station_links.dart';
 import 'package:mobile/core/db/survey_track_points.dart';
 import 'package:mobile/core/db/survey_visits.dart';
 import 'package:mobile/core/db/sync_conflicts.dart';
@@ -55,13 +56,14 @@ part 'app_database.g.dart';
     RouteRecordings,
     RouteRecordingPoints,
     EvalEvents,
+    SensorStationLinks,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'butterfly');
@@ -245,6 +247,16 @@ class AppDatabase extends _$AppDatabase {
       from18To19: (m, schema) async {
         // Local only (T073): no pull cursors are reset.
         await m.createTable(schema.evalEvent);
+      },
+      from19To20: (m, schema) async {
+        await m.createTable(schema.sensorStationLink);
+        // Stations the server sent before this version had no table here, so
+        // pull skipped them and moved its cursor past them. Start every pull
+        // from the beginning, as from15To16 did. Rows waiting in the queue are
+        // not touched.
+        await m.database.customStatement(
+          "DELETE FROM sync_state WHERE key LIKE 'cursor:%'",
+        );
       },
     ),
   );

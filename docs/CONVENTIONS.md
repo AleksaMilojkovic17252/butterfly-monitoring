@@ -5,8 +5,9 @@ Shared decisions every ticket refers to ("Part A" in the tickets). Copied from G
 ## A.1 Feature list v4 (what these tickets cover)
 
 - **Phase 1 (thesis Part 1):** F1–F4, F6–F37 (except F5), F39–F41, F43–F46, F61 (P1 part), F62–F64, F66–F68, F71–F74, F77–F80, F87.
-- **Phase 2 (thesis Part 2):** F47–F50, F52, F53, F55–F60, F61 (P2 part), F69, F70, F89.
-- **Removed (no tickets):** F5, F38, F42, F51, F54, F65, F75, F76, F81, F82, F83, F84, F85, F86, F88.
+- **Phase 2 (thesis Part 2):** F47–F53, F55–F60, F61 (P2 part), F69, F70, F89.
+- **Removed (no tickets):** F5, F38, F42, F54, F65, F75, F76, F81, F82, F83, F84, F85, F86, F88.
+- **Reinstated after v4:** F51 (MQTT), 2026-11-25, Phase 2 (T115, D-117). FROST has MQTT on from T077, reachable only inside the Compose network until T115.
 - **v4 changes:** two roles (F2, F62); admins create projects and add members (F3); validation, conflicts, exports and pygeoapi are admin-only; lock/unlock lives in Django admin and the API enforces it (F13, F66); MobilityDB is the Phase 2 target (F57 Must; F70 becomes a research and design spike, with plain PostGIS as the fallback); F89 [PROPOSED] adds a Phase 2 study per standard; the laptop is the only server, reached over **Tailscale**.
 
 ## A.2 Roles (F2)

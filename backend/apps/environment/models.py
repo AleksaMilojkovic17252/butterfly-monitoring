@@ -1,6 +1,13 @@
 import uuid
 
+from django.contrib.gis.db import models as gis_models
 from django.db import models
+from simple_history.models import HistoricalRecords
+
+from apps.core.models import SyncableModel
+
+# What a station's habitat polygon may be; a habitat feature can also be a point or a line.
+HABITAT_POLYGON_TYPES = ("Polygon", "MultiPolygon")
 
 
 class SourceType(models.TextChoices):
@@ -129,3 +136,88 @@ class EnvironmentalSnapshot(models.Model):
                 name="env_snapshot_unique_visit_moment",
             ),
         ]
+
+
+class SensorStationLink(SyncableModel):
+    """A simulated microclimate station (T078, D-117): where it stands, which habitat and
+    transects it serves, and the ids of the SensorThings entities that stand for it in FROST.
+
+    Admins define it; the phone gets it by pull, read-only and without the FROST ids.
+    """
+
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.PROTECT,
+        related_name="sensor_stations",
+        help_text="Project the station belongs to",
+    )
+    code = models.CharField(max_length=20, help_text="Short code, unique in the project, e.g. S01")
+    name = models.CharField(max_length=200, help_text="Name of the station")
+    geometry = gis_models.PointField(srid=4326, help_text="Where the station stands, WGS 84")
+    habitat_type = models.ForeignKey(
+        "catalogues.HabitatType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="Habitat type; filled from the habitat polygon when left empty",
+    )
+    habitat_feature = models.ForeignKey(
+        "resources.HabitatFeature",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=(
+            "Habitat polygon the station measures; FROST uses it as the feature of interest, "
+            "otherwise the station point"
+        ),
+    )
+    transects = models.ManyToManyField(
+        "transects.Transect",
+        blank=True,
+        related_name="sensor_stations",
+        db_table="sensor_station_link_transect",
+        help_text="Transects the station serves",
+    )
+    # FROST ids may be numeric or strings. Only "Register in FROST" writes these two.
+    sensorthings_thing_id = models.CharField(
+        "FROST Thing id",
+        max_length=64,
+        blank=True,
+        default="",
+        help_text="Id of the station's Thing in FROST; empty until it is registered",
+    )
+    sensorthings_datastream_ids = models.JSONField(
+        "FROST Datastream ids",
+        default=dict,
+        blank=True,
+        help_text="Datastream id for each measured property",
+    )
+    is_simulated = models.BooleanField(
+        default=True, help_text="The values come from the simulator, not a real sensor"
+    )
+    active = models.BooleanField(default=True, help_text="The station is in use")
+    metadata_json = models.JSONField(
+        "metadata",
+        default=dict,
+        blank=True,
+        help_text="Extra data, JSON; holds the FROST FeatureOfInterest id",
+    )
+    history = HistoricalRecords(table_name="historical_sensor_station_link")
+
+    class Meta:
+        db_table = "sensor_station_link"
+        constraints = [
+            models.UniqueConstraint(fields=["project", "code"], name="sensor_station_code_unique")
+        ]
+
+    def __str__(self):
+        return f"{self.code} — {self.name}"
+
+    @property
+    def habitat_polygon(self):
+        """The linked habitat feature while it is a live polygon, otherwise None. The phone can
+        delete or redraw the feature after an admin has linked it."""
+        habitat = self.habitat_feature
+        if habitat is None or habitat.deleted_at is not None:
+            return None
+        return habitat if habitat.geometry.geom_type in HABITAT_POLYGON_TYPES else None

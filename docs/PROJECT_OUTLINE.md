@@ -62,9 +62,9 @@ MVP from outline §5.1, as tickets T001–T075:
 
 ### Phase 2: thesis Part 2 (after February)
 
-Tickets T076–T097. Each standard starts with a short study ticket.
+Tickets T076–T097 and T115. Each standard starts with a short study ticket.
 
-- **OGC SensorThings API:** FROST-Server (own database), simulated microclimate stations, snapshots attached to visits
+- **OGC SensorThings API:** FROST-Server (own database), simulated microclimate stations, snapshots attached to visits, and live station values on the phone over MQTT (T115)
 - **OGC API – EDR:** weather for a visit's place and time; optional auto-fill in the app
 - **OGC API – Moving Features + MobilityDB:** focal-follow tracks stored as `tgeompoint`, served as MF-JSON, displayed in the app
 - **Evaluation:** conformance and interoperability tests, PostGIS vs MobilityDB comparison, standards write-up
@@ -72,11 +72,12 @@ Tickets T076–T097. Each standard starts with a short study ticket.
 ### Out of scope
 
 Removed in v4 (no tickets): sensitive-location generalisation (F5), Darwin Core export (F38), OGC
-transactions (F42), MQTT (F51), along-transect EDR (F54), sync monitoring (F65), photo privacy/EXIF
+transactions (F42), along-transect EDR (F54), sync monitoring (F65), photo privacy/EXIF
 stripping (F75), in-app validation status (F76), error monitoring (F81), deployment/CD (F82), mobile
 release process (F83), a live pilot (F84), documentation as tickets (F85), device model (F86),
 biometric unlock (F88). The outline itself excludes species recognition from photos, a public
 portal, an advanced dashboard, ML and a national system. No iOS. No real sensors.
+MQTT (F51) was also removed in v4 and reinstated on 2026-11-25 as T115 (D-117).
 
 ## Constraints
 

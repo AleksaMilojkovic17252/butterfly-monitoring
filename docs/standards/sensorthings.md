@@ -102,7 +102,7 @@ and clients do not create the current one. Manual creation exists only for impor
 
 | STA entity | Project concept | Created by | Stored in Django |
 |---|---|---|---|
-| Thing | A simulated microclimate station; `properties` {`project_id`, `habitat_type`, `simulated: true`} | T078 deep insert | `SensorStationLink.sensorthings_thing_id` |
+| Thing | A simulated microclimate station; `properties` {`project_id`, `habitat_type`, `simulated: true`, `station_link_id` (D-119)} | T078 deep insert | `SensorStationLink.sensorthings_thing_id` |
 | Location | The station point (`SensorStationLink.geometry`) | T078 deep insert | — |
 | HistoricalLocation | Made by FROST when the Location is linked; stations do not move | FROST | — |
 | Sensor | One "Virtual microclimate sensor v1", `encodingType` `text/plain`, metadata describing the simulation | T078 | — |

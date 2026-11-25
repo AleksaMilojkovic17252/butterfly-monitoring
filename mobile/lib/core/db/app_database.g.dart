@@ -19797,6 +19797,733 @@ class EvalEventsCompanion extends UpdateCompanion<EvalEvent> {
   }
 }
 
+class $SensorStationLinksTable extends SensorStationLinks
+    with TableInfo<$SensorStationLinksTable, SensorStationLink> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SensorStationLinksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project (id)',
+    ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+    'lon',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _habitatTypeIdMeta = const VerificationMeta(
+    'habitatTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> habitatTypeId = GeneratedColumn<String>(
+    'habitat_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _transectIdsMeta = const VerificationMeta(
+    'transectIds',
+  );
+  @override
+  late final GeneratedColumn<String> transectIds = GeneratedColumn<String>(
+    'transect_ids',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _isSimulatedMeta = const VerificationMeta(
+    'isSimulated',
+  );
+  @override
+  late final GeneratedColumn<bool> isSimulated = GeneratedColumn<bool>(
+    'is_simulated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_simulated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _serverVersionMeta = const VerificationMeta(
+    'serverVersion',
+  );
+  @override
+  late final GeneratedColumn<int> serverVersion = GeneratedColumn<int>(
+    'server_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    code,
+    name,
+    lat,
+    lon,
+    habitatTypeId,
+    transectIds,
+    isSimulated,
+    active,
+    serverVersion,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sensor_station_link';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SensorStationLink> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+        _lonMeta,
+        lon.isAcceptableOrUnknown(data['lon']!, _lonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('habitat_type_id')) {
+      context.handle(
+        _habitatTypeIdMeta,
+        habitatTypeId.isAcceptableOrUnknown(
+          data['habitat_type_id']!,
+          _habitatTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('transect_ids')) {
+      context.handle(
+        _transectIdsMeta,
+        transectIds.isAcceptableOrUnknown(
+          data['transect_ids']!,
+          _transectIdsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_simulated')) {
+      context.handle(
+        _isSimulatedMeta,
+        isSimulated.isAcceptableOrUnknown(
+          data['is_simulated']!,
+          _isSimulatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('server_version')) {
+      context.handle(
+        _serverVersionMeta,
+        serverVersion.isAcceptableOrUnknown(
+          data['server_version']!,
+          _serverVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SensorStationLink map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SensorStationLink(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lon'],
+      )!,
+      habitatTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habitat_type_id'],
+      ),
+      transectIds: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transect_ids'],
+      )!,
+      isSimulated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_simulated'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      serverVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_version'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $SensorStationLinksTable createAlias(String alias) {
+    return $SensorStationLinksTable(attachedDatabase, alias);
+  }
+}
+
+class SensorStationLink extends DataClass
+    implements Insertable<SensorStationLink> {
+  final String id;
+  final String projectId;
+  final String code;
+  final String name;
+  final double lat;
+  final double lon;
+  final String? habitatTypeId;
+  final String transectIds;
+  final bool isSimulated;
+  final bool active;
+  final int? serverVersion;
+  final DateTime? deletedAt;
+  const SensorStationLink({
+    required this.id,
+    required this.projectId,
+    required this.code,
+    required this.name,
+    required this.lat,
+    required this.lon,
+    this.habitatTypeId,
+    required this.transectIds,
+    required this.isSimulated,
+    required this.active,
+    this.serverVersion,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['project_id'] = Variable<String>(projectId);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || habitatTypeId != null) {
+      map['habitat_type_id'] = Variable<String>(habitatTypeId);
+    }
+    map['transect_ids'] = Variable<String>(transectIds);
+    map['is_simulated'] = Variable<bool>(isSimulated);
+    map['active'] = Variable<bool>(active);
+    if (!nullToAbsent || serverVersion != null) {
+      map['server_version'] = Variable<int>(serverVersion);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  SensorStationLinksCompanion toCompanion(bool nullToAbsent) {
+    return SensorStationLinksCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      code: Value(code),
+      name: Value(name),
+      lat: Value(lat),
+      lon: Value(lon),
+      habitatTypeId: habitatTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(habitatTypeId),
+      transectIds: Value(transectIds),
+      isSimulated: Value(isSimulated),
+      active: Value(active),
+      serverVersion: serverVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverVersion),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory SensorStationLink.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SensorStationLink(
+      id: serializer.fromJson<String>(json['id']),
+      projectId: serializer.fromJson<String>(json['projectId']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      habitatTypeId: serializer.fromJson<String?>(json['habitatTypeId']),
+      transectIds: serializer.fromJson<String>(json['transectIds']),
+      isSimulated: serializer.fromJson<bool>(json['isSimulated']),
+      active: serializer.fromJson<bool>(json['active']),
+      serverVersion: serializer.fromJson<int?>(json['serverVersion']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'projectId': serializer.toJson<String>(projectId),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'habitatTypeId': serializer.toJson<String?>(habitatTypeId),
+      'transectIds': serializer.toJson<String>(transectIds),
+      'isSimulated': serializer.toJson<bool>(isSimulated),
+      'active': serializer.toJson<bool>(active),
+      'serverVersion': serializer.toJson<int?>(serverVersion),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  SensorStationLink copyWith({
+    String? id,
+    String? projectId,
+    String? code,
+    String? name,
+    double? lat,
+    double? lon,
+    Value<String?> habitatTypeId = const Value.absent(),
+    String? transectIds,
+    bool? isSimulated,
+    bool? active,
+    Value<int?> serverVersion = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => SensorStationLink(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    code: code ?? this.code,
+    name: name ?? this.name,
+    lat: lat ?? this.lat,
+    lon: lon ?? this.lon,
+    habitatTypeId: habitatTypeId.present
+        ? habitatTypeId.value
+        : this.habitatTypeId,
+    transectIds: transectIds ?? this.transectIds,
+    isSimulated: isSimulated ?? this.isSimulated,
+    active: active ?? this.active,
+    serverVersion: serverVersion.present
+        ? serverVersion.value
+        : this.serverVersion,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  SensorStationLink copyWithCompanion(SensorStationLinksCompanion data) {
+    return SensorStationLink(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      habitatTypeId: data.habitatTypeId.present
+          ? data.habitatTypeId.value
+          : this.habitatTypeId,
+      transectIds: data.transectIds.present
+          ? data.transectIds.value
+          : this.transectIds,
+      isSimulated: data.isSimulated.present
+          ? data.isSimulated.value
+          : this.isSimulated,
+      active: data.active.present ? data.active.value : this.active,
+      serverVersion: data.serverVersion.present
+          ? data.serverVersion.value
+          : this.serverVersion,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SensorStationLink(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('habitatTypeId: $habitatTypeId, ')
+          ..write('transectIds: $transectIds, ')
+          ..write('isSimulated: $isSimulated, ')
+          ..write('active: $active, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    projectId,
+    code,
+    name,
+    lat,
+    lon,
+    habitatTypeId,
+    transectIds,
+    isSimulated,
+    active,
+    serverVersion,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SensorStationLink &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.habitatTypeId == this.habitatTypeId &&
+          other.transectIds == this.transectIds &&
+          other.isSimulated == this.isSimulated &&
+          other.active == this.active &&
+          other.serverVersion == this.serverVersion &&
+          other.deletedAt == this.deletedAt);
+}
+
+class SensorStationLinksCompanion extends UpdateCompanion<SensorStationLink> {
+  final Value<String> id;
+  final Value<String> projectId;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<String?> habitatTypeId;
+  final Value<String> transectIds;
+  final Value<bool> isSimulated;
+  final Value<bool> active;
+  final Value<int?> serverVersion;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const SensorStationLinksCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.habitatTypeId = const Value.absent(),
+    this.transectIds = const Value.absent(),
+    this.isSimulated = const Value.absent(),
+    this.active = const Value.absent(),
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SensorStationLinksCompanion.insert({
+    required String id,
+    required String projectId,
+    required String code,
+    required String name,
+    required double lat,
+    required double lon,
+    this.habitatTypeId = const Value.absent(),
+    this.transectIds = const Value.absent(),
+    this.isSimulated = const Value.absent(),
+    required bool active,
+    this.serverVersion = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       projectId = Value(projectId),
+       code = Value(code),
+       name = Value(name),
+       lat = Value(lat),
+       lon = Value(lon),
+       active = Value(active);
+  static Insertable<SensorStationLink> custom({
+    Expression<String>? id,
+    Expression<String>? projectId,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<String>? habitatTypeId,
+    Expression<String>? transectIds,
+    Expression<bool>? isSimulated,
+    Expression<bool>? active,
+    Expression<int>? serverVersion,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (habitatTypeId != null) 'habitat_type_id': habitatTypeId,
+      if (transectIds != null) 'transect_ids': transectIds,
+      if (isSimulated != null) 'is_simulated': isSimulated,
+      if (active != null) 'active': active,
+      if (serverVersion != null) 'server_version': serverVersion,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SensorStationLinksCompanion copyWith({
+    Value<String>? id,
+    Value<String>? projectId,
+    Value<String>? code,
+    Value<String>? name,
+    Value<double>? lat,
+    Value<double>? lon,
+    Value<String?>? habitatTypeId,
+    Value<String>? transectIds,
+    Value<bool>? isSimulated,
+    Value<bool>? active,
+    Value<int?>? serverVersion,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return SensorStationLinksCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      habitatTypeId: habitatTypeId ?? this.habitatTypeId,
+      transectIds: transectIds ?? this.transectIds,
+      isSimulated: isSimulated ?? this.isSimulated,
+      active: active ?? this.active,
+      serverVersion: serverVersion ?? this.serverVersion,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (habitatTypeId.present) {
+      map['habitat_type_id'] = Variable<String>(habitatTypeId.value);
+    }
+    if (transectIds.present) {
+      map['transect_ids'] = Variable<String>(transectIds.value);
+    }
+    if (isSimulated.present) {
+      map['is_simulated'] = Variable<bool>(isSimulated.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (serverVersion.present) {
+      map['server_version'] = Variable<int>(serverVersion.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SensorStationLinksCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('habitatTypeId: $habitatTypeId, ')
+          ..write('transectIds: $transectIds, ')
+          ..write('isSimulated: $isSimulated, ')
+          ..write('active: $active, ')
+          ..write('serverVersion: $serverVersion, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -19841,6 +20568,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RouteRecordingPointsTable routeRecordingPoints =
       $RouteRecordingPointsTable(this);
   late final $EvalEventsTable evalEvents = $EvalEventsTable(this);
+  late final $SensorStationLinksTable sensorStationLinks =
+      $SensorStationLinksTable(this);
   late final Index syncQueueEntity = Index(
     'sync_queue_entity',
     'CREATE INDEX sync_queue_entity ON sync_queue (entity_type, entity_id, seq)',
@@ -19873,6 +20602,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     routeRecordings,
     routeRecordingPoints,
     evalEvents,
+    sensorStationLinks,
     syncQueueEntity,
   ];
   @override
@@ -20076,6 +20806,27 @@ final class $$ProjectsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _routeRecordingsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SensorStationLinksTable, List<SensorStationLink>>
+  _sensorStationLinksRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.sensorStationLinks,
+        aliasName: 'project__id__sensor_station_link__project_id',
+      );
+
+  $$SensorStationLinksTableProcessedTableManager get sensorStationLinksRefs {
+    final manager = $$SensorStationLinksTableTableManager(
+      $_db,
+      $_db.sensorStationLinks,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _sensorStationLinksRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -20346,6 +21097,31 @@ class $$ProjectsTableFilterComposer
           }) => $$RouteRecordingsTableFilterComposer(
             $db: $db,
             $table: $db.routeRecordings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> sensorStationLinksRefs(
+    Expression<bool> Function($$SensorStationLinksTableFilterComposer f) f,
+  ) {
+    final $$SensorStationLinksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sensorStationLinks,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SensorStationLinksTableFilterComposer(
+            $db: $db,
+            $table: $db.sensorStationLinks,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -20682,6 +21458,32 @@ class $$ProjectsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> sensorStationLinksRefs<T extends Object>(
+    Expression<T> Function($$SensorStationLinksTableAnnotationComposer a) f,
+  ) {
+    final $$SensorStationLinksTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.sensorStationLinks,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SensorStationLinksTableAnnotationComposer(
+                $db: $db,
+                $table: $db.sensorStationLinks,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager
@@ -20706,6 +21508,7 @@ class $$ProjectsTableTableManager
             bool projectProtocolsRefs,
             bool transectProposalsRefs,
             bool routeRecordingsRefs,
+            bool sensorStationLinksRefs,
           })
         > {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
@@ -20797,6 +21600,7 @@ class $$ProjectsTableTableManager
                 projectProtocolsRefs = false,
                 transectProposalsRefs = false,
                 routeRecordingsRefs = false,
+                sensorStationLinksRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -20810,6 +21614,7 @@ class $$ProjectsTableTableManager
                     if (projectProtocolsRefs) db.projectProtocols,
                     if (transectProposalsRefs) db.transectProposals,
                     if (routeRecordingsRefs) db.routeRecordings,
+                    if (sensorStationLinksRefs) db.sensorStationLinks,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -20982,6 +21787,27 @@ class $$ProjectsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (sensorStationLinksRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          SensorStationLink
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._sensorStationLinksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sensorStationLinksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -21011,6 +21837,7 @@ typedef $$ProjectsTableProcessedTableManager =
         bool projectProtocolsRefs,
         bool transectProposalsRefs,
         bool routeRecordingsRefs,
+        bool sensorStationLinksRefs,
       })
     >;
 typedef $$TransectsTableCreateCompanionBuilder = TransectsCompanion Function({
@@ -32354,6 +33181,478 @@ typedef $$EvalEventsTableProcessedTableManager =
       EvalEvent,
       PrefetchHooks Function()
     >;
+typedef $$SensorStationLinksTableCreateCompanionBuilder =
+    SensorStationLinksCompanion Function({
+      required String id,
+      required String projectId,
+      required String code,
+      required String name,
+      required double lat,
+      required double lon,
+      Value<String?> habitatTypeId,
+      Value<String> transectIds,
+      Value<bool> isSimulated,
+      required bool active,
+      Value<int?> serverVersion,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$SensorStationLinksTableUpdateCompanionBuilder =
+    SensorStationLinksCompanion Function({
+      Value<String> id,
+      Value<String> projectId,
+      Value<String> code,
+      Value<String> name,
+      Value<double> lat,
+      Value<double> lon,
+      Value<String?> habitatTypeId,
+      Value<String> transectIds,
+      Value<bool> isSimulated,
+      Value<bool> active,
+      Value<int?> serverVersion,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$SensorStationLinksTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $SensorStationLinksTable,
+          SensorStationLink
+        > {
+  $$SensorStationLinksTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('sensor_station_link__project_id__project__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<String>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SensorStationLinksTableFilterComposer
+    extends Composer<_$AppDatabase, $SensorStationLinksTable> {
+  $$SensorStationLinksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transectIds => $composableBuilder(
+    column: $table.transectIds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSimulated => $composableBuilder(
+    column: $table.isSimulated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SensorStationLinksTableOrderingComposer
+    extends Composer<_$AppDatabase, $SensorStationLinksTable> {
+  $$SensorStationLinksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+    column: $table.lon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transectIds => $composableBuilder(
+    column: $table.transectIds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSimulated => $composableBuilder(
+    column: $table.isSimulated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SensorStationLinksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SensorStationLinksTable> {
+  $$SensorStationLinksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<String> get habitatTypeId => $composableBuilder(
+    column: $table.habitatTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get transectIds => $composableBuilder(
+    column: $table.transectIds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isSimulated => $composableBuilder(
+    column: $table.isSimulated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<int> get serverVersion => $composableBuilder(
+    column: $table.serverVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SensorStationLinksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SensorStationLinksTable,
+          SensorStationLink,
+          $$SensorStationLinksTableFilterComposer,
+          $$SensorStationLinksTableOrderingComposer,
+          $$SensorStationLinksTableAnnotationComposer,
+          $$SensorStationLinksTableCreateCompanionBuilder,
+          $$SensorStationLinksTableUpdateCompanionBuilder,
+          (SensorStationLink, $$SensorStationLinksTableReferences),
+          SensorStationLink,
+          PrefetchHooks Function({bool projectId})
+        > {
+  $$SensorStationLinksTableTableManager(
+    _$AppDatabase db,
+    $SensorStationLinksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SensorStationLinksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SensorStationLinksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SensorStationLinksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> projectId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lon = const Value.absent(),
+                Value<String?> habitatTypeId = const Value.absent(),
+                Value<String> transectIds = const Value.absent(),
+                Value<bool> isSimulated = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SensorStationLinksCompanion(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                lat: lat,
+                lon: lon,
+                habitatTypeId: habitatTypeId,
+                transectIds: transectIds,
+                isSimulated: isSimulated,
+                active: active,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String projectId,
+                required String code,
+                required String name,
+                required double lat,
+                required double lon,
+                Value<String?> habitatTypeId = const Value.absent(),
+                Value<String> transectIds = const Value.absent(),
+                Value<bool> isSimulated = const Value.absent(),
+                required bool active,
+                Value<int?> serverVersion = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SensorStationLinksCompanion.insert(
+                id: id,
+                projectId: projectId,
+                code: code,
+                name: name,
+                lat: lat,
+                lon: lon,
+                habitatTypeId: habitatTypeId,
+                transectIds: transectIds,
+                isSimulated: isSimulated,
+                active: active,
+                serverVersion: serverVersion,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SensorStationLinksTable, SensorStationLink>(
+                    table,
+                  ),
+                  $$SensorStationLinksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable: $$SensorStationLinksTableReferences
+                            ._projectIdTable(db),
+                        referencedColumn: $$SensorStationLinksTableReferences
+                            ._projectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SensorStationLinksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SensorStationLinksTable,
+      SensorStationLink,
+      $$SensorStationLinksTableFilterComposer,
+      $$SensorStationLinksTableOrderingComposer,
+      $$SensorStationLinksTableAnnotationComposer,
+      $$SensorStationLinksTableCreateCompanionBuilder,
+      $$SensorStationLinksTableUpdateCompanionBuilder,
+      (SensorStationLink, $$SensorStationLinksTableReferences),
+      SensorStationLink,
+      PrefetchHooks Function({bool projectId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -32406,4 +33705,6 @@ class $AppDatabaseManager {
       $$RouteRecordingPointsTableTableManager(_db, _db.routeRecordingPoints);
   $$EvalEventsTableTableManager get evalEvents =>
       $$EvalEventsTableTableManager(_db, _db.evalEvents);
+  $$SensorStationLinksTableTableManager get sensorStationLinks =>
+      $$SensorStationLinksTableTableManager(_db, _db.sensorStationLinks);
 }

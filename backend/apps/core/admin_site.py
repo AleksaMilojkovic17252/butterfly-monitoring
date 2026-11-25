@@ -8,6 +8,7 @@ APP_ORDER = [
     "surveys",
     "observations",
     "resources",
+    "environment",
     "validation",
     "sync",
     "catalogues",

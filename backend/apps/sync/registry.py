@@ -18,6 +18,8 @@ from apps.catalogues.serializers import (
     TaxonListVersionSyncSerializer,
     TaxonSyncSerializer,
 )
+from apps.environment import services as environment
+from apps.environment.serializers import SensorStationLinkSyncSerializer
 from apps.observations import services as observations
 from apps.observations.serializers import ButterflyObservationSyncSerializer, PhotoSyncSerializer
 from apps.projects import services as projects
@@ -83,6 +85,14 @@ ENTITIES = [
         "transect_section",
         TransectSectionSyncSerializer,
         transects.pull_sections,
+        reference=True,
+    ),
+    # Admins define stations (T078), so there is no push. The entity type is the table name
+    # (D-086). The row carries its transect ids; a change of those re-saves the station.
+    SyncEntity(
+        "sensor_station_link",
+        SensorStationLinkSyncSerializer,
+        environment.pull_stations,
         reference=True,
     ),
     # The phone never writes it, so there is no push. Not reference data: a resolution does not

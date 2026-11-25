@@ -96,6 +96,8 @@ services:
       # Django's own MinIO user, created by scripts/minio-setup.sh (T049); never the root user.
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?set in .env (scripts/minio-setup.sh)}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?set in .env (scripts/minio-setup.sh)}
+      # Station registration (T078). No depends_on: the admin actions report a FROST that is down.
+      FROST_URL: ${FROST_URL:-http://frost:8080/FROST-Server/v1.1}
     volumes:
       - staticfiles:/app/staticfiles
     depends_on:

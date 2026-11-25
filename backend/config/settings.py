@@ -116,6 +116,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 SEEDS_DIR = Path(os.environ.get("SEEDS_DIR", "/seeds"))
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# FROST-Server (SensorThings) as containers reach it; station registration (T078) writes to it.
+FROST_URL = os.environ.get("FROST_URL", "http://frost:8080/FROST-Server/v1.1")
+
 # Photos live in MinIO and are reached only through Django (D-013).
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "http://minio:9000")
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "photos")

@@ -39,6 +39,8 @@ class PullApplier {
     'transect': (rows) => _store(_db.transects, rows, _transect),
     'transect_section': (rows) =>
         _store(_db.transectSections, rows, _transectSection),
+    'sensor_station_link': (rows) =>
+        _store(_db.sensorStationLinks, rows, _sensorStationLink),
     'sync_conflict': (rows) => _store(_db.syncConflicts, rows, _syncConflict),
     'survey_visit': (rows) => _store(_db.surveyVisits, rows, _surveyVisit),
     'butterfly_observation': (rows) =>
@@ -475,6 +477,28 @@ class PullApplier {
       habitatTypeId: Value(json['habitat_type'] as String?),
       managementTypeId: Value(json['management_type'] as String?),
       geometry: jsonEncode(json['geometry']),
+      serverVersion: Value(json['server_version'] as int?),
+      deletedAt: const Value(null),
+    );
+  }
+
+  /// A sensor station (T078). The geometry is a GeoJSON Point (`[lon, lat]`),
+  /// and `transects`, a list of transect ids, is kept as JSON text.
+  static SensorStationLinksCompanion _sensorStationLink(_Json json) {
+    final coordinates = (json['geometry']['coordinates'] as List).cast<num>();
+    return SensorStationLinksCompanion.insert(
+      id: json['id'] as String,
+      projectId: json['project'] as String,
+      code: json['code'] as String,
+      name: json['name'] as String,
+      lat: coordinates[1].toDouble(),
+      lon: coordinates[0].toDouble(),
+      // Written even when null: an upsert leaves a column alone when it is
+      // absent, so a habitat type cleared on the server would stay here.
+      habitatTypeId: Value(json['habitat_type'] as String?),
+      transectIds: Value(jsonEncode(json['transects'])),
+      isSimulated: Value(json['is_simulated'] as bool),
+      active: json['active'] as bool,
       serverVersion: Value(json['server_version'] as int?),
       deletedAt: const Value(null),
     );

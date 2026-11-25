@@ -115,7 +115,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | could | T070, T073, T074 | 2 d | deferred |
 | T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | done |
 | T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | done |
-| T078 | [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) | Sensor station links and registration in FROST from Django admin | P2 | must | T021, T077 | 2 d | todo |
+| T078 | [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) | Sensor station links and registration in FROST from Django admin | P2 | must | T021, T077 | 2 d | done |
 | T079 | [#96](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/96) | Sensor data simulator | P2 | must | T071, T078 | 2.5 d | todo |
 | T080 | [#97](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/97) | Station map layer and OGC collections | P2 | should | T068, T078, T079 | 1.5 d | todo |
 | T081 | [#98](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/98) | Environmental snapshots from SensorThings | P2 | must | T063, T079 | 2 d | todo |
@@ -1611,12 +1611,12 @@ Note (T077, 2026-11-25): built as D-118; where it differs from the text above, D
 Checked by hand on the developer's existing volume: the create script twice; `/sta/v1.1/` 401 without credentials, 403 for a researcher, 200 for an admin; links from outside and from `django`; a backup with `frost.dump`, restored into a throwaway database (`restore.sh` not run). The fresh-volume path was run only in a throwaway container.
 
 ### T078 · Sensor station links and registration in FROST from Django admin
-[#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) · E12 · P2 · must · labels: `backend`, `admin`, `database`, `ogc`, `must` · implements F48, F49 · est. 2 d · **todo**
+[#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) · E12 · P2 · must · labels: `backend`, `admin`, `database`, `ogc`, `must` · implements F48, F49 · est. 2 d · **done**
 
 Depends on: T021, T077
 
-- [ ] `SensorStationLink` model with a map admin.
-- [ ] Action **Register in FROST** posts a deep insert:
+- [x] `SensorStationLink` model with a map admin.
+- [x] Action **Register in FROST** posts a deep insert:
   - **Thing** with `properties` {project_id, habitat_type, simulated: true}
   - **Location**: the station point
   - **Sensor**: "Virtual microclimate sensor v1", with metadata describing the simulation
@@ -1625,8 +1625,12 @@ Depends on: T021, T077
   - **FeatureOfInterest**: the habitat polygon if linked, else the station point
 
   It stores `sensorthings_thing_id` and `sensorthings_datastream_ids`, and is idempotent: re-running updates instead of duplicating.
-- [ ] Action **Check FROST status** verifies that the stored ids exist.
-- [ ] Stations are synced to project members (read-only on the phone) for the map layer (T080).
+- [x] Action **Check FROST status** verifies that the stored ids exist.
+- [x] Stations are synced to project members (read-only on the phone) for the map layer (T080).
+
+Note (T078, 2026-11-25): built as D-119; where it differs from the text above, D-117 and D-119 win. The FeatureOfInterest is a separate POST (D-117), the Thing also carries `station_link_id`, and the Drift table has no `syncStatus`. Added at the developer's request: lists limited to the station's project, a read-only project and **Copy to another project**.
+
+Checked by hand on the developer's stack: register, re-register after a rename and a move (no duplicates), entities deleted in FROST, FROST stopped and unanswered, a pull as a member and a non-member, a refused push, and on the phone (schema 20) the three demo stations matching the server. Admin pages were driven through Django's test client and the add page's script in headless Chromium; the developer tried the pages in a browser. Left open: D-119 point 9.
 
 ### T079 · Sensor data simulator
 [#96](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/96) · E12 · P2 · must · labels: `backend`, `infra`, `must` · implements F69 · est. 2.5 d · **todo**

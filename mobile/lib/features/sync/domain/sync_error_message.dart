@@ -92,6 +92,7 @@ String entityTypeLabel(String type) {
     'plant_taxon' => 'Plants',
     'survey_visit' => 'Visits',
     'survey_track_point' => 'Track points',
+    'sensor_station_link' => 'Sensor stations',
     'project_protocol' => 'Protocols',
     'transect_proposal' => 'Route proposals',
     'taxon' => 'Butterfly species',
