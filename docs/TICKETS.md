@@ -29,7 +29,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 - **5b · Should/Could fill (moved before stage 6 on 2026-10-30: Must work is ahead of schedule):** T046, T107, T048, T109, T051, T052, T053, T054, T058, T057, T056, T104, T100, T047, T110, T108, T061, T101, T102, T062, T065, T023, T060, T066, T099, T103, T111, T112, T113
 - **6 · Simulation and evaluation:** T071, T072, T070, T073, T074
 - **Deferred (not in the build order until the developer picks them up):** T075 (needs a biologist and an outdoor walk) and T114 (can wait; Phase 1 is treated as finished); D-116
-- **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080
+- **7 · SensorThings (Phase 2):** T076, T077, T078, T079, T081, T080, T115
 - **8 · EDR (Phase 2):** T082, T083, T084, T085
 - **9 · Moving Features + MobilityDB (Phase 2):** T086, T087, T089, T088, T090, T092, T091, T093, T094
 - **10 · Evaluation (Phase 2):** T095, T096, T097
@@ -113,7 +113,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T073 | [#90](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/90) | Evaluation instrumentation in the app | P1 | must | T035, T045 | 1.5 d | done |
 | T074 | [#91](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/91) | Performance, sync robustness and battery tests | P1 | must | T030, T059, T071, T072 | 2 d | done |
 | T075 | [#92](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/92) | Usability kit and Part 1 evaluation run | P1 | could | T070, T073, T074 | 2 d | deferred |
-| T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | todo |
+| T076 | [#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) | Standards study: SensorThings API | P2 | must | — | 1 d | done |
 | T077 | [#94](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/94) | FROST-Server deployment | P2 | must | T002, T069, T076 | 1.5 d | todo |
 | T078 | [#95](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/95) | Sensor station links and registration in FROST from Django admin | P2 | must | T021, T077 | 2 d | todo |
 | T079 | [#96](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/96) | Sensor data simulator | P2 | must | T071, T078 | 2.5 d | todo |
@@ -152,6 +152,7 @@ Work tickets in this order (roadmap issue #2, D.2). `/next-ticket` picks the fir
 | T112 | [#129](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/129) | Project members see each other's plants, habitat features and observations | P1 | could | T051, T052, T053, T054, T059, T062 | 6 d | done |
 | T113 | [#130](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/130) | Admin adds a butterfly observation to a visit, with photos | P1 | could | T043, T110, T111 | 3 d | done |
 | T114 | [#131](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/131) | Spatial index benchmark with a larger plant and habitat table | P1 | could | T071, T102 | 1 d | deferred |
+| T115 | [#132](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/132) | Live station values and survey-condition alerts on the phone over MQTT | P2 | must | T077, T078, T079, T080 | 3 d | todo |
 
 ## Acceptance criteria
 
@@ -1569,7 +1570,7 @@ Notes (2026-11-09): moved from `must` to `could` and deferred at the developer's
 - [ ] A results summary in `evaluation/results/part1-summary.md`, ready for the thesis.
 
 ### T076 · Standards study: SensorThings API
-[#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) · E12 · P2 · must · labels: `research`, `docs`, `must` · implements F89 · est. 1 d · **todo**
+[#93](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/93) · E12 · P2 · must · labels: `research`, `docs`, `must` · implements F89 · est. 1 d · **done**
 
 Depends on: —
 
@@ -2320,3 +2321,26 @@ Why: T102 (D-111) found no benefit from a `geography` expression index or a `&&`
 - [ ] Where C clearly wins (at least 2× at the larger size and not slower at the smaller), fix the real code (new migration or service change) and update D-111 (rule 2 especially); otherwise state the size below which no change is needed.
 
 Out of scope: more transects or visits (T102 covered those); general claims (one laptop, synthetic data); tests (D-021).
+
+### T115 · Live station values and survey-condition alerts on the phone over MQTT
+[#132](https://github.com/AleksaMilojkovic17252/butterfly-monitoring/issues/132) · E12 · added 2026-11-25 during T076 · P2 · must · labels: `mobile`, `backend`, `infra`, `ogc`, `must` · implements F51 (reinstated) · est. 3 d · **todo**
+
+Depends on: T077, T078, T079, T080
+Notes: the last E12 ticket. F51 (MQTT) was removed in v4 (CONVENTIONS A.1); the developer reinstated it on 2026-11-25 during T076. During T076 the developer also chose to keep MQTT **on** from T077 (ports inside the Compose network only, see docs/standards/sensorthings.md §7); this ticket exposes it to the phone. The issue (#132) is created on GitHub by the developer.
+
+Why: A Pollard walk is only valid in suitable weather (protocol thresholds, rule W06). T081 attaches station values to a visit *after* it is completed, so it can't help the researcher decide *when* to walk. With the SensorThings MQTT extension, FROST publishes every new Observation, and the phone can subscribe, show the nearby station's values live and say when conditions become suitable or unsuitable. The station data already lives on the server (FROST), so the phone only listens. It sends nothing back, and T081 stays the source of the stored snapshots.
+
+- [ ] **FROST MQTT read-only from outside:** MQTT stays on (T077); only its WebSocket port (9876) is reached from outside, through nginx, and the plain TCP port 1883 stays inside the Compose network. FROST has no switch for create-by-publish (only the `create` role controls it), so FROST's `BasicAuthProvider` is turned on with `auth_allowAnonymousRead=true`, and only the simulator's user has `create` (the simulator, Django and pygeoapi are updated to match). `auth_mqtt_topicAllowList` limits subscriptions to Observation topics. A publish from the phone is shown to have no effect.
+- [ ] **nginx `/mqtt`:** a WebSocket location (`Upgrade`/`Connection` headers, long `proxy_read_timeout`) behind `auth_request` to a new Django endpoint that accepts the app's JWT for any active user who is a member of at least one project. `/sta/` stays admin-only. Reached through Tailscale HTTPS as `wss://…/mqtt`, and through `adb reverse` as `ws://localhost:8080/mqtt`. CONVENTIONS A.3 gets the new line.
+- [ ] **Topics on the phone:** the synced station rows (T078) gain the Datastream ids (additive Drift column, `schemaVersion` + 1; the serializer sends `sensorthings_datastream_ids`). The phone subscribes to `v1.1/Datastreams(<id>)/Observations` (topic form VERIFY) for the 4 Datastreams of one station at a time.
+- [ ] **Which station:** during an active visit, the station T081 would use (linked to the visit's transect, else the nearest active one within 5 km). On the map, the station whose popup is open. No station: nothing is subscribed.
+- [ ] **Live values:** the station popup (T080) and a small strip on the active-visit screen show temperature, humidity, wind and solar radiation with their time, updating as messages arrive, labelled **"Simulated station"**. Offline, or before the first message, they show the T080 text "Latest values need a connection" or the last value from `GET /api/v1/stations/{id}/latest`.
+- [ ] **Survey-condition alert:** the phone checks the station values against the project protocol with the same logic as `weather_check.dart` (W06). Station wind in m/s is converted to Beaufort with one documented formula (the same one T079 uses the other way, if T079 settles it). The station has no cloud cover or precipitation, so in the cool band (`min_temperature_c` ≤ t < `sunny_temperature_c`) the alert says "check cloud cover" instead of guessing, and precipitation is never claimed. An alert fires when the state (suitable / unsuitable / check cloud) changes and holds for two consecutive observations, at most once per change. It shows as an in-app banner. A local notification while the app is in the background during a visit needs a new dependency (ask first).
+- [ ] **Connection lifecycle:** connect only while the app is in the foreground or a visit's GPS foreground service runs. Reconnect with backoff and a freshly refreshed JWT (the token is checked only when the WebSocket opens). Disconnect when the visit ends or the map closes. No battery drain when idle.
+- [ ] **Latency, for the thesis:** with T079's live mode running, the time from the simulator's POST to the value on the phone is measured for 20 observations (median and max), and the result goes in `evaluation/results/mqtt-latency.md`.
+- [ ] **Shown by hand:** an admin posts one Observation that crosses a threshold (`curl` to `/sta/`), and the phone shows the new value and the alert within seconds, over Tailscale and over USB.
+- [ ] **Records:** a decision entry reinstates F51 (CONVENTIONS A.1 moves F51 from Removed to Phase 2), with the auth model, the read-only rule and the limitations below. The new Dart MQTT client package (WebSocket support, e.g. `mqtt_client`; VERIFY) is approved before it is added (A.4 row). Docs: `docs/setup/mqtt.md` and `mobile/CLAUDE.md`.
+
+Limitations: nginx sees only the WebSocket handshake, not the MQTT topics, so any logged-in member could subscribe to any station's topics, including another project's (the data is simulated and read-only; per-project rules would need FROST 2.8's fine-grained MQTT auth with `modelLoader` security files). A token that expires while the connection is open is not re-checked until the next reconnect. Nothing reaches the phone when the app is closed.
+
+Out of scope: push notifications with the app closed (FCM); the phone publishing anything; a separate MQTT broker; per-project topic rules (fine-grained MQTT auth); MQTT for entities other than Observations; using live values to fill the visit's weather (T081 stores station values on the server); iOS; tests (D-021).
